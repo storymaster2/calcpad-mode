@@ -25,6 +25,8 @@ export class CalcpadServerManager {
     private _startingUp: boolean = false;
     private _restartCount: number = 0;
     private _lastCrashOutput: string[] = [];
+    private _lastStdoutOutput: string[] = [];
+    private _processClosed: boolean = false;
     private pidFilePath: string;
 
     /** Called when auto-restart retries are exhausted. Receives the last stderr output. */
@@ -114,17 +116,32 @@ export class CalcpadServerManager {
 
         const serverUrl = `http://localhost:${this.port}`;
 
-        this.serverProcess = spawn(this.dotnetPath, [dllPath, '--urls', serverUrl], {
-            stdio: ['pipe', 'pipe', 'pipe']
-        });
+        // Prefer the native apphost exe when available — it shows as
+        // "Calcpad.Server" in Task Manager instead of ".NET Host".
+        // Falls back to `dotnet Calcpad.Server.dll` for compatibility.
+        const exeName = process.platform === 'win32' ? 'Calcpad.Server.exe' : 'Calcpad.Server';
+        const exePath = path.join(this.basePath, 'bin', exeName);
+        const useAppHost = fs.existsSync(exePath);
+
+        this.serverProcess = useAppHost
+            ? spawn(exePath, ['--urls', serverUrl], { stdio: ['pipe', 'pipe', 'pipe'] })
+            : spawn(this.dotnetPath, [dllPath, '--urls', serverUrl], { stdio: ['pipe', 'pipe', 'pipe'] });
+        this.log(`Spawned via ${useAppHost ? 'apphost' : 'dotnet'} (PID ${this.serverProcess.pid})`);
 
         // Write PID file so we can clean up orphaned processes on next startup
         if (this.serverProcess.pid) {
             this.writePidFile(this.serverProcess.pid);
         }
 
+        this._lastStdoutOutput = [];
         this.serverProcess.stdout?.on('data', (data: Buffer) => {
-            this.log(`[stdout] ${data.toString().trim()}`);
+            const text = data.toString().trim();
+            this.log(`[stdout] ${text}`);
+            // Buffer recent stdout lines — .NET runtime errors sometimes go to stdout
+            this._lastStdoutOutput.push(text);
+            if (this._lastStdoutOutput.length > 20) {
+                this._lastStdoutOutput.shift();
+            }
         });
 
         this.serverProcess.stderr?.on('data', (data: Buffer) => {
@@ -137,6 +154,13 @@ export class CalcpadServerManager {
             }
         });
 
+        // The 'close' event fires after all stdio streams are drained,
+        // so _lastCrashOutput is fully populated by the time this fires.
+        this._processClosed = false;
+        this.serverProcess.on('close', () => {
+            this._processClosed = true;
+        });
+
         this.serverProcess.on('error', (err: Error) => {
             this.log(`[error] Failed to start server: ${err.message}`);
             this._isRunning = false;
@@ -145,7 +169,12 @@ export class CalcpadServerManager {
         this.serverProcess.on('exit', (code, signal) => {
             this.log(`[exit] Server process exited (code=${code}, signal=${signal})`);
             this._isRunning = false;
-            this.serverProcess = null;
+            // Don't null out serverProcess during startup — waitForReady checks
+            // _processClosed (from the 'close' event) to ensure stderr is fully drained.
+            // Nulling here would cause waitForReady to bail before close fires.
+            if (!this._startingUp) {
+                this.serverProcess = null;
+            }
             this.removePidFile();
 
             // Auto-restart if not intentionally disposed and not in initial startup
@@ -174,9 +203,16 @@ export class CalcpadServerManager {
             await this.waitForReady(serverUrl);
             this._isRunning = true;
             this._lastCrashOutput = [];
+            this._lastStdoutOutput = [];
             this.log(`Server is ready at ${serverUrl}`);
         } finally {
             this._startingUp = false;
+            // If the process exited during startup, the exit handler deferred
+            // nulling serverProcess so waitForReady could use _processClosed.
+            // Clean it up now.
+            if (this._processClosed) {
+                this.serverProcess = null;
+            }
         }
     }
 
@@ -304,13 +340,24 @@ export class CalcpadServerManager {
         const healthUrl = `${serverUrl}/api/calcpad/snippets`;
 
         for (let i = 0; i < maxAttempts; i++) {
-            // Fail fast if the server process has already exited
-            if (!this.serverProcess || this.serverProcess.exitCode !== null) {
-                const crashOutput = this._lastCrashOutput.join('\n');
+            // Fail fast if the server process has fully closed (stdio drained).
+            // We check _processClosed (set by 'close' event) instead of exitCode
+            // because 'close' fires after all stderr data events, ensuring
+            // _lastCrashOutput is fully populated before we read it.
+            if (!this.serverProcess || this._processClosed) {
+                // Combine all available crash info: stderr, stdout, and log file
+                const stderr = this._lastCrashOutput.join('\n');
+                const stdout = this._lastStdoutOutput.join('\n');
+                const logFile = this.readServerLogFile();
+                const parts: string[] = [];
+                if (stderr) { parts.push(`[stderr]\n${stderr}`); }
+                if (stdout) { parts.push(`[stdout]\n${stdout}`); }
+                if (!stderr && !stdout && logFile) { parts.push(`[log file]\n${logFile}`); }
+                const crashOutput = parts.join('\n\n');
                 throw new Error(
                     crashOutput
                         ? `Server process crashed during startup:\n${crashOutput}`
-                        : 'Server process exited unexpectedly during startup (no stderr output captured)'
+                        : 'Server process exited unexpectedly during startup (no output captured)'
                 );
             }
 
@@ -326,6 +373,31 @@ export class CalcpadServerManager {
         }
 
         throw new Error(`Server did not become ready within ${maxAttempts * intervalMs / 1000} seconds`);
+    }
+
+    /**
+     * Read the most recent server log file as a fallback when stderr capture is empty.
+     * The server writes crash details via FileLogger to CalcpadServer-{date}.log in the bin directory.
+     */
+    private readServerLogFile(): string {
+        try {
+            const today = new Date();
+            const dateStr = today.getFullYear().toString()
+                + (today.getMonth() + 1).toString().padStart(2, '0')
+                + today.getDate().toString().padStart(2, '0');
+            const logPath = path.join(this.basePath, 'bin', `CalcpadServer-${dateStr}.log`);
+
+            if (!fs.existsSync(logPath)) {
+                return '';
+            }
+
+            const content = fs.readFileSync(logPath, 'utf-8');
+            // Return the last 40 lines to capture the most recent crash
+            const lines = content.split('\n');
+            return lines.slice(-40).join('\n').trim();
+        } catch {
+            return '';
+        }
     }
 
     private log(message: string): void {

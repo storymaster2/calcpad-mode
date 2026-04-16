@@ -15,11 +15,6 @@
 	'<h3>'title$'</h3>'
 	'<p>'body$'</p>'
 #end def
-' Multiline macro with non-$ params
-#def calc$(x; y)
-	result_m = x + y
-	output_m = x*y
-#end def
 ' Multiline macro with control flow
 #def checkVal$(Rn$; Ru$)
 	#if Rn$ ≥ Ru$
@@ -44,7 +39,6 @@ added = add$(10; 20)
 greeting$
 header$
 template$('Test'; 'Content')
-calc$(5; 10)
 checkVal$(100; 80)
 checkVal$(50; 75)
 sumRange$(1; 5)

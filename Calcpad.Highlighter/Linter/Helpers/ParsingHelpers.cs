@@ -138,5 +138,24 @@ namespace Calcpad.Highlighter.Linter.Helpers
             // Unbalanced - return what we have
             return line.Substring(start);
         }
+
+        /// <summary>
+        /// Finds the position of the closing brace matching the opening brace at braceStart.
+        /// Returns the position of the closing }, or line.Length if unbalanced.
+        /// </summary>
+        public static int FindClosingBrace(string line, int braceStart)
+        {
+            var depth = 0;
+            for (int i = braceStart; i < line.Length; i++)
+            {
+                if (line[i] == '{') depth++;
+                else if (line[i] == '}')
+                {
+                    depth--;
+                    if (depth == 0) return i;
+                }
+            }
+            return line.Length;
+        }
     }
 }

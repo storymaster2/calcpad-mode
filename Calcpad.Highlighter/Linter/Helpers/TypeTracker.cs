@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Calcpad.Highlighter.Linter.Constants;
 using Calcpad.Highlighter.Linter.Models;
 using Calcpad.Highlighter.Snippets;
+using Calcpad.Highlighter.Tokenizer.Models;
 
 namespace Calcpad.Highlighter.Linter.Helpers
 {
@@ -17,6 +19,16 @@ namespace Calcpad.Highlighter.Linter.Helpers
         private readonly Dictionary<string, VariableInfo> _functions = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, VariableInfo> _macros = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, VariableInfo> _customUnits = new(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<int, List<Token>> _tokensByLine;
+
+        /// <summary>
+        /// Provides per-line tokens from the tokenizer so that type inference can use
+        /// actual token boundaries instead of re-scanning raw expression strings.
+        /// </summary>
+        public void SetTokensByLine(Dictionary<int, List<Token>> tokensByLine)
+        {
+            _tokensByLine = tokensByLine;
+        }
 
         // Patterns for type inference
         private static readonly Regex VectorLiteralPattern = new(
@@ -63,7 +75,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// </summary>
         public VariableInfo RegisterVariable(string name, string expression, int lineNumber, int column = 0, string source = "local", bool isConst = false)
         {
-            var newType = InferTypeFromExpression(expression);
+            var newType = InferTypeFromExpression(expression, lineNumber);
 
             // Variables ending with $ are string variables (#string) or string tables (#table).
             // Distinguish by expression content when type couldn't be inferred from expression alone.
@@ -363,7 +375,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// <summary>
         /// Infers the type of a value from its expression.
         /// </summary>
-        public CalcpadType InferTypeFromExpression(string expression)
+        public CalcpadType InferTypeFromExpression(string expression, int lineNumber = -1)
         {
             if (string.IsNullOrWhiteSpace(expression))
                 return CalcpadType.Unknown;
@@ -402,7 +414,12 @@ namespace Calcpad.Highlighter.Linter.Helpers
             // e.g., "t_ov - t_cmu" where both are vectors → result is a vector
             if (trimmed.IndexOfAny(['+', '-', '*', '/', '^', '(']) >= 0)
             {
-                var operandType = InferTypeFromOperandTypes(trimmed);
+                // Use tokens when available — they handle commas, dots, and Greek
+                // letters in variable names correctly, avoiding broken identifier scanning.
+                var expressionTokens = GetExpressionTokens(lineNumber);
+                var operandType = expressionTokens != null
+                    ? InferTypeFromOperandTokens(expressionTokens)
+                    : InferTypeFromOperandTypes(trimmed);
                 if (operandType != CalcpadType.Unknown)
                     return operandType;
             }
@@ -546,6 +563,74 @@ namespace Calcpad.Highlighter.Linter.Helpers
                         if (info.Type == CalcpadType.Matrix)
                             return CalcpadType.Matrix;
                         if (info.Type == CalcpadType.Vector)
+                            highestType = CalcpadType.Vector;
+                    }
+                }
+            }
+
+            return highestType;
+        }
+
+        /// <summary>
+        /// Returns the expression-portion tokens for a definition line (tokens after the '='),
+        /// or null if tokens are not available for the line.
+        /// </summary>
+        private List<Token> GetExpressionTokens(int lineNumber)
+        {
+            if (lineNumber < 0 || _tokensByLine == null ||
+                !_tokensByLine.TryGetValue(lineNumber, out var lineTokens))
+                return null;
+
+            // Find the '=' operator and return everything after it
+            for (int i = 0; i < lineTokens.Count; i++)
+            {
+                if (lineTokens[i].Type == TokenType.Operator && lineTokens[i].Text == "=")
+                    return lineTokens.GetRange(i + 1, lineTokens.Count - i - 1);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Token-based version of InferTypeFromOperandTypes. Uses actual tokenizer tokens
+        /// to correctly handle commas in variable names, element access dots, etc.
+        /// </summary>
+        private CalcpadType InferTypeFromOperandTokens(List<Token> tokens)
+        {
+            var highestType = CalcpadType.Unknown;
+            int depth = 0;
+
+            foreach (var token in tokens)
+            {
+                if (token.Type == TokenType.Bracket)
+                {
+                    if (token.Text == "(" || token.Text == "[" || token.Text == "{") depth++;
+                    else if (token.Text == ")" || token.Text == "]" || token.Text == "}") depth--;
+                    continue;
+                }
+
+                if (depth > 0)
+                    continue;
+
+                if (token.Type == TokenType.Function || token.Type == TokenType.StringFunction)
+                {
+                    var returnType = GetFunctionCallReturnType(token.Text);
+                    if (returnType == CalcpadType.Matrix) return CalcpadType.Matrix;
+                    if (returnType == CalcpadType.Vector && highestType != CalcpadType.Matrix)
+                        highestType = CalcpadType.Vector;
+                    continue;
+                }
+
+                if (token.Type == TokenType.Variable || token.Type == TokenType.StringVariable ||
+                    token.Type == TokenType.LocalVariable)
+                {
+                    // Element access tokens end with '.' — the result is scalar, not vector
+                    if (token.Text.EndsWith("."))
+                        continue;
+
+                    if (_variables.TryGetValue(token.Text, out var info))
+                    {
+                        if (info.Type == CalcpadType.Matrix) return CalcpadType.Matrix;
+                        if (info.Type == CalcpadType.Vector && highestType != CalcpadType.Matrix)
                             highestType = CalcpadType.Vector;
                     }
                 }

@@ -298,7 +298,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 var functionParams = ParsingHelpers.GetFunctionParamsFromLine(line);
 
                 // Check for command-scope variables (e.g., x in $Root{f(x) @ x = 0 : 5})
-                var commandScopeVars = GetCommandScopeVariables(line);
+                var commandScopeVars = GetCommandScopeVariables(line, tokens);
 
                 foreach (var token in tokens)
                 {
@@ -433,8 +433,9 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         /// For example: "$Root{f(x) @ x = 0 : 5}" returns {"x"}
         /// Also handles: "$Sum{k^2 @ k = 1 : 5}", "$Plot{sin(x) @ x = 0 : 2*π}"
         /// Also handles command block local variables ($Inline, $Block, $While).
+        /// Uses tokens for correct variable name extraction (handles commas, dots, etc.).
         /// </summary>
-        private static HashSet<string> GetCommandScopeVariables(string line)
+        private static HashSet<string> GetCommandScopeVariables(string line, List<Token> tokens)
         {
             var result = new HashSet<string>(StringComparer.Ordinal);
 
@@ -447,41 +448,33 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     var braceStart = line.IndexOf('{', cmdIndex);
                     if (braceStart >= 0)
                     {
-                        // Extract content inside the braces
-                        var blockContent = ParsingHelpers.ExtractBlockContent(line, braceStart);
-
-                        // Find all variable assignments inside the block
-                        // Assignments are separated by ; and pattern is: varName = ...
-                        ExtractBlockLocalVariables(blockContent, result);
+                        var braceEnd = ParsingHelpers.FindClosingBrace(line, braceStart);
+                        ExtractBlockLocalVariables(tokens, braceStart, braceEnd, result);
                     }
                     break;
                 }
             }
 
-            // Look for @ symbol which indicates command variable definition
-            var atIndex = line.IndexOf('@');
-            if (atIndex < 0)
-                return result;
-
-            // Extract the part after @ (e.g., "x = 0 : 5}")
-            var afterAt = line.Substring(atIndex + 1);
-
-            // Find the variable name before the = sign
-            // Pattern: @ variable = start : end
-            var equalsIndex = afterAt.IndexOf('=');
-            if (equalsIndex < 0)
-                return result;
-
-            var varPart = afterAt.Substring(0, equalsIndex).Trim();
-
-            // The variable name should be a valid identifier
-            if (!string.IsNullOrEmpty(varPart) && CalcpadCharacterHelpers.IsIdentifierStartCharWithUnderscore(varPart[0]))
+            // Use tokens to find the @ variable: scan for Variable/LocalVariable between @ and =
+            int atCol = -1;
+            foreach (var token in tokens)
             {
-                // Extract just the identifier (stop at non-identifier chars)
-                var varName = CalcpadCharacterHelpers.ExtractIdentifier(varPart);
-                if (!string.IsNullOrEmpty(varName))
+                if (token.Type == TokenType.Operator && token.Text == "@")
                 {
-                    result.Add(varName);
+                    atCol = token.Column;
+                    continue;
+                }
+
+                if (atCol >= 0)
+                {
+                    if (token.Type == TokenType.Operator && token.Text == "=")
+                        break; // past the variable
+
+                    if (token.Type == TokenType.LocalVariable || token.Type == TokenType.Variable)
+                    {
+                        result.Add(token.Text);
+                        break;
+                    }
                 }
             }
 
@@ -490,57 +483,47 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
 
         /// <summary>
-        /// Extracts variable names that are assigned inside a block.
-        /// Block statements are separated by ; and assignments use = (not ==).
+        /// Extracts variable names that are assigned inside a command block by scanning
+        /// tokens within the block's column range. Finds assignment patterns (Variable = ...)
+        /// using token types instead of manual string parsing.
         /// </summary>
-        private static void ExtractBlockLocalVariables(string blockContent, HashSet<string> result)
+        private static void ExtractBlockLocalVariables(List<Token> lineTokens, int braceStart, int braceEnd, HashSet<string> result)
         {
-            // Split by semicolons (statement separator in $Inline blocks)
-            var statements = blockContent.Split(';');
-
-            foreach (var stmt in statements)
+            for (int i = 0; i < lineTokens.Count; i++)
             {
-                var trimmed = stmt.Trim();
-                if (string.IsNullOrEmpty(trimmed))
+                var token = lineTokens[i];
+
+                // Only look at tokens inside the block braces
+                if (token.Column <= braceStart || token.Column >= braceEnd)
                     continue;
 
-                // Look for assignment pattern: identifier = value (not ==)
-                var equalsIndex = trimmed.IndexOf('=');
-                if (equalsIndex <= 0)
+                // Look for Variable token followed by = operator (assignment pattern)
+                if (token.Type != TokenType.Variable && token.Type != TokenType.LocalVariable)
                     continue;
 
-                // Make sure it's not == (comparison)
-                if (equalsIndex + 1 < trimmed.Length && trimmed[equalsIndex + 1] == '=')
-                    continue;
-
-                // Make sure there's no operator before = (like +=, -=, etc.)
-                if (equalsIndex > 0)
+                // Check if the next non-whitespace token is =
+                for (int j = i + 1; j < lineTokens.Count; j++)
                 {
-                    var charBefore = trimmed[equalsIndex - 1];
-                    if (charBefore == '+' || charBefore == '-' || charBefore == '*' ||
-                        charBefore == '/' || charBefore == '!' || charBefore == '<' ||
-                        charBefore == '>' || charBefore == '≠' || charBefore == '≤' ||
-                        charBefore == '≥')
-                        continue;
-                }
+                    var next = lineTokens[j];
+                    if (next.Column >= braceEnd)
+                        break;
 
-                var leftSide = trimmed.Substring(0, equalsIndex).Trim();
-
-                // Handle element access like helperV.i = val (extract helperV)
-                var dotIndex = leftSide.IndexOf('.');
-                if (dotIndex > 0)
-                {
-                    leftSide = leftSide.Substring(0, dotIndex).Trim();
-                }
-
-                // Extract the identifier
-                if (!string.IsNullOrEmpty(leftSide) && CalcpadCharacterHelpers.IsIdentifierStartCharWithUnderscore(leftSide[0]))
-                {
-                    var varName = CalcpadCharacterHelpers.ExtractIdentifier(leftSide);
-                    if (!string.IsNullOrEmpty(varName))
+                    if (next.Type == TokenType.Operator)
                     {
-                        result.Add(varName);
+                        if (next.Text == "=")
+                        {
+                            // Found assignment — extract variable name
+                            var varName = token.Text;
+                            // Element access: token ends with '.' (e.g., "helperV.")
+                            if (varName.EndsWith("."))
+                                varName = varName.Substring(0, varName.Length - 1);
+                            if (!string.IsNullOrEmpty(varName))
+                                result.Add(varName);
+                        }
+                        break; // any operator after variable ends the check
                     }
+                    if (next.Type == TokenType.Bracket)
+                        break; // e.g., function call, not assignment
                 }
             }
         }

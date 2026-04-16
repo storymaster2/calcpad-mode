@@ -150,6 +150,7 @@ namespace Calcpad.Highlighter.ContentResolution
 
             // Build TypeTracker from collected definitions
             var typeTracker = new TypeTracker();
+            typeTracker.SetTokensByLine(tokenizerResult.TokensByLine);
             PopulateTypeTracker(typeTracker, variablesWithDefs, functionsWithParams, stage2.MacroDefinitions, customUnits);
 
             // Collect variable assignments and usages from Lint-mode tokens for usage analysis

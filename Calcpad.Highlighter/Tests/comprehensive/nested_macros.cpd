@@ -1,15 +1,15 @@
 ' Nested macro calls test
 ' Inner macros
-#def getMn$(M_result; A_s$; d$)
-	M_result = A_s$*d$
+#def getMn$(M_result$; A_s$; d$)
+	M_result$ = A_s$*d$
 #end def
 
-#def getVn$(V_result; M_a$; V_a$; d$)
-	V_result = V_a$*d$ + M_a$
+#def getVn$(V_result$; M_a$; V_a$; d$)
+	V_result$ = V_a$*d$ + M_a$
 #end def
 
-#def checkMatrix$(cap; demand; mat; r; c)
-	mat.(r; c) = demand/cap
+#def checkMatrix$(cap$; demand$; mat$; r$; c$)
+	mat$.(r$; c$) = demand$/cap$
 #end def
 
 ' Outer macro that calls inner macros

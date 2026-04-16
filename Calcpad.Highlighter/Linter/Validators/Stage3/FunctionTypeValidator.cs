@@ -40,7 +40,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             }
         }
 
-        private void ValidateFunctionCallsOnLine(string line, IEnumerable<Token> tokens, int stage3Line, Stage3Context stage3, LinterResult result)
+        private void ValidateFunctionCallsOnLine(string line, List<Token> tokens, int stage3Line, Stage3Context stage3, LinterResult result)
         {
             // Get function parameters from this line - these should be treated as Various type
             var functionParams = ParsingHelpers.GetFunctionParamsFromLine(line);
@@ -57,7 +57,14 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 if (!found)
                     continue;
 
-                var parameters = ParameterParser.ParseParameters(paramsStr);
+                // Compute column of first character inside the parentheses
+                var parenCol = token.Column + token.Length;
+                while (parenCol < line.Length && char.IsWhiteSpace(line[parenCol]))
+                    parenCol++;
+                var paramStartCol = parenCol + 1; // skip the '('
+
+                var paramTokenGroups = new List<List<Token>>();
+                var parameters = ParameterParser.ParseParameters(paramsStr, tokens, paramStartCol, paramTokenGroups);
                 var paramCount = parameters.Count;
 
                 // Check for empty parameters in function calls (not allowed)
@@ -103,7 +110,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     // Validate parameter types if we have a TypeTracker
                     if (stage3.TypeTracker != null)
                     {
-                        ValidateParameterTypesAgainstOverloads(parameters, matchingOverloads, funcName, token, stage3Line, line, stage3, functionParams, result);
+                        ValidateParameterTypesAgainstOverloads(parameters, paramTokenGroups, matchingOverloads, funcName, token, stage3Line, line, stage3, functionParams, result);
                     }
                 }
             }
@@ -142,6 +149,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         /// </summary>
         private void ValidateParameterTypesAgainstOverloads(
             List<string> parameters,
+            List<List<Token>> paramTokenGroups,
             List<FunctionSignature> matchingOverloads,
             string funcName,
             Token token,
@@ -151,14 +159,23 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             HashSet<string> functionParams,
             LinterResult result)
         {
-            // Infer types for all parameters once
+            // Infer types for all parameters once, using tokens when available
             var actualTypes = new CalcpadType[parameters.Count];
             for (int i = 0; i < parameters.Count; i++)
             {
                 var param = parameters[i].Trim();
-                actualTypes[i] = string.IsNullOrEmpty(param)
-                    ? CalcpadType.Unknown
-                    : InferParameterType(param, stage3, functionParams);
+                if (string.IsNullOrEmpty(param))
+                {
+                    actualTypes[i] = CalcpadType.Unknown;
+                }
+                else if (i < paramTokenGroups.Count && paramTokenGroups[i].Count > 0)
+                {
+                    actualTypes[i] = InferTypeFromTokens(paramTokenGroups[i], stage3, functionParams);
+                }
+                else
+                {
+                    actualTypes[i] = InferParameterType(param, stage3, functionParams);
+                }
             }
 
             // Check if any overload fully matches
@@ -270,6 +287,106 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 CalcpadType.Unknown => "unknown",
                 _ => type.ToString().ToLower()
             };
+        }
+
+        /// <summary>
+        /// Infers the type of a parameter expression from its actual tokens.
+        /// Uses the tokenizer's correct variable name boundaries (handling commas,
+        /// dots, Greek letters, etc.) instead of re-scanning the raw string.
+        /// </summary>
+        private static CalcpadType InferTypeFromTokens(
+            List<Token> paramTokens,
+            Stage3Context stage3,
+            HashSet<string> functionParams)
+        {
+            // Single token: direct lookup
+            if (paramTokens.Count == 1)
+            {
+                var t = paramTokens[0];
+                if (t.Type == TokenType.Variable || t.Type == TokenType.StringVariable ||
+                    t.Type == TokenType.LocalVariable)
+                {
+                    if (functionParams.Contains(t.Text))
+                        return CalcpadType.Various;
+                    if (stage3.TypeTracker != null)
+                    {
+                        var info = stage3.TypeTracker.GetVariableInfo(t.Text);
+                        if (info != null)
+                            return info.Type == CalcpadType.Function ? info.ReturnType : info.Type;
+                    }
+                }
+                if (t.Type == TokenType.Const)
+                    return CalcpadType.Value;
+                return CalcpadType.Unknown;
+            }
+
+            // Check for vector/matrix literal: starts with [
+            if (paramTokens[0].Type == TokenType.Bracket && paramTokens[0].Text == "[")
+            {
+                bool hasPipe = false;
+                int d = 0;
+                foreach (var t in paramTokens)
+                {
+                    if (t.Type == TokenType.Bracket && t.Text == "[") d++;
+                    else if (t.Type == TokenType.Bracket && t.Text == "]") d--;
+                    else if (d == 1 && t.Text == "|") hasPipe = true;
+                }
+                return hasPipe ? CalcpadType.Matrix : CalcpadType.Vector;
+            }
+
+            // Complex expression: scan top-level operands using actual tokens.
+            // Bracket depth tracking naturally skips function arguments so
+            // e.g. len(vec) uses len's return type, not vec's type.
+            var highestType = CalcpadType.Unknown;
+            int depth = 0;
+
+            foreach (var t in paramTokens)
+            {
+                if (t.Type == TokenType.Bracket)
+                {
+                    if (t.Text == "(" || t.Text == "[" || t.Text == "{") depth++;
+                    else if (t.Text == ")" || t.Text == "]" || t.Text == "}") depth--;
+                    continue;
+                }
+
+                if (depth > 0)
+                    continue;
+
+                if (t.Type == TokenType.Function || t.Type == TokenType.StringFunction)
+                {
+                    if (stage3.TypeTracker != null)
+                    {
+                        var retType = stage3.TypeTracker.GetFunctionReturnType(t.Text);
+                        if (retType == CalcpadType.Matrix) return CalcpadType.Matrix;
+                        if (retType == CalcpadType.Vector && highestType != CalcpadType.Matrix)
+                            highestType = CalcpadType.Vector;
+                    }
+                    continue;
+                }
+
+                if (t.Type == TokenType.Variable || t.Type == TokenType.StringVariable ||
+                    t.Type == TokenType.LocalVariable)
+                {
+                    if (functionParams.Contains(t.Text))
+                    {
+                        if (highestType == CalcpadType.Unknown) highestType = CalcpadType.Various;
+                        continue;
+                    }
+                    if (stage3.TypeTracker != null)
+                    {
+                        var info = stage3.TypeTracker.GetVariableInfo(t.Text);
+                        if (info != null)
+                        {
+                            var vt = info.Type == CalcpadType.Function ? info.ReturnType : info.Type;
+                            if (vt == CalcpadType.Matrix) return CalcpadType.Matrix;
+                            if (vt == CalcpadType.Vector && highestType != CalcpadType.Matrix)
+                                highestType = CalcpadType.Vector;
+                        }
+                    }
+                }
+            }
+
+            return highestType;
         }
     }
 }

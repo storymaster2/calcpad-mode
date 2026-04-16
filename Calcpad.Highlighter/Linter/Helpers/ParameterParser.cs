@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Calcpad.Highlighter.Tokenizer.Models;
 
 namespace Calcpad.Highlighter.Linter.Helpers
 {
@@ -14,13 +15,85 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// Parses a semicolon-separated parameter string and returns a list of parameters.
         /// Ignores semicolons inside parentheses, braces, and brackets.
         /// Empty parameters are preserved in the result.
+        /// When <paramref name="lineTokens"/> and <paramref name="tokenGroups"/> are both
+        /// provided, also partitions the line's tokens into per-parameter groups based on
+        /// the same split boundaries. <paramref name="paramStartCol"/> is the column of the
+        /// first character inside the parentheses (column after the opening paren).
         /// </summary>
-        public static List<string> ParseParameters(string paramsStr)
+        public static List<string> ParseParameters(string paramsStr,
+            List<Token> lineTokens = null, int paramStartCol = 0,
+            List<List<Token>> tokenGroups = null)
         {
             if (string.IsNullOrWhiteSpace(paramsStr))
                 return new List<string>();
 
-            return SplitByDelimiter(paramsStr, ';');
+            if (lineTokens == null || tokenGroups == null)
+                return SplitByDelimiter(paramsStr, ';');
+
+            // Split the string and record column boundaries for each segment
+            var parameters = new List<string>();
+            var boundaries = new List<(int startCol, int endCol)>();
+            var span = paramsStr.AsSpan();
+            int segStart = 0;
+            int parenDepth = 0, braceDepth = 0, bracketDepth = 0;
+
+            for (int i = 0; i < span.Length; i++)
+            {
+                var c = span[i];
+                if (c == '(') parenDepth++;
+                else if (c == ')') parenDepth--;
+                else if (c == '{') braceDepth++;
+                else if (c == '}') braceDepth--;
+                else if (c == '[') bracketDepth++;
+                else if (c == ']') bracketDepth--;
+
+                if (c == ';' && parenDepth == 0 && braceDepth == 0 && bracketDepth == 0)
+                {
+                    parameters.Add(span[segStart..i].Trim().ToString());
+                    boundaries.Add((paramStartCol + segStart, paramStartCol + i));
+                    segStart = i + 1;
+                }
+            }
+
+            if (segStart < span.Length || parameters.Count > 0)
+            {
+                parameters.Add(span[segStart..].Trim().ToString());
+                boundaries.Add((paramStartCol + segStart, paramStartCol + span.Length));
+            }
+
+            // Partition tokens into groups using the column boundaries.
+            // Both tokens and boundaries are sorted by column, so merge in one pass.
+            int bIdx = 0;
+            var group = new List<Token>();
+
+            foreach (var token in lineTokens)
+            {
+                if (bIdx >= boundaries.Count)
+                    break;
+
+                if (token.Column < boundaries[bIdx].startCol)
+                    continue;
+
+                while (bIdx < boundaries.Count && token.Column >= boundaries[bIdx].endCol)
+                {
+                    tokenGroups.Add(group);
+                    group = new List<Token>();
+                    bIdx++;
+                }
+
+                if (bIdx < boundaries.Count && token.Column >= boundaries[bIdx].startCol &&
+                    token.Column < boundaries[bIdx].endCol)
+                {
+                    group.Add(token);
+                }
+            }
+
+            if (bIdx < boundaries.Count)
+                tokenGroups.Add(group);
+            while (tokenGroups.Count < parameters.Count)
+                tokenGroups.Add(new List<Token>());
+
+            return parameters;
         }
 
         /// <summary>
