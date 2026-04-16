@@ -56,40 +56,13 @@ namespace Calcpad.Highlighter.Linter.Helpers
         }
 
         /// <summary>
-        /// Counts the number of parameters in a macro call.
-        /// For macros, only parentheses are considered for nesting - semicolons inside
-        /// brackets and braces ARE treated as separators because Calcpad does not parse
-        /// macro arguments as mathematical expressions.
-        /// </summary>
-        public static int CountMacroParameters(string paramsStr)
-        {
-            if (string.IsNullOrWhiteSpace(paramsStr))
-                return 0;
-
-            int count = 1;
-            int parenDepth = 0;
-            var span = paramsStr.AsSpan();
-
-            for (int i = 0; i < span.Length; i++)
-            {
-                var c = span[i];
-
-                if (c == '(') parenDepth++;
-                else if (c == ')') parenDepth--;
-                else if (c == ';' && parenDepth == 0) count++;
-            }
-
-            return count;
-        }
-
-        /// <summary>
         /// Parses macro call arguments using span-based index tracking.
         /// For macros, only parentheses are considered for nesting.
         /// </summary>
         public static List<string> ParseMacroParameters(string paramsStr)
         {
             if (string.IsNullOrWhiteSpace(paramsStr))
-                return new List<string>();
+                return new List<string> { string.Empty };
 
             var result = new List<string>();
             var span = paramsStr.AsSpan();

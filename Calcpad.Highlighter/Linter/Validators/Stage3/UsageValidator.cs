@@ -772,20 +772,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             return false;
         }
 
-        /// <summary>
-        /// Count the number of parameters in a macro call.
-        /// For macros, only parentheses are considered for nesting - semicolons inside
-        /// brackets and braces ARE treated as separators.
-        /// Returns -1 if no opening parenthesis is found.
-        /// </summary>
-        private static int CountMacroParams(string line, int afterMacroName)
-        {
-            var (found, paramsStr) = ParsingHelpers.ExtractParamsString(line, afterMacroName);
-            if (!found)
-                return -1;
 
-            return ParameterParser.CountMacroParameters(paramsStr);
-        }
 
         /// <summary>
         /// Returns the raw argument strings for a macro call, or null if no opening paren found.

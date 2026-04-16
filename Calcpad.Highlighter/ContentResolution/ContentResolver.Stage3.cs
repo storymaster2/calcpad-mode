@@ -969,8 +969,9 @@ namespace Calcpad.Highlighter.ContentResolution
                         }
                         else
                         {
-                            // Parameter count mismatch - output macro name as-is
+                            // Parameter count mismatch - preserve full call text so linter can report accurate diagnostics
                             result.Append(macroName);
+                            result.Append(line, i + 1, replacementEnd - (i + 1));
                             i = replacementEnd;
                         }
                     }
