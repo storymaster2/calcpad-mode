@@ -35,8 +35,6 @@
 
   <ItemGroup>
     <DebDependency Include="dotnet-runtime-10.0" />
-    <DebDependency Include="wkhtmltopdf" />
-    <RpmDependency Include="wkhtmltopdf" />
     <RpmDependency Include="dotnet-runtime-10.0" />
   </ItemGroup>
 
