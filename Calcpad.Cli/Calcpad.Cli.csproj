@@ -13,6 +13,7 @@
     <StartupObject>Calcpad.Cli.Program</StartupObject>
     <SymlinkAppHostInBin>false</SymlinkAppHostInBin>
     <SkipDebDependencies>true</SkipDebDependencies>
+    <SkipRpmDependencies>true</SkipRpmDependencies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,8 +35,7 @@
 
   <ItemGroup>
     <DebDependency Include="dotnet-runtime-10.0" />
-    <DebDependency Include="wkhtmltopdf" />
-    <RpmDependency Include="wkhtmltopdf" />
+    <RpmDependency Include="dotnet-runtime-10.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -101,18 +101,17 @@
   <PropertyGroup>
     <PostInstallScript>
       <![CDATA[
-      mkdir -p "/home/$SUDO_USER/calcpad" \
-      && cp -a "/usr/share/CalcpadCE/Examples" "/home/$SUDO_USER/calcpad/Examples" \
-      && cp -a "/usr/share/CalcpadCE/doc" "/home/$SUDO_USER/calcpad/doc" \
-      && mkdir -p "/home/$SUDO_USER/calcpad/syntax/Sublime" \
-      && cp -a "/usr/share/CalcpadCE/Syntax/Sublime" "/home/$SUDO_USER/calcpad/syntax" \
-      && mkdir -p "/home/$SUDO_USER/.config/calcpad/" \
-      && cp "/usr/share/CalcpadCE/Settings.xml" "/home/$SUDO_USER/.config/calcpad/Settings.xml" \
-      && cp -a "/usr/share/CalcpadCE/Fonts" "/usr/share/fonts/opentype" \
-      && chown -R $SUDO_USER "/home/$SUDO_USER/calcpad" "/home/$SUDO_USER/.config/calcpad/" \
-      && rm -rf "/usr/share/CalcpadCE/Examples"
+      mkdir -p /usr/share/fonts/CalcpadCE
+      cp -a /usr/share/CalcpadCE/Fonts/* /usr/share/fonts/CalcpadCE/
+      fc-cache -f /usr/share/fonts/CalcpadCE 2>/dev/null || true
       ]]>
     </PostInstallScript>
+    <PostRemoveScript>
+      <![CDATA[
+      rm -rf /usr/share/fonts/CalcpadCE
+      fc-cache -f 2>/dev/null || true
+      ]]>
+    </PostRemoveScript>
   </PropertyGroup>
 
 </Project>
