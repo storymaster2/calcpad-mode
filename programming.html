@@ -217,7 +217,27 @@
           
   
   
-  Home
+  Documentation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="quick-reference.html" class="md-tabs__link">
+          
+  
+  
+  Quick Reference
 
         </a>
       </li>
@@ -293,7 +313,7 @@
   <span class="md-ellipsis">
     
   
-    Home
+    Documentation
   
 
     
@@ -309,7 +329,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Home
+    Documentation
   
 
           </label>
@@ -1207,6 +1227,93 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Quick Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="quick-reference.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1443,15 +1550,13 @@ Finally, you can save the document as a "<strong>*.cpd</strong>" file.
 When you open such a file, it will be displayed directly into input form mode.
 This format is more convenient to use than a simple text file due to the following advantages:</p>
 <ul>
-<li>
-<p>The user can see clearly which parameters should be entered.
+<li>The user can see clearly which parameters should be entered.
 You can also provide pictures and additional explanations.
-This is more comprehensible for the user, especially if the program is developed by someone else;</p>
-</li>
-<li>
-<p>The rest of the source code is protected from modification, unless you unlock it on purpose.
-This prevents an inexperienced user from accidentally damaging the calculation formulas.</p>
-</li>
+This is more comprehensible for the user, especially if the program is developed by someone else;</li>
+</ul>
+<ul>
+<li>The rest of the source code is protected from modification, unless you unlock it on purpose.
+This prevents an inexperienced user from accidentally damaging the calculation formulas.</li>
 </ul>
 <p>If you save the document as a "<strong>*.cpdz</strong>" file, you will make the source code completely inaccessible.
 It will not be possible to unlock it inside Calcpad anymore.
@@ -1697,48 +1802,40 @@ In all cases, the path to the file must exist.</p>
 <li><code>filename.txt</code> the name and path of the input/output file [required]. If the path is omitted, the file is assumed to be in the same folder.
     Extension is required.
     Any valid extension is allowed (except those for Excel), including <strong>txt</strong> and <strong>csv</strong>, as long as the data in the file is in text format;</li>
-<li>
-<p><code>@R1C1:R2C2</code> data range in the input file [optional]:</p>
-<ul>
-<li><code>R1C1</code> starting row and column indexes [optional]:</li>
-<li><code>R1</code> row index: includes capital letter “R”, followed by the number of the row [optional];</li>
-<li><code>C1</code>column index: capital letter “C”, followed by the number of the column [optional];</li>
-<li><code>:R2C2</code> ending row (R2) and column (C2) indexes as above [optional];</li>
-</ul>
-<p>Indexing starts at <strong>1</strong>. You can skip any of the starting and ending row/column indexes.
-In this case, the default values of 1 and matrix dimensions are taken.
-Starting indexes can be greater than ending ones.
-Some examples are given below:</p>
+<li><code>@R1C1:R2C2</code> data range in the input file [optional]:
+    - <code>R1C1</code> starting row and column indexes [optional]:
+    - <code>R1</code> row index: includes capital letter “R”, followed by the number of the row [optional];
+    - <code>C1</code>column index: capital letter “C”, followed by the number of the column [optional];
+    - <code>:R2C2</code> ending row (R2) and column (C2) indexes as above [optional];<p>Indexing starts at <strong>1</strong>. You can skip any of the starting and ending row/column indexes.
+  In this case, the default values of 1 and matrix dimensions are taken.
+  Starting indexes can be greater than ending ones.
+  Some examples are given below:</p>
 <p><img alt="CSV data showing example ranges" src="media/Image%2048.png" /></p>
 </li>
-<li>
-<p><code>TYPE=R</code> The type of matrix/vector for structured storage [optional].<br />
-    For the <code>#read</code> command, TYPE can be any of the following capital letters:</p>
-<ul>
-<li><code>R</code> rectangular matrix (default);</li>
-<li><code>C</code> column matrix;</li>
-<li><code>D</code> diagonal matrix;</li>
-<li><code>S</code> symmetric skyline matrix;</li>
-<li><code>L</code> lower triangular matrix;</li>
-<li><code>U</code> upper triangular matrix;</li>
-<li><code>V</code> vector.</li>
 </ul>
-<p>If you want to use the high-performance version of the type, add <strong>_hp</strong> after the type letter.
-For example: <strong>R_hp</strong> or <strong>S_hp</strong> .<br />
-For column and diagonal matrices values can be stored either on a single line or in a column of one value per line.
-For diagonal matrices only the values along the main diagonal are stored, for lower triangular - only below the main diagonal, and for symmetric and upper triangular - only above the main diagonal.
-Vector values can be spread along multiple lines, but all are collected in a single vector consequently line-by-line.
-Examples for structured storage are provided below:</p>
+<ul>
+<li><code>TYPE=R</code> The type of matrix/vector for structured storage [optional].<br />
+    For the <code>#read</code> command, TYPE can be any of the following capital letters:
+    - <code>R</code> rectangular matrix (default);
+    - <code>C</code> column matrix;
+    - <code>D</code> diagonal matrix;
+    - <code>S</code> symmetric skyline matrix;
+    - <code>L</code> lower triangular matrix;
+    - <code>U</code> upper triangular matrix;
+    - <code>V</code> vector.<p>If you want to use the high-performance version of the type, add <strong>_hp</strong> after the type letter.
+  For example: <strong>R_hp</strong> or <strong>S_hp</strong> .<br />
+  For column and diagonal matrices values can be stored either on a single line or in a column of one value per line.
+  For diagonal matrices only the values along the main diagonal are stored, for lower triangular - only below the main diagonal, and for symmetric and upper triangular - only above the main diagonal.
+  Vector values can be spread along multiple lines, but all are collected in a single vector consequently line-by-line.
+  Examples for structured storage are provided below:</p>
 <p><img alt="Matrix examples" src="media/Image%2049.png" /></p>
 <p>For the <code>#write</code> and <code>#append</code> commands TYPE can be one of the capital letters below:</p>
-<ul>
-<li><code>Y</code> Yes, the matrix structure is used;</li>
-<li><code>N</code> No, the matrix structure is not used (default);</li>
-</ul>
+<p>- <code>Y</code> Yes, the matrix structure is used;
+  - <code>N</code> No, the matrix structure is not used (default);</p>
 <p>If “<strong>N</strong>” is selected, all matrices are stored as rectangular, regardless their type and internal structure.
-All elements after the last nonzero value on the row are skipped.
+  All elements after the last nonzero value on the row are skipped.
 - <code>SEP=','</code> separator [optional]. You must specify a single character in quotes.
-For the #read command it must correspond to the actual separator used in the input file.</p>
+  For the #read command it must correspond to the actual separator used in the input file.</p>
 </li>
 </ul>
 <p>The minimum allowed syntax for the above commands if all optional keywords are skipped is:</p>
@@ -1767,30 +1864,27 @@ In all cases, the path to the file must exist.</p>
     The supported extensions are <strong>xlsx</strong> and <strong>xlsm</strong>;</li>
 <li><code>@Sheet1</code> the name of the target worksheet [optional].
     If omitted the first worksheet is used for existing files and Sheet1 is assumed for newly created worksheets.</li>
-<li>
-<p><code>!A1:B2</code> target cell range [optional]:</p>
-<ul>
-<li><code>A1</code> starting cell reference [optional], where A is the column name and 1 is the row index;</li>
-<li>
-<p><code>:B2</code> ending cell reference as above [optional];<br />
-    Column names start at <strong>A</strong>, and row numbers start at <strong>1</strong>. You can skip any of the starting and ending column/row references.
-    In this case, data is read to the first and last nonempty cells, respectively.
-    The starting cell references can be greater than the ending ones.
-    Examples for data import settings are provided below:</p>
-<p><img alt="Excel addressing examples" src="media/Image%2050.png" /></p>
-<p>The behavior of data export commands <code>#write</code> and <code>#append</code> is a bit different.
-The starting reference indicates the location of the first element <span class="arithmatex">\(M_{1,1}\)</span> of the output matrix.
-So, even if it is greater than A1, it will not truncate the first rows and columns.
-Unless bound by the ending reference, the entire matrix will be written after the specified location.
-Otherwise, the remaining rows and columns after the ending reference will be truncated.
-For example: <code>#write M to filename.xlsx@Sheet1!C2</code> will produce the following output:</p>
-<p><img alt="Excel example" src="media/Image%2051.png" style="width: 300px;" /></p>
+<li><code>!A1:B2</code> target cell range [optional]:
+    - <code>A1</code> starting cell reference [optional], where A is the column name and 1 is the row index;
+    - <code>:B2</code> ending cell reference as above [optional];<br />
+        Column names start at <strong>A</strong>, and row numbers start at <strong>1</strong>. You can skip any of the starting and ending column/row references.
+        In this case, data is read to the first and last nonempty cells, respectively.
+        The starting cell references can be greater than the ending ones.
+        Examples for data import settings are provided below:<pre><code>  ![Excel addressing examples](media/Image%2050.png)
+
+  The behavior of data export commands `#write` and `#append` is a bit different.
+  The starting reference indicates the location of the first element $M_{1,1}$ of the output matrix.
+  So, even if it is greater than A1, it will not truncate the first rows and columns.
+  Unless bound by the ending reference, the entire matrix will be written after the specified location.
+  Otherwise, the remaining rows and columns after the ending reference will be truncated.
+  For example: `#write M to filename.xlsx@Sheet1!C2` will produce the following output:
+
+  ![Excel example](media/Image%2051.png){style="width: 300px;"}
+</code></pre>
 </li>
 </ul>
-</li>
-<li>
-<p><code>TYPE=R</code> type of matrix/vector for structured storage [optional]. The same rules apply as for text/CSV files above.</p>
-</li>
+<ul>
+<li><code>TYPE=R</code> type of matrix/vector for structured storage [optional]. The same rules apply as for text/CSV files above.</li>
 </ul>
 
 
