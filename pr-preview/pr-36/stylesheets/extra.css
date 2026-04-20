@@ -1,0 +1,27 @@
+/* Inline icons are exported at 2x (HiDPI). Scale them down to
+   match the surrounding text and keep line spacing consistent. */
+img[height="20"] {
+  height: 1.2em;
+  width: auto;
+  vertical-align: text-bottom;
+}
+
+/* Calcpad internal sylesheets */
+.err {
+    color: Crimson;
+    background-color: #FEE;
+}
+
+.ok {
+    color: Green;
+    background-color: #F0FFF0;
+}
+
+.ref {
+    float: right;
+    margin-left: 18pt;
+    color: Green;
+    background-color: #F8FFF0;
+    margin-top: 0;
+    margin-bottom: 0;
+}
