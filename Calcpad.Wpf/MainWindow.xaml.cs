@@ -51,7 +51,7 @@ namespace Calcpad.Wpf
                 // Strip source link hash appended by SDK (e.g. "+abc123def")
                 var plusIndex = Version.IndexOf('+');
                 if (plusIndex >= 0) Version = Version[..plusIndex];
-                Title = " Calcpad VM " + Version;
+                Title = " CalcpadCE " + Version;
                 DocPath = Path + "doc";
                 if (!Directory.Exists(DocPath))
                     DocPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Calcpad";
