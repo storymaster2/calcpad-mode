@@ -1,10 +1,10 @@
-# Calcpad for VS Code
+# CalcpadCE for VS Code
 
-Language support for Calcpad (.cpd files) in Visual Studio Code.
+Language support for CalcpadCE (.cpd files) in Visual Studio Code.
 
 ## Features
 
-- **Syntax Highlighting** - Full syntax highlighting for Calcpad files including:
+- **Syntax Highlighting** - Full syntax highlighting for CalcpadCE files including:
   - Keywords (#if, #else, #for, #while, #def, etc.)
   - Methods ($Root, $Find, $Plot, $Integral, etc.)
   - Built-in functions (sin, cos, sqrt, matrix, etc.)
@@ -13,16 +13,16 @@ Language support for Calcpad (.cpd files) in Visual Studio Code.
   - Strings and comments
 
 - **Auto-completion** - IntelliSense completions for:
-  - All Calcpad keywords
+  - All CalcpadCE keywords
   - Built-in functions
   - Units (SI and imperial)
   - Special methods
 
 - **Hover Documentation** - Hover over functions to see descriptions
 
-- **Run Files** - Run Calcpad files directly from VS Code (Ctrl+Shift+B)
+- **Run Files** - Run CalcpadCE files directly from VS Code (Ctrl+Shift+B)
 
-- **Color Theme** - Includes a Monokai-based color theme optimized for Calcpad
+- **Color Theme** - Includes a Monokai-based color theme optimized for CalcpadCE
 
 ## Installation
 
@@ -57,24 +57,24 @@ Language support for Calcpad (.cpd files) in Visual Studio Code.
 1. Open any `.cpd` file - syntax highlighting is automatic
 2. Start typing to see auto-completions
 3. Hover over functions for documentation
-4. Press `Ctrl+Shift+B` or right-click and select "Run Calcpad File" to execute
+4. Press `Ctrl+Shift+B` or right-click and select "Run CalcpadCE File" to execute
 
 ## Color Theme
 
-To use the included Calcpad Monokai theme:
+To use the included CalcpadCE Monokai theme:
 1. Press `Ctrl+K Ctrl+T` to open the theme picker
-2. Select "Calcpad Monokai"
+2. Select "CalcpadCE Monokai"
 
 ## File Association
 
 The extension automatically associates with `.cpd` files. To manually set the language:
 1. Click on the language indicator in the status bar (bottom right)
-2. Select "Calcpad"
+2. Select "CalcpadCE"
 
 ## Requirements
 
 - VS Code 1.74.0 or higher
-- Calcpad must be installed (https://calcpad.eu/download/calcpad-VM-setup-en-x64.zip)
+- CalcpadCE must be installed (https://calcpad.eu/download/calcpad-VM-setup-en-x64.zip)
 
 ## Known issues
 

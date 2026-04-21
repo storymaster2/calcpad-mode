@@ -51,7 +51,7 @@ namespace Calcpad.Server
         
         private void InitializeComponent()
         {
-            this.Text = "Calcpad Server Settings";
+            this.Text = "CalcpadCE Server Settings";
             this.Size = new Size(500, 320);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;

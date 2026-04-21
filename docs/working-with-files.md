@@ -1,8 +1,8 @@
 ﻿# Working with files
 
-Input data in Calcpad can be saved to disk and reused multiple times.
+Input data in CalcpadCE can be saved to disk and reused multiple times.
 The supported file formats are "**\*.txt**", "**\*.cpd**" and "**\*.cpdz**". Input forms have to be saved to "**\*.cpd**" and "**\*.cpdz**" files and text scripts to "**\*.txt**" files.
-Both "**\*.cpd**" and "**\*.cpdz**" file types are associated with Calcpad and can be opened with double click.
+Both "**\*.cpd**" and "**\*.cpdz**" file types are associated with CalcpadCE and can be opened with double click.
 The main difference between the two formats is that "**\*.cpd**" is a text file and can be edited while "\***.cpdz**" is binary and can be only executed.
 The source code inside is protected from viewing, copying and modification.
 
@@ -25,7 +25,7 @@ A file selection dialog will appear.
 The active file extension is "\*.cpd", by default.
 If you search for "\*.txt" or "\*.cpdz" files, select the corresponding type at the bottom of the dialog.
 Then find the required file and press "**Open**" or double click on the file.
-It will be loaded into Calcpad and the file name will be displayed in the title bar.
+It will be loaded into CalcpadCE and the file name will be displayed in the title bar.
 
 ## Save
 

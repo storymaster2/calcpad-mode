@@ -3705,7 +3705,7 @@ namespace Calcpad.Wpf
 
 
         private static void ShowErrorMessage(string message) =>
-            MessageBox.Show(message, "Calcpad", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(message, "CalcpadCE", MessageBoxButton.OK, MessageBoxImage.Error);
 
         private async void Window_ContentRendered(object sender, EventArgs e)
         {

@@ -1,4 +1,4 @@
-# Calcpad Server MSI Installer
+# CalcpadCE Server MSI Installer
 
 This project includes a complete MSI installer built with WiX Toolset v5.x for the Calcpad.Server Windows tray application.
 
@@ -90,7 +90,7 @@ Calcpad.Server/
 
 ## Usage After Installation
 
-1. **Start Menu**: "Calcpad Server" shortcut
+1. **Start Menu**: "CalcpadCE Server" shortcut
 2. **System Tray**: Look for the "C" icon
 3. **Web Access**: http://localhost:9421
 4. **Settings**: Right-click tray icon → Settings

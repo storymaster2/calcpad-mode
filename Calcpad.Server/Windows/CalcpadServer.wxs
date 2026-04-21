@@ -5,10 +5,10 @@
   <!-- Define version variable -->
   <?define ProductVersion = "1.0.0.0" ?>
   
-  <Package Name="Calcpad Server" 
+  <Package Name="CalcpadCE Server" 
            Language="1033" 
            Version="$(var.ProductVersion)" 
-           Manufacturer="Calcpad" 
+           Manufacturer="CalcpadCE Community" 
            UpgradeCode="A1B2C3D4-E5F6-7890-ABCD-123456789012" 
            InstallScope="perMachine" 
            InstallPrivileges="elevated">
@@ -32,7 +32,7 @@
     
     <MediaTemplate EmbedCab="yes" />
 
-    <Feature Id="ProductFeature" Title="Calcpad Server" Level="1">
+    <Feature Id="ProductFeature" Title="CalcpadCE Server" Level="1">
       <ComponentGroupRef Id="ProductComponents" />
       <ComponentGroupRef Id="StartupComponents" />
     </Feature>
@@ -62,18 +62,18 @@
     
     <!-- Custom completion message -->
     <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" 
-              Value="Calcpad Server has been successfully installed. The application will start automatically with Windows and run in the system tray. Default server URL: http://localhost:9421" />
+              Value="CalcpadCE Server has been successfully installed. The application will start automatically with Windows and run in the system tray. Default server URL: http://localhost:9421" />
 
     <!-- Installation directory structure -->
     <StandardDirectory Id="ProgramFiles6432Folder">
-      <Directory Id="CalcpadFolder" Name="Calcpad">
+      <Directory Id="CalcpadFolder" Name="CalcpadCE">
         <Directory Id="INSTALLFOLDER" Name="Server" />
       </Directory>
     </StandardDirectory>
     
     <!-- Start Menu directory -->
     <StandardDirectory Id="ProgramMenuFolder">
-      <Directory Id="ApplicationProgramsFolder" Name="Calcpad Server" />
+      <Directory Id="ApplicationProgramsFolder" Name="CalcpadCE Server" />
     </StandardDirectory>
 
     <!-- Main application components -->
@@ -94,7 +94,7 @@
         
         <!-- Firewall exception registry (Windows will prompt user) -->
         <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{$(var.ProductCode)}" Action="createAndRemoveOnUninstall">
-          <RegistryValue Name="FirewallException" Value="Calcpad Server uses port 9421 for HTTP API access" Type="string" />
+          <RegistryValue Name="FirewallException" Value="CalcpadCE Server uses port 9421 for HTTP API access" Type="string" />
         </RegistryKey>
       </Component>
       
@@ -125,8 +125,8 @@
       <!-- Start menu shortcut -->
       <Component Id="StartMenuShortcut" Guid="*">
         <Shortcut Id="CalcpadServerStartMenu"
-                  Name="Calcpad Server"
-                  Description="Start Calcpad Server Tray Application"
+                  Name="CalcpadCE Server"
+                  Description="Start CalcpadCE Server Tray Application"
                   Target="[INSTALLFOLDER]Calcpad.Server.exe"
                   WorkingDirectory="INSTALLFOLDER"
                   Icon="CalcpadIcon"
@@ -144,8 +144,8 @@
       <Component Id="DesktopShortcut" Guid="*">
         <Condition>DESKTOP_SHORTCUT</Condition>
         <Shortcut Id="CalcpadServerDesktop"
-                  Name="Calcpad Server"
-                  Description="Start Calcpad Server Tray Application"
+                  Name="CalcpadCE Server"
+                  Description="Start CalcpadCE Server Tray Application"
                   Target="[INSTALLFOLDER]Calcpad.Server.exe"
                   WorkingDirectory="INSTALLFOLDER"
                   Icon="CalcpadIcon"

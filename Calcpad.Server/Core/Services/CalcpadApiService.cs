@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Calcpad.Server.Services
 {
     /// <summary>
-    /// Shared service for configuring and running the Calcpad API server
+    /// Shared service for configuring and running the CalcpadCE API server
     /// This contains all the common logic between Windows and Linux implementations
     /// </summary>
     public static class CalcpadApiService

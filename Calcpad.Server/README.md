@@ -1,11 +1,11 @@
 # Calcpad Server
 
-A cross-platform API server for Calcpad mathematical calculations that provides both Windows tray application and Linux console modes.
+A cross-platform API server for CalcpadCE mathematical calculations that provides both Windows tray application and Linux console modes.
 
 ## Features
 
 - **Cross-Platform**: Runs as a Windows tray application or Linux console application
-- **REST API**: Convert Calcpad code to HTML/PDF with configurable settings
+- **REST API**: Convert CalcpadCE code to HTML/PDF with configurable settings
 - **PDF Generation**: Integrated PDF export using PuppeteerSharp with browser detection
 - **Docker Support**: Linux-compatible Docker container with Chromium
 - **Web Interface**: Built-in sample client for testing
@@ -18,7 +18,7 @@ Calcpad.Server/
 │   ├── Calcpad.Server.Core.csproj  # Core project file
 │   ├── Services/                   # Business services
 │   │   ├── CalcpadApiService.cs    # API configuration
-│   │   ├── CalcpadService.cs       # Calcpad integration
+│   │   ├── CalcpadService.cs       # CalcpadCE integration
 │   │   └── PdfGeneratorService.cs  # PDF generation with PuppeteerSharp
 │   ├── Controllers/                # API controllers
 │   │   └── CalcpadController.cs    # REST endpoints
@@ -88,8 +88,8 @@ The server will start as a console application with:
 ### Docker (Linux)
 **Basic Docker:**
 ```bash
-docker build -t calcpad-server .
-docker run -p 9420:8080 calcpad-server
+docker build -t calcpadce-server .
+docker run -p 9420:8080 calcpadce-server
 ```
 
 **Docker Compose (Recommended):**
@@ -114,7 +114,7 @@ ASPNETCORE_ENVIRONMENT=Production
 Convert Calcpad code to HTML with optional settings.
 
 ### POST /api/calcpad/pdf
-Generate PDF from Calcpad code with optional settings and PDF configuration.
+Generate PDF from CalcpadCE code with optional settings and PDF configuration.
 
 **Request Body:**
 ```json
@@ -143,7 +143,7 @@ Generate PDF from Calcpad code with optional settings and PDF configuration.
 ```
 
 ### GET /api/calcpad/sample
-Get sample Calcpad content for testing.
+Get sample CalcpadCE content for testing.
 
 ## Configuration
 
@@ -174,7 +174,7 @@ dotnet run "http://localhost:9422"
 ### Docker:
 ```bash
 # Change host port
-docker run -p 9421:8080 calcpad-server
+docker run -p 9421:8080 calcpadce-server
 
 # Or using environment variable
 CALCPAD_PORT=9421 docker compose up -d
@@ -229,7 +229,7 @@ Log files are named with the current date: `CalcpadServer-YYYYMMDD.log`
 - **Global Exception Handling**: Catches unhandled exceptions across the entire application
 - **Task Exception Handling**: Captures background task failures
 - **Windows Forms Exception Handling**: Handles UI-specific errors on Windows
-- **API Exception Handling**: Detailed logging of Calcpad conversion errors
+- **API Exception Handling**: Detailed logging of CalcpadCE conversion errors
 - **Graceful Error Display**: User-friendly error messages with log file references
 
 ## Building

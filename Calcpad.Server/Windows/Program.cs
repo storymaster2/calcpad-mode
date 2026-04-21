@@ -16,7 +16,7 @@ TaskScheduler.UnobservedTaskException += (sender, e) =>
 
 try
 {
-    FileLogger.LogInfo("Starting Calcpad Server for Windows");
+    FileLogger.LogInfo("Starting CalcpadCE Server for Windows");
     
     // Set default Windows environment variables if not set
     Environment.SetEnvironmentVariable("CALCPAD_PORT", Environment.GetEnvironmentVariable("CALCPAD_PORT") ?? "9421");
@@ -84,5 +84,5 @@ catch (Exception ex)
 {
     FileLogger.LogCrash(ex, "Windows application");
     MessageBox.Show($"Application error: {ex.Message}\n\nCheck log file for details.", 
-                   "Calcpad Server Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                   "CalcpadCE Server Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 }

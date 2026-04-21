@@ -257,7 +257,7 @@ EndFragment:0000000004";
             }
             catch
             {
-                MessageBox.Show(AppMessages.Error_getting_input_fields_values, "Calcpad", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(AppMessages.Error_getting_input_fields_values, "CalcpadCE", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             return null;
         }
@@ -305,9 +305,9 @@ EndFragment:0000000004";
             settings.ColorMode = CoreWebView2PrintColorMode.Color;
             settings.Duplex = CoreWebView2PrintDuplex.OneSided;
             settings.MediaSize = CoreWebView2PrintMediaSize.Default;
-            settings.HeaderTitle = "Created with Calcpad";
+            settings.HeaderTitle = "Created with CalcpadCE";
             settings.FooterUri = "";
-            settings.PrinterName = "Calcpad";
+            settings.PrinterName = "CalcpadCE";
             return settings;
         }
     }

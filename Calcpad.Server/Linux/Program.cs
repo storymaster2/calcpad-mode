@@ -15,7 +15,7 @@ TaskScheduler.UnobservedTaskException += (sender, e) =>
 
 try
 {
-    FileLogger.LogInfo("Starting Calcpad Server for Linux");
+    FileLogger.LogInfo("Starting CalcpadCE Server for Linux");
     
     // Set default Linux environment variables if not set
     Environment.SetEnvironmentVariable("CALCPAD_PORT", Environment.GetEnvironmentVariable("CALCPAD_PORT") ?? "9420");
@@ -25,7 +25,7 @@ try
     var (app, serverUrl) = CalcpadApiService.CreateConfiguredApp(args);
 
     FileLogger.LogInfo("Starting console application", serverUrl);
-    Console.WriteLine($"Calcpad Server starting at {serverUrl}");
+    Console.WriteLine($"CalcpadCE Server starting at {serverUrl}");
     Console.WriteLine("Press Ctrl+C to stop the server.");
     Console.WriteLine($"API Documentation: {serverUrl}/swagger");
     Console.WriteLine($"Sample Client: Open sample-client.html in a browser");

@@ -15,7 +15,7 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMA
 
 The source code is available on GitHub: <https://github.com/imartincei/CalcpadCE>
 
-Any scripts, developed with Calcpad are property of the respective authors.
+Any scripts, developed with CalcpadCE are property of the respective authors.
 They can be used without additional limitations except those appointed by the authors themselves.
 
 ## Acknowledgments

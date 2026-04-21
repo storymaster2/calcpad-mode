@@ -12,9 +12,9 @@
     <Platforms>AnyCPU</Platforms>
 		<Authors>CalcpadCE Contributors</Authors>
 		<Company>CalcpadCE Community</Company>
-    <PackageId>Calcpad</PackageId>
-    <Product>Calcpad</Product>
-    <AssemblyName>Calcpad</AssemblyName>
+    <PackageId>CalcpadCE</PackageId>
+    <Product>CalcpadCE</Product>
+    <AssemblyName>CalcpadCE</AssemblyName>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
 

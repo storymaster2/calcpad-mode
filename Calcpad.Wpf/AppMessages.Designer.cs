@@ -204,7 +204,7 @@ namespace Calcpad.Wpf {
         /// <summary>
         ///   Looks up a localized string similar to 
         ///
-        ///Calcpad saved your work and tried to recover automatically..
+        ///CalcpadCE saved your work and tried to recover automatically..
         /// </summary>
         public static string ReportUnhandledExceptionAndClose_NoUnsavedData_RecoveryAttempted {
             get {
@@ -215,7 +215,7 @@ namespace Calcpad.Wpf {
         /// <summary>
         ///   Looks up a localized string similar to 
         ///
-        ///There was unsaved data. Calcpad tried, but was unable to recover. If the problem persists, please file an issue at https://github.com/imartincei/CalcpadCE/issues..
+        ///There was unsaved data. CalcpadCE tried, but was unable to recover. If the problem persists, please file an issue at https://github.com/imartincei/CalcpadCE/issues..
         /// </summary>
         public static string ReportUnhandledExceptionAndClose_UnsavedData_RecoveryFailed {
             get {
@@ -269,7 +269,7 @@ namespace Calcpad.Wpf {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unexpected error occurred in Calcpad: &quot;{0}&quot;
+        ///   Looks up a localized string similar to Unexpected error occurred in CalcpadCE: &quot;{0}&quot;
         ///
         ///Source: &quot;{1}&quot;.
         /// </summary>
