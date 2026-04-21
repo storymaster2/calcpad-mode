@@ -61,7 +61,7 @@
         private static string[] PositiveDefiniteTestHelper(string func, string tol) =>
             PositiveDefiniteArray.Concat([
             $"f(a) = {func}(a)",
-            $"r = abs(f(a) - f(hp(a))) ≤ {tol}*abs(f(hp(a)))",
+            TestCalc.CompareWithTolerance("f(a)", "f(hp(a))", tol),
             "mcount(r; 0)"
         ]).ToArray();
 
@@ -69,7 +69,7 @@
             PositiveDefiniteArray.Concat([
             "b = random(fill(vector(n); 1))",
             $"f(a; b) = {func}(a; b)",
-            $"r = abs(f(a; b) - f(hp(a); hp(b))) ≤ {tol}*abs(f(a; b))",
+            TestCalc.CompareWithTolerance("f(a; b)", "f(hp(a); hp(b))", tol),
             "count(r; 0; 1)"
         ]).ToArray();
 
@@ -78,7 +78,7 @@
             "b = random(mfill(matrix(n; 2); 1))",
             $"f(a; b) = {func}(a; b)",
             $"c_hp = {func}(hp(a); hp(b))",
-            $"r = abs(f(a; b) - f(hp(a); hp(b))) ≤ {tol}*abs(f(a; b))",
+            TestCalc.CompareWithTolerance("f(a; b)", "f(hp(a); hp(b))", tol),
             "mcount(r; 0)"
         ]).ToArray();
 
@@ -1103,7 +1103,7 @@
                 WellConditionedMatrix,
                 "c = adj(a)",
                 "c_hp = adj(hp(a))",
-                "r = abs(c - c_hp) ≤ 10^-8*abs(c)",
+                TestCalc.CompareWithTolerance("c", "c_hp", "10^-8"),
                 "mcount(r; 0)"
             ]);
             Assert.Equal(0, result);
@@ -1119,7 +1119,7 @@
                 WellConditionedMatrix,
                 "c = cofactor(a)",
                 "c_hp = cofactor(hp(a))",
-                "r = abs(c - c_hp) ≤ 10^-8*abs(c)",
+                TestCalc.CompareWithTolerance("c", "c_hp", "10^-8"),
                 "mcount(r; 0)"
                 ]);
             Assert.Equal(0, result);
@@ -1176,7 +1176,7 @@
                 WellConditionedMatrix,
                 "c = inverse(a)",
                 "c_hp = inverse(hp(a))",
-                "r = abs(c - c_hp) ≤ 10^-8*abs(c)",
+                TestCalc.CompareWithTolerance("c", "c_hp", "10^-8"),
                 "mcount(r; 0)"
             ]);
             Assert.Equal(0, result);

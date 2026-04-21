@@ -53,7 +53,7 @@
             WellConditionedMatrix,
             $"c = {func}(a)",
             $"c_hp = {func}(hp(a))",
-            $"r = abs(c - c_hp) ≤ {tol}*abs(c)",
+            TestCalc.CompareWithTolerance("c", "c_hp", tol),
             "mcount(r; 0)"
         ];
 
@@ -63,7 +63,7 @@
             "b = random(fill(vector(n); 1))",
             $"c = {func}(a; b)",
             $"c_hp = {func}(hp(a); hp(b))",
-            $"r = abs(c - c_hp) ≤ {tol}*abs(c)",
+            TestCalc.CompareWithTolerance("c", "c_hp", tol),
             "count(r; 0; 1)"
         ];
 
@@ -73,7 +73,7 @@
             "b = random(mfill(matrix(n; 2); 1))",
             $"c = {func}(a; b)",
             $"c_hp = {func}(hp(a); hp(b))",
-            $"r = abs(c - c_hp) ≤ {tol}*abs(c)",
+            TestCalc.CompareWithTolerance("c", "c_hp", tol),
             "mcount(r; 0)"
         ];
 
@@ -929,7 +929,7 @@
                 WellConditionedMatrix,
                 "c = adj(a)",
                 "c_hp = adj(hp(a))",
-                "r = abs(c - c_hp) ≤ 10^-8*abs(c)",
+                TestCalc.CompareWithTolerance("c", "c_hp", "10^-8"),
                 "mcount(r; 0)"
             ]);
             Assert.Equal(0, result);
@@ -945,7 +945,7 @@
                 WellConditionedMatrix,
                 "c = cofactor(a)",
                 "c_hp = cofactor(hp(a))",
-                "r = abs(c - c_hp) ≤ 10^-8*abs(c)",
+                TestCalc.CompareWithTolerance("c", "c_hp", "10^-8"),
                 "mcount(r; 0)"
                 ]);
             Assert.Equal(0, result);
@@ -961,7 +961,7 @@
                 WellConditionedMatrix,
                 "c = eigenvals(a)",
                 "c_hp = eigenvals(hp(a))",
-                "r = abs(c - c_hp) ≤ 10^-12*abs(c)",
+                TestCalc.CompareWithTolerance("c", "c_hp", "10^-12"),
                 "count(r; 0; 1)"
             ]);
             Assert.Equal(0, result);
@@ -1059,7 +1059,7 @@
                 WellConditionedMatrix,
                 "c = inverse(a)",
                 "c_hp = inverse(hp(a))",
-                "r = abs(c - c_hp) ≤ 10^-8*abs(c)",
+                TestCalc.CompareWithTolerance("c", "c_hp", "10^-8"),
                 "mcount(r; 0)"
             ]);
             Assert.Equal(0, result);

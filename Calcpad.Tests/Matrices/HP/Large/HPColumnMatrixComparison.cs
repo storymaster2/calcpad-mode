@@ -78,7 +78,7 @@
                 "a_hp = hp(a)",
                 "b_hp = hp(b)",
                 $"c_hp = a_hp * b_hp",
-                "r = abs(c - c_hp) ≤ 10^-14*abs(c)",
+                TestCalc.CompareWithTolerance("c", "c_hp", "10^-14"),
                 "mcount(r; 0)"
             ]);
             Assert.Equal(0, result);

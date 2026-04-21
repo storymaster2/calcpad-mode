@@ -54,7 +54,7 @@
         private static string[] PositiveDefiniteTestHelper(string func, string tol) =>
             PositiveDefiniteArray.Concat([
             $"f(a) = {func}(a)",
-            $"r = abs(f(a) - f(hp(a))) ≤ {tol}*abs(f(a))",
+            TestCalc.CompareWithTolerance("f(a)", "f(hp(a))", tol),
             "mcount(r; 0)"
         ]).ToArray();
 
@@ -62,7 +62,7 @@
             PositiveDefiniteArray.Concat([
             "b = random(fill(vector(n); 1))",
             $"f(a; b) = {func}(a; b)",
-            $"r = abs(f(a; b) - f(hp(a); hp(b))) ≤ {tol}*abs(f(a; b))",
+            TestCalc.CompareWithTolerance("f(a; b)", "f(hp(a); hp(b))", tol),
             "count(r; 0; 1)"
          ]).ToArray();
 
@@ -70,7 +70,7 @@
             PositiveDefiniteArray.Concat([
             "b = random(mfill(matrix(n; 2); 1))",
             $"f(a; b) = {func}(a; b)",
-            $"r = abs(f(a; b) - f(hp(a); hp(b))) ≤ {tol}*abs(f(a; b))",
+            TestCalc.CompareWithTolerance("f(a; b)", "f(hp(a); hp(b))", tol),
             "mcount(r; 0)"
          ]).ToArray();
 
