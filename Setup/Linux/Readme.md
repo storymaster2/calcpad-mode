@@ -62,7 +62,7 @@ Finally, you can open Sublime Text and Chromium with the following commands:
 subl &
 chromium &
 ```
-Put them side to side. Start a new *.cpd file in Sublime Text or open an example from the /home/&lt;user&gt;/Calcpad folder.
+Put them side to side. Start a new *.cpd file in Sublime Text or open an example from the /usr/share/CalcpadCE/Examples folder.
 Press Ctrl+B to calculate. If everything is OK, the results will show in Chromium:
 
 ![Sublime+Chromium](Images/Sublime+Chromium.png)

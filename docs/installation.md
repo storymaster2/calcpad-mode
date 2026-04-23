@@ -92,7 +92,7 @@ chromium &
 ```
 
 Put them side to side.
-Start a new \*.cpd file in Sublime Text or open an example from the /home/<user\>/Calcpad folder.
+Start a new \*.cpd file in Sublime Text or open an example from the /usr/share/CalcpadCE/Examples folder.
 Press Ctrl+B to calculate.
 If everything is OK, the results will show in Chromium:
 
