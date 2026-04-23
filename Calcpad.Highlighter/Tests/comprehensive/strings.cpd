@@ -56,10 +56,10 @@ s$ ≡ 'hello world'
 ' ===== STRING TABLES =====
 
 ' Table declaration with literal
-#table tbl$ = ['a'; 'b' | 'c'; 'd']
+#string tbl$ = ['a'; 'b' | 'c'; 'd']
 
 ' Table declaration with constructor
-#table tbl2$ = table$(2; 3)
+#string tbl2$ = table$(2; 3)
 
 ' Table element access
 tbl$
@@ -72,20 +72,20 @@ tbl2$
 
 ' Split string into table
 #string csv$ = 'a,b,c|d,e,f'
-#table data$ = split$(csv$; '|'; ',')
+#string data$ = split$(csv$; '|'; ',')
 data$
 ' Join table into string
 #string back$ = join$(data$; '|'; ',')
 #string flat$ = join$(data$; ',')
 
 ' Table in a loop
-#table loopTable$ = table$(3; 1)
+#string loopTable$ = table$(3; 1)
 #for j = 1 : 3
   loopTable$(j; 1) = string$(j)
 #loop
 loopTable$
 ' Cross-type: string$ of matrix creates table
-#table fromMatrix$ = string$([1; 2 | 3; 4])
+#string fromMatrix$ = string$([1; 2 | 3; 4])
 fromMatrix$
 
 ' ===== STRING$ WITH UNITS =====
@@ -105,21 +105,21 @@ upperCase$
 
 ' Vector to table with units
 v = [1; 2; 3]m
-#table vecNoUnits$ = string$(v)
+#string vecNoUnits$ = string$(v)
 vecNoUnits$
-#table vecWithUnits$ = string$(v; 'true')
+#string vecWithUnits$ = string$(v; 'true')
 vecWithUnits$
 
 ' Matrix to table with units
 M = [1; 2 | 3; 4]kN
-#table matNoUnits$ = string$(M)
+#string matNoUnits$ = string$(M)
 matNoUnits$
-#table matWithUnits$ = string$(M; 'true')
+#string matWithUnits$ = string$(M; 'true')
 matWithUnits$
 
 ' ===== ROW/COL TO STRING ARRAY =====
 
-#table opts$ = ['Option A'; 'Option B'; 'Option C' | '1'; '2'; '3']
+#string opts$ = ['Option A'; 'Option B'; 'Option C' | '1'; '2'; '3']
 #string keys$ = rowToStringArray$(opts$; 1)
 keys$
 #string values$ = rowToStringArray$(opts$; 2)
@@ -133,39 +133,39 @@ nested$
 
 ' ===== TABLE MANIPULATION FUNCTIONS =====
 
-#table src$ = ['a'; 'b'; 'c' | 'd'; 'e'; 'f' | 'g'; 'h'; 'i']
+#string src$ = ['a'; 'b'; 'c' | 'd'; 'e'; 'f' | 'g'; 'h'; 'i']
 
 ' rowT$ — extract single row
-#table row2$ = rowT$(src$; 2)
+#string row2$ = rowT$(src$; 2)
 row2$
 
 ' colT$ — extract single column
-#table col3$ = colT$(src$; 3)
+#string col3$ = colT$(src$; 3)
 col3$
 
 ' extractRowsT$ — extract multiple rows
-#table rows13$ = extractRowsT$(src$; [1; 3])
+#string rows13$ = extractRowsT$(src$; [1; 3])
 rows13$
 
 ' extractColsT$ — extract multiple columns
-#table cols12$ = extractColsT$(src$; [1; 2])
+#string cols12$ = extractColsT$(src$; [1; 2])
 cols12$
 
 ' subTable$ — extract rectangular region
-#table sub$ = subTable$(src$; 1; 1; 2; 2)
+#string sub$ = subTable$(src$; 1; 1; 2; 2)
 sub$
 
 ' transposeT$ — swap rows and columns
-#table transposed$ = transposeT$(src$)
+#string transposed$ = transposeT$(src$)
 transposed$
 
 ' augmentT$ — horizontal concatenation
-#table left$ = ['x'; 'y' | 'z'; 'w']
-#table wide$ = augmentT$(left$; left$)
+#string left$ = ['x'; 'y' | 'z'; 'w']
+#string wide$ = augmentT$(left$; left$)
 wide$
 
 ' stackT$ — vertical concatenation
-#table tall$ = stackT$(left$; left$)
+#string tall$ = stackT$(left$; left$)
 tall$
 
 ' ===== TYPEOF$ FUNCTION =====
@@ -191,7 +191,7 @@ typeMat$
 typeStr$
 
 ' Table variable
-#table tblVar$ = ['a'; 'b']
+#string tblVar$ = ['a'; 'b']
 #string typeTbl$ = typeOf$(tblVar$)
 typeTbl$
 

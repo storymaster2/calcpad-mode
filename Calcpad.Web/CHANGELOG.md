@@ -137,9 +137,9 @@ All UI controls emit semantic class names so host themes can style them:
 - `.calcpad-ui-checkbox`
 - `.calcpad-ui-datagrid`
 
-### 1.11 String Mode (`#UI` as Alternative to `#string` / `#table`)
+### 1.11 String Mode (`#UI` as Alternative to `#string`)
 
-Because only one `#xxx` keyword can prefix a given line, `#UI` now doubles as a replacement for `#string` and `#table` whenever the left-hand side is a string variable (name ending with `$`). A new `"mode"` JSON property accepts `"string"` or `"number"`; when omitted, the parser auto-detects string mode from a `$` suffix on the LHS or a string-shaped RHS. String-mode stores the evaluated value into `_stringVariables` (or `_tableVariables` for datagrid) so the variable is usable by name elsewhere in the document, and emits a UI control bound to that variable.
+Because only one `#xxx` keyword can prefix a given line, `#UI` now doubles as a replacement for `#string` whenever the left-hand side is a string variable (name ending with `$`). A new `"mode"` JSON property accepts `"string"` or `"number"`; when omitted, the parser auto-detects string mode from a `$` suffix on the LHS or a string-shaped RHS. String-mode stores the evaluated value into `_stringVariables` (or `_tableVariables` when the RHS is a bracket literal or a table-returning function) so the variable is usable by name elsewhere in the document, and emits a UI control bound to that variable.
 
 **Auto-detected (mode omitted):**
 
@@ -194,17 +194,21 @@ Implemented in [SemanticValidator.cs](../Calcpad.Highlighter/Linter/Validators/S
 
 ## 2. String Variables
 
-A new string type allows text values to be stored, manipulated, compared, and referenced throughout a Calcpad document. Three storage kinds are supported: **scalar string variables** (`#string`), **macros** (`#def`), and **2D string tables** (`#table`). All names must end with `$`.
+A new string type allows text values to be stored, manipulated, compared, and referenced throughout a Calcpad document. Two storage kinds are supported: **scalar string variables** and **2D string tables**, both defined via `#string` (plus multi-line `#def`). The RHS shape decides which storage kind a `#string` line produces — the previously separate `#table` keyword has been retired. All names must end with `$`.
 
 ### 2.1 Inline String Definition (`#string`)
 
 ```
-#string title$ = 'Engineering Report'
-#string author$ = 'John Doe'
+#string title$  = 'Engineering Report'           ' scalar
+#string author$ = 'John Doe'                     ' scalar
+#string matrix$ = ['a'; 'b' | 'c'; 'd']          ' 2x2 string table (bracket literal)
+#string empty$  = table$(3; 4)                   ' 3x4 empty string table
+#string parsed$ = split$('a,b;c,d'; ';'; ',')    ' table from delimited string
 ```
 
 - Defined and evaluated immediately (single-line)
-- RHS is a string expression (literal, concatenation, string function call, variable reference)
+- RHS is a string expression (literal, concatenation, string function call, variable reference), a bracket literal of string cells, or a table-returning function (`table$`, `split$`, `augmentT$`, `stackT$`, `rowT$`, `colT$`, `extractRowsT$`, `extractColsT$`, `subTable$`, `transposeT$`) — the last two groups route to a string table instead of a scalar string
+- Storage kind mirrors how numeric assignments route scalar vs. vector vs. matrix values — one keyword, RHS shape decides
 
 ### 2.2 String Literal Quoting
 
@@ -243,20 +247,22 @@ Reference a string variable with its `$` suffix anywhere in the source. Expansio
 
 Implemented by `ExpressionParser.Strings.ExpandStringVariables()` as part of the preprocessing pipeline.
 
-### 2.6 String Tables (`#table`)
+### 2.6 String Tables (via `#string` with a table-shaped RHS)
 
-Tables are 2D string arrays accessed via `tbl$(row; col)` syntax. Three ways to create one:
+Tables are 2D string arrays accessed via `tbl$(row; col)` syntax. `#string` creates a table whenever its RHS is a bracket literal or a table-returning function:
 
 ```
 ' Literal (| separates rows, ; separates columns)
-#table data$ = ['Name'; 'Age' | 'John'; '30' | 'Jane'; '28']
+#string data$ = ['Name'; 'Age' | 'John'; '30' | 'Jane'; '28']
 
 ' Empty constructor
-#table blank$ = table$(3; 4)
+#string blank$ = table$(3; 4)
 
 ' From a delimited string
-#table parsed$ = split$('a,b;c,d'; ';'; ',')
+#string parsed$ = split$('a,b;c,d'; ';'; ',')
 ```
+
+The routing mirrors how the numeric parser picks scalar vs. vector vs. matrix storage from the RHS without a separate keyword. Prior versions of Calcpad used a dedicated `#table` keyword; it has been retired.
 
 ### 2.7 Table Element Access and Assignment
 
@@ -314,7 +320,7 @@ next = age + 1            ' 31
 ### 2.12 VS Code Integration
 
 - Autocomplete suggests user-defined string variables after the `$` trigger character
-- Snippets for `#string`, `#def`, `#table` appear in the keyword category
+- Snippets for `#string` (scalar and table forms) and `#def` appear in the keyword category
 - Linter validates name/definition syntax via CPD-2201 through CPD-2213 (for macros) and CPD-3301/CPD-3309 (for usage)
 
 ---

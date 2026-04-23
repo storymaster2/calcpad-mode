@@ -1,0 +1,144 @@
+' #UI Keyword - Interactive Controls
+' Covers scalar numeric entries, datagrids, dropdowns, radio groups, checkboxes,
+' and the string-mode branch (entry / dropdown / radio / checkbox / datagrid).
+' Also defines a few reusable CSS classes via #HTML mode so the "style" JSON
+' property on UI controls has something to bind to.
+
+' ─────────────────────────────────────────────────────────────────────────────
+' CSS definitions (HTML mode)
+' ─────────────────────────────────────────────────────────────────────────────
+
+#HTML
+<style>
+    .calcpad-ui-input.highlight {
+        background-color: #fff3b0;
+        border: 1px solid #caa200;
+        padding: 2px 4px;
+        border-radius: 3px;
+    }
+
+    .calcpad-ui-dropdown.primary {
+        font-weight: 600;
+        color: #1b4c88;
+    }
+
+    .calcpad-ui-radio.compact .calcpad-ui-radio-label {
+        margin-right: 4px;
+    }
+
+    .calcpad-ui-checkbox.switch {
+        transform: scale(1.2);
+        accent-color: #2a8f3f;
+    }
+
+    .calcpad-ui-datagrid.bordered {
+        border: 2px solid #444;
+    }
+</style>
+#CPD
+
+' ─────────────────────────────────────────────────────────────────────────────
+' Numeric mode (the original behavior)
+' ─────────────────────────────────────────────────────────────────────────────
+
+' Scalar entry (auto-detected)
+#UI L = 10m
+#UI W = 5m
+A = L * W
+
+' Entry with explicit type and style (binds to .calcpad-ui-input.highlight above)
+#UI {"type": "entry", "style": "highlight"} depth = 2m
+
+' Datagrid from bracket literal (auto-detected rows/cols)
+#UI v = [1; 2; 3]
+#UI M = [1; 2; 3 | 4; 5; 6]
+
+' Datagrid from vector()/matrix() constructors
+#UI Z = vector(5)
+#UI G = matrix(3; 4)
+
+' Datagrid with explicit rows/columns, headers, and style
+#UI {"type": "datagrid", "style": "bordered", "rows": 2, "columns": 3, "columnHeaders": ["a", "b", "c"], "rowHeaders": ["r1", "r2"]} T = [0; 0; 0 | 0; 0; 0]
+
+' Dropdown and radio with numeric values (styled)
+#UI {"type": "dropdown", "style": "primary", "keys": ["Low", "Med", "High"], "values": ["1", "2", "3"]} grade = 1
+#UI {"type": "radio", "style": "compact", "keys": ["Steel", "Concrete"], "values": ["200GPa", "25GPa"]} E = 200GPa
+
+' Checkbox (numeric 0/1 toggle, styled as a switch)
+#UI {"type": "checkbox", "style": "switch"} flag = 1
+
+' ─────────────────────────────────────────────────────────────────────────────
+' String mode - auto-detected ($ suffix on LHS)
+' ─────────────────────────────────────────────────────────────────────────────
+
+' Basic string entry
+#UI greeting$ = 'hello'
+greeting$
+
+' Single- and double-quoted literals are both accepted
+#UI msg$ = "double quoted"
+msg$
+
+' Concatenation on the RHS is evaluated
+#UI first$ = 'John'
+#UI last$  = 'Doe'
+#UI full$  = first$ + ' ' + last$
+full$
+
+' String datagrid (routes to table variable via RHS shape)
+#UI tbl$ = ['a'; 'b' | 'c'; 'd']
+tbl$(1; 1)
+join$(tbl$; '\n'; ' ')
+
+' ─────────────────────────────────────────────────────────────────────────────
+' String mode - explicit "mode" property
+' ─────────────────────────────────────────────────────────────────────────────
+
+' Explicit string entry (styled)
+#UI {"type": "entry", "mode": "string", "style": "highlight"} note$ = 'enter something'
+note$
+
+' String dropdown (styled)
+#UI {"type": "dropdown", "mode": "string", "style": "primary", "keys": ["Red", "Blue", "Green"], "values": ["red", "blue", "green"]} color$ = 'red'
+color$
+
+' String radio (styled)
+#UI {"type": "radio", "mode": "string", "style": "compact", "keys": ["Steel", "Concrete"], "values": ["steel", "concrete"]} material$ = 'steel'
+material$
+
+' String checkbox (stores 'true' or 'false', styled as a switch)
+#UI {"type": "checkbox", "mode": "string", "style": "switch"} enabled$ = 'false'
+enabled$
+
+' String datagrid (explicit, bordered)
+#UI {"type": "datagrid", "mode": "string", "style": "bordered", "columnHeaders": ["Name", "Value"]} props$ = ['length'; '10m' | 'width'; '5m']
+props$(1; 2)
+
+' ─────────────────────────────────────────────────────────────────────────────
+' JSON config stored in a string variable and referenced via expansion
+' ─────────────────────────────────────────────────────────────────────────────
+
+#string UIJSON$ = '{"type": "entry", "style": "highlight"}'
+#UI UIJSON$ depth2 = 2m
+
+' ─────────────────────────────────────────────────────────────────────────────
+' Conditional UI fields
+' ─────────────────────────────────────────────────────────────────────────────
+
+#UI material2$ = 'Steel'
+#if material2$ ≡ 'Steel'
+    #UI E2 = 200GPa
+#else if material2$ ≡ 'Concrete'
+    #UI E2 = 25GPa
+#end if
+
+' ─────────────────────────────────────────────────────────────────────────────
+' Reassignment of UI variables (numeric + string)
+' ─────────────────────────────────────────────────────────────────────────────
+
+#UI x = 1
+x = x + 1
+
+#UI name$ = 'original'
+name$ = 'reassigned'
+name$

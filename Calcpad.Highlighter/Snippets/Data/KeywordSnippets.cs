@@ -205,16 +205,9 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#table",
-                Description = "Define a string table variable",
-                Category = "Modules and Macros",
-                KeywordType = "Keyword"
-            },
-            new SnippetItem
-            {
-                Insert = "#table §$ = §",
-                Description = "Define a string table variable",
-                Label = "#table var$ = ...",
+                Insert = "#string §$ = [§]",
+                Description = "Define a string table variable (RHS shape decides string vs table)",
+                Label = "#string var$ = [...]",
                 Category = "Modules and Macros"
             },
 

@@ -38,7 +38,6 @@
 - Have variables use the tokenizer for recognition when you highlight text when clicking, commas are not handled properly currently.
 - UI state persists across code changes where possible.
 
-
 ## Calcpad.Web
 - Do a deep investigation on what is needed to avoid DDoS, provide extra security to the backend, and provide file size/rate limits/etc.
 - Add exception handling for filesize limits on API endpoints.

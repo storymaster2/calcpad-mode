@@ -310,12 +310,18 @@ namespace Calcpad.Highlighter.Tokenizer
                     // Track #read keyword for element access detection (all modes)
                     if (text.TrimEnd().Equals("#read", StringComparison.OrdinalIgnoreCase))
                         _expectingReadVariable = true;
-                    // Track #string keyword for string variable definition
-                    else if (text.TrimEnd().Equals("#string", StringComparison.OrdinalIgnoreCase))
+                    // Track #string and #UI keywords for string-family variable definitions.
+                    // Since #table has been retired, #string handles both scalar strings
+                    // and string tables; storage kind is picked by RHS shape at runtime.
+                    // The linter registers `name$` as both a string and a table variable
+                    // so references color consistently and table-element access
+                    // (t$(r; c)) continues to parse.
+                    else if (text.TrimEnd().Equals("#string", StringComparison.OrdinalIgnoreCase) ||
+                             text.TrimEnd().Equals("#ui", StringComparison.OrdinalIgnoreCase))
+                    {
                         _expectingStringVariable = true;
-                    // Track #table keyword for string table variable definition
-                    else if (text.TrimEnd().Equals("#table", StringComparison.OrdinalIgnoreCase))
                         _expectingStringTableVariable = true;
+                    }
                     // Keywords clear pending state (same as previous default behavior)
                     ClearPendingDefinitions();
                     break;
@@ -329,11 +335,16 @@ namespace Calcpad.Highlighter.Tokenizer
                     break;
 
                 case TokenType.StringTable:
-                    // String table variable can be a definition (#table t$ = ...) or reassignment (t$ = ...)
+                    // String table variable can be a definition (#string t$ = [...]) or reassignment.
+                    // Since Macros.cs consumed _expectingStringTableVariable when classifying
+                    // this token, re-arm it so the upcoming '=' handler registers the name
+                    // into _definedStringTableVariables (enabling table-element access
+                    // and correct StringTable classification on later references).
                     _pendingVariableName = text;
                     _pendingVariableLine = _state.Line;
                     _pendingFunctionName = null;
                     _pendingFunctionParenDepth = 0;
+                    _expectingStringTableVariable = true;
                     break;
 
                 case TokenType.StringFunction:
@@ -381,13 +392,15 @@ namespace Calcpad.Highlighter.Tokenizer
                                 _result.AddVariableDefinition(_pendingVariableName, _pendingVariableLine);
                                 isFirstDef = true;
 
-                                // Also track as string variable or string table if $ suffixed
+                                // Also track as string variable or string table if $ suffixed.
+                                // With #table retired, register as both so element-access
+                                // syntax (t$(r; c)) resolves and plain references resolve.
+                                // The runtime picks string vs table by the RHS shape.
                                 if (_pendingVariableName.EndsWith("$"))
                                 {
+                                    _definedStringVariables.Add(_pendingVariableName);
                                     if (_expectingStringTableVariable)
                                         _definedStringTableVariables.Add(_pendingVariableName);
-                                    else
-                                        _definedStringVariables.Add(_pendingVariableName);
                                 }
                             }
                         }

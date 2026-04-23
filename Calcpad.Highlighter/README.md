@@ -203,7 +203,7 @@ The `CalcpadTokenizer` converts source code into a stream of typed tokens. It op
 | 27 | Format | Special | Format specifiers (:f2, :e3) |
 | 28 | StringVariable | Strings | String variable references (defined via #string) |
 | 29 | StringFunction | Strings | Built-in string function calls (len$, trim$, concat$) |
-| 30 | StringTable | Strings | String table variable references (defined via #table) |
+| 30 | StringTable | Strings | String table variable references (defined via #string with a bracket or table-function RHS) |
 
 The tokenizer is split across 8 partial class files for maintainability: core logic, comment parsing, macro handling, bracket/operator parsing, type resolution, helpers, definition extraction, and macro collection.
 

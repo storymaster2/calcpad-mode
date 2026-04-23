@@ -107,7 +107,7 @@ All frontends import `calcpad-frontend` as a local dependency and communicate wi
 ### Language
 
 - **Interactive UI Controls** (`#UI` directive) for live variable input and datagrid editing
-- **String Variables** (`#string`, `#def`, `#table`) with inline expansion and comparisons
+- **String Variables and Tables** (`#string`, `#def`) with inline expansion, comparisons, and RHS-based routing to either a scalar string or a 2D string table
 - **Keyword Arguments** in functions and macros with default values
 - **Recursive Includes** with cycle detection, remote URLs, and API route support
 - **Table of Contents** generated from heading comments

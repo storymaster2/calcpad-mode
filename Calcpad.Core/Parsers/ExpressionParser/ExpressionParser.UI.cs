@@ -136,13 +136,16 @@ namespace Calcpad.Core
                 varName = expressionPart[..eqIndex].Trim().ToString();
 
             // Resolve string vs number mode. Explicit "mode" wins; otherwise
-            // autodetect from the variable suffix and RHS shape.
+            // autodetect from the variable suffix and RHS shape (single- or double-quoted
+            // literal, string function call, concatenation, etc.).
             var rhsSpan = eqIndex > 0 ? expressionPart[(eqIndex + 1)..].Trim() : ReadOnlySpan<char>.Empty;
             bool isStringMode = uiMode switch
             {
                 "string" => true,
                 "number" => false,
-                _ => (varName != null && varName.EndsWith('$')) || IsStringExpression(rhsSpan)
+                _ => (varName != null && varName.EndsWith('$'))
+                    || IsStringExpression(rhsSpan)
+                    || IsDoubleQuotedLiteral(rhsSpan)
             };
 
             if (isStringMode)
@@ -247,8 +250,15 @@ namespace Calcpad.Core
                 return KeywordResult.Continue;
             }
 
-            uiType ??= "entry";
             var rhsText = rhsSpan.ToString();
+            // Accept double-quoted string literals on the RHS by normalizing to
+            // Calcpad's native single-quoted form before evaluation.
+            var normalizedRhsText = NormalizeDoubleQuotedLiteral(rhsText);
+            var normalizedRhsSpan = normalizedRhsText.AsSpan();
+
+            // Auto-detect datagrid from the RHS shape when no explicit type was given,
+            // matching the routing #string uses.
+            uiType ??= IsTableRhs(normalizedRhsSpan) ? "datagrid" : "entry";
 
             // Validate dropdown/radio options
             if (uiType == "dropdown" || uiType == "radio")
@@ -300,7 +310,7 @@ namespace Calcpad.Core
                     if (Settings.UiOverrides != null && Settings.UiOverrides.TryGetValue(varName, out var overrideTable))
                         table = ParseStringDatagridOverride(overrideTable);
                     else
-                        table = EvaluateTableExpression(rhsSpan);
+                        table = EvaluateTableExpression(normalizedRhsSpan);
 
                     _tableVariables[varName] = table;
                     _stringVariables.Remove(varName);
@@ -324,7 +334,7 @@ namespace Calcpad.Core
                     if (Settings.UiOverrides != null && Settings.UiOverrides.TryGetValue(varName, out var overrideValue))
                         value = overrideValue ?? string.Empty;
                     else
-                        value = EvaluateStringExpression(rhsSpan);
+                        value = EvaluateStringExpression(normalizedRhsSpan);
 
                     if (uiType == "checkbox")
                         value = NormalizeBooleanString(value);
@@ -374,6 +384,29 @@ namespace Calcpad.Core
             if (v.Length == 0 || v == "0" || v.Equals("false", StringComparison.OrdinalIgnoreCase))
                 return "false";
             return "true";
+        }
+
+        /// <summary>
+        /// True when rhs is a simple double-quoted string literal like "text".
+        /// Used by the auto-detect path so #UI name = "text" resolves to string mode.
+        /// </summary>
+        private static bool IsDoubleQuotedLiteral(ReadOnlySpan<char> rhs)
+        {
+            return rhs.Length >= 2 && rhs[0] == '"' && rhs[^1] == '"';
+        }
+
+        /// <summary>
+        /// Converts a double-quoted literal ("text") to Calcpad's native single-quoted form
+        /// ('text'), escaping any embedded single quotes. Non-literal input is returned unchanged.
+        /// </summary>
+        private static string NormalizeDoubleQuotedLiteral(string rhs)
+        {
+            if (string.IsNullOrEmpty(rhs) || rhs.Length < 2)
+                return rhs;
+            if (rhs[0] != '"' || rhs[^1] != '"')
+                return rhs;
+            var inner = rhs[1..^1].Replace("'", "''");
+            return $"'{inner}'";
         }
 
         private static string[,] ParseStringDatagridOverride(string serialized)

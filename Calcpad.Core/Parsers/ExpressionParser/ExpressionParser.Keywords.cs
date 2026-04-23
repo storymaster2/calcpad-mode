@@ -50,7 +50,6 @@ namespace Calcpad.Core
             Phasor,
             Complex,
             String,
-            Table,
             Ui,
             Html,
             Cpd,
@@ -234,8 +233,6 @@ namespace Calcpad.Core
                     break;
                 case Keyword.String:
                     return ParseKeywordString(s);
-                case Keyword.Table:
-                    return ParseKeywordTable(s);
                 case Keyword.Ui:
                     return ParseKeywordUi(s);
                 case Keyword.Html:
@@ -662,58 +659,85 @@ namespace Calcpad.Core
                 _isMarkdownOn = true;
         }
 
-        private KeywordResult ParseKeywordString(ReadOnlySpan<char> s) =>
-            ParseKeywordStringOrTable(s, "string", 7, (varName, rhs) =>
-            {
-                _stringVariables[varName] = EvaluateStringExpression(rhs);
-                _tableVariables.Remove(varName);
-                _stringVariablesDirty = true;
-            });
-
-        private KeywordResult ParseKeywordTable(ReadOnlySpan<char> s) =>
-            ParseKeywordStringOrTable(s, "table", 6, (varName, rhs) =>
-            {
-                _tableVariables[varName] = EvaluateTableExpression(rhs);
-                _stringVariables.Remove(varName);
-                _tableVariablesDirty = true;
-            });
-
-        private KeywordResult ParseKeywordStringOrTable(
-            ReadOnlySpan<char> s, string keyword, int keywordLength,
-            Action<string, ReadOnlySpan<char>> evaluateAndStore)
+        /// <summary>
+        /// #string handles both scalar strings and string tables. The storage kind is
+        /// inferred from the RHS (bracket literal or a table-producing function such as
+        /// table$(...), split$(...), etc.) — mirroring how the numeric parser routes
+        /// scalar vs. vector/matrix assignments without a separate keyword.
+        /// </summary>
+        private KeywordResult ParseKeywordString(ReadOnlySpan<char> s)
         {
+            const int keywordLength = 7; // "#string"
             var content = s.Length > keywordLength ? s[keywordLength..].Trim() : [];
             if (content.IsEmpty)
             {
-                AppendError(s.ToString(), $"Expected {keyword} variable declaration after #{keyword}.", _currentLine);
+                AppendError(s.ToString(), "Expected string variable declaration after #string.", _currentLine);
                 return KeywordResult.Continue;
             }
 
             var eqPos = content.IndexOf('=');
             if (eqPos < 0)
             {
-                AppendError(s.ToString(), $"Expected '=' in {keyword} variable declaration.", _currentLine);
+                AppendError(s.ToString(), "Expected '=' in string variable declaration.", _currentLine);
                 return KeywordResult.Continue;
             }
 
             var varName = content[..eqPos].Trim().ToString();
             if (varName.Length < 2 || varName[^1] != '$')
             {
-                AppendError(s.ToString(), $"{char.ToUpper(keyword[0])}{keyword[1..]} variable name must end with '$'.", _currentLine);
+                AppendError(s.ToString(), "String variable name must end with '$'.", _currentLine);
                 return KeywordResult.Continue;
             }
 
             var rhs = content[(eqPos + 1)..].Trim();
 
             if (_calculate && _condition.IsSatisfied)
-                evaluateAndStore(varName, rhs);
+            {
+                if (IsTableRhs(rhs))
+                {
+                    _tableVariables[varName] = EvaluateTableExpression(rhs);
+                    _stringVariables.Remove(varName);
+                    _tableVariablesDirty = true;
+                }
+                else
+                {
+                    _stringVariables[varName] = EvaluateStringExpression(rhs);
+                    _tableVariables.Remove(varName);
+                    _stringVariablesDirty = true;
+                }
+            }
 
             if (_isVisible && !_calculate)
             {
-                _sb.Append($"<p{HtmlId}><span class=\"cond\">#{keyword}</span> {System.Web.HttpUtility.HtmlEncode(varName)} = {System.Web.HttpUtility.HtmlEncode(rhs.ToString())}</p>");
+                _sb.Append($"<p{HtmlId}><span class=\"cond\">#string</span> {System.Web.HttpUtility.HtmlEncode(varName)} = {System.Web.HttpUtility.HtmlEncode(rhs.ToString())}</p>");
             }
 
             return KeywordResult.Continue;
+        }
+
+        /// <summary>
+        /// Detects a string-table RHS: a bracket literal of string cells, or one of the
+        /// table-returning string functions. Called from #string and from #UI's string
+        /// branch to decide whether to route the assignment to _tableVariables.
+        /// </summary>
+        private static bool IsTableRhs(ReadOnlySpan<char> rhs)
+        {
+            if (rhs.Length >= 2 && rhs[0] == '[' && rhs[^1] == ']')
+                return true;
+
+            // Table-producing string functions
+            ReadOnlySpan<string> tableFuncs =
+            [
+                "table$(", "split$(", "augmentT$(", "stackT$(",
+                "rowT$(", "colT$(", "extractRowsT$(", "extractColsT$(",
+                "subTable$(", "transposeT$("
+            ];
+            foreach (var fn in tableFuncs)
+            {
+                if (rhs.StartsWith(fn, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         private void ParseKeywordRead(ReadOnlySpan<char> s)

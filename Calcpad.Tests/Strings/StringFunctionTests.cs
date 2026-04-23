@@ -376,7 +376,7 @@ namespace Calcpad.Tests
         [Trait("Category", "Table")]
         public void TableDeclaration_Constructor()
         {
-            var html = RunExpression("#table t$ = table$(2; 3)\nt$(1; 1) = 'hello'\nt$(1; 1)");
+            var html = RunExpression("#string t$ = table$(2; 3)\nt$(1; 1) = 'hello'\nt$(1; 1)");
             Assert.True(OutputContains(html, "hello"));
         }
 
@@ -384,7 +384,7 @@ namespace Calcpad.Tests
         [Trait("Category", "Table")]
         public void TableDeclaration_Literal()
         {
-            var html = RunExpression("#table t$ = ['a'; 'b' | 'c'; 'd']\nt$");
+            var html = RunExpression("#string t$ = ['a'; 'b' | 'c'; 'd']\nt$");
             Assert.True(OutputContains(html, "<table"));
             Assert.True(OutputContains(html, "bordered"));
             Assert.True(OutputContains(html, "<td>a</td>"));
@@ -395,7 +395,7 @@ namespace Calcpad.Tests
         [Trait("Category", "Table")]
         public void TableElementRead()
         {
-            var html = RunExpression("#table t$ = ['hello'; 'world' | 'foo'; 'bar']\nt$(1; 2)");
+            var html = RunExpression("#string t$ = ['hello'; 'world' | 'foo'; 'bar']\nt$(1; 2)");
             Assert.True(OutputContains(html, "world"));
         }
 
@@ -403,7 +403,7 @@ namespace Calcpad.Tests
         [Trait("Category", "Table")]
         public void TableElementWrite()
         {
-            var html = RunExpression("#table t$ = ['a'; 'b' | 'c'; 'd']\nt$(2; 1) = 'changed'\nt$(2; 1)");
+            var html = RunExpression("#string t$ = ['a'; 'b' | 'c'; 'd']\nt$(2; 1) = 'changed'\nt$(2; 1)");
             Assert.True(OutputContains(html, "changed"));
         }
 
@@ -411,7 +411,7 @@ namespace Calcpad.Tests
         [Trait("Category", "Table")]
         public void TableElementWriteWithExpression()
         {
-            var html = RunExpression("#table t$ = table$(2; 2)\nn = 1\nt$(n; n + 1) = 'test'\nt$(1; 2)");
+            var html = RunExpression("#string t$ = table$(2; 2)\nn = 1\nt$(n; n + 1) = 'test'\nt$(1; 2)");
             Assert.True(OutputContains(html, "test"));
         }
 
@@ -425,7 +425,7 @@ namespace Calcpad.Tests
         {
             var html = RunExpression(
                 "#string csv$ = 'a,b,c|d,e,f'\n" +
-                "#table data$ = split$(csv$; '|'; ',')\n" +
+                "#string data$ = split$(csv$; '|'; ',')\n" +
                 "#string back$ = join$(data$; '|'; ',')\n" +
                 "back$");
             Assert.True(OutputContains(html, "a,b,c|d,e,f"));
@@ -436,7 +436,7 @@ namespace Calcpad.Tests
         public void Split_SingleRow()
         {
             var html = RunExpression(
-                "#table t$ = split$('a,b,c'; ''; ',')\n" +
+                "#string t$ = split$('a,b,c'; ''; ',')\n" +
                 "t$(1; 2)");
             Assert.True(OutputContains(html, "b"));
         }
@@ -446,7 +446,7 @@ namespace Calcpad.Tests
         public void Split_SingleColumn()
         {
             var html = RunExpression(
-                "#table t$ = split$('a|b|c'; '|'; '')\n" +
+                "#string t$ = split$('a|b|c'; '|'; '')\n" +
                 "t$(2; 1)");
             Assert.True(OutputContains(html, "b"));
         }
@@ -456,7 +456,7 @@ namespace Calcpad.Tests
         public void Join_Flatten()
         {
             var html = RunExpression(
-                "#table t$ = ['a'; 'b' | 'c'; 'd']\n" +
+                "#string t$ = ['a'; 'b' | 'c'; 'd']\n" +
                 "#string flat$ = join$(t$; ',')\n" +
                 "flat$");
             Assert.True(OutputContains(html, "a,b,c,d"));
@@ -470,7 +470,7 @@ namespace Calcpad.Tests
         [Trait("Category", "Table")]
         public void ValOfTable_SingleCell()
         {
-            var html = RunExpression("#table t$ = ['42']\n#val\nval$(t$) + 1");
+            var html = RunExpression("#string t$ = ['42']\n#val\nval$(t$) + 1");
             Assert.True(OutputContains(html, "43"));
         }
 
@@ -478,7 +478,7 @@ namespace Calcpad.Tests
         [Trait("Category", "Table")]
         public void StringOfMatrix()
         {
-            var html = RunExpression("#table t$ = string$([1; 2 | 3; 4])\nt$(2; 2)");
+            var html = RunExpression("#string t$ = string$([1; 2 | 3; 4])\nt$(2; 2)");
             Assert.True(OutputContains(html, "4"));
         }
 
@@ -491,7 +491,7 @@ namespace Calcpad.Tests
         public void TableInLoop()
         {
             var html = RunExpression(
-                "#table t$ = table$(3; 1)\n" +
+                "#string t$ = table$(3; 1)\n" +
                 "#for i = 1 : 3\n" +
                 "  t$(i; 1) = string$(i)\n" +
                 "#loop\n" +
@@ -510,7 +510,7 @@ namespace Calcpad.Tests
         {
             var html = RunExpression(
                 "#string x$ = 'hello'\n" +
-                "#table x$ = ['a'; 'b']\n" +
+                "#string x$ = ['a'; 'b']\n" +
                 "x$(1; 2)");
             Assert.True(OutputContains(html, "b"));
         }
@@ -520,7 +520,7 @@ namespace Calcpad.Tests
         public void NameCollision_StringOverridesTable()
         {
             var html = RunExpression(
-                "#table x$ = ['a'; 'b']\n" +
+                "#string x$ = ['a'; 'b']\n" +
                 "#string x$ = 'hello'\n" +
                 "x$");
             Assert.True(OutputContains(html, "hello"));

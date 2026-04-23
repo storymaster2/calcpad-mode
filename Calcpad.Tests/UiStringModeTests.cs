@@ -175,5 +175,81 @@ namespace Calcpad.Tests
             Assert.Contains("kept", html);
             Assert.DoesNotContain("skipped", html);
         }
+
+        [Fact]
+        public void DoubleQuotedLiteral_IsAccepted()
+        {
+            var p = NewParser();
+            p.Parse("#UI msg$ = \"test\"\nmsg$");
+            var html = p.HtmlResult;
+            Assert.Contains("data-ui-type=\"entry\"", html);
+            Assert.Contains("data-ui-mode=\"string\"", html);
+            Assert.Contains("value=\"test\"", html);
+            Assert.Contains("test", html);
+        }
+
+        [Fact]
+        public void DoubleQuotedLiteral_AutoDetectsStringMode()
+        {
+            // RHS is double-quoted — auto-detect should pick string mode
+            // even though explicit "mode" is absent.
+            var p = NewParser();
+            p.Parse("#UI msg$ = \"hi\"");
+            var html = p.HtmlResult;
+            Assert.Contains("data-ui-mode=\"string\"", html);
+            Assert.DoesNotContain("class=\"err", html);
+        }
+
+        [Fact]
+        public void MissingDollarSuffix_IsError()
+        {
+            var p = NewParser();
+            p.Parse("#UI string = \"test\"");
+            var html = p.HtmlResult;
+            Assert.Contains("class=\"err", html);
+            Assert.Contains("ending with", html);
+        }
+
+        [Fact]
+        public void StringKeyword_RoutesScalarToStringVariables()
+        {
+            var p = NewParser();
+            p.Parse("#string s$ = 'hello'\ns$");
+            var html = p.HtmlResult;
+            Assert.Contains("hello", html);
+            Assert.DoesNotContain("class=\"err", html);
+        }
+
+        [Fact]
+        public void StringKeyword_RoutesBracketLiteralToTable()
+        {
+            var p = NewParser();
+            p.Parse("#string t$ = ['a';'b' | 'c';'d']\njoin$(t$; ','; ';')");
+            var html = p.HtmlResult;
+            // join$ output confirms the variable was stored as a 2x2 string table.
+            Assert.Contains("a;b,c;d", html);
+            Assert.DoesNotContain("class=\"err", html);
+        }
+
+        [Fact]
+        public void StringKeyword_RoutesTableFunctionToTable()
+        {
+            var p = NewParser();
+            p.Parse("#string t$ = table$(2; 2)\njoin$(t$; ','; ';')");
+            var html = p.HtmlResult;
+            Assert.Contains(";", html);
+            Assert.DoesNotContain("class=\"err", html);
+        }
+
+        [Fact]
+        public void TableKeyword_IsNoLongerRecognized()
+        {
+            var p = NewParser();
+            // #table should now fall through as an unrecognized directive / plain expression
+            // and produce an error, since the keyword has been retired.
+            p.Parse("#table t$ = ['a';'b']");
+            var html = p.HtmlResult;
+            Assert.Contains("class=\"err", html);
+        }
     }
 }

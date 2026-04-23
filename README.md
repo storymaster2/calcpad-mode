@@ -442,11 +442,14 @@ You can add or omit as many "#else if's" as needed. Only one "#else" is allowed.
 &emsp;&emsp;&emsp;...  
 &emsp;&emsp;#end def
 * String variables and string tables:
-&emsp;String variable declaration:
-&emsp;&emsp;#string *name$* = *expression* - assigns a string value to a string variable;
-&emsp;String table declaration:
-&emsp;&emsp;#table *name$* = \[*'a'*; *'b'* | *'c'*; *'d'*\] - creates a string table from a literal;
-&emsp;&emsp;#table *name$* = **table$**(m; n) - creates an empty string table with m rows and n columns;
+&emsp;String variable declaration (scalar or table — the RHS shape decides storage kind):
+&emsp;&emsp;#string *name$* = *expression* - assigns a scalar string value;
+&emsp;&emsp;#string *name$* = \[*'a'*; *'b'* | *'c'*; *'d'*\] - creates a string table from a literal;
+&emsp;&emsp;#string *name$* = **table$**(m; n) - creates an empty string table with m rows and n columns;
+&emsp;&emsp;#string *name$* = **split$**(*text$*; *rowSep$*; *colSep$*) - creates a table by splitting a string;
+&emsp;&emsp;(The former #table keyword is retired; #string now routes to a table whenever the
+&emsp;&emsp;RHS is a bracket literal or a table-returning function such as table$, split$,
+&emsp;&emsp;augmentT$, stackT$, rowT$, colT$, extractRowsT$, extractColsT$, subTable$, transposeT$.)
 &emsp;String table element access:
 &emsp;&emsp;*name$*(i; j) - returns the element at row i, column j;
 &emsp;String table element assignment:
@@ -482,7 +485,7 @@ You can add or omit as many "#else if's" as needed. Only one "#else" is allowed.
 &emsp;&emsp;**mid$**(s$; start; count) - returns count characters starting at position start (1-based);
 &emsp;&emsp;**replace$**(s$; old$; new$) - replaces all occurrences of old$ with new$;
 &emsp;&emsp;**instr$**(start; s$; search$) - returns the 1-based position of search$ in s$ starting from start;
-&emsp;&emsp;**split$**(s$; rowSep$; colSep$) - splits a string into a table (use in #table declaration);
+&emsp;&emsp;**split$**(s$; rowSep$; colSep$) - splits a string into a table (use on the RHS of a #string declaration);
 &emsp;&emsp;**join$**(tbl$; rowSep$; colSep$) - joins a table into a string;
 &emsp;&emsp;**subTable$**(tbl$; r1; c1; r2; c2) - extracts a rectangular sub-table;
 &emsp;&emsp;**extractRowsT$**(tbl$; \[indices\]) - extracts multiple rows by index;
