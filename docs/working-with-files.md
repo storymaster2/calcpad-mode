@@ -38,6 +38,3 @@ Otherwise, it will be rewritten at the current location.
 If you need to save the current file with a different name, select the "**File/Save As…**" menu command.
 A file selection dialog will be displayed.
 Select file path and name and click "**Save**"
-
-Last edited on 06.02.2026 by eng.
-Nedelcho Ganchovski.

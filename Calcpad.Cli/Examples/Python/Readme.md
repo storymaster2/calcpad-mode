@@ -6,7 +6,7 @@ Since version VM 7.1.0 you can access the CalcpadCE math engine from Python via 
 In order to use CalcpadCE with Python, you need to install the following prerequisites:
 1. Python for Windows: https://www.python.org/downloads/
 2. Python.NET by typing the following command in Windows Command Editor: ```pip install pythonnet``` 
-3. Install the latest CalcpadCE: https://calcpad.eu/download/calcpad-VM-setup-en-x64.zip
+3. Install the latest CalcpadCE: https://github.com/imartincei/CalcpadCE/releases
 
 ## Classes and methods
 The available classes and methods you can use in PyCalcpad.dll and PyCalcpadWrapper.py are as follows:
