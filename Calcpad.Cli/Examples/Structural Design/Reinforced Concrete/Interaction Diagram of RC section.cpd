@@ -1,6 +1,6 @@
 "Interaction Diagram for Symmetrically Reinforced RC Section<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm">
-'<img class="side" style="width:150pt;" src="https://calcpad.eu/media/structures/rc/design/column-design.png" alt="column-design.png">
+'<img class="side" style="width:150pt;" src="https://github.com/imartincei/CalcpadCE/blob/main/Images/structures/rc/design/column-design.png?raw=true" alt="column-design.png">
 '<h4>Cross section dimensions</h4>
 'Width -'b = ?'mm, Height -'h = ?'mm
 #post

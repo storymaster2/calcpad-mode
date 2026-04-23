@@ -1,6 +1,6 @@
 "Wind Load for Rectangular Building with Duopitch Roof<hr/><small>According to <strong>Eurocode</strong>: EN 1991-1-4</small>
 '<div style="max-width:180mm">
-'<img style="width:225pt;" class="side" src="https://calcpad.eu/media/structures/loads/wind-3d.png" alt="wind-3d.png">'
+'<img style="width:225pt;" class="side" src="https://github.com/imartincei/CalcpadCE/blob/main/Images/structures/loads/wind-3d.png?raw=true" alt="wind-3d.png">'
 '
 '
 '<h4>Dimensions of the building</h4>
@@ -61,7 +61,7 @@
 	'Area with regular cover of vegetation or buildings or with isolated obstacles with separations of maximum 20 obstacle heights (such as villages, suburban terrain, permanent forest).
 #else if C ≡ 4
 	'Terrain category - IV:'z_0 = 1.0'm,'z_min = 10.0'm,'z_max = 200'm
-	'Area in which at least 15 % of the surface is covered with buildings and their average height exceeds 15 m. 
+	'Area in which at least 15 % of the surface is covered with buildings and their average height exceeds 15 m.
 #else
 	'Invalid category
 #end if
@@ -115,17 +115,17 @@ e = min(L; 2*h_1)'m
 #if e ≤ B
 	'<!--'case = 1'-->
 	e'm ≤'B'm
-	'<img style="width:200pt;" src="https://calcpad.eu/media/structures/loads/wind-0-wall-1.png" alt="wind-0-wall-1.png">'
+	'<img style="width:200pt;" src="https://github.com/imartincei/CalcpadCE/blob/main/Images/structures/loads/wind-0-wall-1.png?raw=true" alt="wind-0-wall-1.png">'
 	e/5'm,'4/5*e'm,'B - e'm
 #else if e < 5*B
 	'<!--'case = 2'-->
 	e'm &lt;'5*B'm
-	'<img style="width:200pt;" src="https://calcpad.eu/media/structures/loads/wind-0-wall-2.png" alt="wind-0-wall-2.png">'
+	'<img style="width:200pt;" src="https://github.com/imartincei/CalcpadCE/blob/main/Images/structures/loads/wind-0-wall-2.png?raw=true" alt="wind-0-wall-2.png">'
 	e/5'm,'B - e/5'm
 #else
 	'<!--'case = 3'-->
 	e'm &ge;'5*B'm
-	'<img style="width:200pt;" src="https://calcpad.eu/media/structures/loads/wind-0-wall-3.png" alt="wind-0-wall-3.png">'
+	'<img style="width:200pt;" src="https://github.com/imartincei/CalcpadCE/blob/main/Images/structures/loads/wind-0-wall-3.png?raw=true" alt="wind-0-wall-3.png">'
 	B'm
 #end if
 h_1/B
@@ -244,7 +244,7 @@ h_1/B
 #equ
 '<br/>
 '<p><b>Roof</b></p>
-'<img style="width:200pt;" src="https://calcpad.eu/media/structures/loads/wind-0-roof.png" alt="wind-0-roof.png">'
+'<img style="width:200pt;" src="https://github.com/imartincei/CalcpadCE/blob/main/Images/structures/loads/wind-0-roof.png?raw=true" alt="wind-0-roof.png">'
 e'm,'e/4'm,'e/10'm
 '(Four possible combinations for minimum and maximum loads on both slopes are required: { + , + }; { + , – }; { – , + }; { – , – })
 '<div class="fold">
@@ -497,17 +497,17 @@ e = min(B; 2*h_1)
 #if e ≤ L
 	'<!--'case = 1'-->
 	e'm ≤'L'm
-	'<img style="width:200pt;" src="https://calcpad.eu/media/structures/loads/wind-90-wall-1.png" alt="wind-90-wall-1.png">'
+	'<img style="width:200pt;" src="https://github.com/imartincei/CalcpadCE/blob/main/Images/structures/loads/wind-90-wall-1.png?raw=true" alt="wind-90-wall-1.png">'
 	e/5'm,'4/5*e'm,'L - e'm
 #else if e < 5*L
 	'<!--'case = 2'-->
 	e'm &lt;'5*L'm
-	'<img style="width:200pt;" src="https://calcpad.eu/media/structures/loads/wind-90-wall-2.png" alt="wind-90-wall-2.png">'
+	'<img style="width:200pt;" src="https://github.com/imartincei/CalcpadCE/blob/main/Images/structures/loads/wind-90-wall-2.png?raw=true" alt="wind-90-wall-2.png">'
 	e/5'm,'L - e/5'm
 #else
 	'<!--'case = 3'-->
 	e'm &ge;'5*L'm
-	'<img style="width:200pt;" src="https://calcpad.eu/media/structures/loads/wind-90-wall-3.png" alt="wind-90-wall-3.png">'
+	'<img style="width:200pt;" src="https://github.com/imartincei/CalcpadCE/blob/main/Images/structures/loads/wind-90-wall-3.png?raw=true" alt="wind-90-wall-3.png">'
 	L'm
 #end if
 h_1/L
@@ -626,7 +626,7 @@ h_1/L
 #equ
 '<br/>
 '<p><b>Roof</b></p>
-'<img style="width:300pt;" src="https://calcpad.eu/media/structures/loads/wind-90-roof.png" alt="wind-90-roof.png">'
+'<img style="width:300pt;" src="https://github.com/imartincei/CalcpadCE/blob/main/Images/structures/loads/wind-90-roof.png?raw=true" alt="wind-90-roof.png">'
 e'm,'e/4'm,'e/10'm
 '<div class="fold">
 '<p><b>Results</b></p>
