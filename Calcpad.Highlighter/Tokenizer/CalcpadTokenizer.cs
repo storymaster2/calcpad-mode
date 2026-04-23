@@ -341,12 +341,9 @@ namespace Calcpad.Highlighter.Tokenizer
                 {
                     ParseUnits(c);
                 }
-                else if (_state.CurrentType == TokenType.Variable && c == '.' &&
-                         IsElementAccessDot(_builder.ToString(), i, len, text))
+                else if (_state.CurrentType == TokenType.Variable && c == '.')
                 {
-                    // Split at dot for element access:
-                    // - Known vector/matrix: var.i or var.(i) - element access takes priority
-                    // - Unknown var followed by .(: explicit element access IF name. is not a function
+                    // Dots after an identifier are always element access. Names cannot contain dots.
                     Append(TokenType.Variable);
                     _state.TokenStartColumn = i;
                     _builder.Append(c);
@@ -433,7 +430,6 @@ namespace Calcpad.Highlighter.Tokenizer
             _pendingFunctionName = null;
             _pendingFunctionLine = -1;
             _pendingFunctionParenDepth = 0;
-            _expressionPendingDefName = null;
             _beforeFirstCodeToken = true;
             _expectingStringVariable = false;
             _expectingStringTableVariable = false;

@@ -13,7 +13,10 @@ export function registerCompletionProvider(
         triggerCharacters: ['#', '$', '.'],
 
         provideCompletionItems(model, position) {
-            const items = snippetService.getAllItems();
+            // Only snippets that define a keyword (function, command, unit, constant,
+            // operator, setting, control keyword). UI-only entries like HTML tags,
+            // markdown syntax, symbols, and block templates are excluded.
+            const items = snippetService.getAllItems().filter(item => !!item.keywordType);
             if (!items || items.length === 0) {
                 return { suggestions: [] };
             }

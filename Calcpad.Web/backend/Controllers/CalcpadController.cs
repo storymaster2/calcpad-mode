@@ -637,6 +637,7 @@ namespace Calcpad.Server.Controllers
                     Label = s.Label,
                     Category = s.Category,
                     QuickType = s.QuickType,
+                    KeywordType = s.KeywordType,
                     Parameters = s.Parameters?.Select(p => new SnippetParameterDto
                     {
                         Name = p.Name,
@@ -683,6 +684,9 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>Quick typing shortcut without ~ prefix (e.g., "a" means ~a → α)</summary>
         public string? QuickType { get; set; }
+
+        /// <summary>Keyword classification ("Function", "Keyword", "Command", "Constant", "Unit", "Operator", "Setting", "ControlBlockKeyword", "EndKeyword"). Null for UI-only snippets.</summary>
+        public string? KeywordType { get; set; }
 
         /// <summary>Parameter info for functions (null for non-functions)</summary>
         public SnippetParameterDto[]? Parameters { get; set; }

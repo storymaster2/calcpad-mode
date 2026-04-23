@@ -20,16 +20,8 @@ namespace Calcpad.Highlighter.Tokenizer
         private bool _expectingStringVariable;  // True after #string keyword
         private bool _expectingStringTableVariable;  // True after #table keyword
 
-        // Tracks which variables support element access (vectors, matrices, #read variables)
-        // Used to decide whether '.' splits a variable name or is part of it
-        private readonly HashSet<string> _elementAccessVariables = new(StringComparer.Ordinal);
-        private bool _hasExternalElementAccessInfo;
-
-        // Tracks the variable name currently being defined (after = seen) so that
-        // encountering '[' in the expression marks it as element-access-capable
-        private string _expressionPendingDefName;
-
-        // Tracks #read keyword in all modes (not just Lint) for element access detection
+        // Tracks #read keyword in all modes (not just Lint) so the next variable can be
+        // recorded as a definition.
         private bool _expectingReadVariable;
 
         // True before the first non-comment code token on a line.
@@ -46,22 +38,6 @@ namespace Calcpad.Highlighter.Tokenizer
         private int _pendingFunctionParenDepth = 0;  // Track paren depth within function definition
 
         /// <summary>
-        /// Sets which variables support element access (vectors, matrices).
-        /// Call this before Tokenize() when you have pre-computed type information.
-        /// This enables correct tokenization of '.' as element access vs variable name.
-        /// </summary>
-        public void SetElementAccessVariables(HashSet<string> vars)
-        {
-            _elementAccessVariables.Clear();
-            if (vars != null)
-            {
-                foreach (var name in vars)
-                    _elementAccessVariables.Add(name);
-            }
-            _hasExternalElementAccessInfo = true;
-        }
-
-        /// <summary>
         /// Resets all definition tracking state for a new tokenization pass.
         /// </summary>
         private void ResetTypeResolutionState()
@@ -74,10 +50,6 @@ namespace Calcpad.Highlighter.Tokenizer
             _definedStringTableVariables.Clear();
             _expectingStringVariable = false;
             _expectingStringTableVariable = false;
-
-            if (!_hasExternalElementAccessInfo)
-                _elementAccessVariables.Clear();
-            _expressionPendingDefName = null;
             _expectingReadVariable = false;
         }
 
@@ -269,10 +241,9 @@ namespace Calcpad.Highlighter.Tokenizer
                     _pendingFunctionName = null;
                     _pendingFunctionParenDepth = 0;
 
-                    // Track #read variables as element-access-capable (vectors/matrices)
+                    // Track #read variables as defined so subsequent uses resolve correctly.
                     if (_expectingReadVariable)
                     {
-                        _elementAccessVariables.Add(text);
                         if (!_definedVariables.Contains(text))
                         {
                             _definedVariables.Add(text);
@@ -421,10 +392,6 @@ namespace Calcpad.Highlighter.Tokenizer
                             }
                         }
 
-                        // Track the variable name for expression type detection
-                        // If [ appears in the expression, this variable supports element access
-                        _expressionPendingDefName = _pendingVariableName;
-
                         // Lint mode: start expression capture before clearing pending state
                         if (_mode == TokenizerMode.Lint)
                             OnEqualsSeenLint(isFirstDef);
@@ -505,46 +472,6 @@ namespace Calcpad.Highlighter.Tokenizer
             return _localVariables.Contains(name) ||
                    _definedVariables.Contains(name) ||
                    CalcpadBuiltIns.CommonConstants.Contains(name);
-        }
-
-        /// <summary>
-        /// Checks if a variable supports element access (is a vector/matrix).
-        /// Function parameters do NOT support .i syntax (must use .(i)),
-        /// so _localVariables is intentionally NOT checked here.
-        /// Only variables explicitly known to be vectors/matrices trigger dot splitting.
-        /// </summary>
-        private bool IsElementAccessVariable(string name)
-        {
-            return _elementAccessVariables.Contains(name);
-        }
-
-        /// <summary>
-        /// Determines whether a dot after a variable should be treated as element access.
-        /// Priority order:
-        /// 1. Known vector/matrix variable: always split (element access via .i or .(i))
-        /// 2. Dot followed by '(' with known function name.: function call wins over element access
-        /// 3. Dot followed by '(' with known variable/param: element access via .(i) syntax
-        /// 4. Otherwise: dot is part of the variable name (subscript notation or new function def)
-        /// </summary>
-        private bool IsElementAccessDot(string name, int dotPos, int len, string text)
-        {
-            // Known vector/matrix - element access always takes priority
-            if (_elementAccessVariables.Contains(name))
-                return true;
-
-            // Check if .( follows - could be element access .(i) or function call name.()
-            if (dotPos + 1 < len && text[dotPos + 1] == '(')
-            {
-                // Global function name. takes priority over local parameter element access
-                if (IsKnownFunction(name + "."))
-                    return false;
-
-                // Known variable or function parameter: .(i) is element access
-                if (IsKnownVariable(name) || _localVariables.Contains(name))
-                    return true;
-            }
-
-            return false;
         }
 
         private bool IsKnownUnit(string name)

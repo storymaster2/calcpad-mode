@@ -115,8 +115,10 @@ export class CalcpadCompletionProvider implements vscode.CompletionItemProvider 
             this.outputChannel.appendLine('[COMPLETION ERROR] ' + error);
         }
 
-        // Add built-in content from insert manager
-        const allInsertItems = this.insertManager.getAllItems();
+        // Add built-in content from insert manager — only snippets that define a keyword
+        // (function, command, unit, constant, operator, setting, control keyword). UI-only
+        // entries like HTML tags, markdown syntax, symbols, and block templates are excluded.
+        const allInsertItems = this.insertManager.getAllItems().filter(item => !!item.keywordType);
         for (const insertItem of allInsertItems) {
             // Filter by search term if provided
             if (!word || this.matchesSearchTerm(insertItem, word)) {

@@ -7,16 +7,18 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 {
     public class NamingValidator
     {
-        public void Validate(Stage3Context stage3, LinterResult result)
+        public void Validate(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
-            ValidateVariableNaming(stage3, result);
-            ValidateFunctionNaming(stage3, result);
+            ValidateVariableNaming(stage3, result, tokenProvider);
+            ValidateFunctionNaming(stage3, result, tokenProvider);
         }
 
-        private void ValidateVariableNaming(Stage3Context stage3, LinterResult result)
+        private void ValidateVariableNaming(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var line = stage3.Lines[i];
 
                 if (LineParser.ShouldSkipLine(line))
@@ -38,10 +40,12 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             }
         }
 
-        private void ValidateFunctionNaming(Stage3Context stage3, LinterResult result)
+        private void ValidateFunctionNaming(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var line = stage3.Lines[i];
 
                 if (LineParser.ShouldSkipLine(line))

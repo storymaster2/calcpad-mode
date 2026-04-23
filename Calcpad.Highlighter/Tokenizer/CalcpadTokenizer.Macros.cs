@@ -694,8 +694,6 @@ namespace Calcpad.Highlighter.Tokenizer
                 var tokenizer = new CalcpadTokenizer();
                 if (_hasExternalMacroCommentInfo)
                     tokenizer.SetMacroCommentParameters(_macroCommentParameters, _macroParameterOrder, _macroBodies);
-                if (_hasExternalElementAccessInfo)
-                    tokenizer.SetElementAccessVariables(_elementAccessVariables);
                 var result = tokenizer.TokenizeSingleLine(expanded, _state.Line);
 
                 // Extract tokens overlapping with the argument region in the expanded string

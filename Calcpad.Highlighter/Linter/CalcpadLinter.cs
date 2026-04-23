@@ -54,25 +54,6 @@ namespace Calcpad.Highlighter.Linter
             // Create tokenizer for stage 3 content
             var tokenProvider = new TokenizedLineProvider();
 
-            // Pass element-access-capable variables from TypeTracker to the tokenizer
-            // so it correctly handles '.' as element access vs variable name
-            if (stage3Context.TypeTracker != null)
-            {
-                var elementAccessVars = new HashSet<string>(System.StringComparer.Ordinal);
-                foreach (var kvp in stage3Context.TypeTracker.Variables)
-                {
-                    // Only include variables with KNOWN vector/matrix types for dot-splitting.
-                    // Unknown types should NOT trigger element access since they may be scalars
-                    // with dotted names (e.g. k.1 where k=5 and k.1 is a separate variable).
-                    var t = kvp.Value.Type;
-                    if (t == Models.CalcpadType.Vector ||
-                        t == Models.CalcpadType.Matrix ||
-                        t == Models.CalcpadType.Various)
-                        elementAccessVars.Add(kvp.Key);
-                }
-                tokenProvider.SetElementAccessVariables(elementAccessVars);
-            }
-
             // Pass macro comment parameters from Stage2 so that macro call arguments
             // are correctly tokenized as Comment vs expression
             tokenProvider.SetMacroCommentParameters(
@@ -235,7 +216,7 @@ namespace Calcpad.Highlighter.Linter
         private void ValidateStage3(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
             _balanceValidator.Validate(stage3, result, tokenProvider);
-            _namingValidator.Validate(stage3, result);
+            _namingValidator.Validate(stage3, result, tokenProvider);
             _usageValidator.Validate(stage3, result, tokenProvider);
             _semanticValidator.Validate(stage3, result, tokenProvider);
             _functionTypeValidator.Validate(stage3, result, tokenProvider);

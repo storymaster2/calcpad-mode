@@ -1,37 +1,31 @@
 ' =========================================================
-' Element Access vs Variable Name Dot Handling Test
+' Element Access Test
 ' =========================================================
-' Tests that the tokenizer correctly distinguishes between:
-' 1. Dots in variable names (subscript notation): k.1, v.x, GC_r,NS.1
-' 2. Dots as element access operators: vec.i, mat.(i; j)
+' Dots are reserved exclusively for vector/matrix element access.
+' They are NOT permitted inside variable or function names.
+' For multi-part names, use comma separators (e.g., k,1).
 '
 ' Rules:
-' - If a variable is scalar (or unknown type), `.` is part of the variable name
-' - If a variable is a vector/matrix, `.` is an element access operator
-' - #read variables are always vectors/matrices
-' - Function parameters do NOT support .i syntax - must use .(i)
-' - Command block local variables that are vectors DO support .i syntax
+' - `.` after an identifier is always element access
+' - Comma is a valid identifier character (k,1 is one name)
+' - `.(i)` and `.i` both work for element access on vectors
+' - `M.(i; j)` accesses a matrix cell
 
 ' ---------------------------------------------------------
-' SECTION 1: Scalar variables with dots in names
-' These should NOT be split at the dot - the dot is part of the name
-' Expected: No errors
+' SECTION 1: Comma-separated scalar names (replaces dotted scalars)
 ' ---------------------------------------------------------
 
 k = 5
-k.1 = 10
-k.2 = 20
-result.1 = k.1 + k.2
-k.x = k.1 * 2
-k.long.name = 100
+k,1 = 10
+k,2 = 20
+result,1 = k,1 + k,2
+k,x = k,1 * 2
+k,long,name = 100
 
-' Using dotted scalar variables in expressions
-total.scalars = k.1 + k.2 + k.x
+total,scalars = k,1 + k,2 + k,x
 
 ' ---------------------------------------------------------
 ' SECTION 2: Vector definitions with element access
-' After defining a vector, `.` should be element access
-' Expected: No errors
 ' ---------------------------------------------------------
 
 vec = [1; 2; 3; 4; 5]
@@ -39,13 +33,11 @@ first = vec.1
 second = vec.2
 last = vec.(len(vec))
 
-' Vector with expression index
 i = 3
 elem = vec.i
 
 ' ---------------------------------------------------------
 ' SECTION 3: Matrix definitions with element access
-' Expected: No errors
 ' ---------------------------------------------------------
 
 M = [1; 2; 3 | 4; 5; 6 | 7; 8; 9]
@@ -53,86 +45,68 @@ cell = M.(1; 2)
 row1col3 = M.(1; 3)
 
 ' ---------------------------------------------------------
-' SECTION 4: Vector variable with dotted name + element access
-' v.1 is a vector, so v.1.1 means element 1 of v.1
-' Expected: No errors
+' SECTION 4: Vectors with comma-separated names
+' v,1 is a single variable name; element access is v,1.k
 ' ---------------------------------------------------------
 
-v.1 = [10; 20; 30]
-v.1_first = v.1.1
-v.1_second = v.1.2
-v.1_last = v.1.(len(v.1))
+v,1 = [10; 20; 30]
+v,1_first = v,1.1
+v,1_second = v,1.2
+v,1_last = v,1.(len(v,1))
 
-' Another dotted vector
-data.set = [100; 200; 300; 400]
-data.set_elem = data.set.2
+data,set = [100; 200; 300; 400]
+data,set_elem = data,set.2
 
 ' ---------------------------------------------------------
-' SECTION 5: Function params use .(i) syntax, NOT .i
-' Function params do NOT support direct .i element access.
-' The .i form looks for a global variable with .i suffix.
-' Must use .(i) for element access on function params.
-' Expected: No errors
+' SECTION 5: Element access on function parameters
+' Functions cannot have dots in their names, so a dot after an
+' identifier is unambiguously element access — both .i and .(i)
+' work for parameters.
 ' ---------------------------------------------------------
 
-' .(i) syntax works for function params
 getFirst(vect) = vect.(1)
 getElement(vect; idx) = vect.(idx)
 sumFirstTwo(vect) = vect.(1) + vect.(2)
 
-' Multi-param function with .(i) syntax
 addElements(a_vec; b_vec; idx) = a_vec.(idx) + b_vec.(idx)
 
-' Calling these functions
 r1 = getFirst(vec)
 r2 = getElement(vec; 3)
 r3 = sumFirstTwo(vec)
 r4 = addElements(vec; vec; 2)
 
 ' ---------------------------------------------------------
-' SECTION 6: $Inline and $Block command blocks with element access
-' Command block local variables that are vectors support .i syntax.
-' Function params do NOT support .i syntax (must use .(i)).
-' Expected: No errors
+' SECTION 6: $Inline / $Block command blocks with element access
 ' ---------------------------------------------------------
 
-' Simple set function - helperV is assigned from param (use .(i) for param access)
 set(idx; v_param; val) = $Inline{helperV = v_param; helperV.(idx) = val; v_param = helperV}
 
-' appendV - resize creates a vector, so v_param supports .(i)
 appendV(v_param; val) = $Inline{ _
 myLen = len(v_param); _
 v_param = resize(v_param; myLen + 1); _
 v_param.(myLen + 1) = val; v_param}
 
-' Function using $Repeat with @ loop variable and .(j) for param
 sumVector(v_param) = $Inline{ _
 total = 0; _
 $Repeat{total = total + v_param.(j) @ j = 1 : len(v_param)}; _
 total}
 
-' Matrix element access in command block (.(k; k) already correct)
 matTrace(mat) = $Inline{ _
 total = 0; _
 $Repeat{total = total + mat.(k; k) @ k = 1 : n_rows(mat)}; _
 total}
 
-' filterVecAnd pattern from helper.cpd - the real-world case
-' v1_ind is a LOCAL variable assigned from find() which returns a vector
-' So v1_ind.i IS element access (locally defined vector, not a parameter)
 filterVecAnd(vf; v1; v2; v1_val; v2_val) = $Inline{ _
 v1_ind = find(v1; v1_val; 1); v2_ind = find(v2; v2_val; 1); _
 result = vector(0); _
 $Repeat{if(len(find(v2_ind; v1_ind.i; 1)) ≡ 0; 0; take(v1_ind.i; vf)) @ i = 1 : len(v1_ind)}; _
 result}
 
-' Command block with locally defined vector using bracket literal
 blockWithLocalVec(n) = $Inline{ _
 localV = [1; 2; 3]; _
 val = localV.n; _
 val}
 
-' Calling command block functions
 test_vec = [10; 20; 30; 40; 50]
 set(2; test_vec; 99)
 appendV(test_vec; 60)
@@ -143,43 +117,33 @@ mat_tr = matTrace(test_mat)
 
 ' ---------------------------------------------------------
 ' SECTION 7: #read variables (always vectors/matrices)
-' #read imports data as vector or matrix, so element access is valid
-' Expected: No errors (commented out since no actual CSV files)
 ' ---------------------------------------------------------
 
 ' Uncomment to test with actual files:
 '#read csv_data from testdata.csv
-' After #read, csv_data.1 would be element access, not variable name
+' After #read, csv_data.1 is element access
 
 ' ---------------------------------------------------------
-' SECTION 8: Mixed scenarios - scalars and vectors with same prefix
-' Expected: No errors
+' SECTION 8: Comma-separated names alongside vectors
 ' ---------------------------------------------------------
 
-' Scalar with dotted name
-p.x = 5
-p.y = 10
+p,x = 5
+p,y = 10
 
-' Vector with dotted name
-p.coords = [5; 10; 15]
+p,coords = [5; 10; 15]
 
-' Element access on the vector, not the scalar
-p.coords_first = p.coords.1
+p,coords_first = p,coords.1
 
-' Use scalar dotted names in expressions with vectors
-combined = p.x + p.coords.1
+combined = p,x + p,coords.1
 
 ' ---------------------------------------------------------
-' SECTION 9: Commas in variable names (command block regression test)
-' Commas are valid in Calcpad variable names
-' Expected: No errors
+' SECTION 9: Commas in variable names (existing behavior)
 ' ---------------------------------------------------------
 
 GC_r,NS = 5
 GC_r,EW = 10
 total_GC = GC_r,NS + GC_r,EW
 
-' Command block function using comma-containing variables
 calcWithCommas(factor) = $Inline{ _
 local,var = factor * 2; _
 result = local,var + 1; _

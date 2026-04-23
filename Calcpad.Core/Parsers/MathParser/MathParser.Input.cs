@@ -142,24 +142,19 @@ namespace Calcpad.Core
                             if (c == '.' && tt == TokenTypes.Variable)
                             {
                                 var s = tokenLiteral.ToString();
-                                t = MakeVectorOrMatrixToken(s);
-                                if (t is not null)
-                                {
-                                    if (_isComplex)
-                                        throw Exceptions.ComplexVectorsAndMatricesNotSupported();
+                                t = MakeVectorOrMatrixToken(s) ?? new VariableToken(s, null) { Type = TokenTypes.Array };
+                                if (_isComplex && (t.Type == TokenTypes.Vector || t.Type == TokenTypes.Matrix))
+                                    throw Exceptions.ComplexVectorsAndMatricesNotSupported();
 
-                                    tokens.Enqueue(t);
-                                    tokenLiteral.Reset(i);
-                                    tt = t.Type switch
-                                    {
-                                        TokenTypes.Vector => TokenTypes.VectorIndex,
-                                        TokenTypes.Matrix => TokenTypes.MatrixIndex,
-                                        _ => TokenTypes.ArrayIndex
-                                    };
-                                    tokens.Enqueue(new Token(s, tt));
-                                }
-                                else
-                                    tokenLiteral.Expand();
+                                tokens.Enqueue(t);
+                                tokenLiteral.Reset(i);
+                                tt = t.Type switch
+                                {
+                                    TokenTypes.Vector => TokenTypes.VectorIndex,
+                                    TokenTypes.Matrix => TokenTypes.MatrixIndex,
+                                    _ => TokenTypes.ArrayIndex
+                                };
+                                tokens.Enqueue(new Token(s, tt));
                             }
                             else
                                 tokenLiteral.Expand();

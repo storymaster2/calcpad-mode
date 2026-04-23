@@ -120,6 +120,7 @@ export class CalcpadSnippetService {
             description: snippet.description,
             categoryPath: snippet.category.replace(/\//g, ' > '),
             quickType: snippet.quickType,
+            keywordType: snippet.keywordType,
             parameters: snippet.parameters
         };
     }

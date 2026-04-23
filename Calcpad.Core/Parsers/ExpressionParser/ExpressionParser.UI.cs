@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.Json;
+using System.Web;
 
 namespace Calcpad.Core
 {
@@ -11,6 +13,7 @@ namespace Calcpad.Core
         {
             public string Type { get; set; }        // "entry", "datagrid", "dropdown", "radio", "checkbox"
             public string Style { get; set; }       // CSS class (nullable)
+            public string Mode { get; set; }        // "string" | "number" (resolved)
             public string VariableName { get; set; } // Extracted from expression
             public int Rows { get; set; }           // For datagrid (0 = auto-detect)
             public int Columns { get; set; }        // For datagrid (0 = auto-detect)
@@ -28,8 +31,11 @@ namespace Calcpad.Core
         /// JSON block is optional — type/size is auto-detected from the expression if omitted.
         /// Always computes _uiSkipChars so the prefix is stripped.
         /// Only sets pending UI state when Settings.EnableUi is true.
+        /// When the RHS is a string expression (or the LHS name ends with '$'),
+        /// the keyword stores the value into _stringVariables / _tableVariables (like #string / #table)
+        /// and returns KeywordResult.Continue so the math parser does not tokenize a string literal.
         /// </summary>
-        private void ParseKeywordUi(ReadOnlySpan<char> s)
+        private KeywordResult ParseKeywordUi(ReadOnlySpan<char> s)
         {
             // Expand string variables so e.g. #UI UIJSON$ becomes #UI {"type": "entry"}
             var expanded = s.ToString();
@@ -43,6 +49,7 @@ namespace Calcpad.Core
 
             string uiType = null;
             string uiStyle = null;
+            string uiMode = null;
             string[] uiColumnHeaders = null;
             string[] uiRowHeaders = null;
             string[] uiKeys = null;
@@ -59,7 +66,7 @@ namespace Calcpad.Core
                     AppendError(s.ToString(), "Improper format for #UI keyword. Missing closing brace '}'.", _currentLine);
                     _uiSkipChars = s.Length;
                     _pendingUi = null;
-                    return;
+                    return KeywordResult.None;
                 }
 
                 var jsonString = expanded[cursor..(braceEnd + 1)];
@@ -73,6 +80,8 @@ namespace Calcpad.Core
                         ? tp.GetString() : null;
                     uiStyle = root.TryGetProperty("style", out var sp) && sp.ValueKind == JsonValueKind.String
                         ? sp.GetString() : null;
+                    uiMode = root.TryGetProperty("mode", out var mp) && mp.ValueKind == JsonValueKind.String
+                        ? mp.GetString() : null;
                     uiRows = root.TryGetProperty("rows", out var rp) && rp.ValueKind == JsonValueKind.Number
                         ? rp.GetInt32() : 0;
                     uiColumns = root.TryGetProperty("columns", out var cp) && cp.ValueKind == JsonValueKind.Number
@@ -92,7 +101,7 @@ namespace Calcpad.Core
                     // Still compute skip chars so the expression can be parsed
                     ComputeSkipCharsFromOriginal(s);
                     _pendingUi = null;
-                    return;
+                    return KeywordResult.None;
                 }
 
                 // Compute _uiSkipChars from the ORIGINAL span
@@ -119,12 +128,6 @@ namespace Calcpad.Core
                     _uiSkipChars++;
             }
 
-            if (!Settings.EnableUi)
-            {
-                _pendingUi = null;
-                return;
-            }
-
             // Extract variable name and RHS from the expression after the UI block
             var expressionPart = s[_uiSkipChars..];
             var eqIndex = expressionPart.IndexOf('=');
@@ -132,22 +135,45 @@ namespace Calcpad.Core
             if (eqIndex > 0)
                 varName = expressionPart[..eqIndex].Trim().ToString();
 
+            // Resolve string vs number mode. Explicit "mode" wins; otherwise
+            // autodetect from the variable suffix and RHS shape.
+            var rhsSpan = eqIndex > 0 ? expressionPart[(eqIndex + 1)..].Trim() : ReadOnlySpan<char>.Empty;
+            bool isStringMode = uiMode switch
+            {
+                "string" => true,
+                "number" => false,
+                _ => (varName != null && varName.EndsWith('$')) || IsStringExpression(rhsSpan)
+            };
+
+            if (isStringMode)
+            {
+                return ParseKeywordUiString(
+                    s, varName, rhsSpan,
+                    uiType, uiStyle, uiRows, uiColumns,
+                    uiColumnHeaders, uiRowHeaders, uiKeys, uiValues);
+            }
+
+            if (!Settings.EnableUi)
+            {
+                _pendingUi = null;
+                return KeywordResult.None;
+            }
+
             // Auto-detect type and/or grid size from the RHS
             if (eqIndex > 0)
             {
-                var rhs = expressionPart[(eqIndex + 1)..].Trim();
                 if (uiType == null)
                 {
                     // No explicit type — infer from expression
-                    uiType = IsDatagridRhs(rhs) ? "datagrid" : "entry";
+                    uiType = IsDatagridRhs(rhsSpan) ? "datagrid" : "entry";
                 }
                 // Fill in missing rows/columns for datagrid from the expression
                 if (uiType == "datagrid" && (uiRows == 0 || uiColumns == 0))
                 {
-                    if (rhs.Length >= 2 && rhs[0] == '[' && rhs[^1] == ']')
-                        AutoDetectGridSize(rhs, ref uiRows, ref uiColumns);
+                    if (rhsSpan.Length >= 2 && rhsSpan[0] == '[' && rhsSpan[^1] == ']')
+                        AutoDetectGridSize(rhsSpan, ref uiRows, ref uiColumns);
                     else
-                        AutoDetectGridSizeFromFunction(rhs, ref uiRows, ref uiColumns);
+                        AutoDetectGridSizeFromFunction(rhsSpan, ref uiRows, ref uiColumns);
                 }
             }
 
@@ -160,13 +186,13 @@ namespace Calcpad.Core
                 {
                     AppendError(s.ToString(), $"#UI {uiType}: both 'keys' and 'values' arrays are required.", _currentLine);
                     _pendingUi = null;
-                    return;
+                    return KeywordResult.None;
                 }
                 if (uiKeys.Length != uiValues.Length)
                 {
                     AppendError(s.ToString(), $"#UI {uiType}: 'keys' and 'values' arrays must have the same length.", _currentLine);
                     _pendingUi = null;
-                    return;
+                    return KeywordResult.None;
                 }
             }
 
@@ -174,6 +200,7 @@ namespace Calcpad.Core
             {
                 Type = uiType,
                 Style = uiStyle,
+                Mode = "number",
                 VariableName = varName,
                 Rows = uiRows,
                 Columns = uiColumns,
@@ -182,6 +209,302 @@ namespace Calcpad.Core
                 Keys = uiKeys,
                 Values = uiValues
             };
+            return KeywordResult.None;
+        }
+
+        /// <summary>
+        /// Handles the string-mode branch of #UI. Stores the value into _stringVariables
+        /// (or _tableVariables for datagrid) and emits HTML with UI control markup.
+        /// Returns KeywordResult.Continue so the math parser does not try to tokenize
+        /// a string literal.
+        /// </summary>
+        private KeywordResult ParseKeywordUiString(
+            ReadOnlySpan<char> s,
+            string varName,
+            ReadOnlySpan<char> rhsSpan,
+            string uiType,
+            string uiStyle,
+            int uiRows,
+            int uiColumns,
+            string[] uiColumnHeaders,
+            string[] uiRowHeaders,
+            string[] uiKeys,
+            string[] uiValues)
+        {
+            if (string.IsNullOrEmpty(varName) || !varName.EndsWith('$'))
+            {
+                AppendError(s.ToString(), "#UI in string mode requires a variable name ending with '$'.", _currentLine);
+                _pendingUi = null;
+                _uiSkipChars = 0;
+                return KeywordResult.Continue;
+            }
+
+            if (rhsSpan.IsEmpty)
+            {
+                AppendError(s.ToString(), "Expected '=' in #UI string variable declaration.", _currentLine);
+                _pendingUi = null;
+                _uiSkipChars = 0;
+                return KeywordResult.Continue;
+            }
+
+            uiType ??= "entry";
+            var rhsText = rhsSpan.ToString();
+
+            // Validate dropdown/radio options
+            if (uiType == "dropdown" || uiType == "radio")
+            {
+                if (uiKeys == null || uiValues == null)
+                {
+                    AppendError(s.ToString(), $"#UI {uiType}: both 'keys' and 'values' arrays are required.", _currentLine);
+                    _pendingUi = null;
+                    _uiSkipChars = 0;
+                    return KeywordResult.Continue;
+                }
+                if (uiKeys.Length != uiValues.Length)
+                {
+                    AppendError(s.ToString(), $"#UI {uiType}: 'keys' and 'values' arrays must have the same length.", _currentLine);
+                    _pendingUi = null;
+                    _uiSkipChars = 0;
+                    return KeywordResult.Continue;
+                }
+            }
+
+            // Preview mode: emit #UI-labeled preview HTML and do not store.
+            if (!_calculate)
+            {
+                if (_isVisible)
+                {
+                    var attrs = Settings.EnableUi
+                        ? BuildUiStringAttributes(uiType, uiStyle, varName, uiRows, uiColumns)
+                        : string.Empty;
+                    _sb.Append($"<p{HtmlId}{attrs}><span class=\"cond\">#UI</span> {HttpUtility.HtmlEncode(varName)} = {HttpUtility.HtmlEncode(rhsText)}</p>");
+                }
+                _pendingUi = null;
+                _uiSkipChars = 0;
+                return KeywordResult.Continue;
+            }
+
+            // Calculate mode: only act when the enclosing condition is satisfied.
+            if (!_condition.IsSatisfied)
+            {
+                _pendingUi = null;
+                _uiSkipChars = 0;
+                return KeywordResult.Continue;
+            }
+
+            try
+            {
+                if (uiType == "datagrid")
+                {
+                    string[,] table;
+                    if (Settings.UiOverrides != null && Settings.UiOverrides.TryGetValue(varName, out var overrideTable))
+                        table = ParseStringDatagridOverride(overrideTable);
+                    else
+                        table = EvaluateTableExpression(rhsSpan);
+
+                    _tableVariables[varName] = table;
+                    _stringVariables.Remove(varName);
+                    _tableVariablesDirty = true;
+
+                    if (uiRows == 0) uiRows = table.GetLength(0);
+                    if (uiColumns == 0) uiColumns = table.GetLength(1);
+
+                    if (_isVisible && Settings.EnableUi)
+                    {
+                        BuildUiStringDatagrid(varName, table, uiStyle, uiRows, uiColumns, uiColumnHeaders, uiRowHeaders);
+                    }
+                    else if (_isVisible)
+                    {
+                        _sb.Append($"<p{HtmlId}>{HttpUtility.HtmlEncode(varName)} = {RenderTableAsHtml(table)}</p>");
+                    }
+                }
+                else
+                {
+                    string value;
+                    if (Settings.UiOverrides != null && Settings.UiOverrides.TryGetValue(varName, out var overrideValue))
+                        value = overrideValue ?? string.Empty;
+                    else
+                        value = EvaluateStringExpression(rhsSpan);
+
+                    if (uiType == "checkbox")
+                        value = NormalizeBooleanString(value);
+
+                    _stringVariables[varName] = value;
+                    _tableVariables.Remove(varName);
+                    _stringVariablesDirty = true;
+
+                    if (_isVisible && Settings.EnableUi)
+                    {
+                        switch (uiType)
+                        {
+                            case "dropdown":
+                                BuildUiStringDropdown(varName, value, uiStyle, uiKeys, uiValues);
+                                break;
+                            case "radio":
+                                BuildUiStringRadio(varName, value, uiStyle, uiKeys, uiValues);
+                                break;
+                            case "checkbox":
+                                BuildUiStringCheckbox(varName, value, uiStyle);
+                                break;
+                            default:
+                                BuildUiStringEntry(varName, value, uiStyle);
+                                break;
+                        }
+                    }
+                    else if (_isVisible)
+                    {
+                        _sb.Append($"<p{HtmlId}>{HttpUtility.HtmlEncode(varName)} = {HttpUtility.HtmlEncode(value)}</p>");
+                    }
+                }
+            }
+            catch (MathParserException ex)
+            {
+                AppendError(s.ToString(), ex.Message, _currentLine);
+            }
+
+            _pendingUi = null;
+            _uiSkipChars = 0;
+            return KeywordResult.Continue;
+        }
+
+        private static string NormalizeBooleanString(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "false";
+            var v = value.Trim();
+            if (v.Length == 0 || v == "0" || v.Equals("false", StringComparison.OrdinalIgnoreCase))
+                return "false";
+            return "true";
+        }
+
+        private static string[,] ParseStringDatagridOverride(string serialized)
+        {
+            if (string.IsNullOrEmpty(serialized))
+                return new string[0, 0];
+            var rows = serialized.Split('|');
+            var maxCols = 0;
+            var cells = new string[rows.Length][];
+            for (int r = 0; r < rows.Length; r++)
+            {
+                cells[r] = rows[r].Split(';');
+                if (cells[r].Length > maxCols) maxCols = cells[r].Length;
+            }
+            var table = new string[rows.Length, maxCols];
+            for (int r = 0; r < rows.Length; r++)
+                for (int c = 0; c < maxCols; c++)
+                    table[r, c] = c < cells[r].Length ? cells[r][c] : string.Empty;
+            return table;
+        }
+
+        private string BuildUiStringAttributes(string uiType, string uiStyle, string varName, int rows, int columns)
+        {
+            var sb = new StringBuilder();
+            sb.Append($" data-ui-type=\"{uiType}\"");
+            sb.Append(" data-ui-mode=\"string\"");
+            sb.Append($" data-ui-line=\"{_currentLine}\"");
+            if (!string.IsNullOrEmpty(varName))
+                sb.Append($" data-ui-var=\"{HttpUtility.HtmlAttributeEncode(varName)}\"");
+            if (!string.IsNullOrEmpty(uiStyle))
+                sb.Append($" data-ui-style=\"{HttpUtility.HtmlAttributeEncode(uiStyle)}\"");
+            if (uiType == "datagrid")
+            {
+                sb.Append($" data-ui-rows=\"{rows}\"");
+                sb.Append($" data-ui-columns=\"{columns}\"");
+            }
+            return sb.ToString();
+        }
+
+        private void BuildUiStringEntry(string varName, string value, string uiStyle)
+        {
+            var cls = string.IsNullOrEmpty(uiStyle) ? "calcpad-ui-input" : $"calcpad-ui-input {uiStyle}";
+            var attrs = BuildUiStringAttributes("entry", uiStyle, varName, 0, 0);
+            _sb.Append($"<p{HtmlId}{attrs}>{HttpUtility.HtmlEncode(varName)} = ")
+               .Append($"<input type=\"text\" class=\"{HttpUtility.HtmlAttributeEncode(cls)}\" value=\"{HttpUtility.HtmlAttributeEncode(value)}\"")
+               .Append($" data-ui-var=\"{HttpUtility.HtmlAttributeEncode(varName)}\" data-ui-line=\"{_currentLine}\" data-ui-mode=\"string\"></p>");
+        }
+
+        private void BuildUiStringDropdown(string varName, string value, string uiStyle, string[] keys, string[] values)
+        {
+            var cls = string.IsNullOrEmpty(uiStyle) ? "calcpad-ui-dropdown" : $"calcpad-ui-dropdown {uiStyle}";
+            var attrs = BuildUiStringAttributes("dropdown", uiStyle, varName, 0, 0);
+            _sb.Append($"<p{HtmlId}{attrs}>{HttpUtility.HtmlEncode(varName)} = ")
+               .Append($"<select class=\"{HttpUtility.HtmlAttributeEncode(cls)}\"")
+               .Append($" data-ui-var=\"{HttpUtility.HtmlAttributeEncode(varName)}\" data-ui-line=\"{_currentLine}\" data-ui-mode=\"string\">");
+            for (int i = 0; i < keys.Length; i++)
+            {
+                var selected = string.Equals(values[i], value, StringComparison.Ordinal) ? " selected" : string.Empty;
+                _sb.Append($"<option value=\"{HttpUtility.HtmlAttributeEncode(values[i])}\"{selected}>{HttpUtility.HtmlEncode(keys[i])}</option>");
+            }
+            _sb.Append("</select></p>");
+        }
+
+        private void BuildUiStringRadio(string varName, string value, string uiStyle, string[] keys, string[] values)
+        {
+            var cls = string.IsNullOrEmpty(uiStyle) ? "calcpad-ui-radio" : $"calcpad-ui-radio {uiStyle}";
+            var attrs = BuildUiStringAttributes("radio", uiStyle, varName, 0, 0);
+            var groupName = $"ui-radio-{varName}-{_currentLine}";
+            _sb.Append($"<p{HtmlId}{attrs}>{HttpUtility.HtmlEncode(varName)} = ")
+               .Append($"<span class=\"{HttpUtility.HtmlAttributeEncode(cls)}\"")
+               .Append($" data-ui-var=\"{HttpUtility.HtmlAttributeEncode(varName)}\" data-ui-line=\"{_currentLine}\" data-ui-mode=\"string\">");
+            for (int i = 0; i < keys.Length; i++)
+            {
+                var checkedAttr = string.Equals(values[i], value, StringComparison.Ordinal) ? " checked" : string.Empty;
+                _sb.Append("<label class=\"calcpad-ui-radio-label\">")
+                   .Append($"<input type=\"radio\" name=\"{HttpUtility.HtmlAttributeEncode(groupName)}\" value=\"{HttpUtility.HtmlAttributeEncode(values[i])}\"{checkedAttr}>")
+                   .Append($" {HttpUtility.HtmlEncode(keys[i])}</label>");
+            }
+            _sb.Append("</span></p>");
+        }
+
+        private void BuildUiStringCheckbox(string varName, string value, string uiStyle)
+        {
+            var cls = string.IsNullOrEmpty(uiStyle) ? "calcpad-ui-checkbox" : $"calcpad-ui-checkbox {uiStyle}";
+            var attrs = BuildUiStringAttributes("checkbox", uiStyle, varName, 0, 0);
+            var isChecked = value == "true" ? " checked" : string.Empty;
+            _sb.Append($"<p{HtmlId}{attrs}>{HttpUtility.HtmlEncode(varName)} = ")
+               .Append($"<input type=\"checkbox\" class=\"{HttpUtility.HtmlAttributeEncode(cls)}\"")
+               .Append($" data-ui-var=\"{HttpUtility.HtmlAttributeEncode(varName)}\" data-ui-line=\"{_currentLine}\" data-ui-mode=\"string\"{isChecked}></p>");
+        }
+
+        private void BuildUiStringDatagrid(
+            string varName, string[,] table, string uiStyle,
+            int rows, int columns, string[] columnHeaders, string[] rowHeaders)
+        {
+            var cls = string.IsNullOrEmpty(uiStyle) ? "calcpad-ui-datagrid" : $"calcpad-ui-datagrid {uiStyle}";
+            var attrs = BuildUiStringAttributes("datagrid", uiStyle, varName, rows, columns);
+            _sb.Append($"<p{HtmlId}{attrs}>{HttpUtility.HtmlEncode(varName)} = </p>");
+
+            var values = SerializeStringTable(table);
+            var divAttrs = new StringBuilder();
+            divAttrs.Append($"<div class=\"{HttpUtility.HtmlAttributeEncode(cls)}\"")
+                    .Append($" data-ui-var=\"{HttpUtility.HtmlAttributeEncode(varName)}\"")
+                    .Append($" data-ui-line=\"{_currentLine}\"")
+                    .Append(" data-ui-mode=\"string\"")
+                    .Append($" data-ui-rows=\"{rows}\"")
+                    .Append($" data-ui-columns=\"{columns}\"")
+                    .Append($" data-ui-values=\"{HttpUtility.HtmlAttributeEncode(values)}\"");
+            if (columnHeaders != null)
+                divAttrs.Append($" data-ui-col-headers=\"{HttpUtility.HtmlAttributeEncode(string.Join(",", columnHeaders))}\"");
+            if (rowHeaders != null)
+                divAttrs.Append($" data-ui-row-headers=\"{HttpUtility.HtmlAttributeEncode(string.Join(",", rowHeaders))}\"");
+            divAttrs.Append("></div>");
+            _sb.AppendLine(divAttrs.ToString());
+        }
+
+        private static string SerializeStringTable(string[,] table)
+        {
+            var rows = table.GetLength(0);
+            var cols = table.GetLength(1);
+            var sb = new StringBuilder();
+            for (int r = 0; r < rows; r++)
+            {
+                if (r > 0) sb.Append('|');
+                for (int c = 0; c < cols; c++)
+                {
+                    if (c > 0) sb.Append(';');
+                    sb.Append(table[r, c] ?? string.Empty);
+                }
+            }
+            return sb.ToString();
         }
 
         /// <summary>

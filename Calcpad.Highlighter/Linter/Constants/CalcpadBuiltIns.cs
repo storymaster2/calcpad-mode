@@ -229,7 +229,8 @@ namespace Calcpad.Highlighter.Linter.Constants
             "#hide", "#show", "#pre", "#post",
             "#val", "#equ", "#noc", "#nosub", "#novar", "#varsub",
             "#split", "#wrap", "#phasor", "#complex",
-            "#rad", "#deg", "#gra"
+            "#rad", "#deg", "#gra",
+            "#html", "#cpd", "#markdown"
         }.ToFrozenSet(System.StringComparer.OrdinalIgnoreCase);
 
         /// <summary>

@@ -60,6 +60,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var line = stage3.Lines[i];
 
                 if (LineParser.ShouldSkipLine(line))
@@ -190,35 +192,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             {
                 CollectAssignedVariables(tokenizer, statement, localVariables, localAssignments);
             }
-
-            // Build element access set for the command block tokenizer.
-            // Function parameters do NOT support .i syntax (must use .(i)).
-            // Only local variables that are vectors/matrices and global vectors support .i.
-            var elementAccessVars = new HashSet<string>(StringComparer.Ordinal);
-
-            // Add globally known vector/matrix variables from TypeTracker
-            if (stage3.TypeTracker != null)
-            {
-                foreach (var kvp in stage3.TypeTracker.Variables)
-                {
-                    var t = kvp.Value.Type;
-                    if (t == Models.CalcpadType.Vector ||
-                        t == Models.CalcpadType.Matrix ||
-                        t == Models.CalcpadType.Various)
-                        elementAccessVars.Add(kvp.Key);
-                }
-
-                // Determine which local variables are vectors/matrices from their RHS
-                foreach (var kvp in localAssignments)
-                {
-                    var rhsType = stage3.TypeTracker.InferTypeFromExpression(kvp.Value);
-                    if (rhsType == Models.CalcpadType.Vector ||
-                        rhsType == Models.CalcpadType.Matrix)
-                        elementAccessVars.Add(kvp.Key);
-                }
-            }
-
-            tokenizer.SetElementAccessVariables(elementAccessVars);
 
             // Second pass: validate each statement
             foreach (var statement in blockInfo.Statements)

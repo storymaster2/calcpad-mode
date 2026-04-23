@@ -457,6 +457,27 @@ namespace Calcpad.Highlighter.Snippets.Data
                 Category = "Output Control",
                 KeywordType = "Keyword"
             },
+            new SnippetItem
+            {
+                Insert = "#cpd",
+                Description = "Switch parsing mode to Calcpad (default)",
+                Category = "Output Control",
+                KeywordType = "Keyword"
+            },
+            new SnippetItem
+            {
+                Insert = "#html",
+                Description = "Switch parsing mode to raw HTML (no Calcpad evaluation)",
+                Category = "Output Control",
+                KeywordType = "Keyword"
+            },
+            new SnippetItem
+            {
+                Insert = "#markdown",
+                Description = "Switch parsing mode to Markdown (no Calcpad evaluation)",
+                Category = "Output Control",
+                KeywordType = "Keyword"
+            },
 
             // ============================================
             // BREAKPOINTS
@@ -558,6 +579,48 @@ namespace Calcpad.Highlighter.Snippets.Data
                 Insert = "#UI {\"type\": \"checkbox\"} § = 1",
                 Description = "Checkbox input (toggles between 0 and 1)",
                 Label = "#UI checkbox",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI §$ = '§'",
+                Description = "String entry input (auto-detected string mode; variable name ends with $)",
+                Label = "#UI string entry",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"entry\", \"mode\": \"string\"} §$ = '§'",
+                Description = "String entry input with explicit string mode",
+                Label = "#UI string entry (explicit)",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"dropdown\", \"mode\": \"string\", \"keys\": [\"§\", \"§\"], \"values\": [\"§\", \"§\"]} §$ = '§'",
+                Description = "String dropdown with text values",
+                Label = "#UI string dropdown",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"radio\", \"mode\": \"string\", \"keys\": [\"§\", \"§\"], \"values\": [\"§\", \"§\"]} §$ = '§'",
+                Description = "String radio group with text values",
+                Label = "#UI string radio",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"checkbox\", \"mode\": \"string\"} §$ = 'false'",
+                Description = "String checkbox (stores 'true' or 'false')",
+                Label = "#UI string checkbox",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"datagrid\", \"mode\": \"string\"} §$ = [§]",
+                Description = "String datagrid (editable table of text cells, stored as a table variable)",
+                Label = "#UI string datagrid",
                 Category = "UI Inputs"
             }
         ];

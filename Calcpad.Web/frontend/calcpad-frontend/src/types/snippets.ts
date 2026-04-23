@@ -10,6 +10,7 @@ export interface SnippetDto {
     label?: string;
     category: string;
     quickType?: string;
+    keywordType?: string;
     parameters?: SnippetParameterDto[];
 }
 
@@ -25,6 +26,7 @@ export interface InsertItem {
     description: string;
     categoryPath?: string;
     quickType?: string;
+    keywordType?: string;
     parameters?: SnippetParameterDto[];
 }
 

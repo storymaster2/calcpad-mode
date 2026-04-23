@@ -202,13 +202,6 @@ namespace Calcpad.Highlighter.Tokenizer
                 if (c == '[')
                 {
                     _state.MatrixCount++;
-
-                    // If we're in a definition expression and see [, the variable is a vector/matrix
-                    if (_expressionPendingDefName != null)
-                    {
-                        _elementAccessVariables.Add(_expressionPendingDefName);
-                        _expressionPendingDefName = null;
-                    }
                 }
                 else if (c == ']')
                     _state.MatrixCount--;

@@ -37,7 +37,7 @@ namespace Calcpad.Core
             for (int i = 1, len = name.Length; i < len; ++i)
             {
                 c = name[i];
-                if (!(IsVarChar(c)))
+                if (c == MathParser.DecimalSymbol || !IsVarChar(c))
                     return false;
             }
             return true;

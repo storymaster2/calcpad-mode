@@ -11,7 +11,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         public void Validate(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
             ValidateBrackets(stage3, result, tokenProvider);
-            ValidateControlBlocks(stage3, result);
+            ValidateControlBlocks(stage3, result, tokenProvider);
         }
 
         private void ValidateBrackets(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
@@ -21,6 +21,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             // should have balanced brackets. Unmatched brackets indicate errors.
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var tokens = tokenProvider.GetTokensForLine(i);
 
                 var parenStack = new Stack<int>();
@@ -94,13 +96,15 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             }
         }
 
-        private void ValidateControlBlocks(Stage3Context stage3, LinterResult result)
+        private void ValidateControlBlocks(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
             // Store Stage3 line numbers - mapping is done by diagnostic extensions
             var stack = new Stack<(ControlBlockType type, int stage3LineNumber)>();
 
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var line = stage3.Lines[i];
                 var blockType = CalcpadBuiltIns.GetBlockType(line);
 

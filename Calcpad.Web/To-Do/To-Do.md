@@ -60,6 +60,8 @@
 - Add disk based caching above a certain file size to prevent using too much memory.
 
 ## Calcpad.Highlighter
+- Order greek symbols by greek alphabet instead of english
+- Add linting for HTML/markdown mode
 - Highlighter is going to have issues with string variables and content resolution. I may need to add some content resolution to Calcpad.Core so I can get a more accurate state of variables and macros. This may also make tokenizing way easier as I don't have to re-parse as much code and can use the existing tokenizer in Core. One downside to this is Core handles ExpressionParser differently than the current tokenizer, which largely ignores it. I may also need a map of #for loops/#if statements, etc. that get run to tie it back to the line in the source code. Being able to define variables in a #for loop with a different name using string manipulation is going to require me to change my approach and either surpress warnings that come from complex cases like this or utilize Core to provide string variable values for linting content.
 - Add information check for re-defining a variable as a different type
 - There is an issue with tokenization of global variables in macro #def statements. You need to get global scopes and properly tokenize them if it gets defined later in the file.
@@ -84,6 +86,7 @@
 ## Calcpad.Core
 
 - Add keyword arguments for builtin functions
+- Add UI mode for strings. Handle #UI as a possible alternative for #string because we can only have one keyword for expressions.
 - Add Unit safety for angles by having arc functions return the unit based on the default setting (instead of a number with no unit)
 - Add a way to throw custom errors in command block expressions
 - Handle this better so it allows undefined in inline loops. This is because undefined is the best way to work with jagged matrices. Have the graph either show a vertical asymtote or ignore undefined values:
@@ -93,6 +96,7 @@ f(0)
 ```
 - See if Kelvin unit conversion can be made safer.
 - Add more imperial units for engineering (ksf, plf, etc.)
+- Add #hideRegion {cond} and #endHideRegion {cond} to replace hideC/unhideC 
 
 ### Testing
 - Catch self-referential includes crashing the program

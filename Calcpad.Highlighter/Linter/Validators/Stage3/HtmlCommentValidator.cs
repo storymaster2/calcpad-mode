@@ -17,6 +17,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var tokens = tokenProvider.GetTokensForLine(i);
 
                 foreach (var token in tokens)

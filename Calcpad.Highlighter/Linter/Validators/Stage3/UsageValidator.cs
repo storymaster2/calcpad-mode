@@ -36,6 +36,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var line = stage3.Lines[i];
 
                 if (LineParser.ShouldSkipLine(line))
@@ -166,6 +168,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var line = stage3.Lines[i];
 
                 if (LineParser.ShouldSkipLine(line))
@@ -276,6 +280,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var line = stage3.Lines[i];
 
                 if (LineParser.ShouldSkipLine(line))
@@ -395,6 +401,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var line = stage3.Lines[i];
 
                 if (LineParser.ShouldSkipLine(line))
@@ -542,6 +550,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var line = stage3.Lines[i];
 
                 if (LineParser.ShouldSkipLine(line))
@@ -622,6 +632,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
                 var line = stage3.Lines[i];
 
                 if (LineParser.ShouldSkipLine(line))

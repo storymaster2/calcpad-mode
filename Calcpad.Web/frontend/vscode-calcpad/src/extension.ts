@@ -411,8 +411,9 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
                     <tr><th>Toggle Comment</th><td>Ctrl+Q</td></tr>
                 </table>
                 <h4>Resources</h4>
-                <p><a href="https://github.com/Proektsoftbg/Calcpad">Calcpad on GitHub</a></p>
-                <p><a href="https://calcpad.eu/download/calcpad-readme.pdf">Calcpad README (PDF)</a></p>
+                <p><a href="https://github.com/imartincei/CalcpadCE">CalcpadCE on GitHub</a></p>
+                <p><a href="https://calcpad-ce.org/">calcpad-ce.org</a></p>
+                <p><a href="https://imartincei.github.io/CalcpadCE/">CalcpadCE Documentation</a></p>
             </body>
             </html>
         `;

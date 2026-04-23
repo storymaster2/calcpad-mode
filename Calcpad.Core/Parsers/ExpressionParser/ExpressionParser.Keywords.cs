@@ -237,8 +237,7 @@ namespace Calcpad.Core
                 case Keyword.Table:
                     return ParseKeywordTable(s);
                 case Keyword.Ui:
-                    ParseKeywordUi(s);
-                    return KeywordResult.None;
+                    return ParseKeywordUi(s);
                 case Keyword.Html:
                     _parseMode = ParseMode.Html;
                     break;
