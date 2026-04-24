@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  determine-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Determine version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+  build-all:
+    needs: determine-version
+    uses: ./.github/workflows/build-all.yml
+    with:
+      version: ${{ needs.determine-version.outputs.version }}
+
+  release:
+    needs: [build-all, determine-version]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: .github/release-notes-template.md
+          sparse-checkout-cone-mode: false
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts/
+          merge-multiple: true
+
+      - name: Generate release notes
+        env:
+          VERSION: ${{ needs.determine-version.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: envsubst < .github/release-notes-template.md > release-notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: artifacts/*
+          body_path: release-notes.md
+          generate_release_notes: true

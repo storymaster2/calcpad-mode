@@ -52,8 +52,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   
 Any scripts, developed with Calcpad are property of the respective authors. They can be used without additional limitations except those appointed by the authors themselves.  
 
-### Acknowledgments  
-This project uses some additional third party components, software and design. They are re-distributed free of charge, under the license conditions, provided by the respective authors.  
 1. The new and beautiful icons are created using [icons8.com](https://icons8.com/).  
 2. The pdf export was made possible thanks to the [wkhtmltopdf.org](https://wkhtmltopdf.org/) project.  
 3. Some symbols are displayed, using the Jost* font family by [indestructible type*](https://indestructibletype.com/), under the [SIL open font license](https://scripts.sil.org/cms/scripts/page.php?item_id=OFL_web).

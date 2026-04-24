@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:wpf="clr-namespace:Calcpad.Wpf"
     xmlns:av="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="av" x:Class="Calcpad.Wpf.MainWindow"
-    Title=" Calcpad VM 7.6.2"
+    Title=" CalcpadCE"
     Height="800"
     Width="1200"
     WindowStartupLocation="CenterScreen"
@@ -360,7 +360,7 @@
                     <Separator/>
                     <MenuItem Click="Button_Click" Tag="=" Icon="  =" 
                               Header="{x:Static wpf:MathResources.Assignment}"/>
-                    <MenuItem Click="Button_Click" Tag="=" Icon="  ←" 
+                    <MenuItem Click="Button_Click" Tag="←" Icon="  ←" 
                               Header="{x:Static wpf:MainWindowResources.OuterVariableAssignment}"/>
                 </MenuItem>
                 <MenuItem Header="{x:Static wpf:MathResources.Functions}">
@@ -2212,15 +2212,6 @@
                 <ComboBoxItem Width="70" Content="Opera" HorizontalAlignment="Left"/>
                 <ComboBoxItem Width="70" Content="IExplore" HorizontalAlignment="Left"/>
             </ComboBox>
-            <Image x:Name="Logo" 
-                   Source="Resources/logo.png" 
-                   Height="16"
-                   Width="2000" 
-                   VerticalAlignment="Top" 
-                   HorizontalAlignment="Right" 
-                   Margin="0,0,4,0" 
-                   Cursor="Hand" 
-                   MouseUp="Logo_MouseUp"/>
         </StatusBar>
         <Grid x:Name="FramesGrid" Margin="0,1,0,35" Grid.Row="1">
             <Grid.ColumnDefinitions>

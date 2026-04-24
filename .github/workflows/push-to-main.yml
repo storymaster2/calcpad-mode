@@ -1,0 +1,33 @@
+name: Push to Main
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - 'mkdocs.yml'
+  workflow_dispatch:
+
+jobs:
+  determine-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          BASE_VERSION=$(sed -n 's/.*<Version>\(.*\)<\/Version>.*/\1/p' Directory.Build.props)
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "version=${BASE_VERSION}-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+  build-all:
+    needs: determine-version
+    uses: ./.github/workflows/build-all.yml
+    with:
+      version: ${{ needs.determine-version.outputs.version }}

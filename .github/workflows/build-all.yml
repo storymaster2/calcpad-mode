@@ -1,0 +1,147 @@
+name: Build All
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  build-windows-installer:
+    uses: ./.github/workflows/build-windows-installer.yml
+    with:
+      version: ${{ inputs.version }}
+
+  build-windows-portable:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish portable single-file
+        run: >
+          dotnet publish Calcpad.Wpf/Calcpad.wpf.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:Version=${{ inputs.version }}
+          -o "CalcpadCE-portable-${{ inputs.version }}"
+
+      - name: Create portable zip
+        shell: pwsh
+        run: Compress-Archive -Path CalcpadCE-portable-${{ inputs.version }} -DestinationPath "CalcpadCE-portable-${{ inputs.version }}.zip"
+
+      - name: Upload portable artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: CalcpadCE-portable-${{ inputs.version }}.zip
+          path: CalcpadCE-portable-${{ inputs.version }}.zip
+
+  build-deb:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rid: [linux-x64, linux-arm64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore packages
+        working-directory: Calcpad.Cli
+        run: dotnet restore Calcpad.Cli.csproj -r ${{ matrix.rid }}
+
+      - name: Build .deb package
+        working-directory: Calcpad.Cli
+        run: >
+          dotnet msbuild Calcpad.Cli.csproj
+          -t:CreateDeb
+          -p:Configuration=Release
+          -p:Version=${{ inputs.version }}
+          -p:PackagePrefix=CalcpadCE
+          -p:RuntimeIdentifier=${{ matrix.rid }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: Calcpad.Cli/bin/Release/net10.0/${{ matrix.rid }}/*.deb
+          archive: false
+
+  build-rpm:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rid: [linux-x64, linux-arm64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install RPM tools
+        run: sudo apt-get update && sudo apt-get install -y rpm
+
+      - name: Restore packages
+        working-directory: Calcpad.Cli
+        run: dotnet restore Calcpad.Cli.csproj -r ${{ matrix.rid }}
+
+      - name: Build .rpm package
+        working-directory: Calcpad.Cli
+        run: >
+          dotnet msbuild Calcpad.Cli.csproj
+          -t:CreateRpm
+          -p:Configuration=Release
+          -p:Version=${{ inputs.version }}
+          -p:PackagePrefix=CalcpadCE
+          -p:RuntimeIdentifier=${{ matrix.rid }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: Calcpad.Cli/bin/Release/net10.0/${{ matrix.rid }}/*.rpm
+          archive: false
+
+  build-tarball:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rid: [linux-x64, linux-arm64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish self-contained
+        run: >
+          dotnet publish Calcpad.Cli/Calcpad.Cli.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -p:Version=${{ inputs.version }}
+          -o "CalcpadCE-${{ inputs.version }}-${{ matrix.rid }}"
+
+      - name: Create tarball
+        run: tar cjf "CalcpadCE-${{ inputs.version }}-${{ matrix.rid }}.tar.bz2" CalcpadCE-${{ inputs.version }}-${{ matrix.rid }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: '*.tar.bz2'
+          archive: false

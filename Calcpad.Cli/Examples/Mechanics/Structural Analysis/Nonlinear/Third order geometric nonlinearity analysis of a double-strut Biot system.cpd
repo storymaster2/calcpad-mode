@@ -129,7 +129,7 @@ n = 0
 #show
 'After'n'iterations we get:'v_2
 'Relative error -'δ = abs(v_2 - v_1)/abs(v_2)
-'<h4>4. Solution with Calcpad <small>(modified Anderson-Bjork′s method)</small></h4>
+'<h4>4. Solution with CalcpadCE <small>(modified Anderson-Bjork′s method)</small></h4>
 v = $Root{2*F_y(v) = F_y @ v = 0mm : 200m}
 'System behavior graph (force-displacement)
 '<!--'v_2 = v','PlotWidth = 250','PlotHeight = 150'-->

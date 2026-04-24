@@ -1,0 +1,83 @@
+site_name: CalcpadCE Documentation
+use_directory_urls: false
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+
+hooks:
+  - docs/hooks/math_fix.py
+
+nav:
+  - Documentation:
+    - index.md
+    - Fields of Application: fields-of-application.md
+    - Installation: installation.md
+    - Licensing: licensing-and-terms-of-use.md
+    - How It Works: how-it-works.md
+    - Theoretical Background: theoretical-background.md
+    - Writing Math: writing-math.md
+    - Reporting: reporting.md
+    - Programming: programming.md
+    - Results: results.md
+    - Working with Files: working-with-files.md
+    - Expressions: expressions.md
+    - Constants: constants.md
+    - Variables: variables.md
+    - Operators: operators.md
+    - Brackets: brackets.md
+    - Functions: functions.md
+    - Plotting: plotting.md
+    - Numerical Methods: numerical-methods.md
+    - Iterative Procedures: iterative-procedures.md
+    - Units: units.md
+    - Vectors: vectors.md
+    - Matrices: matrices.md
+    - High Performance Vectors and Matrices: high-performance-vectors-and-matrices.md
+  - Quick Reference:
+    - quick-reference.md
+
+markdown_extensions:
+  - tables
+  - attr_list
+  - mdx_truly_sane_lists:
+      nested_indent: 2
+  - md_in_html
+  - def_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: math
+          class: arithmatex
+          format: !!python/object/apply:pymdownx.arithmatex.arithmatex_fenced_format
+            kwds:
+              mode: generic
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - javascripts/mathjax/tex-mml-chtml.js
+
+extra_css:
+  - stylesheets/extra.css

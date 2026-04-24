@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <NotepadPlus>
-	<AutoComplete language="Calcpad">
+	<AutoComplete language="CalcpadCE">
 		<Environment ignoreCase="no" startFunc="(" stopFunc=")" paramSeparator=";" terminal="" additionalWordChar="$#μ°"/>
 		<KeyWord name="#append" />
 		<KeyWord name="#break" />

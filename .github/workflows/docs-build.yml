@@ -1,0 +1,35 @@
+name: Build docs
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install MathJax
+        run: |
+          npm install mathjax@3
+          cp -r node_modules/mathjax/es5 docs/javascripts/mathjax
+
+      - name: Install mkdocs-material
+        run: pip install mkdocs-material mdx_truly_sane_lists
+
+      - name: Build docs
+        run: mkdocs build
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site/

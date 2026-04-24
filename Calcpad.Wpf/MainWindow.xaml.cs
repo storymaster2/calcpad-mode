@@ -27,7 +27,7 @@ namespace Calcpad.Wpf
     public partial class MainWindow : Window
     {
         // Culture
-        private static readonly string _currentCultureName = "en"; // en, bg or zh
+        private static readonly string _currentCultureName = ReadLanguageFromRegistry();
 
         // Static resources
         private static readonly char[] GreekLetters = ['α', 'β', 'χ', 'δ', 'ε', 'φ', 'γ', 'η', 'ι', 'ø', 'κ', 'λ', 'μ', 'ν', 'ο', 'π', 'θ', 'ρ', 'σ', 'τ', 'υ', 'ϑ', 'ω', 'ξ', 'ψ', 'ζ'];
@@ -45,8 +45,13 @@ namespace Calcpad.Wpf
                 Path = AppDomain.CurrentDomain.BaseDirectory;
                 Name = AppDomain.CurrentDomain.FriendlyName + ".exe";
                 FullName = System.IO.Path.Combine(Path, Name);
-                Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-                Title = " Calcpad VM " + Version[0..(Version.LastIndexOf('.'))];
+                Version = Assembly.GetExecutingAssembly()
+                    .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?
+                    .InformationalVersion ?? Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                // Strip source link hash appended by SDK (e.g. "+abc123def")
+                var plusIndex = Version.IndexOf('+');
+                if (plusIndex >= 0) Version = Version[..plusIndex];
+                Title = " CalcpadCE " + Version + " – Community Edition";
                 DocPath = Path + "doc";
                 if (!Directory.Exists(DocPath))
                     DocPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Calcpad";
@@ -211,7 +216,7 @@ namespace Calcpad.Wpf
             _htmlWorksheet = ReadTextFromFile($"{docPath}\\template{htmlExt}").Replace("https:// calcpad.local", docUrl);
             _htmlParsingPath = $"{docPath}\\parsing{htmlExt}";
             _htmlParsingUrl = $"{docUrl}/parsing{htmlExt}";
-            _htmlHelpPath = GetHelp(MainWindowResources.calcpad_download_help_html);
+            _htmlHelpPath = GetHelp();
             _htmlSource = ReadTextFromFile($"{docPath}\\source.html");
             _svgTyping = $"<img style=\"height:1em;\" src=\"{docUrl}/typing.gif\" alt=\"...\">";
             _readmeFileName = $"{docPath}\\readme{htmlExt}";
@@ -233,6 +238,7 @@ namespace Calcpad.Wpf
             _insertManager = new(RichTextBox);
             _autoCompleteManager = new(RichTextBox, AutoCompleteListBox, Dispatcher, _insertManager);
             _cfn = string.Empty;
+            Title = AppInfo.Title;
             _isTextChangedEnabled = false;
             IsSaved = true;
             _findReplace.RichTextBox = RichTextBox;
@@ -1516,7 +1522,7 @@ namespace Calcpad.Wpf
                 _wv2Warper.Navigate(_htmlHelpPath);
         }
 
-        private static string GetHelp(string helpURL)
+        private static string GetHelp()
         {
             var fileName = $"{AppInfo.DocPath}\\help.{_currentCultureName}.html";
             if (!File.Exists(fileName))
@@ -2113,7 +2119,7 @@ namespace Calcpad.Wpf
             var dlg = new OpenFileDialog
             {
                 DefaultExt = ".png",
-                Filter = "Image Files (*.bmp, *.png, *.gif, *.jpeg *.jpg)|*.bmp; *.png; *.gif; *.jpeg; *.jpg",
+                Filter = "Image Files (*.bmp, *.gif, *.jpeg, *.jpg, *.png, *.svg)|*.bmp; *.gif; *.jpeg; *.jpg; *.png; *.svg",
                 CheckFileExists = true,
                 Multiselect = false
             };
@@ -3386,16 +3392,6 @@ namespace Calcpad.Wpf
             }
         }
 
-        private void Logo_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            var info = new ProcessStartInfo
-            {
-                FileName = "https:// calcpad.eu",
-                UseShellExecute = true
-            };
-            Process.Start(info);
-        }
-
         private void PdfButton_Click(object sender, RoutedEventArgs e)
         {
             if (_isParsing)
@@ -3699,7 +3695,7 @@ namespace Calcpad.Wpf
 
 
         private static void ShowErrorMessage(string message) =>
-            MessageBox.Show(message, "Calcpad", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(message, "CalcpadCE", MessageBoxButton.OK, MessageBoxImage.Error);
 
         private async void Window_ContentRendered(object sender, EventArgs e)
         {
@@ -3895,6 +3891,14 @@ namespace Calcpad.Wpf
         private void RichTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
             IsWebView2Focused = false;
+        }
+
+        private static string ReadLanguageFromRegistry()
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\CalcpadCE");
+            if (key?.GetValue("Language") is string lang && lang is "en" or "bg" or "zh")
+                return lang;
+            return "en";
         }
     }
 }
