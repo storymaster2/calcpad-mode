@@ -40,7 +40,7 @@ namespace Calcpad.Server.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error processing Calcpad content: {ex.Message}");
+                return StatusCode(500, $"Error processing CalcpadCE content: {ex.Message}");
             }
         }
 
@@ -74,7 +74,7 @@ namespace Calcpad.Server.Controllers
                 MarginLeft = settings.MarginLeft ?? "1.5cm",
                 EnableHeader = settings.EnableHeader ?? false,
                 EnableFooter = settings.EnableFooter ?? false,
-                DocumentTitle = settings.DocumentTitle ?? "Calcpad Document",
+                DocumentTitle = settings.DocumentTitle ?? "CalcpadCE Document",
                 DocumentSubtitle = settings.DocumentSubtitle ?? "",
                 HeaderCenter = settings.HeaderCenter ?? "",
                 FooterCenter = settings.FooterCenter ?? "",
@@ -99,7 +99,7 @@ namespace Calcpad.Server.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error processing Calcpad content: {ex.Message}");
+                return StatusCode(500, $"Error processing CalcpadCE content: {ex.Message}");
             }
         }
 
@@ -169,7 +169,7 @@ namespace Calcpad.Server.Controllers
         public string? MarginLeft { get; set; } = "1.5cm";
         public bool? EnableHeader { get; set; } = false;
         public bool? EnableFooter { get; set; } = false;
-        public string? DocumentTitle { get; set; } = "Calcpad Document";
+        public string? DocumentTitle { get; set; } = "CalcpadCE Document";
         public string? DocumentSubtitle { get; set; } = "";
         public string? HeaderCenter { get; set; } = "";
         public string? FooterCenter { get; set; } = "";

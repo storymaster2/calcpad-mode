@@ -1,9 +1,9 @@
 services:
   calcpadserver:
-    build: 
+    build:
       context: ..
       dockerfile: Calcpad.Server/Dockerfile
-    container_name: calcpad-server
+    container_name: calcpadce-server
     ports:
       - "${CALCPAD_PORT:-9420}:8080"
     environment:
@@ -25,11 +25,11 @@ services:
       retries: 3
       start_period: 40s
     networks:
-      - calcpad-network
+      - calcpadce-network
       - calcpads3_default
 
 networks:
-  calcpad-network:
+  calcpadce-network:
     driver: bridge
   calcpads3_default:
     external: true

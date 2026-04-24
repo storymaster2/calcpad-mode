@@ -6,9 +6,9 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_NAME="calcpad-server"
+PROJECT_NAME="calcpadce-server"
 
-echo "🚀 Starting CalcpadServer..."
+echo "🚀 Starting CalcpadCE Server..."
 
 # Check if Docker is installed
 if ! command -v docker &> /dev/null; then

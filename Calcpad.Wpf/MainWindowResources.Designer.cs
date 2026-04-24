@@ -250,15 +250,6 @@ namespace Calcpad.Wpf {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to https:// calcpad.eu/download/help.html.
-        /// </summary>
-        public static string calcpad_download_help_html {
-            get {
-                return ResourceManager.GetString("calcpad_download_help_html", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Calculate.
         /// </summary>
         public static string Calculate {
@@ -349,7 +340,7 @@ namespace Calcpad.Wpf {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Calcpad Worksheet (*.cpd)|*.cpd|Calcpad Compiled (*.cpdz)|*.cpdz|Text File (*.txt)|*.txt.
+        ///   Looks up a localized string similar to CE Worksheet (*.cpd)|*.cpd|CalcpadCE Compiled (*.cpdz)|*.cpdz|Text File (*.txt)|*.txt.
         /// </summary>
         public static string Command_Open_Calcpad_Worksheet {
             get {
@@ -358,7 +349,7 @@ namespace Calcpad.Wpf {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Text File (*.txt)|*.txt|Calcpad Worksheet (*.cpd)|*.cpd|Calcpad Compiled (*.cpdz)|*.cpdz.
+        ///   Looks up a localized string similar to Text File (*.txt)|*.txt|CalcpadCE Worksheet (*.cpd)|*.cpd|CalcpadCE Compiled (*.cpdz)|*.cpdz.
         /// </summary>
         public static string Command_Open_Text_File {
             get {
@@ -1196,7 +1187,7 @@ namespace Calcpad.Wpf {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Calcpad Compiled (*.cpdz)|*.cpdz.
+        ///   Looks up a localized string similar to CalcpadCE Compiled (*.cpdz)|*.cpdz.
         /// </summary>
         public static string FileSaveAs_Calcpad_Compiled {
             get {
@@ -3246,7 +3237,7 @@ namespace Calcpad.Wpf {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Calcpad recovered from unexpected shutdown.
+        ///   Looks up a localized string similar to CalcpadCE recovered from unexpected shutdown.
         ///Would you like to restore your unsaved data?.
         /// </summary>
         public static string TryRestoreState_Recovered_SavePrompt {

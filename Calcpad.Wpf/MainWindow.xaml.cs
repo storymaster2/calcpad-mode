@@ -51,7 +51,7 @@ namespace Calcpad.Wpf
                 // Strip source link hash appended by SDK (e.g. "+abc123def")
                 var plusIndex = Version.IndexOf('+');
                 if (plusIndex >= 0) Version = Version[..plusIndex];
-                Title = " Calcpad VM " + Version;
+                Title = " CalcpadCE " + Version + " – Community Edition";
                 DocPath = Path + "doc";
                 if (!Directory.Exists(DocPath))
                     DocPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Calcpad";
@@ -216,7 +216,7 @@ namespace Calcpad.Wpf
             _htmlWorksheet = ReadTextFromFile($"{docPath}\\template{htmlExt}").Replace("https:// calcpad.local", docUrl);
             _htmlParsingPath = $"{docPath}\\parsing{htmlExt}";
             _htmlParsingUrl = $"{docUrl}/parsing{htmlExt}";
-            _htmlHelpPath = GetHelp(MainWindowResources.calcpad_download_help_html);
+            _htmlHelpPath = GetHelp();
             _htmlSource = ReadTextFromFile($"{docPath}\\source.html");
             _svgTyping = $"<img style=\"height:1em;\" src=\"{docUrl}/typing.gif\" alt=\"...\">";
             _readmeFileName = $"{docPath}\\readme{htmlExt}";
@@ -1522,7 +1522,7 @@ namespace Calcpad.Wpf
                 _wv2Warper.Navigate(_htmlHelpPath);
         }
 
-        private static string GetHelp(string helpURL)
+        private static string GetHelp()
         {
             var fileName = $"{AppInfo.DocPath}\\help.{_currentCultureName}.html";
             if (!File.Exists(fileName))
@@ -3392,16 +3392,6 @@ namespace Calcpad.Wpf
             }
         }
 
-        private void Logo_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            var info = new ProcessStartInfo
-            {
-                FileName = "https:// calcpad.eu",
-                UseShellExecute = true
-            };
-            Process.Start(info);
-        }
-
         private void PdfButton_Click(object sender, RoutedEventArgs e)
         {
             if (_isParsing)
@@ -3705,7 +3695,7 @@ namespace Calcpad.Wpf
 
 
         private static void ShowErrorMessage(string message) =>
-            MessageBox.Show(message, "Calcpad", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(message, "CalcpadCE", MessageBoxButton.OK, MessageBoxImage.Error);
 
         private async void Window_ContentRendered(object sender, EventArgs e)
         {

@@ -35,7 +35,7 @@ namespace Calcpad.Server
                 
                 if (_hasStartupError)
                 {
-                    _trayIcon?.ShowBalloonTip(5000, "Calcpad Server", "Server failed to start on configured port. Right-click to change settings.", ToolTipIcon.Warning);
+                    _trayIcon?.ShowBalloonTip(5000, "CalcpadCE Server", "Server failed to start on configured port. Right-click to change settings.", ToolTipIcon.Warning);
                 }
                 
                 FileLogger.LogInfo("Tray application initialized successfully");
@@ -89,14 +89,14 @@ namespace Calcpad.Server
             {
                 Icon = CreateIcon(),
                 ContextMenuStrip = _contextMenu,
-                Text = "Calcpad Server",
+                Text = "CalcpadCE Server",
                 Visible = true
             };
             
             _trayIcon.DoubleClick += (sender, e) => OpenBrowser();
             
             // Show balloon tip on startup
-            _trayIcon.ShowBalloonTip(3000, "Calcpad Server", $"Server started at {_serverUrl}", ToolTipIcon.Info);
+            _trayIcon.ShowBalloonTip(3000, "CalcpadCE Server", $"Server started at {_serverUrl}", ToolTipIcon.Info);
         }
 
         private Icon CreateIcon()
@@ -294,7 +294,7 @@ namespace Calcpad.Server
             {
                 FileLogger.LogInfo("User requested application exit");
                 if (_trayIcon != null) _trayIcon.Visible = false;
-                _trayIcon?.ShowBalloonTip(2000, "Calcpad Server", "Shutting down server...", ToolTipIcon.Info);
+                _trayIcon?.ShowBalloonTip(2000, "CalcpadCE Server", "Shutting down server...", ToolTipIcon.Info);
                 
                 // Give the server time to shut down gracefully
                 FileLogger.LogInfo("Stopping web server");

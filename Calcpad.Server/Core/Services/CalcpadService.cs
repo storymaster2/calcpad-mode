@@ -101,8 +101,8 @@ namespace Calcpad.Server.Services
             }
             catch (Exception ex)
             {
-                FileLogger.LogError("Calcpad conversion failed", ex);
-                throw new InvalidOperationException($"Calcpad conversion failed: {ex.Message}", ex);
+                FileLogger.LogError("CalcpadCE conversion failed", ex);
+                throw new InvalidOperationException($"CalcpadCE conversion failed: {ex.Message}", ex);
             }
         }
 
@@ -458,7 +458,7 @@ tan_angle = tan(angle°)";
 <html>
 <head>
     <meta charset='utf-8'>
-    <title>Calcpad Calculation</title>
+    <title>CalcpadCE Calculation</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
         .math { font-family: 'Times New Roman', serif; }

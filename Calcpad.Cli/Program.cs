@@ -428,7 +428,8 @@ namespace Calcpad.Cli
             if (plusIndex >= 0) ver = ver[..plusIndex];
             Console.WriteLine(new string('—', _width));
             Console.WriteLine(string.Format(Messages.Welcome_To_Calcpad_Command_Line_Interpreter, ver));
-            Console.WriteLine(Messages.Copyright_2023_By_Proektsoft_EOOD);
+            Console.WriteLine("Copyright (c) 2026 CalcpadCE Contributors");
+            Console.WriteLine("Copyright (c) 2014-2026 Nedelcho Ganchovski");
             Console.Write($"\r\n {Messages.Commands}: NEW OPEN SAVE LIST EXIT RESET CLS DEL ");
             switch (drg)
             {

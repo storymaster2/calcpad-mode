@@ -8,14 +8,13 @@
     <StartupObject>Calcpad.Wpf.App</StartupObject>
     <ApplicationIcon>resources\calcpad.ico</ApplicationIcon>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Authors>Nedelcho Ganchovski</Authors>
     <RootNamespace>Calcpad.Wpf</RootNamespace>
     <Platforms>AnyCPU</Platforms>
-		<Authors>Nedelcho Ganchovski</Authors>
-		<Company>Proektsoft EOOD</Company>
-    <PackageId>Calcpad</PackageId>
-    <Product>Calcpad</Product>
-    <AssemblyName>Calcpad</AssemblyName>
+    <Authors>CalcpadCE Contributors</Authors>
+    <Company>CalcpadCE Community</Company>
+    <PackageId>CalcpadCE</PackageId>
+    <Product>CalcpadCE</Product>
+    <AssemblyName>CalcpadCE</AssemblyName>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
@@ -47,7 +46,6 @@
     <Resource Include="resources\form.png" />
     <Resource Include="resources\help.png" />
     <Resource Include="resources\image.png" />
-    <Resource Include="resources\logo.png" />
     <Resource Include="resources\new.png" />
     <Resource Include="resources\open.png" />
     <Resource Include="resources\paste.png" />
@@ -142,9 +140,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="doc\Images\Keyboard.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="doc\Images\Logo.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="doc\Images\Mandelbrot.png">

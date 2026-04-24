@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calcpad API Client</title>
+    <title>CalcpadCE API Client</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -252,8 +252,8 @@
         </div>
         
         <div class="input-section">
-            <label for="calcpadInput">Enter Calcpad Code:</label>
-            <textarea id="calcpadInput" placeholder="Enter your Calcpad mathematical expressions here..."></textarea>
+            <label for="calcpadInput">Enter CalcpadCE Code:</label>
+            <textarea id="calcpadInput" placeholder="Enter your CalcpadCE mathematical expressions here..."></textarea>
         </div>
         
         <div class="settings-section">
@@ -358,7 +358,7 @@
                     
                     <div>
                         <label for="pdfTitle" style="font-weight: normal;">Document Title:</label>
-                        <input type="text" id="pdfTitle" placeholder="Calcpad Document" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+                        <input type="text" id="pdfTitle" placeholder="CalcpadCE Document" style="width: 100%; padding: 5px; margin-bottom: 10px;">
                         
                         <label for="pdfAuthor" style="font-weight: normal;">Author:</label>
                         <input type="text" id="pdfAuthor" placeholder="Author Name" style="width: 100%; padding: 5px; margin-bottom: 10px;">
@@ -404,7 +404,7 @@
             <h2>📊 Result:</h2>
             <div class="result-frame" id="resultFrame">
                 <p style="padding: 20px; color: #666; text-align: center;">
-                    No results yet. Enter some Calcpad code and click "Convert to HTML" to see the output.
+                    No results yet. Enter some CalcpadCE code and click "Convert to HTML" to see the output.
                 </p>
             </div>
         </div>
@@ -631,7 +631,7 @@ final_result = base_value * multiplier`
                 MarginLeft: "1.5cm",
                 EnableHeader: document.getElementById('pdfHeader').checked,
                 EnableFooter: document.getElementById('pdfFooter').checked,
-                DocumentTitle: document.getElementById('pdfTitle').value || "Calcpad Document",
+                DocumentTitle: document.getElementById('pdfTitle').value || "CalcpadCE Document",
                 DocumentSubtitle: "",
                 HeaderCenter: "",
                 FooterCenter: "",
@@ -646,7 +646,7 @@ final_result = base_value * multiplier`
             const input = document.getElementById('calcpadInput').value.trim();
             
             if (!input) {
-                showStatus('Please enter some Calcpad code first!', 'error');
+                showStatus('Please enter some CalcpadCE code first!', 'error');
                 return;
             }
 
@@ -655,7 +655,7 @@ final_result = base_value * multiplier`
             
             convertBtn.disabled = true;
             convertBtn.textContent = '⏳ Converting...';
-            showStatus('Converting Calcpad code to HTML...', 'loading');
+            showStatus('Converting CalcpadCE code to HTML...', 'loading');
 
             try {
                 const settings = getSettingsFromForm();
@@ -721,7 +721,7 @@ final_result = base_value * multiplier`
             const input = document.getElementById('calcpadInput').value.trim();
             
             if (!input) {
-                showStatus('Please enter some Calcpad code first!', 'error');
+                showStatus('Please enter some CalcpadCE code first!', 'error');
                 return;
             }
 
@@ -804,7 +804,7 @@ final_result = base_value * multiplier`
             const input = document.getElementById('calcpadInput').value.trim();
             
             if (!input) {
-                showStatus('Please enter some Calcpad code first!', 'error');
+                showStatus('Please enter some CalcpadCE code first!', 'error');
                 return;
             }
 
@@ -876,7 +876,7 @@ final_result = base_value * multiplier`
             document.getElementById('calcpadInput').value = '';
             document.getElementById('resultFrame').innerHTML = `
                 <p style="padding: 20px; color: #666; text-align: center;">
-                    No results yet. Enter some Calcpad code and click "Convert to HTML" to see the output.
+                    No results yet. Enter some CalcpadCE code and click "Convert to HTML" to see the output.
                 </p>
             `;
             clearStatus();
