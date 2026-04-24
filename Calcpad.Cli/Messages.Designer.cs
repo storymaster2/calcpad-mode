@@ -169,7 +169,7 @@ namespace Calcpad.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  Welcome to CalcpadCE command line interpreter v.{0}.{1}.{2}!.
+        ///   Looks up a localized string similar to  Welcome to CalcpadCE command line interpreter v.{0}!.
         /// </summary>
         internal static string Welcome_To_Calcpad_Command_Line_Interpreter {
             get {
