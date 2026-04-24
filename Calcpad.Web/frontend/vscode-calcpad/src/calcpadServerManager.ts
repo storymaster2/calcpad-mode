@@ -60,8 +60,22 @@ export class CalcpadServerManager extends BaseServerManager implements vscode.Di
     private extensionPath: string;
     private outputChannel: vscode.OutputChannel;
 
-    constructor(extensionPath: string, outputChannel: vscode.OutputChannel, dotnetPath: string = 'dotnet') {
-        super(extensionPath, new VSCodeLogger(outputChannel), dotnetPath);
+    /**
+     * @param outputChannel Server debug channel — receives stdout (verbose server output).
+     * @param mainOutputChannel Main extension log — receives stderr only. Falls back to outputChannel if omitted.
+     */
+    constructor(
+        extensionPath: string,
+        outputChannel: vscode.OutputChannel,
+        dotnetPath: string = 'dotnet',
+        mainOutputChannel?: vscode.OutputChannel
+    ) {
+        super(
+            extensionPath,
+            new VSCodeLogger(outputChannel),
+            dotnetPath,
+            mainOutputChannel ? new VSCodeLogger(mainOutputChannel) : undefined
+        );
         this.extensionPath = extensionPath;
         this.outputChannel = outputChannel;
     }

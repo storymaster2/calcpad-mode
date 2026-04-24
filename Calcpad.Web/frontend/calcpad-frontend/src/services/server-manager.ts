@@ -4,13 +4,22 @@ import * as fs from 'fs';
 import { spawn, execSync, ChildProcess } from 'child_process';
 import type { ILogger } from '../types/interfaces';
 
+interface LockFileContents {
+    pid: number;
+    port: number;
+    startedAt: number;
+}
+
 /**
  * Manages the lifecycle of the bundled CalcPad server process.
- * Adapted from the VS Code extension's CalcpadServerManager with
- * vscode.OutputChannel replaced by ILogger interface.
  *
- * Uses a PID file to track the server process across extension restarts,
- * ensuring stale processes are cleaned up even after crashes or abrupt exits.
+ * Designed for cross-instance reuse: multiple VS Code windows share a single
+ * server discovered via a lock file at `{basePath}/bin/.calcpad-server.lock`.
+ * Only the first instance to start spawns the server process and becomes the
+ * owner. Subsequent instances read the lock file, health-check the existing
+ * server, and connect to it. The server is spawned detached so it outlives
+ * the spawning process — it only exits via the `calcpad.stopServer` command
+ * or an OS-level signal.
  */
 export class CalcpadServerManager {
     private static readonly MAX_RESTARTS = 3;
@@ -18,25 +27,31 @@ export class CalcpadServerManager {
     private serverProcess: ChildProcess | null = null;
     private port: number = 0;
     private logger: ILogger;
+    private mainLogger: ILogger;
     private basePath: string;
     private dotnetPath: string;
     private _isRunning: boolean = false;
+    private _owned: boolean = false;
     private _disposed: boolean = false;
     private _startingUp: boolean = false;
     private _restartCount: number = 0;
     private _lastCrashOutput: string[] = [];
-    private _lastStdoutOutput: string[] = [];
     private _processClosed: boolean = false;
-    private pidFilePath: string;
+    private lockFilePath: string;
 
     /** Called when auto-restart retries are exhausted. Receives the last stderr output. */
     public onCrashExhausted?: (crashOutput: string) => void;
 
-    constructor(basePath: string, logger: ILogger, dotnetPath: string = 'dotnet') {
+    /**
+     * @param logger    Server debug channel — receives stdout (verbose server output).
+     * @param mainLogger Main extension log — receives stderr only. Falls back to `logger` if omitted.
+     */
+    constructor(basePath: string, logger: ILogger, dotnetPath: string = 'dotnet', mainLogger?: ILogger) {
         this.basePath = basePath;
         this.logger = logger;
+        this.mainLogger = mainLogger ?? logger;
         this.dotnetPath = dotnetPath;
-        this.pidFilePath = path.join(basePath, 'bin', '.calcpad-server.pid');
+        this.lockFilePath = path.join(basePath, 'bin', '.calcpad-server.lock');
     }
 
     /**
@@ -48,49 +63,47 @@ export class CalcpadServerManager {
     }
 
     /**
-     * Kill any stale server process left over from a previous session.
-     * Reads the PID from the PID file and kills it if still running.
+     * Read the lock file and verify the recorded server is alive and healthy.
+     * Returns the lock contents if reusable, or null if the lock is missing/stale.
      */
-    public killStaleProcess(): void {
+    private async tryReuseExistingServer(): Promise<LockFileContents | null> {
+        let lock: LockFileContents;
         try {
-            if (!fs.existsSync(this.pidFilePath)) {
-                return;
+            if (!fs.existsSync(this.lockFilePath)) {
+                return null;
             }
-
-            const stalePid = parseInt(fs.readFileSync(this.pidFilePath, 'utf-8').trim(), 10);
-            if (isNaN(stalePid)) {
-                this.removePidFile();
-                return;
+            lock = JSON.parse(fs.readFileSync(this.lockFilePath, 'utf-8'));
+            if (typeof lock.pid !== 'number' || typeof lock.port !== 'number') {
+                this.removeLockFile();
+                return null;
             }
-
-            // Check if the process is still alive
-            try {
-                process.kill(stalePid, 0); // Signal 0 = existence check only
-            } catch {
-                this.log(`Stale PID ${stalePid} is no longer running`);
-                this.removePidFile();
-                return;
-            }
-
-            this.log(`Killing stale server process (PID ${stalePid})...`);
-            if (process.platform === 'win32') {
-                try {
-                    execSync(`taskkill /F /T /PID ${stalePid}`, { timeout: 10000, stdio: 'ignore' });
-                } catch {
-                    // Process may have exited between check and kill
-                }
-            } else {
-                try {
-                    process.kill(stalePid, 'SIGKILL');
-                } catch {
-                    // Already dead
-                }
-            }
-            this.log(`Stale process ${stalePid} cleaned up`);
-            this.removePidFile();
-        } catch (err) {
-            this.log(`Error cleaning up stale process: ${err instanceof Error ? err.message : String(err)}`);
+        } catch {
+            this.removeLockFile();
+            return null;
         }
+
+        try {
+            process.kill(lock.pid, 0);
+        } catch {
+            this.log(`Lock file references dead PID ${lock.pid} — ignoring`);
+            this.removeLockFile();
+            return null;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:${lock.port}/api/calcpad/snippets`, {
+                signal: AbortSignal.timeout(2000)
+            });
+            if (!response.ok) {
+                this.log(`Existing server at port ${lock.port} unhealthy (HTTP ${response.status}) — ignoring`);
+                return null;
+            }
+        } catch (err) {
+            this.log(`Existing server at port ${lock.port} unreachable: ${err instanceof Error ? err.message : String(err)}`);
+            return null;
+        }
+
+        return lock;
     }
 
     /**
@@ -103,15 +116,48 @@ export class CalcpadServerManager {
             return;
         }
 
-        // Clean up any orphaned server from a previous session
-        this.killStaleProcess();
+        // Reuse an existing server from another VS Code window if one is alive.
+        const existing = await this.tryReuseExistingServer();
+        if (existing) {
+            this.port = existing.port;
+            this._owned = false;
+            this._isRunning = true;
+            this.log(`Reusing existing server (PID ${existing.pid}) at port ${existing.port}`);
+            return;
+        }
 
         const dllPath = path.join(this.basePath, 'bin', 'Calcpad.Server.dll');
         if (!fs.existsSync(dllPath)) {
             throw new Error(`Calcpad.Server.dll not found at ${dllPath}`);
         }
 
-        this.port = await this.findFreePort();
+        const candidatePort = await this.findFreePort();
+
+        // Race guard: atomically claim the lock file before spawning. If another
+        // window claimed it in the window between our reuse-check and this line,
+        // the `wx` flag makes this throw EEXIST — we then wait for that peer's
+        // server to come up and adopt it instead of spawning a duplicate.
+        const placeholderLock: LockFileContents = {
+            pid: process.pid,  // extension host PID — used by peers to detect if spawner died
+            port: candidatePort,
+            startedAt: Date.now()
+        };
+        if (!this.tryClaimLockExclusive(placeholderLock)) {
+            this.log('Another window is spawning the server — waiting to adopt it...');
+            const adopted = await this.waitForPeerServer(20000);
+            if (adopted) {
+                this.port = adopted.port;
+                this._owned = false;
+                this._isRunning = true;
+                this.log(`Adopted peer-spawned server (PID ${adopted.pid}) at port ${adopted.port}`);
+                return;
+            }
+            this.log('Timed out waiting for peer server — reclaiming lock and spawning our own');
+            this.removeLockFile();
+            this.tryClaimLockExclusive(placeholderLock);
+        }
+
+        this.port = candidatePort;
         this.log(`Starting server on port ${this.port}...`);
 
         const serverUrl = `http://localhost:${this.port}`;
@@ -123,31 +169,38 @@ export class CalcpadServerManager {
         const exePath = path.join(this.basePath, 'bin', exeName);
         const useAppHost = fs.existsSync(exePath);
 
+        // `detached: true` starts the child in its own process group / session,
+        // so it survives when this VS Code window exits. We still pipe stdio
+        // while we're alive to capture startup logs; once the owner exits,
+        // Node's unref() lets the parent event loop close without waiting.
+        const spawnOpts = { stdio: ['pipe', 'pipe', 'pipe'] as ['pipe', 'pipe', 'pipe'], detached: true };
         this.serverProcess = useAppHost
-            ? spawn(exePath, ['--urls', serverUrl], { stdio: ['pipe', 'pipe', 'pipe'] })
-            : spawn(this.dotnetPath, [dllPath, '--urls', serverUrl], { stdio: ['pipe', 'pipe', 'pipe'] });
-        this.log(`Spawned via ${useAppHost ? 'apphost' : 'dotnet'} (PID ${this.serverProcess.pid})`);
+            ? spawn(exePath, ['--urls', serverUrl], spawnOpts)
+            : spawn(this.dotnetPath, [dllPath, '--urls', serverUrl], spawnOpts);
+        this.serverProcess.unref();
+        this._owned = true;
+        this.log(`Spawned via ${useAppHost ? 'apphost' : 'dotnet'} (PID ${this.serverProcess.pid}, detached)`);
 
-        // Write PID file so we can clean up orphaned processes on next startup
+        // Rewrite the lock with the actual child PID (replacing our host-PID placeholder).
         if (this.serverProcess.pid) {
-            this.writePidFile(this.serverProcess.pid);
+            this.writeLockFile({
+                pid: this.serverProcess.pid,
+                port: this.port,
+                startedAt: Date.now()
+            });
         }
 
-        this._lastStdoutOutput = [];
+        // stdout → server debug channel only. Not buffered, not surfaced in crash messages.
         this.serverProcess.stdout?.on('data', (data: Buffer) => {
             const text = data.toString().trim();
-            this.log(`[stdout] ${text}`);
-            // Buffer recent stdout lines — .NET runtime errors sometimes go to stdout
-            this._lastStdoutOutput.push(text);
-            if (this._lastStdoutOutput.length > 20) {
-                this._lastStdoutOutput.shift();
-            }
+            this.logger.appendLine(`[ServerManager] [stdout] ${text}`);
         });
 
+        // stderr → main extension log + crash buffer. These are the lines we actually
+        // want visible to the user and included in crash reports.
         this.serverProcess.stderr?.on('data', (data: Buffer) => {
             const text = data.toString().trim();
-            this.log(`[stderr] ${text}`);
-            // Buffer recent stderr lines for crash reporting
+            this.mainLogger.appendLine(`[ServerManager] [stderr] ${text}`);
             this._lastCrashOutput.push(text);
             if (this._lastCrashOutput.length > 20) {
                 this._lastCrashOutput.shift();
@@ -175,7 +228,11 @@ export class CalcpadServerManager {
             if (!this._startingUp) {
                 this.serverProcess = null;
             }
-            this.removePidFile();
+            // Only clear the lock if we owned the process. A non-owner will never
+            // see this handler since it doesn't hold a child-process reference.
+            if (this._owned) {
+                this.removeLockFile();
+            }
 
             // Auto-restart if not intentionally disposed and not in initial startup
             // (during startup, waitForReady will detect the exit and report the error)
@@ -203,7 +260,6 @@ export class CalcpadServerManager {
             await this.waitForReady(serverUrl);
             this._isRunning = true;
             this._lastCrashOutput = [];
-            this._lastStdoutOutput = [];
             this.log(`Server is ready at ${serverUrl}`);
         } finally {
             this._startingUp = false;
@@ -217,12 +273,23 @@ export class CalcpadServerManager {
     }
 
     /**
-     * Stop the server process gracefully.
+     * Explicitly kill the server. Used by the `calcpad.stopServer` / refresh
+     * commands. Kills regardless of ownership — if this instance merely connected
+     * to a server spawned by another window, we look the PID up from the lock
+     * file and kill that.
      */
     public async stop(): Promise<void> {
         this._disposed = true;
 
         if (!this.serverProcess) {
+            // We don't own the process — kill whatever PID the lock file records.
+            const lock = this.readLockFile();
+            if (lock) {
+                this.log(`Stopping shared server (PID ${lock.pid})`);
+                this.killByPid(lock.pid);
+                this.removeLockFile();
+            }
+            this._isRunning = false;
             return;
         }
 
@@ -233,42 +300,62 @@ export class CalcpadServerManager {
         this.serverProcess = null;
         this._isRunning = false;
 
-        const isWindows = process.platform === 'win32';
+        if (pid) {
+            this.killByPid(pid);
+        }
+        await new Promise<void>((resolve) => {
+            if (proc.exitCode !== null) {
+                resolve();
+                return;
+            }
+            const timeout = setTimeout(() => resolve(), 5000);
+            proc.once('exit', () => {
+                clearTimeout(timeout);
+                resolve();
+            });
+        });
 
-        // On Windows, use taskkill /T to kill the entire process tree
-        // (including child processes like chrome-headless-shell.exe).
-        // Node's proc.kill() only kills the parent process on Windows.
-        if (isWindows && pid) {
+        this.removeLockFile();
+        this.log('Server stopped');
+    }
+
+    /**
+     * Detach from the server without killing it. Used by `deactivate()` so the
+     * server keeps running for other VS Code windows (and for this window if
+     * the extension reactivates).
+     */
+    public disconnect(): void {
+        this._disposed = true;
+        if (this.serverProcess) {
+            // We were the owner. The child was spawned detached + unref'd, so
+            // it already survives our exit. Drop our handle so Node doesn't
+            // keep the event loop alive on the stdio pipes.
+            try {
+                this.serverProcess.stdout?.destroy();
+                this.serverProcess.stderr?.destroy();
+                this.serverProcess.stdin?.end();
+            } catch {
+                // best-effort
+            }
+            this.serverProcess = null;
+        }
+        this._isRunning = false;
+        this.log('Disconnected from server (left running for other instances)');
+    }
+
+    private killByPid(pid: number): void {
+        if (process.platform === 'win32') {
             try {
                 execSync(`taskkill /F /T /PID ${pid}`, { timeout: 10000, stdio: 'ignore' });
-                this.log('Server process tree killed');
             } catch {
-                // Process may already be dead
-                this.log('taskkill completed (process may have already exited)');
+                // already dead
             }
         } else {
-            proc.kill('SIGTERM');
-
-            // Force kill after timeout
-            await new Promise<void>((resolve) => {
-                const timeout = setTimeout(() => {
-                    try {
-                        proc.kill('SIGKILL');
-                    } catch {
-                        // Process may already be dead
-                    }
-                    resolve();
-                }, 5000);
-
-                proc.on('exit', () => {
-                    clearTimeout(timeout);
-                    resolve();
-                });
-            });
+            try { process.kill(pid, 'SIGTERM'); } catch { /* already dead */ }
+            setTimeout(() => {
+                try { process.kill(pid, 'SIGKILL'); } catch { /* already dead */ }
+            }, 5000);
         }
-
-        this.removePidFile();
-        this.log('Server stopped');
     }
 
     /**
@@ -299,21 +386,75 @@ export class CalcpadServerManager {
     }
 
     public dispose(): void {
-        this.stop();
+        // Default disposal = disconnect, not kill. Use stop() for explicit kill.
+        this.disconnect();
     }
 
-    private writePidFile(pid: number): void {
+    private writeLockFile(lock: LockFileContents): void {
         try {
-            fs.writeFileSync(this.pidFilePath, String(pid), 'utf-8');
+            fs.writeFileSync(this.lockFilePath, JSON.stringify(lock), 'utf-8');
         } catch (err) {
-            this.log(`Warning: Could not write PID file: ${err instanceof Error ? err.message : String(err)}`);
+            this.log(`Warning: Could not write lock file: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
 
-    private removePidFile(): void {
+    /**
+     * Atomic exclusive-create: write the lock only if no lock file currently exists.
+     * Returns true if this process won the claim, false on EEXIST (peer beat us).
+     */
+    private tryClaimLockExclusive(lock: LockFileContents): boolean {
         try {
-            if (fs.existsSync(this.pidFilePath)) {
-                fs.unlinkSync(this.pidFilePath);
+            fs.writeFileSync(this.lockFilePath, JSON.stringify(lock), { encoding: 'utf-8', flag: 'wx' });
+            return true;
+        } catch (err: unknown) {
+            if (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'EEXIST') {
+                return false;
+            }
+            this.log(`Warning: Could not claim lock file: ${err instanceof Error ? err.message : String(err)}`);
+            return false;
+        }
+    }
+
+    /**
+     * Poll for a peer-spawned server to come online and become healthy.
+     * Used when we lost the lock-claim race: another window is in the middle
+     * of spawning, and we want to reuse its server rather than spawn our own.
+     */
+    private async waitForPeerServer(timeoutMs: number): Promise<LockFileContents | null> {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+            const existing = await this.tryReuseExistingServer();
+            if (existing) {
+                return existing;
+            }
+            // If the lock has disappeared, the peer aborted — stop waiting.
+            if (!fs.existsSync(this.lockFilePath)) {
+                return null;
+            }
+            await new Promise(r => setTimeout(r, 500));
+        }
+        return null;
+    }
+
+    private readLockFile(): LockFileContents | null {
+        try {
+            if (!fs.existsSync(this.lockFilePath)) {
+                return null;
+            }
+            const lock = JSON.parse(fs.readFileSync(this.lockFilePath, 'utf-8'));
+            if (typeof lock.pid !== 'number' || typeof lock.port !== 'number') {
+                return null;
+            }
+            return lock;
+        } catch {
+            return null;
+        }
+    }
+
+    private removeLockFile(): void {
+        try {
+            if (fs.existsSync(this.lockFilePath)) {
+                fs.unlinkSync(this.lockFilePath);
             }
         } catch {
             // Ignore — best effort cleanup
@@ -345,14 +486,14 @@ export class CalcpadServerManager {
             // because 'close' fires after all stderr data events, ensuring
             // _lastCrashOutput is fully populated before we read it.
             if (!this.serverProcess || this._processClosed) {
-                // Combine all available crash info: stderr, stdout, and log file
+                // Crash info comes from stderr (what we actually surface) plus the
+                // server log file as fallback. stdout is intentionally excluded —
+                // it's informational and goes only to the server debug channel.
                 const stderr = this._lastCrashOutput.join('\n');
-                const stdout = this._lastStdoutOutput.join('\n');
                 const logFile = this.readServerLogFile();
                 const parts: string[] = [];
                 if (stderr) { parts.push(`[stderr]\n${stderr}`); }
-                if (stdout) { parts.push(`[stdout]\n${stdout}`); }
-                if (!stderr && !stdout && logFile) { parts.push(`[log file]\n${logFile}`); }
+                if (!stderr && logFile) { parts.push(`[log file]\n${logFile}`); }
                 const crashOutput = parts.join('\n\n');
                 throw new Error(
                     crashOutput

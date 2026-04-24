@@ -11,8 +11,8 @@
 #HTML
 <style>
     .calcpad-ui-input.highlight {
-        background-color: #fff3b0;
-        border: 1px solid #caa200;
+        background-color: #aaaaaa;
+        border: 1px solid #eeeeee;
         padding: 2px 4px;
         border-radius: 3px;
     }
@@ -52,7 +52,7 @@ A = L * W
 ' Datagrid from bracket literal (auto-detected rows/cols)
 #UI v = [1; 2; 3]
 #UI M = [1; 2; 3 | 4; 5; 6]
-
+M
 ' Datagrid from vector()/matrix() constructors
 #UI Z = vector(5)
 #UI G = matrix(3; 4)
@@ -66,7 +66,7 @@ A = L * W
 
 ' Checkbox (numeric 0/1 toggle, styled as a switch)
 #UI {"type": "checkbox", "style": "switch"} flag = 1
-
+flag
 ' ─────────────────────────────────────────────────────────────────────────────
 ' String mode - auto-detected ($ suffix on LHS)
 ' ─────────────────────────────────────────────────────────────────────────────

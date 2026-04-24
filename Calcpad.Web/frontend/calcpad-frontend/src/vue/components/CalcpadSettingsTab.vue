@@ -214,16 +214,30 @@
 
       <h3>Color Theme</h3>
       <div class="setting-group">
-        <label for="colorTheme">VS Code Color Theme:</label>
+        <label for="colorTheme">Color Theme:</label>
         <select
           id="colorTheme"
           v-model="colorTheme"
           @change="updateColorTheme"
         >
-          <option value="" disabled>Other</option>
-          <option value="CalcPad Light">CalcPad Light</option>
-          <option value="CalcPad Dark">CalcPad Dark</option>
-          <option value="CalcPad Token Test">CalcPad Token Test</option>
+          <option
+            v-if="colorTheme && !knownThemeLabels.has(colorTheme)"
+            :value="colorTheme"
+          >{{ colorTheme }}</option>
+          <optgroup v-if="darkThemes.length" label="Dark">
+            <option
+              v-for="t in darkThemes"
+              :key="t.label"
+              :value="t.label"
+            >{{ t.label }}</option>
+          </optgroup>
+          <optgroup v-if="lightThemes.length" label="Light">
+            <option
+              v-for="t in lightThemes"
+              :key="t.label"
+              :value="t.label"
+            >{{ t.label }}</option>
+          </optgroup>
         </select>
       </div>
 
@@ -298,14 +312,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import type { Settings } from '../types'
+import { ref, watch, computed } from 'vue'
+import type { Settings, ThemeInfo } from '../types'
 
 // Props
 interface Props {
   settings?: Settings
   initialPreviewTheme?: string
   initialColorTheme?: string
+  initialAvailableThemes?: ThemeInfo[]
   initialEnableQuickTyping?: boolean
   initialCommentFormat?: string
   initialEnableFormattingHotkeys?: boolean
@@ -344,6 +359,7 @@ const props = withDefaults(defineProps<Props>(), {
   }),
   initialPreviewTheme: 'system',
   initialColorTheme: '',
+  initialAvailableThemes: () => [],
   initialEnableQuickTyping: true,
   initialCommentFormat: 'auto',
   initialEnableFormattingHotkeys: true,
@@ -370,6 +386,11 @@ const emit = defineEmits<{
 const localSettings = ref<Settings>({ ...props.settings })
 const previewTheme = ref(props.initialPreviewTheme)
 const colorTheme = ref(props.initialColorTheme)
+const availableThemes = ref<ThemeInfo[]>(props.initialAvailableThemes)
+
+const darkThemes = computed(() => availableThemes.value.filter(t => t.kind === 'dark'))
+const lightThemes = computed(() => availableThemes.value.filter(t => t.kind === 'light'))
+const knownThemeLabels = computed(() => new Set(availableThemes.value.map(t => t.label)))
 const enableQuickTyping = ref(props.initialEnableQuickTyping)
 const commentFormat = ref(props.initialCommentFormat)
 const enableFormattingHotkeys = ref(props.initialEnableFormattingHotkeys)
@@ -445,6 +466,13 @@ watch(
   () => props.initialColorTheme,
   (newValue) => {
     colorTheme.value = newValue
+  }
+)
+
+watch(
+  () => props.initialAvailableThemes,
+  (newValue) => {
+    availableThemes.value = newValue
   }
 )
 

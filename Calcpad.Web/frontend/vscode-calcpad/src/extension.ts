@@ -1207,7 +1207,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     }
 
                     outputChannel.appendLine(`Using dotnet at: ${resolvedDotnetPath}`);
-                    serverManager = new CalcpadServerManager(context.extensionPath, serverDebugChannel, resolvedDotnetPath);
+                    serverManager = new CalcpadServerManager(context.extensionPath, serverDebugChannel, resolvedDotnetPath, outputChannel);
                     context.subscriptions.push(serverManager);
 
                     // Notify user when server crashes repeatedly
@@ -1695,7 +1695,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export async function deactivate() {
     if (serverManager) {
-        await serverManager.stop();
+        // Leave the server running for other VS Code instances (option C).
+        // Use the `CalcPad: Stop Server` command to actually kill it.
+        serverManager.disconnect();
     }
     if (linter) {
         linter.dispose();

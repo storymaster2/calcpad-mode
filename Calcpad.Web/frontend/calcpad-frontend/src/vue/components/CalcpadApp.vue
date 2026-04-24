@@ -31,6 +31,7 @@
         :settings="settings"
         :initial-preview-theme="previewTheme"
         :initial-color-theme="colorTheme"
+        :initial-available-themes="availableThemes"
         :initial-enable-quick-typing="enableQuickTyping"
         :initial-comment-format="commentFormat"
         :initial-enable-formatting-hotkeys="enableFormattingHotkeys"
@@ -77,7 +78,7 @@ import CalcpadVariablesTab from './CalcpadVariablesTab.vue'
 import CalcpadFilesTab from './CalcpadFilesTab.vue'
 import CalcpadPdfTab from './CalcpadPdfTab.vue'
 import { postMessage } from '../services/messaging'
-import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading } from '../types'
+import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading, ThemeInfo } from '../types'
 import { DEFAULT_PDF_SETTINGS } from '../types'
 
 // State
@@ -86,6 +87,7 @@ const insertItems = ref<InsertItem[]>([])
 const settings = ref<Settings>()
 const previewTheme = ref('system')
 const colorTheme = ref('')
+const availableThemes = ref<ThemeInfo[]>([])
 const enableQuickTyping = ref(true)
 const commentFormat = ref('auto')
 const enableFormattingHotkeys = ref(true)
@@ -247,6 +249,7 @@ const handleMessage = (event: MessageEvent) => {
       settings.value = message.settings
       previewTheme.value = message.previewTheme || 'system'
       colorTheme.value = message.colorTheme || ''
+      availableThemes.value = message.availableThemes || []
       commentFormat.value = message.commentFormat || 'auto'
       enableFormattingHotkeys.value = message.enableFormattingHotkeys !== false
       darkBackground.value = message.darkBackground || '#1e1e1e'

@@ -29,6 +29,17 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "grammars": [
+      {
+        "language": "calcpad",
+        "scopeName": "source.calcpad",
+        "path": "./syntaxes/calcpad.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.html": "html",
+          "meta.embedded.block.markdown": "markdown"
+        }
+      }
+    ],
     "semanticTokenTypes": [
       {
         "id": "const",
@@ -897,6 +908,76 @@
         "editor.unicodeHighlight.nonBasicASCII": false,
         "editor.acceptSuggestionOnEnter": "off",
         "editor.lightbulb.enabled": "off"
+      },
+      "editor.semanticTokenColorCustomizations": {
+        "enabled": true,
+        "rules": {
+          "const:calcpad": "#D4D4D4",
+          "operator:calcpad": "#ECC860",
+          "bracket:calcpad": "#FF69B4",
+          "lineContinuation:calcpad": "#ECC860",
+          "variable:calcpad": "#6B9FFF",
+          "localVariable:calcpad": "#8BB4FF",
+          "function:calcpad": { "foreground": "#D4D4D4", "bold": true },
+          "macro:calcpad": "#D355D3",
+          "macroParameter:calcpad": { "foreground": "#C09BDB", "italic": true },
+          "units:calcpad": "#00CED1",
+          "setting:calcpad": "#4FC1FF",
+          "keyword:calcpad": "#FF80FF",
+          "controlBlockKeyword:calcpad": "#FF80FF",
+          "endKeyword:calcpad": "#FF80FF",
+          "command:calcpad": "#FF80FF",
+          "include:calcpad": "#9B6BCC",
+          "filePath:calcpad": "#9B6BCC",
+          "dataExchangeKeyword:calcpad": "#FF80FF",
+          "comment:calcpad": "#57A64A",
+          "htmlComment:calcpad": { "foreground": "#808B96", "italic": true },
+          "tag:calcpad": "#CC66FF",
+          "htmlContent:calcpad": "#6BBF5E",
+          "javascript:calcpad": "#ECC860",
+          "css:calcpad": "#6B9FFF",
+          "svg:calcpad": "#00CED1",
+          "input:calcpad": "#FF5555",
+          "format:calcpad": "#A9A9A9",
+          "stringVariable:calcpad": "#4EC9B0",
+          "stringFunction:calcpad": { "foreground": "#4EC9B0", "bold": true },
+          "stringTable:calcpad": "#B5CEA8"
+        },
+        "[Default Light Modern][Default Light+][Default Light][Light+ (default light)][Light (Visual Studio)][Visual Studio Light][Quiet Light][Solarized Light][GitHub Light][CalcPad Light]": {
+          "enabled": true,
+          "rules": {
+            "const:calcpad": "#000000",
+            "operator:calcpad": "#DAA520",
+            "bracket:calcpad": "#FF1493",
+            "lineContinuation:calcpad": "#DAA520",
+            "variable:calcpad": "#0000FF",
+            "localVariable:calcpad": "#0066CC",
+            "function:calcpad": { "foreground": "#000000", "bold": true },
+            "macro:calcpad": "#8B008B",
+            "macroParameter:calcpad": { "foreground": "#7B2FA0", "italic": true },
+            "units:calcpad": "#008B8B",
+            "setting:calcpad": "#0077AA",
+            "keyword:calcpad": "#FF00FF",
+            "controlBlockKeyword:calcpad": "#FF00FF",
+            "endKeyword:calcpad": "#FF00FF",
+            "command:calcpad": "#FF00FF",
+            "include:calcpad": "#4B0082",
+            "filePath:calcpad": "#4B0082",
+            "dataExchangeKeyword:calcpad": "#FF00FF",
+            "comment:calcpad": "#228B22",
+            "htmlComment:calcpad": { "foreground": "#6B7D8D", "italic": true },
+            "tag:calcpad": "#9932CC",
+            "htmlContent:calcpad": "#2EA043",
+            "javascript:calcpad": "#B8860B",
+            "css:calcpad": "#0000CD",
+            "svg:calcpad": "#006400",
+            "input:calcpad": "#FF0000",
+            "format:calcpad": "#A9A9A9",
+            "stringVariable:calcpad": "#267F72",
+            "stringFunction:calcpad": { "foreground": "#267F72", "bold": true },
+            "stringTable:calcpad": "#6B8E23"
+          }
+        }
       },
       "emmet.excludeLanguages": [
         "calcpad"

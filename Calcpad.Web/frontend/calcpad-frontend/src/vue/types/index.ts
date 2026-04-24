@@ -100,6 +100,14 @@ export interface Tab {
   icon?: string
 }
 
+export type ThemeKind = 'dark' | 'light'
+
+export interface ThemeInfo {
+  label: string
+  id: string
+  kind: ThemeKind
+}
+
 // VS Code message types
 export interface VscodeMessage {
   type: string

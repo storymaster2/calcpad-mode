@@ -73,12 +73,14 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     const libraryPath = config.get<string>('libraryPath', '');
 
                     const colorTheme = vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', '');
+                    const availableThemes = this._getInstalledThemes();
 
                     webviewView.webview.postMessage({
                         type: 'settingsResponse',
                         settings: settings,
                         previewTheme: previewTheme,
                         colorTheme: colorTheme,
+                        availableThemes: availableThemes,
                         commentFormat: commentFormat,
                         enableFormattingHotkeys: enableFormattingHotkeys,
                         darkBackground: darkBackground,
@@ -285,6 +287,22 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                 tocTimer = setTimeout(() => this._sendHeadings(), 800);
             }
         });
+    }
+
+    private _getInstalledThemes(): Array<{ label: string; id: string; kind: 'dark' | 'light' }> {
+        const themes: Array<{ label: string; id: string; kind: 'dark' | 'light' }> = [];
+        for (const ext of vscode.extensions.all) {
+            const contributed = ext.packageJSON?.contributes?.themes;
+            if (!Array.isArray(contributed)) continue;
+            for (const t of contributed) {
+                if (!t?.label) continue;
+                const uiTheme: string = t.uiTheme ?? 'vs-dark';
+                const kind: 'dark' | 'light' = uiTheme === 'vs' || uiTheme === 'hc-light' ? 'light' : 'dark';
+                themes.push({ label: t.label, id: t.id ?? t.label, kind });
+            }
+        }
+        themes.sort((a, b) => a.label.localeCompare(b.label));
+        return themes;
     }
 
     private async _sendInitialData() {
