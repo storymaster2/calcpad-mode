@@ -5,6 +5,10 @@
 Installation is performed by the automated [setup program](https://github.com/imartincei/CalcpadCE/releases). Follow the instruction of the setup wizard.
 The software requires a 64-bit computer with Windows 10/11 and [Microsoft .NET Desktop Runtime 10.0](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
 
+The installer also includes the command-line interface (CLI).
+After installation it can be found at:
+`%LOCALAPPDATA%\Programs\CalcpadCE\cli\Cli.exe`
+
 ## Linux
 
 1. CalcpadCE is a .NET application, so you need .NET 10.0 to run it on Linux.
