@@ -193,7 +193,7 @@ Fr: `@ `' (single quote) `" (double quote)
 To:  °  ′ (single prime)  ″ (double prime/second)
 
 ————————————————————————————————————————————————————————————————————————————————
- Command line options (support the same language features as Calcpad.exe):
+ Command line options (support the same language features as CalcpadCE.exe):
 ———————————————————————————————————————————————————————————————————————————————— 
     cli input.cpd output.html - calculates input.cpd and exports 
     cli input.cpd output.docx   the results to the respective format
