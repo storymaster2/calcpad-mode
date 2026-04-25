@@ -349,7 +349,7 @@
   <span class="md-ellipsis">
     
   
-    About Calcpad VM
+    About CalcpadCE (Community Edition)
   
 
     
@@ -1148,7 +1148,7 @@
 
 <h1 id="theoretical-background">Theoretical background</h1>
 <p><em>(you can skip this if you find it boring)</em></p>
-<p>How does Calcpad actually work?
+<p>How does CalcpadCE actually work?
 There is a sophisticated math parser inside, that does most of the job.
 First, the source code is scanned, and the sequence of bytes is converted into a list of tokens, using lexical analysis.
 Each token is represented by data and type (purpose, role).</p>
@@ -1163,7 +1163,7 @@ The main problems are the operator precedence and the use of brackets.
 For example, the above expression makes "17", while "5*(3 + 2)" makes "25". That is why, the expression is converted into different type of notation, called "postfix" or Reverse Polish Notation (RPN). It is very easy for a computer to read this one.
 For example, the expression "5*(3 + 2)" is written in RPN as "5 3 2 + *". The main advantage is that the order of operations can be clearly specified without the need for brackets.</p>
 <p>There is a simple and powerful algorithm for evaluation of expressions written in reverse polish notation (RPN). It is used by almost all calculators.
-However, Calcpad includes additional functionality for processing parameters, functions, macros, conditional execution, loops, etc.</p>
+However, CalcpadCE includes additional functionality for processing parameters, functions, macros, conditional execution, loops, etc.</p>
 <p>This was a brief and simple explanation.
 If you are more curious about these topics, you can find more information in specialized books, papers or websites.
 Wikipedia is a good place to start with:</p>

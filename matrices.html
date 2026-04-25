@@ -349,7 +349,7 @@
   <span class="md-ellipsis">
     
   
-    About Calcpad VM
+    About CalcpadCE (Community Edition)
   
 
     
@@ -3057,13 +3057,13 @@
 
 <h1 id="matrices">Matrices</h1>
 <h2 id="internal-implementation-and-types-of-matrices">Internal implementation and types of matrices</h2>
-<p>Calcpad includes different types of matrices: general (rectangular) and special (column, symmetric, diagonal.
+<p>CalcpadCE includes different types of matrices: general (rectangular) and special (column, symmetric, diagonal.
 upper/lower triangular). Internally, each type is implemented in a different way that benefits from the specific structure for better efficiency.
 Externally, all of them behave in a similar way, except for a few cases.</p>
 <p>Each matrix type is implemented as an array of vectors, as displayed on the figure below.
 Vectors normally represent matrix rows, except for diagonal and column matrices.</p>
 <p><img src="./media/image30.png" style="width:6.71339in;height:4.4143in" alt="Картина, която съдържа текст, диаграма, линия, Паралелен Описанието е генерирано автоматично" /></p>
-<p>Calcpad uses large vectors to contain the values.
+<p>CalcpadCE uses large vectors to contain the values.
 So, it does not store the extra zero elements for partially filled (banded) matrices.
 The indexing operator for each type is internally redefined in order to return directly zero when we try to read a value outside the matrix structure or bandwidth.</p>
 <table>
@@ -3157,7 +3157,7 @@ The code below creates a Vandermonde matrix from vector <span class="arithmatex"
 <p>The "square brackets" syntax is very powerful and flexible for creating small matrices with predefined sizes.
 However, it also has a lot of limitations.
 For example, it cannot create special types of matrices and cannot specify the matrix dimensions.
-That is why, Calcpad also includes various functions for creating matrices, as follows:</p>
+That is why, CalcpadCE also includes various functions for creating matrices, as follows:</p>
 <h3 id="matrixm-n"><strong>matrix</strong>(<em>m</em>; <em>n</em>)</h3>
 <p><strong>Parameters</strong>:</p>
 <dl>
@@ -3992,7 +3992,7 @@ For example:</p>
 <p><code>#rad</code><br />
 <code>M = diagonal(3; π/2)</code> <span class="arithmatex">\(= \begin{bmatrix} 1.571 &amp; 0 &amp; 0 \\ 0 &amp; 1.571 &amp; 0 \\ 0 &amp; 0 &amp; 1.571 \end{bmatrix}\)</span><br />
 <code>cos(M)</code> <span class="arithmatex">\(= \begin{bmatrix} 0 &amp; 1 &amp; 1 \\ 1 &amp; 0 &amp; 1 \\ 1 &amp; 1 &amp; 0 \end{bmatrix}\)</span></p>
-<p>Calcpad also includes a lot of math functions that are specific for matrices, as follows:</p>
+<p>CalcpadCE also includes a lot of math functions that are specific for matrices, as follows:</p>
 <h3 id="hproda-b"><strong>hprod</strong>(<em>A</em>; <em>B</em>)</h3>
 <p><strong>Parameters</strong>:</p>
 <dl>
@@ -4325,7 +4325,7 @@ In this case, if the size of the matrix is n ≤ 10, Laplace expansion is used: 
 <p class="admonition-title">Note</p>
 <p>The cofactor <span class="arithmatex">\(C_{ij}\)</span> is defined as the respective minor <span class="arithmatex">\(M_{ij}\)</span> is multiplied by
 <span class="arithmatex">\((-1)^{i + j}\)</span>. The minor <span class="arithmatex">\(M_{ij}\)</span> represents the determinant of the submatrix, obtained by removing the <em>i</em>-th row and the <em>j</em>-th column.
-In Calcpad, the cofactor matrix is calculated by transposing the adjugate: <span class="arithmatex">\(C = adj(A)^T\)</span></p>
+In CalcpadCE, the cofactor matrix is calculated by transposing the adjugate: <span class="arithmatex">\(C = adj(A)^T\)</span></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
@@ -4452,7 +4452,7 @@ Here it is assumed that all elements along the main diagonal of <em>L</em> are e
 The function returns both matrices <em>L</em> and <em>U</em>, packed in a single square matrix.
 The elements along the main diagonal belong to <em>U</em>, since it is known that those of <em>L</em> are ones.
 The solution is performed by using the Crout's algorithm with partial pivoting.
-Instead of building the permutation matrix <em>P</em>, Calcpad internally creates a vector <span class="arithmatex">\(\vec{ind}\)</span> containing the indexes of the rows after reordering.
+Instead of building the permutation matrix <em>P</em>, CalcpadCE internally creates a vector <span class="arithmatex">\(\vec{ind}\)</span> containing the indexes of the rows after reordering.
 If you need both matrices <em>L</em> and <em>U</em> separately, you can extract them as a Hadamard product of the combined matrix by the respective lower/upper triangular matrix.
 After that, you have to reset the diagonal of <em>L</em> to ones.
 If the type of <em>M</em> is symmetric matrix, the LDLT decomposition is returned instead of LU.
@@ -4796,7 +4796,7 @@ For example:</p>
 <code>B = [11; 10; 9|8; 7; 6]</code> <span class="arithmatex">\(= \begin{bmatrix} 11 &amp; 10 &amp; 9 \\ 8 &amp; 7 &amp; 6 \end{bmatrix}\)</span><br />
 <code>A + B</code> <span class="arithmatex">\(= \begin{bmatrix} 11 &amp; 11 &amp; 11 \\ 11 &amp; 11 &amp; 11 \end{bmatrix}\)</span></p>
 <p>The only exception is multiplication operator "*" which represents the standard matrix multiplication.
-The elementwise (Hadamard or Schur) product is implemented in Calcpad as a function: <strong>hprod</strong>. Matrix multiplication <em>C</em>m×p = <em>A</em>m×n <em>B</em>n×p is defined so that each element <em>c</em>i j is obtained as the dot product of the <em>i</em>-th row of <em>A</em> and the <em>j</em>-th column of <em>B</em>:</p>
+The elementwise (Hadamard or Schur) product is implemented in CalcpadCE as a function: <strong>hprod</strong>. Matrix multiplication <em>C</em>m×p = <em>A</em>m×n <em>B</em>n×p is defined so that each element <em>c</em>i j is obtained as the dot product of the <em>i</em>-th row of <em>A</em> and the <em>j</em>-th column of <em>B</em>:</p>
 <div class="arithmatex">\[
 c_{ij} = \sum_{k = 1}^{n}{a_{ik}b_{kj}}
 \]</div>

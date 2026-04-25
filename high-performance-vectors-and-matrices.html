@@ -349,7 +349,7 @@
   <span class="md-ellipsis">
     
   
-    About Calcpad VM
+    About CalcpadCE (Community Edition)
   
 
     
@@ -1272,7 +1272,7 @@
 <h1 id="high-performance-vectors-and-matrices">High performance vectors and matrices</h1>
 <p>High performance (hp) vectors and matrices were introduced in Calcpad version 7.3.0 with the purpose of solving larger engineering problems faster and with less memory consumption.
 But this comes with a trade-off: all elements of an hp vector or matrix must have the same units.
-This allows Calcpad to store and process the units only once for the whole vector/matrix and perform a lot of additional optimizations like SIMD vectorization of operations, application of more cache-friendly algorithms, etc.
+This allows CalcpadCE to store and process the units only once for the whole vector/matrix and perform a lot of additional optimizations like SIMD vectorization of operations, application of more cache-friendly algorithms, etc.
 All this results in dozens of times improvement in speed and reduces the required memory size more than twice, even if there are no units at all.</p>
 <p>Hp vectors and matrices are initially created by special functions, similar to standard creational functions, but ending with “_hp”, as follows:</p>
 <p>Functions for creating hp vectors:</p>
@@ -1350,14 +1350,14 @@ For example:</p>
 If the expression contains only standard vectors/arrays or mixed standard and hp, it will return a standard type.
 To check if the type of <em>x</em> is a high-performance (hp) vector or matrix you can use the function <code>ishp(x)</code>.</p>
 <h2 id="high-performance-symmetric-solvers">High performance symmetric solvers</h2>
-<p>Calcpad also includes advanced solvers for two of the most common matrix problems – solution of linear systems of equations and finding the eigenvalues and eigenvector of a matrix:</p>
+<p>CalcpadCE also includes advanced solvers for two of the most common matrix problems – solution of linear systems of equations and finding the eigenvalues and eigenvector of a matrix:</p>
 <h3 id="pcg-symmetric-linear-solver">PCG symmetric linear solver</h3>
 <p>Direct methods using Cholesky and <span class="arithmatex">\(LDL^T\)</span> factorizations are suitable for small to medium sized matrices.
 For larger matrices, the computational cost and solution time get too high for practical use because the asymptotic complexity of factorization is <span class="arithmatex">\(O(n^3)\)</span>. In such cases, iterative solution methods are preferred.
 They are much faster than direct ones, especially if the matrix is well conditioned.
 One of the most popular of them is the preconditioned conjugate gradient (PCG) method.
 Its complexity is <span class="arithmatex">\(O(m\sqrt{k})\)</span>, where <em>m</em> is the number of nonzero elements and <em>k</em> is the condition number of the matrix.</p>
-<p>In Calcpad, the PCG method is used in the following functions:</p>
+<p>In CalcpadCE, the PCG method is used in the following functions:</p>
 <table>
 <thead>
 <tr>
@@ -1380,9 +1380,9 @@ Its complexity is <span class="arithmatex">\(O(m\sqrt{k})\)</span>, where <em>m<
 If the matrix has banded or skyline structure, the algorithm takes advantage of that by storing and processing only the elements within the bandwidth.
 You can achieve such structure and minimize the bandwidth by providing appropriate numbering for the joints of the FE model.</p>
 <p>Iterative methods like PCG are approximate and the solution continues until a certain precision is achieved.
-In Calcpad, it is specified by setting the variable <code>Tol</code>. Its default value is <code>Tol</code> <span class="arithmatex">\(= 10^{-6}\)</span> just like in MATLAB.
+In CalcpadCE, it is specified by setting the variable <code>Tol</code>. Its default value is <code>Tol</code> <span class="arithmatex">\(= 10^{-6}\)</span> just like in MATLAB.
 If the required precision is not reached for under 1000 iterations, no convergence is assumed, so the solution is stopped with an error message.
-Preconditioning can often improve convergence by reducing the condition number <em>k</em>. In Calcpad, a simple Jacoby preconditioner is used for that purpose.</p>
+Preconditioning can often improve convergence by reducing the condition number <em>k</em>. In CalcpadCE, a simple Jacoby preconditioner is used for that purpose.</p>
 <h3 id="symmetric-lanczos-eigensolver">Symmetric Lanczos eigensolver</h3>
 <p>Similarly to the system of equations, the direct QL algorithm with implicit shifts we use for finding the eigenvalues and eigenvectors of matrices has a complexity of <span class="arithmatex">\(O(n^3)\)</span> which makes it suitable for small to medium sized problems.
 In addition, it always finds all eigenvalues and eigenvectors, which is not required in most cases.
@@ -1391,7 +1391,7 @@ The Lanczos method is much more appropriate for that purpose.
 It can find several of the extreme (smallest or largest) eigenvalues of a large matrix but much faster than the Implicit QL algorithm.
 It has a time complexity of <span class="arithmatex">\(O(k^2 m)\)</span>, where <em>k</em> is the number of iterations and <em>m</em> is the number of nonzero elements of the matrix.
 It is applied at the tridiagonalization step, replacing the Householder’s reflections method.</p>
-<p>In Calcpad, it is used for the same functions as the QL method, when the size of the matrix is &gt; 200:</p>
+<p>In CalcpadCE, it is used for the same functions as the QL method, when the size of the matrix is &gt; 200:</p>
 <table>
 <thead>
 <tr>

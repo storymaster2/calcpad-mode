@@ -349,7 +349,7 @@
   <span class="md-ellipsis">
     
   
-    About Calcpad VM
+    About CalcpadCE (Community Edition)
   
 
     
@@ -1237,12 +1237,15 @@
 
 <h1 id="installation">Installation</h1>
 <h2 id="windows">Windows</h2>
-<p>Installation is performed by the automated setup program <a href="https://calcpad.eu/download/calcpad-setup-en-x64.zip">calcpad-setup-en-x64.exe</a>. Follow the instruction of the setup wizard.
+<p>Installation is performed by the automated <a href="https://github.com/imartincei/CalcpadCE/releases">setup program</a>. Follow the instruction of the setup wizard.
 The software requires a 64-bit computer with Windows 10/11 and <a href="https://dotnet.microsoft.com/en-us/download/dotnet/10.0">Microsoft .NET Desktop Runtime 10.0</a>.</p>
+<p>The installer also includes the command-line interface (CLI).
+After installation it can be found at:
+<code>%LOCALAPPDATA%\Programs\CalcpadCE\cli\Cli.exe</code></p>
 <h2 id="linux">Linux</h2>
 <ol>
 <li>
-<p>Calcpad is a .NET application, so you need .NET 10.0 to run it on Linux.
+<p>CalcpadCE is a .NET application, so you need .NET 10.0 to run it on Linux.
     Use the following commands to install .NET 10.0 runtime:</p>
 <div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>update
 
@@ -1253,29 +1256,29 @@ sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w
 </code></pre></div>
 </li>
 <li>
-<p>If you do not have Chromium installed, you will need it to download Calcpad and view the reports after calculation.
+<p>If you do not have Chromium installed, you will need it to download CalcpadCE and view the reports after calculation.
     Install it with the following command:</p>
 <div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>snap<span class="w"> </span>install<span class="w"> </span>chromium
 </code></pre></div>
 </li>
 <li>
-<p>Download the Calcpad setup package from the following link: <a href="https://github.com/Proektsoftbg/Calcpad/releases/download/v7.5.9/Calcpad.7.5.9.deb">https://github.com/Proektsoftbg/Calcpad/releases/download/v7.5.9/Calcpad.7.5.9.deb</a>
-    Then, install Calcpad, using the following command:</p>
+<p>Download the CalcpadCE setup package from the following link: <a href="https://github.com/imartincei/CalcpadCE/releases">https://github.com/imartincei/CalcpadCE/releases</a>
+    Then, install CalcpadCE, using the following command:</p>
 <div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>&lt;path-to-your-downloads-folder&gt;/Calcpad.7.5.9.deb
 </code></pre></div>
 <p>Instead of &lt;path-to-your-downloads-folder&gt; you must put the actual path, something like this:</p>
-<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>/home/ned/snap/chromium/3235/Downloads/Calcpad.7.5.9.deb
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>/home/&lt;user&gt;/snap/chromium/3235/Downloads/Calcpad.7.5.9.deb
 </code></pre></div>
 <p>If you get a message like the one below, please ignore it: N: Download is performed unsandboxed as root as file '.../Calcpad.7.5.9.deb' couldn't be accessed by user '_apt'. - pkgAcquire::Run (13: Permission denied)</p>
 </li>
 </ol>
 <p>And that's it.
-You can start the Calcpad command line interpreter (CLI) by simply typing:</p>
+You can start the CalcpadCE command line interpreter (CLI) by simply typing:</p>
 <div class="highlight"><pre><span></span><code>calcpad
 </code></pre></div>
 <p>You can use it to perform calculations in console mode:</p>
 <p><img src="./media/image4.png" style="width:6.69306in;height:3.49583in" alt="Cli" /></p>
-<p>The Linux version does not include any GUI yet, but you can use some advanced code editors like Notepad++ and Sublime to write Calcpad code and Chromium to view the results.
+<p>The Linux version does not include any GUI yet, but you can use some advanced code editors like Notepad++ and Sublime to write CalcpadCE code and Chromium to view the results.
 Instructions on how to install Sublime Text on Linux are provided here: </p>
 <p><a href="https://www.sublimetext.com/docs/linux_repositories.html">https://www.sublimetext.com/docs/linux_repositories.html</a></p>
 <p>For Ubuntu, you can use the following commands:</p>
@@ -1287,7 +1290,7 @@ sudo<span class="w"> </span>apt-get<span class="w"> </span>update
 
 sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>sublime-text
 </code></pre></div>
-<p>Then, goto <a href="https://github.com/Proektsoftbg/Calcpad/tree/main/Setup/Linux/Sublime">https://github.com/Proektsoftbg/Calcpad/tree/main/Setup/Linux/Sublime</a> and download the following files:</p>
+<p>Then, goto <a href="https://github.com/imartincei/CalcpadCE/tree/main/Setup/Linux/Sublime">https://github.com/imartincei/CalcpadCE/tree/main/Setup/Linux/Sublime</a> and download the following files:</p>
 <ul>
 <li>calcpad.sublime-build  </li>
 <li>calcpad.sublime-completions  </li>
@@ -1302,7 +1305,7 @@ Finally, you can open Sublime Text and Chromium with the following commands:</p>
 chromium &amp;
 </code></pre></div>
 <p>Put them side to side.
-Start a new *.cpd file in Sublime Text or open an example from the /home/&lt;user&gt;/Calcpad folder.
+Start a new *.cpd file in Sublime Text or open an example from the /usr/share/CalcpadCE/Examples folder.
 Press Ctrl+B to calculate.
 If everything is OK, the results will show in Chromium:</p>
 <p><img src="./media/image5.png" style="width:6.69306in;height:3.50556in" alt="Sublime+Chromium" /></p>

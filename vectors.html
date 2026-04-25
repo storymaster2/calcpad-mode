@@ -349,7 +349,7 @@
   <span class="md-ellipsis">
     
   
-    About Calcpad VM
+    About CalcpadCE (Community Edition)
   
 
     
@@ -1933,7 +1933,7 @@
 
 <h1 id="vectors">Vectors</h1>
 <h2 id="internal-implementation-and-types-of-vectors">Internal implementation and types of vectors</h2>
-<p>There are two types of vectors in Calcpad: regular (small) and large.
+<p>There are two types of vectors in CalcpadCE: regular (small) and large.
 Vectors can contain only real numbers with units.
 Complex vectors are not supported in this version.
 A single vector can contain different types of units, even if not consistent.
@@ -1946,11 +1946,11 @@ The structure of a large vector is displayed on the figure below:</p>
 This length can be obtained by the <strong>len</strong>(<span class="arithmatex">\(\vec{v}\)</span>) function.
 The greatest index of a non-zero element defines the internal size of a vector.
 It is returned by the <strong>size</strong>(<span class="arithmatex">\(\vec{v}\)</span>) function.
-The rest of the elements are known to be zero, so Calcpad does not need to store them in memory.
+The rest of the elements are known to be zero, so CalcpadCE does not need to store them in memory.
 Instead, it returns directly zero, if such an element is accessed.</p>
 <p>This allows the software to work efficiently with vectors that are not entirely filled.
 Such vectors are very common in engineering as is the load vector in finite element analyses.
-However, Calcpad reserves a little bit more memory above the size, that is called "capacity". This is because resizing a vector is computationally expensive.
+However, CalcpadCE reserves a little bit more memory above the size, that is called "capacity". This is because resizing a vector is computationally expensive.
 Since we normally assign elements in a loop, in this way we avoid resizing the vector on each iteration.</p>
 <h2 id="definition">Definition</h2>
 <p>Vectors can be defined by using the following syntax:</p>
@@ -1998,7 +1998,7 @@ $<span class="n">Repeat</span><span class="p">{</span><span class="n">b</span><s
 <h2 id="structural-functions">Structural functions</h2>
 <p>This includes all functions that read or modify the structure of the vector.
 It means that the result does not depend on the content, i.e. the values of elements.
-The following functions are available in Calcpad:</p>
+The following functions are available in CalcpadCE:</p>
 <h3 id="lenveca"><strong>len</strong>(<span class="arithmatex">\(\vec{a}\)</span>)</h3>
 <p><strong>Parameters</strong>:</p>
 <dl>
@@ -2387,7 +2387,7 @@ The possible suffixes are given in the table below:</p>
 The function is applied separately to each of the elements in the input vector and the results are returned in a corresponding output vector.
 For example:</p>
 <p><code>sin([0; 30; 45; 90])</code> <span class="arithmatex">\(= [0\ 0.5\ 0.707\ 1]\)</span></p>
-<p>Calcpad also includes several math functions that are specific for vectors:</p>
+<p>CalcpadCE also includes several math functions that are specific for vectors:</p>
 <h3 id="norm_pveca"><strong>norm_p</strong>(<span class="arithmatex">\(\vec{a}\)</span>)</h3>
 <p><strong>Parameters</strong>:</p>
 <dl>
@@ -2533,7 +2533,7 @@ This applies also for the multiplication operator.
 For example:</p>
 <p><code>[2; 4; 5]*[2; 3; 4]</code> <span class="arithmatex">\(= [4\ 12\ 20]\)</span></p>
 <p>If the lengths of both vectors are different, the shorter vector is padded with zeros to the length of the longer one.
-Dot and cross products in Calcpad are implemented as functions (see above). All binary operators are supported for vector-scalar and scalar-vector operands in a similar way.
+Dot and cross products in CalcpadCE are implemented as functions (see above). All binary operators are supported for vector-scalar and scalar-vector operands in a similar way.
 For example:</p>
 <p><code>[2; 4; 5]*2</code> <span class="arithmatex">\(= [4\ 8\ 10]\)</span></p>
 

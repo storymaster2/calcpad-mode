@@ -349,7 +349,7 @@
   <span class="md-ellipsis">
     
   
-    About Calcpad VM
+    About CalcpadCE (Community Edition)
   
 
     
@@ -1412,7 +1412,7 @@
 
 
 <h1 id="operators">Operators</h1>
-<p>The following operators are supported by the Calcpad language:</p>
+<p>The following operators are supported by the CalcpadCE language:</p>
 <h2 id="arithmetic">Arithmetic</h2>
 <table>
 <thead>
@@ -1579,7 +1579,7 @@
 </tbody>
 </table>
 <h2 id="operator-shortcuts">Operator shortcuts</h2>
-<p>Instead of "≡", "≠", "≤"- and "≥", you can use the respective C-style equivalent operators, as follows: "==", "!=", "\&lt;=" and "&gt;=". They will be automatically replaced by the corresponding Calcpad operators.
+<p>Instead of "≡", "≠", "≤"- and "≥", you can use the respective C-style equivalent operators, as follows: "==", "!=", "\&lt;=" and "&gt;=". They will be automatically replaced by the corresponding CalcpadCE operators.
 The shortcut “%%” will be converted to the modulo operator “⦼”. This is necessary because “%” is reserved for the percent units.
 Since this symbol is not very common, it is rendered as “mod” in the output, e.g. “7 mod 5 = 2”, instead of “7 ⦼ 5 = 2”.  in a similar way, double slash "//" is a shortcut for division bar "÷" operator.
 Boolean operators also have shortcuts for easier typing: "&amp;&amp;" for "∧" (AND), "||" for "∨" (OR) and "^^" for "⊕" (XOR).</p>
@@ -1593,15 +1593,15 @@ If you need to change the order of evaluation, you can use brackets.
 For example, "5 + 2∙3" makes "11". If the addition has to be first, write "(5 + 2)∙3". You will get "7∙3 = 21". Operators with equal precedence are evaluated from left to right.
 This is called operator associativity.
 For example, "3 - 2 + 1" makes "(3 - 2) + 1 = 2" and not "3 - (2 + 1) = 0". Another good example is "2∙3 / 2∙3", which makes "9" and not "1".</p>
-<p>All operators in Calcpad are left-associative (calculations are performed from left to right). The only exception is exponentiation, which is right-associative unlike many hand calculators and spreadsheet software like Excel.
-In Calcpad, exponentiation is performed from right to left, which means that <em>x</em>^<em>a</em>^<em>b</em> will be evaluated as <span class="arithmatex">\(x^{a^b}\)</span>.</p>
+<p>All operators in CalcpadCE are left-associative (calculations are performed from left to right). The only exception is exponentiation, which is right-associative unlike many hand calculators and spreadsheet software like Excel.
+In CalcpadCE, exponentiation is performed from right to left, which means that <em>x</em>^<em>a</em>^<em>b</em> will be evaluated as <span class="arithmatex">\(x^{a^b}\)</span>.</p>
 <h2 id="relational-expressions">Relational expressions</h2>
 <p>Relational operators can return only two values: "<strong>1</strong>" for "<strong>true</strong>" and "<strong>0</strong>" for "<strong>false</strong>". You can use them in expressions along with arithmetic operators.
 For example, you can get the greater of two numbers <em>a</em> and <em>b</em> by the expression: "<em>a</em>*(<em>a</em> ≥ <em>b</em>) + <em>b</em>*(<em>a</em> &lt; <em>b</em>)". But you need to be careful.
 If you use "≤" instead of "<strong>&lt;</strong>", for the case of <em>a</em> equal to <em>b</em>, you will get <em>a</em> + <em>b</em>, which may be not exactly what you want.
 For that special purpose, it is better to use the built-in function <strong>max</strong>(<em>a</em>; <em>b</em>), logical operators or conditional execution (look further in this manual). Arithmetic operators are of higher precedence than relational, and both are evaluated before logical ones.</p>
 <h2 id="logical-expressions">Logical expressions</h2>
-<p>Calcpad operates only with numerical data and does not have special types for boolean data.
+<p>CalcpadCE operates only with numerical data and does not have special types for boolean data.
 Like relational ones, logical operators also use "<strong>1</strong>" for "<strong>true</strong>" and "<strong>0</strong>" for "<strong>false</strong>". Any input value, different than 0, is also assumed to be "<strong>true</strong>". You can build logical expressions by using logical operators and/or logical functions (see further in this manual). They work as follows:</p>
 <ul>
 <li>"<strong>∧</strong>" (and) returns 1 if both operands are 1 and 0 otherwise;</li>
