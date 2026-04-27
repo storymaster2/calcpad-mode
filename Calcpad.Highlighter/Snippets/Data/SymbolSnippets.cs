@@ -11,9 +11,9 @@ namespace Calcpad.Highlighter.Snippets.Data
     /// </summary>
     public static class SymbolSnippets
     {
-        public static readonly SnippetItem[] Items =
-            BaseItems.Concat(BuildDiacriticItems()).ToArray();
-
+        // NOTE: BaseItems must be declared before Items because Items's initializer
+        // references it. C# initializes static readonly fields in source order, so a
+        // forward reference here resolves to the default (null) value.
         private static readonly SnippetItem[] BaseItems =
         [
             // Greek Lowercase Letters
@@ -508,6 +508,9 @@ namespace Calcpad.Highlighter.Snippets.Data
                 QuickType = "len"
             }
         ];
+
+        public static readonly SnippetItem[] Items =
+            BaseItems.Concat(BuildDiacriticItems()).ToArray();
 
         // Every diacritic-letter combo is emitted as base letter + combining mark
         // (decomposed NFD). This keeps a single canonical form in the palette so

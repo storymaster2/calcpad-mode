@@ -1233,9 +1233,26 @@ export async function activate(context: vscode.ExtensionContext) {
                     }).catch((err) => {
                         const message = err instanceof Error ? err.message : String(err);
                         outputChannel.appendLine(`Failed to start local server: ${message}`);
-                        serverManager = undefined;
+                        // Keep `serverManager` around when Windows blocked the exe —
+                        // the user can unblock the file and click refresh to retry.
+                        // Discarding it here would leave refresh with nothing to call.
+                        const blocked = /Windows blocked the executable|EACCES|EPERM/i.test(message);
+                        if (!blocked) {
+                            serverManager = undefined;
+                        }
 
-                        if (serverMode === 'local') {
+                        if (blocked) {
+                            vscode.window.showErrorMessage(
+                                'CalcPad: Windows blocked Calcpad.Server.exe. ' +
+                                'Unblock the file (right-click → Properties → Unblock) ' +
+                                'then click the CalcPad refresh button to retry.',
+                                'Show Output'
+                            ).then(choice => {
+                                if (choice === 'Show Output') {
+                                    serverDebugChannel.show();
+                                }
+                            });
+                        } else if (serverMode === 'local') {
                             vscode.window.showErrorMessage(`CalcPad: Failed to start local server: ${message}`);
                         } else {
                             outputChannel.appendLine('Falling back to remote API');
@@ -1533,7 +1550,16 @@ export async function activate(context: vscode.ExtensionContext) {
             } catch (err) {
                 const msg = err instanceof Error ? err.message : String(err);
                 outputChannel.appendLine(`[Refresh] Server restart failed: ${msg}`);
-                vscode.window.showErrorMessage(`CalcPad: Server restart failed: ${msg}`);
+                const blocked = /Windows blocked the executable|EACCES|EPERM/i.test(msg);
+                if (blocked) {
+                    vscode.window.showErrorMessage(
+                        'CalcPad: Windows is still blocking Calcpad.Server.exe. ' +
+                        'Right-click the file in Windows Explorer → Properties → check "Unblock", ' +
+                        'then click refresh again.'
+                    );
+                } else {
+                    vscode.window.showErrorMessage(`CalcPad: Server restart failed: ${msg}`);
+                }
                 return;
             }
         } else if (serverManager) {

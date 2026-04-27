@@ -492,6 +492,7 @@ Rich hover tooltips for macros, functions, variables, and custom units. Reads fr
 - **Functions:** signature, source file, description, return type, per-parameter docs
 - **Variables:** assignment expression, inferred type, source file
 - **Custom units:** definition expression, source file
+- **Built-in functions:** signature, description, return type, per-parameter docs, and a runnable example — sourced from the snippet registry (`FunctionSnippets`, `VectorFunctionSnippets`, `MatrixFunctionSnippets`) plus a curated `calcpadBuiltinDocs.ts` mapping for richer prose
 
 Word matching includes `$` suffix and Unicode characters.
 
@@ -1364,7 +1365,41 @@ The `~<key>` → symbol shortcut (Section 4.5) is driven by the same snippet reg
 
 ---
 
-## 15. Bug Fixes
+## 15. Unicode Diacritic Identifiers & Symbol Palette Expansion
+
+The parser now treats four combining marks as identifier-continuation characters, so any base letter can carry a diacritic and remain a single variable name. The Web/VS Code symbol palette adds eight new collapsible sections covering every Latin letter under each diacritic.
+
+### 15.1 Combining Marks Accepted in Identifiers
+
+Added to `Calcpad.Core` (`Validator.VarSymbolChars`) and `Calcpad.Highlighter` (`CalcpadCharacterHelpers.IsIdentifierChar`):
+
+| Mark | Codepoint | Example |
+|------|-----------|---------|
+| Acute accent (´) | U+0301 | `á`, `ń` |
+| Macron / bar (¯) | U+0304 | `x̄`, `Z̄` |
+| Dot above (˙) | U+0307 | `ẋ`, `θ̇` |
+| Diaeresis (¨) | U+0308 | `z̈`, `ϕ̈` |
+
+Combining marks are continuation-only — an identifier still has to begin with a base letter — so `̄x` is invalid but `x̄` is a valid variable name. This unblocks notation like `x̄`/`ȳ`/`z̄` for sample means and `ẋ`/`ẍ` for first/second time derivatives without per-letter precomposed enumeration.
+
+### 15.2 Symbol Palette: Diacritic Sections
+
+`SymbolSnippets.cs` now generates 4 × 26 × 2 = **208 diacritic snippets**, organized into eight new categories:
+
+- `Symbols/Bar Lowercase`, `Symbols/Bar Uppercase`
+- `Symbols/Dot Lowercase`, `Symbols/Dot Uppercase`
+- `Symbols/Double Dot Lowercase`, `Symbols/Double Dot Uppercase`
+- `Symbols/Acute Accent Lowercase`, `Symbols/Acute Accent Uppercase`
+
+Every glyph is emitted as **decomposed (base letter + combining mark)** for a single canonical form across the palette. This avoids cases where a precomposed `ā` and a decomposed `a + ̄` would resolve as two different variables in the lookup dictionary even though they look identical.
+
+### 15.3 Per-Group Collapsible Palette UI
+
+`CalcpadInsertTab.vue` now renders each symbol group as its own collapsible section with a disclosure arrow header. All groups — Greek Lowercase, Greek Uppercase, Special, and the eight new diacritic sections — start **collapsed by default**, keeping the palette compact. Users open only the groups they need.
+
+---
+
+## 16. Bug Fixes
 
 - **Include path stability** — fixed crashes from self-referential or deeply nested includes
 - **Recursive include support** — includes now resolve recursively with proper cycle detection
@@ -1376,3 +1411,5 @@ The `~<key>` → symbol shortcut (Section 4.5) is driven by the same snippet reg
 - **Global variable scoping** — improved handling of global variables inside macro `#def` blocks
 - **Large file reading stability** — improved stability when reading large files
 - **Linter rebalancing** — fixed linter bugs around macro parameters; tokenizer is now the source of truth for the linter
+- **Vue panel scroll bug** — fixed CSS regression that broke vertical scrolling inside the VS Code Vue webview
+- **Crash log capture** — improved error logging in `FileLogger` and the server-manager so unexpected backend exits and orphaned-server scenarios are captured to disk instead of being silently lost

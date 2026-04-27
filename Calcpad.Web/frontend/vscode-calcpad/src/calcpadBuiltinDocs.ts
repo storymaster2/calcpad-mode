@@ -3,10 +3,12 @@ import type { InsertItem, SnippetParameterDto } from 'calcpad-frontend';
 
 /**
  * Extract the function name from a snippet's Insert tag.
- * Examples: "sin(§)" -> "sin", "atan2(§; §)" -> "atan2", "π" -> null.
+ * Calcpad built-in function names are ASCII (with optional trailing $ for string functions),
+ * so plain A-Z/a-z/0-9/_ plus an optional $ is sufficient.
+ * Examples: "sin(§)" -> "sin", "atan2(§; §)" -> "atan2", "len$(§)" -> "len$", "π" -> null.
  */
 export function extractFunctionName(tag: string): string | null {
-    const match = tag.match(/^([a-zA-Z_-￿][a-zA-Z0-9_-￿]*)\(/);
+    const match = tag.match(/^([A-Za-z_][A-Za-z0-9_]*\$?)\(/);
     return match ? match[1] : null;
 }
 

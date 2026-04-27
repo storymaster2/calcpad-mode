@@ -37,6 +37,10 @@ export class CalcpadServerManager {
     private _restartCount: number = 0;
     private _lastCrashOutput: string[] = [];
     private _processClosed: boolean = false;
+    /** Set when the spawn itself failed (EACCES, EPERM, ENOENT etc.). Distinguishes
+     *  "Windows blocked the exe" from "process started but crashed". */
+    private _spawnFailed: boolean = false;
+    private _spawnFailedCode: string | null = null;
     private lockFilePath: string;
 
     /** Called when auto-restart retries are exhausted. Receives the last stderr output. */
@@ -202,6 +206,11 @@ export class CalcpadServerManager {
             : spawn(this.dotnetPath, [dllPath, '--urls', serverUrl], spawnOpts);
         this.serverProcess.unref();
         this._owned = true;
+        // Reset spawn-failure state for this attempt; the 'error' handler below will
+        // flip these if Windows blocks the exe (Defender / SmartScreen / AppLocker).
+        this._spawnFailed = false;
+        this._spawnFailedCode = null;
+        this._processClosed = false;
         this.log(`Spawned via ${useAppHost ? 'apphost' : 'dotnet'} (PID ${this.serverProcess.pid}, detached)`);
 
         // Rewrite the lock with the actual child PID (replacing our host-PID placeholder).
@@ -232,14 +241,32 @@ export class CalcpadServerManager {
 
         // The 'close' event fires after all stdio streams are drained,
         // so _lastCrashOutput is fully populated by the time this fires.
-        this._processClosed = false;
         this.serverProcess.on('close', () => {
             this._processClosed = true;
         });
 
-        this.serverProcess.on('error', (err: Error) => {
-            this.log(`[error] Failed to start server: ${err.message}`);
+        // 'error' fires when spawn itself fails (EACCES from Windows Defender,
+        // ENOENT for missing dotnet runtime, etc.). The process never starts in
+        // this case, so 'exit'/'close' may not fire — we have to flip _processClosed
+        // ourselves so waitForReady stops polling and surfaces the error fast.
+        // We DON'T fall back to another spawn here: the user needs to unblock the
+        // file in Explorer and then click Refresh to retry.
+        this.serverProcess.on('error', (err: NodeJS.ErrnoException) => {
+            const code = err.code ?? '';
+            this.log(`[error] Failed to start server: ${err.message}${code ? ` (${code})` : ''}`);
+            this._spawnFailed = true;
+            this._spawnFailedCode = code;
             this._isRunning = false;
+
+            let detail = `Spawn failed: ${err.message}${code ? ` (${code})` : ''}`;
+            if (isPermissionDeniedCode(code)) {
+                detail +=
+                    `\nWindows blocked the executable (Defender / SmartScreen / AppLocker). ` +
+                    `Right-click ${useAppHost ? path.basename(exePath) : path.basename(this.dotnetPath)} ` +
+                    `in Windows Explorer → Properties → check "Unblock", then click the CalcPad refresh button to retry.`;
+            }
+            this._lastCrashOutput.push(detail);
+            this._processClosed = true; // make waitForReady fast-fail
         });
 
         this.serverProcess.on('exit', (code, signal) => {
@@ -288,6 +315,15 @@ export class CalcpadServerManager {
             this._isRunning = true;
             this._lastCrashOutput = [];
             this.log(`Server is ready at ${serverUrl}`);
+        } catch (err) {
+            // If the spawn failed (Windows blocked the .exe, dotnet missing, etc.) the
+            // child PID is unknown and the placeholder lock still holds the extension
+            // host PID. Clean it up so peers don't wait on a phantom server and so a
+            // later stop() doesn't try to kill our own process.
+            if (this._spawnFailed) {
+                this.removeLockFile();
+            }
+            throw err;
         } finally {
             this._startingUp = false;
             // If the process exited during startup, the exit handler deferred
@@ -310,10 +346,18 @@ export class CalcpadServerManager {
 
         if (!this.serverProcess) {
             // We don't own the process — kill whatever PID the lock file records.
+            // SAFETY: when start() fails before the child PID is known (e.g. Windows
+            // blocked the .exe), the placeholder lock still carries our own process.pid.
+            // Killing that would terminate the extension host (and crash VS Code), so
+            // skip the kill in that case and just clean up the stale lock.
             const lock = this.readLockFile();
             if (lock) {
-                this.log(`Stopping shared server (PID ${lock.pid})`);
-                this.killByPid(lock.pid);
+                if (lock.pid === process.pid) {
+                    this.log(`Discarding stale placeholder lock (our own PID ${lock.pid}, no child to kill)`);
+                } else {
+                    this.log(`Stopping shared server (PID ${lock.pid})`);
+                    this.killByPid(lock.pid);
+                }
                 this.removeLockFile();
             }
             this._isRunning = false;
@@ -324,23 +368,29 @@ export class CalcpadServerManager {
 
         const proc = this.serverProcess;
         const pid = proc.pid;
+        const spawnNeverStarted = this._spawnFailed || pid === undefined;
         this.serverProcess = null;
         this._isRunning = false;
 
         if (pid) {
             this.killByPid(pid);
         }
-        await new Promise<void>((resolve) => {
-            if (proc.exitCode !== null) {
-                resolve();
-                return;
-            }
-            const timeout = setTimeout(() => resolve(), 5000);
-            proc.once('exit', () => {
-                clearTimeout(timeout);
-                resolve();
+        if (!spawnNeverStarted) {
+            // Wait for the OS to confirm the process is gone. If spawn never produced
+            // a real process (e.g. Windows blocked the exe), there's no exit event to
+            // wait for — short-circuit so refresh can retry immediately.
+            await new Promise<void>((resolve) => {
+                if (proc.exitCode !== null) {
+                    resolve();
+                    return;
+                }
+                const timeout = setTimeout(() => resolve(), 5000);
+                proc.once('exit', () => {
+                    clearTimeout(timeout);
+                    resolve();
+                });
             });
-        });
+        }
 
         this.removeLockFile();
         this.log('Server stopped');
@@ -612,6 +662,16 @@ export class CalcpadServerManager {
             this.log(`Warning: could not persist crash record: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
+}
+
+/**
+ * True when a libuv spawn-error code indicates Windows (or another OS) refused to
+ * start the executable. EACCES/EPERM cover Defender, SmartScreen, AppLocker, and
+ * NTFS permission denials; we treat all of them the same and tell the user to
+ * unblock the file.
+ */
+function isPermissionDeniedCode(code: string | null | undefined): boolean {
+    return code === 'EACCES' || code === 'EPERM';
 }
 
 /**
