@@ -62,13 +62,25 @@ namespace Calcpad.Highlighter.Linter.Helpers
 
         /// <summary>
         /// Checks if a character can appear inside an identifier (after the first character).
-        /// Valid: letters, digits, underscore, Greek letters, subscripts, superscripts
+        /// Valid: letters, digits, underscore, Greek letters, subscripts, superscripts,
+        /// combining marks (acute, macron, dot above, diaeresis).
         /// </summary>
         public static bool IsIdentifierChar(char c)
         {
             return char.IsLetterOrDigit(c) || c == '_' ||
                    IsGreekLetter(c) ||
-                   IsSubscriptDigit(c) || IsSuperscriptDigit(c);
+                   IsSubscriptDigit(c) || IsSuperscriptDigit(c) ||
+                   IsCombiningMark(c);
+        }
+
+        /// <summary>
+        /// Combining marks supported as identifier-continuation characters: acute (̲́),
+        /// macron (̄), dot above (̇), and diaeresis (̈). They attach to the preceding
+        /// base letter, so they are valid inside an identifier but cannot start one.
+        /// </summary>
+        public static bool IsCombiningMark(char c)
+        {
+            return c == '́' || c == '̄' || c == '̇' || c == '̈';
         }
 
         /// <summary>

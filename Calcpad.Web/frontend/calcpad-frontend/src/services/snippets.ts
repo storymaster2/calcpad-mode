@@ -118,9 +118,15 @@ export class CalcpadSnippetService {
             tag: snippet.insert,
             label: snippet.label,
             description: snippet.description,
+            documentation: snippet.documentation,
+            example: snippet.example,
             categoryPath: snippet.category.replace(/\//g, ' > '),
             quickType: snippet.quickType,
             keywordType: snippet.keywordType,
+            returnType: snippet.returnType,
+            returnTypeDescription: snippet.returnTypeDescription,
+            isElementWise: snippet.isElementWise,
+            acceptsAnyCount: snippet.acceptsAnyCount,
             parameters: snippet.parameters
         };
     }

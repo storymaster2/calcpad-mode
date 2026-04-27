@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Calcpad.Highlighter.Snippets.Models;
 
 namespace Calcpad.Highlighter.Snippets.Data
@@ -10,6 +12,9 @@ namespace Calcpad.Highlighter.Snippets.Data
     public static class SymbolSnippets
     {
         public static readonly SnippetItem[] Items =
+            BaseItems.Concat(BuildDiacriticItems()).ToArray();
+
+        private static readonly SnippetItem[] BaseItems =
         [
             // Greek Lowercase Letters
             new SnippetItem
@@ -501,31 +506,42 @@ namespace Calcpad.Highlighter.Snippets.Data
                 Label = "ℓ length",
                 Category = "Symbols/Special",
                 QuickType = "len"
-            },
-            new SnippetItem
-            {
-                Insert = "x̄",
-                Description = "X bar (mean)",
-                Label = "x̄ x bar",
-                Category = "Symbols/Special",
-                QuickType = "x_"
-            },
-            new SnippetItem
-            {
-                Insert = "ȳ",
-                Description = "Y bar (mean)",
-                Label = "ȳ y bar",
-                Category = "Symbols/Special",
-                QuickType = "y_"
-            },
-            new SnippetItem
-            {
-                Insert = "z̄",
-                Description = "Z bar (mean)",
-                Label = "z̄ z bar",
-                Category = "Symbols/Special",
-                QuickType = "z_"
             }
         ];
+
+        // Every diacritic-letter combo is emitted as base letter + combining mark
+        // (decomposed NFD). This keeps a single canonical form in the palette so
+        // identifiers don't accidentally split between precomposed and decomposed
+        // versions of the same visible glyph.
+        private static IEnumerable<SnippetItem> BuildDiacriticItems()
+        {
+            var diacritics = new (char Mark, string Name, string Tag)[]
+            {
+                ('̄', "Bar", "bar"),         // combining macron
+                ('̇', "Dot", "dot"),         // combining dot above
+                ('̈', "Double Dot", "ddot"), // combining diaeresis
+                ('́', "Acute Accent", "acute")
+            };
+
+            foreach (var (mark, name, tag) in diacritics)
+            {
+                for (char c = 'a'; c <= 'z'; c++)
+                    yield return MakeDiacriticItem(c, mark, name, tag, "Lowercase");
+                for (char c = 'A'; c <= 'Z'; c++)
+                    yield return MakeDiacriticItem(c, mark, name, tag, "Uppercase");
+            }
+        }
+
+        private static SnippetItem MakeDiacriticItem(char baseChar, char mark, string diacriticName, string tag, string caseLabel)
+        {
+            var glyph = string.Concat(baseChar, mark);
+            return new SnippetItem
+            {
+                Insert = glyph,
+                Description = $"{baseChar} with {diacriticName.ToLowerInvariant()}",
+                Label = $"{glyph} {baseChar}{tag}",
+                Category = $"Symbols/{diacriticName} {caseLabel}"
+            };
+        }
     }
 }

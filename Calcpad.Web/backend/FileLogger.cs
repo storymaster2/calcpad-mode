@@ -21,8 +21,10 @@ namespace Calcpad.Server
                 }
                 
                 var directory = Path.GetDirectoryName(executablePath) ?? AppContext.BaseDirectory;
+                var logsDir = Path.Combine(directory, "logs");
+                Directory.CreateDirectory(logsDir);
                 var timestamp = DateTime.Now.ToString("yyyyMMdd");
-                _logFilePath = Path.Combine(directory, $"CalcpadServer-{timestamp}.log");
+                _logFilePath = Path.Combine(logsDir, $"CalcpadServer-{timestamp}.log");
                 
                 // Write initial log entry
                 WriteLog("INFO", "Logger initialized", $"Log file: {_logFilePath}");
@@ -89,36 +91,49 @@ namespace Calcpad.Server
             sb.AppendLine($"=== END CRASH REPORT ===");
             
             WriteLog("CRASH", "Application crashed", sb.ToString());
-            
-            // Also write to console if available
-            try
-            {
-                Console.WriteLine("CRASH: " + exception.Message);
-                Console.WriteLine("Details written to: " + _logFilePath);
-            }
+
+            // Console line is captured by the VS Code extension's stdout pipe
+            // and surfaced in the server debug channel. The full report is
+            // already in the file via WriteLog above.
+            try { Console.WriteLine($"CRASH: {exception.Message} (details: {_logFilePath})"); }
             catch { /* Ignore console errors */ }
         }
-        
+
         private static void WriteLog(string level, string message, string? details = null)
         {
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var header = $"[{timestamp}] [{level}] {message}";
+            var logEntry = string.IsNullOrEmpty(details)
+                ? header + Environment.NewLine
+                : header + Environment.NewLine + details + Environment.NewLine;
+
+            // Echo to stdout so the VS Code extension's stdout pipe surfaces every
+            // log entry in the server debug channel. The C# console is auto-flushed
+            // (see Program.cs), so entries appear in real time. Errors here are
+            // ignored — the file write below is the source of truth.
+            try { Console.Write(logEntry); } catch { /* console may be closed */ }
+
             if (string.IsNullOrEmpty(_logFilePath))
                 return;
-                
+
             try
             {
                 lock (_lock)
                 {
-                    var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-                    var logEntry = $"[{timestamp}] [{level}] {message}";
-                    
-                    if (!string.IsNullOrEmpty(details))
-                    {
-                        logEntry += Environment.NewLine + details;
-                    }
-                    
-                    logEntry += Environment.NewLine;
-                    
-                    File.AppendAllText(_logFilePath, logEntry, Encoding.UTF8);
+                    var bytes = Encoding.UTF8.GetBytes(logEntry);
+
+                    // WriteThrough bypasses the OS write cache and Flush(true) calls
+                    // FlushFileBuffers, so entries survive even a hard process kill
+                    // (StackOverflow, FailFast). Cost: ~1ms per entry.
+                    using var fs = new FileStream(
+                        _logFilePath,
+                        FileMode.Append,
+                        FileAccess.Write,
+                        FileShare.Read,
+                        bufferSize: 4096,
+                        FileOptions.WriteThrough);
+                    fs.Write(bytes, 0, bytes.Length);
+                    fs.Flush(flushToDisk: true);
                 }
             }
             catch
@@ -127,7 +142,19 @@ namespace Calcpad.Server
                 // Don't throw exceptions from the logger
             }
         }
-        
+
+        /// <summary>
+        /// Forces all buffered log writes to disk. Call from shutdown handlers
+        /// (ProcessExit, etc.) to ensure final entries survive process termination.
+        /// </summary>
+        public static void Flush()
+        {
+            // WriteLog already opens/writes/flushes/closes per entry, so nothing
+            // is buffered between calls. This method exists so callers don't have
+            // to know that — and so behavior stays correct if we ever switch to a
+            // long-lived stream.
+        }
+
         public static string? GetLogFilePath() => _logFilePath;
     }
 }

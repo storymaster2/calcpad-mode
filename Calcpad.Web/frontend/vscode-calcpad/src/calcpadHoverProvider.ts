@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import { CalcpadDefinitionsService } from './calcpadDefinitionsService';
+import { CalcpadInsertManager } from './calcpadInsertManager';
+import { buildBuiltinDocMarkdown, extractFunctionName } from './calcpadBuiltinDocs';
 import type {
     MacroDefinition,
     FunctionDefinition,
@@ -9,14 +11,21 @@ import type {
 
 /**
  * Provides hover tooltips for Calcpad symbols (macros, functions, variables, custom units).
- * Uses cached definitions from CalcpadDefinitionsService — no additional API calls on hover.
+ * Uses cached definitions from CalcpadDefinitionsService for user-defined symbols and falls
+ * back to CalcpadInsertManager for built-in functions — no additional API calls on hover.
  */
 export class CalcpadHoverProvider implements vscode.HoverProvider {
     private definitionsService: CalcpadDefinitionsService;
+    private insertManager: CalcpadInsertManager;
     private outputChannel: vscode.OutputChannel;
 
-    constructor(definitionsService: CalcpadDefinitionsService, outputChannel: vscode.OutputChannel) {
+    constructor(
+        definitionsService: CalcpadDefinitionsService,
+        insertManager: CalcpadInsertManager,
+        outputChannel: vscode.OutputChannel
+    ) {
         this.definitionsService = definitionsService;
+        this.insertManager = insertManager;
         this.outputChannel = outputChannel;
     }
 
@@ -35,34 +44,46 @@ export class CalcpadHoverProvider implements vscode.HoverProvider {
         }
 
         const word = document.getText(wordRange);
+
+        // Search user-defined symbols first (macros, functions, variables, custom units),
+        // then fall back to built-in functions from the insert manager.
         const definitions = this.definitionsService.getCachedDefinitions(document.uri.toString());
-        if (!definitions) {
-            return null;
+        if (definitions) {
+            const macro = definitions.macros.find(m => m.name === word);
+            if (macro) {
+                this.outputChannel.appendLine('[Hover] Macro: ' + word);
+                return new vscode.Hover(this.buildMacroHover(macro), wordRange);
+            }
+
+            const func = definitions.functions.find(f => f.name === word);
+            if (func) {
+                this.outputChannel.appendLine('[Hover] Function: ' + word);
+                return new vscode.Hover(this.buildFunctionHover(func), wordRange);
+            }
+
+            const variable = definitions.variables.find(v => v.name === word);
+            if (variable) {
+                this.outputChannel.appendLine('[Hover] Variable: ' + word);
+                return new vscode.Hover(this.buildVariableHover(variable), wordRange);
+            }
+
+            const unit = definitions.customUnits.find(u => u.name === word);
+            if (unit) {
+                this.outputChannel.appendLine('[Hover] Custom unit: ' + word);
+                return new vscode.Hover(this.buildCustomUnitHover(unit), wordRange);
+            }
         }
 
-        // Search macros first, then functions, variables, custom units
-        const macro = definitions.macros.find(m => m.name === word);
-        if (macro) {
-            this.outputChannel.appendLine('[Hover] Macro: ' + word);
-            return new vscode.Hover(this.buildMacroHover(macro), wordRange);
-        }
-
-        const func = definitions.functions.find(f => f.name === word);
-        if (func) {
-            this.outputChannel.appendLine('[Hover] Function: ' + word);
-            return new vscode.Hover(this.buildFunctionHover(func), wordRange);
-        }
-
-        const variable = definitions.variables.find(v => v.name === word);
-        if (variable) {
-            this.outputChannel.appendLine('[Hover] Variable: ' + word);
-            return new vscode.Hover(this.buildVariableHover(variable), wordRange);
-        }
-
-        const unit = definitions.customUnits.find(u => u.name === word);
-        if (unit) {
-            this.outputChannel.appendLine('[Hover] Custom unit: ' + word);
-            return new vscode.Hover(this.buildCustomUnitHover(unit), wordRange);
+        // Fall back to built-in functions
+        if (this.insertManager.isLoaded()) {
+            const builtin = this.insertManager.getAllItems().find(item => {
+                if (item.keywordType !== 'Function') return false;
+                return extractFunctionName(item.tag) === word;
+            });
+            if (builtin) {
+                this.outputChannel.appendLine('[Hover] Built-in function: ' + word);
+                return new vscode.Hover(buildBuiltinDocMarkdown(builtin), wordRange);
+            }
         }
 
         return null;
@@ -191,9 +212,10 @@ export class CalcpadHoverProvider implements vscode.HoverProvider {
 
     static register(
         definitionsService: CalcpadDefinitionsService,
+        insertManager: CalcpadInsertManager,
         outputChannel: vscode.OutputChannel
     ): vscode.Disposable {
-        const provider = new CalcpadHoverProvider(definitionsService, outputChannel);
+        const provider = new CalcpadHoverProvider(definitionsService, insertManager, outputChannel);
         return vscode.languages.registerHoverProvider(
             { language: 'calcpad' },
             provider

@@ -19,6 +19,15 @@ TaskScheduler.UnobservedTaskException += (sender, e) =>
     e.SetObserved();
 };
 
+// ProcessExit fires on Environment.Exit and clean Main return, but NOT on
+// FailFast or StackOverflow. Useful for catching the "graceful but unexpected"
+// exit path — and for flushing the log on normal shutdown.
+AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+{
+    FileLogger.LogInfo("ProcessExit fired", $"ExitCode={Environment.ExitCode}");
+    FileLogger.Flush();
+};
+
 try
 {
     FileLogger.LogInfo("Starting Calcpad Server");
@@ -93,3 +102,8 @@ catch (Exception ex)
     Console.WriteLine($"Log file: {FileLogger.GetLogFilePath()}");
     throw;
 }
+
+// Note: createdump (DOTNET_DbgEnableMiniDump and friends) must be set in the
+// child process's environment BEFORE the runtime starts up — setting them from
+// inside Main is too late. The VS Code extension's spawn-time env in
+// calcpad-frontend/server-manager.ts owns this configuration.

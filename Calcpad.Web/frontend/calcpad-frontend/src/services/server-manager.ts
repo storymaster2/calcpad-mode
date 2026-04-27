@@ -173,7 +173,30 @@ export class CalcpadServerManager {
         // so it survives when this VS Code window exits. We still pipe stdio
         // while we're alive to capture startup logs; once the owner exits,
         // Node's unref() lets the parent event loop close without waiting.
-        const spawnOpts = { stdio: ['pipe', 'pipe', 'pipe'] as ['pipe', 'pipe', 'pipe'], detached: true };
+        //
+        // DOTNET_DbgEnableMiniDump tells the runtime to write a minidump on
+        // unrecoverable crashes (StackOverflow, FailFast) — failure modes that
+        // bypass our in-process FileLogger. The .NET 6+ createdump flow handles
+        // this in-runtime, no separate tool required.
+        //
+        // Fixed filename (no %p/%t templating) means each new crash overwrites
+        // the previous dump, so we always keep exactly the most recent. Only
+        // one server runs at a time per project (lock-file enforced) so there's
+        // no race between concurrent dumps.
+        const dumpDir = path.join(this.basePath, 'bin', 'logs');
+        try { fs.mkdirSync(dumpDir, { recursive: true }); } catch { /* best-effort */ }
+        const childEnv: NodeJS.ProcessEnv = {
+            ...process.env,
+            DOTNET_DbgEnableMiniDump: '1',
+            DOTNET_DbgMiniDumpType: '2',
+            DOTNET_DbgMiniDumpName: path.join(dumpDir, 'last-crash.dmp'),
+            DOTNET_EnableCrashReport: '1',
+        };
+        const spawnOpts = {
+            stdio: ['pipe', 'pipe', 'pipe'] as ['pipe', 'pipe', 'pipe'],
+            detached: true,
+            env: childEnv,
+        };
         this.serverProcess = useAppHost
             ? spawn(exePath, ['--urls', serverUrl], spawnOpts)
             : spawn(this.dotnetPath, [dllPath, '--urls', serverUrl], spawnOpts);
@@ -220,7 +243,11 @@ export class CalcpadServerManager {
         });
 
         this.serverProcess.on('exit', (code, signal) => {
-            this.log(`[exit] Server process exited (code=${code}, signal=${signal})`);
+            const decoded = decodeExitCode(code);
+            this.log(`[exit] Server process exited (code=${code}${decoded ? ` ${decoded}` : ''}, signal=${signal})`);
+            if (code !== null && code !== 0) {
+                this.persistCrashRecord(code, signal, decoded);
+            }
             this._isRunning = false;
             // Don't null out serverProcess during startup — waitForReady checks
             // _processClosed (from the 'close' event) to ensure stderr is fully drained.
@@ -385,6 +412,16 @@ export class CalcpadServerManager {
         return this._lastCrashOutput.join('\n');
     }
 
+    /**
+     * Absolute path of the directory holding server logs, crash records, and
+     * minidumps. Folder is created on demand by the spawn / persist paths,
+     * so callers should ensure it exists (e.g. via fs.mkdirSync(..., { recursive: true }))
+     * before opening it in the OS file explorer.
+     */
+    public getLogsDirectory(): string {
+        return path.join(this.basePath, 'bin', 'logs');
+    }
+
     public dispose(): void {
         // Default disposal = disconnect, not kill. Use stop() for explicit kill.
         this.disconnect();
@@ -518,7 +555,7 @@ export class CalcpadServerManager {
 
     /**
      * Read the most recent server log file as a fallback when stderr capture is empty.
-     * The server writes crash details via FileLogger to CalcpadServer-{date}.log in the bin directory.
+     * The server writes crash details via FileLogger to bin/logs/CalcpadServer-{date}.log.
      */
     private readServerLogFile(): string {
         try {
@@ -526,7 +563,7 @@ export class CalcpadServerManager {
             const dateStr = today.getFullYear().toString()
                 + (today.getMonth() + 1).toString().padStart(2, '0')
                 + today.getDate().toString().padStart(2, '0');
-            const logPath = path.join(this.basePath, 'bin', `CalcpadServer-${dateStr}.log`);
+            const logPath = path.join(this.basePath, 'bin', 'logs', `CalcpadServer-${dateStr}.log`);
 
             if (!fs.existsSync(logPath)) {
                 return '';
@@ -543,5 +580,56 @@ export class CalcpadServerManager {
 
     private log(message: string): void {
         this.logger.appendLine(`[ServerManager] ${message}`);
+    }
+
+    /**
+     * Persist a crash record to disk so it survives extension reload / VS Code restart.
+     * The in-process FileLogger can't capture StackOverflow / FailFast paths — this
+     * is the parent-side complement that records what the runtime printed to stderr
+     * along with the decoded exit code.
+     *
+     * Always writes to a fixed `last-crash.txt`, so each crash overwrites the previous
+     * record (matching the dump-file rolling-overwrite policy).
+     */
+    private persistCrashRecord(code: number | null, signal: NodeJS.Signals | null, decoded: string): void {
+        try {
+            const crashDir = path.join(this.basePath, 'bin', 'logs');
+            fs.mkdirSync(crashDir, { recursive: true });
+            const file = path.join(crashDir, 'last-crash.txt');
+            const lines = [
+                `Calcpad.Server crash record`,
+                `Timestamp: ${new Date().toISOString()}`,
+                `Exit code: ${code} (0x${(code ?? 0) >>> 0 ? ((code ?? 0) >>> 0).toString(16).toUpperCase() : '0'})${decoded ? ' ' + decoded : ''}`,
+                `Signal: ${signal ?? '(none)'}`,
+                '',
+                '--- last stderr ---',
+                this._lastCrashOutput.join('\n') || '(empty)',
+                '',
+            ].join('\n');
+            fs.writeFileSync(file, lines, 'utf-8');
+            this.mainLogger.appendLine(`[ServerManager] Crash record written: ${file}`);
+        } catch (err) {
+            this.log(`Warning: could not persist crash record: ${err instanceof Error ? err.message : String(err)}`);
+        }
+    }
+}
+
+/**
+ * Map common Windows exit codes from the .NET runtime to a human-readable label.
+ * These codes come back through Node as signed 32-bit integers, so we mask to
+ * unsigned before comparison.
+ */
+function decodeExitCode(code: number | null): string {
+    if (code === null) return '';
+    const u = code >>> 0;
+    switch (u) {
+        case 0x00000000: return '(success)';
+        case 0xC0000005: return '(STATUS_ACCESS_VIOLATION)';
+        case 0xC00000FD: return '(STATUS_STACK_OVERFLOW)';
+        case 0xC000013A: return '(STATUS_CONTROL_C_EXIT — Ctrl+C)';
+        case 0x80131623: return '(COR_E_FAILFAST — Environment.FailFast)';
+        case 0x80131506: return '(COR_E_EXECUTIONENGINE)';
+        case 0x80131500: return '(CLR generic exception)';
+        default: return `(0x${u.toString(16).toUpperCase()})`;
     }
 }

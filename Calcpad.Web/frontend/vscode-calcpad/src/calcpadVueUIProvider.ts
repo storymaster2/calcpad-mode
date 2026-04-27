@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 import { parseHeadings, DEFAULT_PDF_SETTINGS } from 'calcpad-frontend';
 import { CalcpadSettingsManager } from './calcpadSettings';
 import { CalcpadInsertManager } from './calcpadInsertManager';
@@ -167,6 +169,23 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                 case 'openS3Config':
                     vscode.commands.executeCommand('workbench.action.openSettings', 'calcpad.s3');
                     break;
+
+                case 'openLogsFolder': {
+                    // Resolve the same logs directory the server manager uses.
+                    // Folder may not exist yet on a fresh install — create it so the
+                    // OS file explorer has something to open instead of erroring.
+                    const logsDir = path.join(this._context.extensionPath, 'bin', 'logs');
+                    try { fs.mkdirSync(logsDir, { recursive: true }); } catch { /* best-effort */ }
+                    try {
+                        await vscode.env.openExternal(vscode.Uri.file(logsDir));
+                        this._outputChannel.appendLine(`Opened logs folder: ${logsDir}`);
+                    } catch (err) {
+                        const msg = err instanceof Error ? err.message : String(err);
+                        this._outputChannel.appendLine(`Failed to open logs folder: ${msg}`);
+                        vscode.window.showErrorMessage(`Could not open logs folder: ${msg}`);
+                    }
+                    break;
+                }
 
                 case 'getS3Config':
                     const s3Config = vscode.workspace.getConfiguration('calcpad');

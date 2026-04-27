@@ -26,9 +26,26 @@ namespace Calcpad.Highlighter.Snippets.Models
         public string? KeywordType { get; init; }
 
         /// <summary>
-        /// Description shown in tooltips/docs.
+        /// Short label shown in tooltips, the insert tab, and completion details (e.g. "Sine").
         /// </summary>
         public required string Description { get; init; }
+
+        /// <summary>
+        /// Long-form Markdown description for hover/completion docstrings. May include math
+        /// (LaTeX in $...$) and links. Falls back to Description when null.
+        /// </summary>
+        public string? Documentation { get; init; }
+
+        /// <summary>
+        /// Optional Calcpad usage example, rendered as a fenced code block in hover/completion docs.
+        /// </summary>
+        public string? Example { get; init; }
+
+        /// <summary>
+        /// Human-readable description of the return value (e.g. "Angle in radians",
+        /// "Vector of length n"). Falls back to the ReturnType enum name when null.
+        /// </summary>
+        public string? ReturnTypeDescription { get; init; }
 
         /// <summary>
         /// Optional label to display (if different from description).

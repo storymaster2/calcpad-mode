@@ -304,6 +304,14 @@
         </select>
       </div>
 
+      <h3>Diagnostics</h3>
+      <div class="setting-group">
+        <button class="diagnostics-button" @click="openLogsFolder">
+          Open Logs Folder
+        </button>
+        <span class="setting-hint">Opens the folder containing server logs and the most recent crash dump.</span>
+      </div>
+
       <button @click="resetSettings" class="reset-button">
         Reset Settings
       </button>
@@ -380,6 +388,7 @@ const emit = defineEmits<{
   updateLinterMinSeverity: [severity: string]
   updateLibraryPath: [path: string]
   resetSettings: []
+  openLogsFolder: []
 }>()
 
 // State
@@ -442,6 +451,10 @@ const updateLibraryPath = () => {
 
 const resetSettings = () => {
   emit('resetSettings')
+}
+
+const openLogsFolder = () => {
+  emit('openLogsFolder')
 }
 
 // Watch for prop changes
@@ -627,6 +640,21 @@ watch(
 }
 
 .reset-button:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.diagnostics-button {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--vscode-button-secondaryBackground);
+  border: 1px solid var(--vscode-button-border);
+  color: var(--vscode-button-secondaryForeground);
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.diagnostics-button:hover {
   background: var(--vscode-button-secondaryHoverBackground);
 }
 </style>

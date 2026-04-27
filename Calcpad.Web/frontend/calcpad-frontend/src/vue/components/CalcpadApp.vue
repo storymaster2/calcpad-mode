@@ -48,6 +48,7 @@
         @update-linter-min-severity="handleUpdateLinterMinSeverity"
         @update-library-path="handleUpdateLibraryPath"
         @reset-settings="handleResetSettings"
+        @open-logs-folder="handleOpenLogsFolder"
       />
       <CalcpadVariablesTab
         v-else-if="activeTab === 'variables'"
@@ -208,6 +209,12 @@ const handleUpdateLibraryPath = (path: string) => {
 const handleResetSettings = () => {
   postMessage({
     type: 'resetSettings'
+  })
+}
+
+const handleOpenLogsFolder = () => {
+  postMessage({
+    type: 'openLogsFolder'
   })
 }
 

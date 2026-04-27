@@ -1319,7 +1319,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         // Initialize hover provider (Hover Tooltips)
         outputChannel.appendLine('Initializing hover provider...');
-        const hoverProviderDisposable = CalcpadHoverProvider.register(definitionsService, outputChannel);
+        const hoverProviderDisposable = CalcpadHoverProvider.register(definitionsService, insertManager, outputChannel);
 
     // Unified document processing function
     let isProcessingDocument = false;

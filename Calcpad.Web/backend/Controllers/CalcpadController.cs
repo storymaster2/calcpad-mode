@@ -171,6 +171,72 @@ namespace Calcpad.Server.Controllers
             return Ok(new CalcpadRequest { Content = sampleContent });
         }
 
+        // Debug-only: intentionally crashes the server to verify which crash paths
+        // are picked up by FileLogger / AppDomain.UnhandledException / TaskScheduler.
+        // Different modes exercise different failure paths because not all of them
+        // route through the same handlers (e.g. StackOverflow and FailFast bypass
+        // managed exception handling entirely).
+        [HttpGet("debug-crash")]
+        public IActionResult DebugCrash([FromQuery] string mode = "background-thread")
+        {
+            FileLogger.LogInfo("debug-crash invoked", $"mode={mode}");
+
+            switch (mode)
+            {
+                case "throw":
+                    // Caught by ASP.NET Core's exception middleware; process keeps running.
+                    // Useful baseline to confirm the request pipeline logs at all.
+                    throw new InvalidOperationException("debug-crash: synchronous controller throw");
+
+                case "background-thread":
+                    // Unhandled exception on a non-pool thread -> AppDomain.UnhandledException -> process terminates.
+                    new Thread(() =>
+                    {
+                        Thread.Sleep(100);
+                        throw new InvalidOperationException("debug-crash: background thread");
+                    })
+                    { IsBackground = false }.Start();
+                    return Accepted(new { mode, note = "Server should terminate shortly via AppDomain.UnhandledException." });
+
+                case "unobserved-task":
+                    // Fire-and-forget Task whose exception is never observed.
+                    // Surfaces via TaskScheduler.UnobservedTaskException only after GC finalizes the Task.
+                    _ = Task.Run(() => throw new InvalidOperationException("debug-crash: unobserved task"));
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    return Accepted(new { mode, note = "Unobserved task exception raised; process continues unless rethrown." });
+
+                case "stackoverflow":
+                    // StackOverflowException cannot be caught and bypasses UnhandledException handlers entirely.
+                    // This is the "silent crash" case — expect no FileLogger entry beyond the INFO above.
+                    return Recurse(0);
+
+                case "accessviolation":
+                    // Corrupted-state exception; by default not delivered to managed handlers.
+                    throw new AccessViolationException("debug-crash: simulated AV");
+
+                case "failfast":
+                    // Environment.FailFast bypasses AppDomain.UnhandledException. The message is written
+                    // to the Windows Event Log / stderr but FileLogger handlers do NOT run.
+                    Environment.FailFast("debug-crash: FailFast invoked");
+                    return StatusCode(500); // unreachable
+
+                case "exit":
+                    // Clean exit (no exception). Useful to confirm graceful-shutdown logging.
+                    Task.Run(async () => { await Task.Delay(100); Environment.Exit(1); });
+                    return Accepted(new { mode, note = "Environment.Exit(1) scheduled." });
+
+                default:
+                    return BadRequest(new
+                    {
+                        error = $"Unknown mode '{mode}'",
+                        modes = new[] { "throw", "background-thread", "unobserved-task", "stackoverflow", "accessviolation", "failfast", "exit" }
+                    });
+            }
+        }
+
+        private static IActionResult Recurse(int depth) => Recurse(depth + 1);
+
         /// <summary>
         /// Generate PDF from HTML content using Playwright and PDFsharp.
         /// </summary>
@@ -634,14 +700,24 @@ namespace Calcpad.Server.Controllers
                 {
                     Insert = s.Insert,
                     Description = s.Description,
+                    Documentation = s.Documentation,
+                    Example = s.Example,
                     Label = s.Label,
                     Category = s.Category,
                     QuickType = s.QuickType,
                     KeywordType = s.KeywordType,
+                    ReturnType = s.ReturnType?.ToString(),
+                    ReturnTypeDescription = s.ReturnTypeDescription,
+                    IsElementWise = s.IsElementWise,
+                    AcceptsAnyCount = s.AcceptsAnyCount,
                     Parameters = s.Parameters?.Select(p => new SnippetParameterDto
                     {
                         Name = p.Name,
-                        Description = p.Description
+                        Description = p.Description,
+                        Type = p.Type.ToString(),
+                        TypeDescription = p.TypeDescription,
+                        IsOptional = p.IsOptional,
+                        IsVariadic = p.IsVariadic
                     }).ToArray()
                 }).ToArray();
 
@@ -673,8 +749,14 @@ namespace Calcpad.Server.Controllers
         /// <summary>Text to insert (use '§' as cursor placeholder)</summary>
         public string Insert { get; set; } = string.Empty;
 
-        /// <summary>Description shown in tooltips</summary>
+        /// <summary>Short label shown in tooltips and completion detail (e.g. "Sine")</summary>
         public string Description { get; set; } = string.Empty;
+
+        /// <summary>Long-form Markdown description for hover/completion docstrings. Null when not authored.</summary>
+        public string? Documentation { get; set; }
+
+        /// <summary>Optional Calcpad usage example, rendered as a fenced code block in hover/completion docs.</summary>
+        public string? Example { get; set; }
 
         /// <summary>Optional display label (defaults to description if null)</summary>
         public string? Label { get; set; }
@@ -688,6 +770,18 @@ namespace Calcpad.Server.Controllers
         /// <summary>Keyword classification ("Function", "Keyword", "Command", "Constant", "Unit", "Operator", "Setting", "ControlBlockKeyword", "EndKeyword"). Null for UI-only snippets.</summary>
         public string? KeywordType { get; set; }
 
+        /// <summary>Return type name from the CalcpadType enum (e.g. "Scalar", "Vector"). Null for non-functions.</summary>
+        public string? ReturnType { get; set; }
+
+        /// <summary>Human-readable description of the return value (e.g. "Angle in radians").</summary>
+        public string? ReturnTypeDescription { get; set; }
+
+        /// <summary>Whether the function operates element-wise on vectors/matrices.</summary>
+        public bool IsElementWise { get; set; }
+
+        /// <summary>When true, parameter count validation is skipped (e.g. switch, gcd, lcm).</summary>
+        public bool AcceptsAnyCount { get; set; }
+
         /// <summary>Parameter info for functions (null for non-functions)</summary>
         public SnippetParameterDto[]? Parameters { get; set; }
     }
@@ -699,6 +793,18 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>Description of the parameter's purpose</summary>
         public string? Description { get; set; }
+
+        /// <summary>Expected type from the ParameterType enum (e.g. "Scalar", "Vector", "Matrix", "Any").</summary>
+        public string? Type { get; set; }
+
+        /// <summary>Human-readable type description (e.g. "Angle in radians"). Falls back to Type when null.</summary>
+        public string? TypeDescription { get; set; }
+
+        /// <summary>Whether this parameter is optional.</summary>
+        public bool IsOptional { get; set; }
+
+        /// <summary>Whether this parameter is variadic (the type applies to all remaining arguments).</summary>
+        public bool IsVariadic { get; set; }
     }
 
     public class RefreshCacheRequest

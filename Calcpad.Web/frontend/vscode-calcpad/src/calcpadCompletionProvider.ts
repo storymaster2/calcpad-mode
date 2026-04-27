@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { CalcpadInsertManager, InsertItem } from './calcpadInsertManager';
 import { CalcpadDefinitionsService } from './calcpadDefinitionsService';
+import { buildBuiltinDocMarkdown } from './calcpadBuiltinDocs';
 
 export class CalcpadCompletionProvider implements vscode.CompletionItemProvider {
     private insertManager: CalcpadInsertManager;
@@ -191,9 +192,7 @@ export class CalcpadCompletionProvider implements vscode.CompletionItemProvider 
         );
         
         completionItem.detail = item.categoryPath || 'Built-in';
-        completionItem.documentation = new vscode.MarkdownString(
-            `**${item.categoryPath || 'Built-in'}**\\n\\n${item.description}`
-        );
+        completionItem.documentation = buildBuiltinDocMarkdown(item);
         
         // Use snippet string for functions, plain text for others
         if (kind === vscode.CompletionItemKind.Function && insertText.includes('${')) {

@@ -17,8 +17,11 @@
       </div>
       <div v-show="symbolsPaletteOpen" class="symbols-palette-body">
         <div v-for="group in symbolGroups" :key="group.name" class="symbol-group">
-          <div class="symbol-group-label">{{ group.name }}</div>
-          <div class="symbol-grid">
+          <div class="symbol-group-header" @click="toggleGroup(group.name)">
+            <span class="symbol-group-arrow" :class="{ open: isGroupOpen(group.name) }">&#x25B6;</span>
+            <span class="symbol-group-label">{{ group.name }}</span>
+          </div>
+          <div v-show="isGroupOpen(group.name)" class="symbol-grid">
             <button
               v-for="item in group.items"
               :key="item.tag"
@@ -98,6 +101,17 @@ const emit = defineEmits<{
 // State
 const searchTerm = ref('')
 const symbolsPaletteOpen = ref(false)
+// All symbol groups start collapsed; users open them on demand.
+const openSymbolGroups = ref<Set<string>>(new Set())
+
+const toggleGroup = (name: string) => {
+  const next = new Set(openSymbolGroups.value)
+  if (next.has(name)) next.delete(name)
+  else next.add(name)
+  openSymbolGroups.value = next
+}
+
+const isGroupOpen = (name: string): boolean => openSymbolGroups.value.has(name)
 
 // Symbol palette helpers
 interface SymbolGroup {
@@ -485,11 +499,34 @@ watch(
   margin-bottom: 2px;
 }
 
-.symbol-group-label {
+.symbol-group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 3px 6px;
+  cursor: pointer;
+  user-select: none;
   font-size: 11px;
   font-weight: 600;
   color: var(--vscode-descriptionForeground);
+}
+
+.symbol-group-header:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.symbol-group-arrow {
+  display: inline-block;
+  font-size: 8px;
+  transition: transform 0.2s ease;
+}
+
+.symbol-group-arrow.open {
+  transform: rotate(90deg);
+}
+
+.symbol-group-label {
+  flex: 1;
 }
 
 .symbol-grid {
@@ -669,13 +706,11 @@ watch(
   list-style: none;
   padding-left: 16px;
   margin: 4px 0 0 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
+  display: none;
 }
 
 :deep(.tree-section > input[type="checkbox"]:checked + label + ul) {
-  max-height: 1000px;
+  display: block;
 }
 
 :deep(.tree-item) {

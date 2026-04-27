@@ -16,7 +16,7 @@
 ## vscode-calcpad
 
 ### Enhancements
-- Add docstrings for built-in functions.
+- Add docstrings for built-in functions using the same hover option. Build this into the snippet provider
 - Make a Vue panel that activates when the cursor is inside a JSON HTML comment. Where you can edit properties and then the line gets updated based on what you put into the UI. This could also work for editing #UI properties
 - Add the ability to focus the preview to the line selected in the code. Add a toggle to automatically sync this in the Vue panel.
 - Switch Vue tabs from text to icons now that they are getting longer.
