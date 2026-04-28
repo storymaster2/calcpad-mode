@@ -3728,7 +3728,7 @@ namespace Calcpad.Wpf
 
         private void MenuCli_Click(object sender, RoutedEventArgs e)
         {
-            Execute(AppInfo.Path + "Cli.exe");
+            Execute(AppInfo.Path + "cli\\Cli.exe");
         }
 
         private void ZeroSmallMatrixElementsCheckBox_Click(object sender, RoutedEventArgs e) => ClearOutput();
