@@ -8,6 +8,7 @@ namespace Calcpad.Server.Data
         public CalcpadAuthDbContext(DbContextOptions<CalcpadAuthDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<FileEntry> Files { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -19,6 +20,14 @@ namespace Calcpad.Server.Data
                 entity.HasIndex(u => u.Email).IsUnique();
                 entity.Property(u => u.Role).HasDefaultValue(UserRole.Contributor);
                 entity.Property(u => u.IsActive).HasDefaultValue(true);
+            });
+
+            modelBuilder.Entity<FileEntry>(entity =>
+            {
+                entity.ToTable("Files");
+                entity.HasKey(f => f.Id);
+                entity.HasIndex(f => f.OwnerUserId);
+                entity.HasIndex(f => f.ObjectKey).IsUnique();
             });
         }
     }

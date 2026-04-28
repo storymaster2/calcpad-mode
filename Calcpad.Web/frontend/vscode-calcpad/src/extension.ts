@@ -1598,6 +1598,44 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
+    const prettifyDocumentCommand = vscode.commands.registerCommand('vscode-calcpad.prettifyDocument', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showInformationMessage('CalcPad: open a .cpd file to prettify.');
+            return;
+        }
+        if (editor.document.languageId !== 'calcpad' && editor.document.languageId !== 'plaintext') {
+            vscode.window.showInformationMessage('CalcPad: prettify is only available for CalcPad documents.');
+            return;
+        }
+
+        const config = vscode.workspace.getConfiguration('calcpad');
+        const indentStyle = config.get<string>('prettify.indentStyle', 'tab');
+        const indentSize = config.get<number>('prettify.indentSize', 4);
+        const trim = config.get<boolean>('prettify.trimTrailingWhitespace', true);
+        const indentUnit = indentStyle === 'space' ? ' '.repeat(Math.max(1, indentSize)) : '\t';
+
+        try {
+            const response = await apiClient.prettify(editor.document.getText(), indentUnit, trim);
+            if (!response) {
+                vscode.window.showErrorMessage('CalcPad: prettify request failed (no response from server).');
+                return;
+            }
+            const fullRange = new vscode.Range(
+                editor.document.positionAt(0),
+                editor.document.positionAt(editor.document.getText().length)
+            );
+            const ok = await editor.edit(eb => eb.replace(fullRange, response.content));
+            if (!ok) {
+                vscode.window.showErrorMessage('CalcPad: prettify edit was rejected by the editor.');
+            }
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            outputChannel.appendLine('[Prettify] Error: ' + msg);
+            vscode.window.showErrorMessage('CalcPad: prettify failed — ' + msg);
+        }
+    });
+
     const exportToPdfCommand = vscode.commands.registerCommand('vscode-calcpad.exportToPdf', () => {
         const activeEditor = vscode.window.activeTextEditor;
         if (activeEditor && activePreviewPanel) {
@@ -1678,6 +1716,7 @@ export async function activate(context: vscode.ExtensionContext) {
             refreshDocumentCommand,
             stopServerCommand,
             exportToPdfCommand,
+            prettifyDocumentCommand,
             vueUiProviderDisposable,
             vueUiProvider, // Add the provider itself for disposal
             linter,

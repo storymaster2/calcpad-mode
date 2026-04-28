@@ -9,6 +9,8 @@ import type {
     DefinitionsRequest,
     DefinitionsResponse,
     FindReferencesResponse,
+    PrettifyRequest,
+    PrettifyResponse,
 } from '../types/api';
 import type { SnippetsResponse } from '../types/snippets';
 
@@ -57,6 +59,15 @@ export class CalcpadApiClient {
 
     public async snippets(): Promise<SnippetsResponse | null> {
         return this.get<SnippetsResponse>('/api/calcpad/snippets', 'Snippets');
+    }
+
+    public async prettify(
+        content: string,
+        indentUnit?: string,
+        trimTrailingWhitespace?: boolean
+    ): Promise<PrettifyResponse | null> {
+        const request: PrettifyRequest = { content, indentUnit, trimTrailingWhitespace };
+        return this.post<PrettifyResponse>('/api/calcpad/prettify', request, 'Prettify');
     }
 
     public async convert(

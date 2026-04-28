@@ -1,0 +1,22 @@
+' Reproducer for element-access scalar inference in function args
+' Expected: no CPD-3309 errors
+
+v = [1; 2; 3]
+a = atan(v.1/v.2)
+b = atan(v.1)
+c = sqrt(v.1 * v.2 + v.3)
+
+' Index variable form
+i = 1
+j = 2
+d = atan(v.i / v.j)
+
+' Bracketed index form
+e1 = atan(v.(1) / v.(2))
+
+' Matrix two-arg index
+M = [1; 2 | 3; 4]
+f = atan(M.(1; 2) / M.(2; 1))
+
+' Negative regression: passing the whole vector should still warn
+g = atan(v)

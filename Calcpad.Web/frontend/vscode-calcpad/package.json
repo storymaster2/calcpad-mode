@@ -373,6 +373,11 @@
         "title": "CalcPad: Paste as Comment"
       },
       {
+        "command": "vscode-calcpad.prettifyDocument",
+        "title": "CalcPad: Prettify Document",
+        "icon": "$(symbol-ruler)"
+      },
+      {
         "command": "calcpad.refreshDocument",
         "title": "Refresh Document",
         "icon": "$(refresh)"
@@ -610,6 +615,31 @@
           "type": "string",
           "default": "#1e1e1e",
           "description": "Background color for dark mode preview (hex color, e.g. #1e1e1e)"
+        },
+        "calcpad.prettify.indentStyle": {
+          "type": "string",
+          "default": "tab",
+          "enum": [
+            "tab",
+            "space"
+          ],
+          "enumDescriptions": [
+            "Indent with tabs (one tab per level)",
+            "Indent with spaces (count controlled by calcpad.prettify.indentSize)"
+          ],
+          "description": "Indentation style used by the CalcPad prettifier."
+        },
+        "calcpad.prettify.indentSize": {
+          "type": "integer",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 16,
+          "description": "Number of spaces per indent level when calcpad.prettify.indentStyle is \"space\"."
+        },
+        "calcpad.prettify.trimTrailingWhitespace": {
+          "type": "boolean",
+          "default": true,
+          "description": "Strip trailing whitespace from each line when prettifying."
         },
         "calcpad.linter.minimumSeverity": {
           "type": "string",

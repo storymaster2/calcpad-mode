@@ -3,7 +3,7 @@
 ## General
 
 - Add better documentation for using vs code features
-- Investigate AWSSDK.S3 and rustfs to replace MinIO
+- S3 client = AWSSDK.S3 (done); default Docker backend = Garage with native bucket versioning (done). Re-evaluate RustFS once distributed mode ships.
 
 ## calcpad-frontend
 - Finish enhanced PDF generation
@@ -70,6 +70,8 @@
 - Add undefined macro/string variable linter check
 - Allow rename of global variables inside macro defs - this may be an undefined variable linter bug? But this should not run at stage 2 anyways.
 - Scan for #if/#else mismatches in macro definitions, and in general improve macro definition linting where possible.
+
+### Testing
 - Make auto-indenting work inside macro definitions - this works in some cases but not others, prettifier should handle this.
 
 ### Bugs
@@ -98,7 +100,6 @@ f(0)
 - Add #hideRegion {cond} and #endHideRegion {cond} to replace hideC/unhideC 
 
 ### Testing
-- Catch self-referential includes crashing the program
 - Test Excel remote URL reading.
 - Make keyword arguments in functions and macros. If a keyword argument is used, have the linter check the macro against the default values for type mismatch errors.
 - Add string$() function argument that gives the return mode for the expression in the string. It should allow with or without units

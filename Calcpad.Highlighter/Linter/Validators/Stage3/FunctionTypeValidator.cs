@@ -342,8 +342,10 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             var highestType = CalcpadType.Unknown;
             int depth = 0;
 
-            foreach (var t in paramTokens)
+            for (int i = 0; i < paramTokens.Count; i++)
             {
+                var t = paramTokens[i];
+
                 if (t.Type == TokenType.Bracket)
                 {
                     if (t.Text == "(" || t.Text == "[" || t.Text == "{") depth++;
@@ -369,6 +371,27 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 if (t.Type == TokenType.Variable || t.Type == TokenType.StringVariable ||
                     t.Type == TokenType.LocalVariable)
                 {
+                    // Element access (v.1, v.i) yields a scalar — skip the base variable's
+                    // type and consume the index token. Bracket-form indices like v.(expr)
+                    // and M.(1;2) are handled by the depth tracking above.
+                    if (i + 1 < paramTokens.Count &&
+                        paramTokens[i + 1].Type == TokenType.Operator &&
+                        paramTokens[i + 1].Text == ".")
+                    {
+                        i++;
+                        if (i + 1 < paramTokens.Count)
+                        {
+                            var idx = paramTokens[i + 1];
+                            if (idx.Type == TokenType.Variable ||
+                                idx.Type == TokenType.LocalVariable ||
+                                idx.Type == TokenType.Const)
+                            {
+                                i++;
+                            }
+                        }
+                        continue;
+                    }
+
                     if (functionParams.Contains(t.Text))
                     {
                         if (highestType == CalcpadType.Unknown) highestType = CalcpadType.Various;

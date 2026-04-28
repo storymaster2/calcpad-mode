@@ -20,6 +20,8 @@ export type {
     CustomUnitDefinition,
     FindReferencesResponse,
     SymbolLocation,
+    PrettifyRequest,
+    PrettifyResponse,
 } from './types/api';
 export { CalcpadTokenType, CalcpadTypeId } from './types/api';
 

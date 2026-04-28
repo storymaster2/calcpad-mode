@@ -1,6 +1,9 @@
 using System.Text;
+using Amazon.Runtime;
+using Amazon.S3;
 using Calcpad.Server.Data;
 using Calcpad.Server.Services;
+using Calcpad.Server.Services.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +17,7 @@ namespace Calcpad.Server.Services
     public static class CalcpadApiService
     {
         private static bool _authEnabled;
+        private static bool _storageEnabled;
 
         /// <summary>
         /// Configure the web application builder with all necessary services
@@ -80,6 +84,45 @@ namespace Calcpad.Server.Services
                 FileLogger.LogInfo("Auth subsystem disabled (set Auth:Enabled=true to enable)");
             }
 
+            // Storage subsystem (S3-compatible: Garage, AWS S3, MinIO, RustFS)
+            _storageEnabled = string.Equals(
+                builder.Configuration["Storage:Enabled"], "true",
+                StringComparison.OrdinalIgnoreCase);
+
+            if (_storageEnabled)
+            {
+                if (!_authEnabled)
+                {
+                    FileLogger.LogInfo("Storage requires Auth:Enabled=true; skipping registration");
+                    _storageEnabled = false;
+                }
+                else
+                {
+                    builder.Services.Configure<S3Options>(builder.Configuration.GetSection("Storage:S3"));
+
+                    builder.Services.AddSingleton<IAmazonS3>(sp =>
+                    {
+                        var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<S3Options>>().Value;
+                        var config = new AmazonS3Config
+                        {
+                            ServiceURL = opts.ServiceURL,
+                            ForcePathStyle = opts.ForcePathStyle,
+                            UseHttp = !opts.UseHttps,
+                            AuthenticationRegion = opts.Region
+                        };
+                        var creds = new BasicAWSCredentials(opts.AccessKey, opts.SecretKey);
+                        return new AmazonS3Client(creds, config);
+                    });
+
+                    builder.Services.AddScoped<IFileStorageService, S3FileStorageService>();
+                    FileLogger.LogInfo("Storage subsystem enabled (S3)");
+                }
+            }
+            else
+            {
+                FileLogger.LogInfo("Storage subsystem disabled (set Storage:Enabled=true to enable)");
+            }
+
             // Add CORS policy
             builder.Services.AddCors(options =>
             {
@@ -139,6 +182,21 @@ namespace Calcpad.Server.Services
                 {
                     var db = scope.ServiceProvider.GetRequiredService<CalcpadAuthDbContext>();
                     db.Database.EnsureCreated();
+                }
+            }
+
+            if (_storageEnabled)
+            {
+                // Ensure bucket versioning is enabled (idempotent).
+                using var scope = app.Services.CreateScope();
+                var storage = scope.ServiceProvider.GetRequiredService<IFileStorageService>();
+                try
+                {
+                    storage.InitializeAsync().GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    FileLogger.LogError("Storage initialization failed", ex);
                 }
             }
 

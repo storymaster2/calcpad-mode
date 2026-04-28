@@ -38,6 +38,22 @@ export interface LintDiagnostic {
 }
 
 // ============================================
+// Prettify API Types
+// ============================================
+
+export interface PrettifyRequest {
+    content: string;
+    /** String emitted per indent level. Defaults to a tab on the server when omitted. */
+    indentUnit?: string;
+    /** Whether to strip trailing whitespace on each line (default: true). */
+    trimTrailingWhitespace?: boolean;
+}
+
+export interface PrettifyResponse {
+    content: string;
+}
+
+// ============================================
 // Highlight API Types
 // ============================================
 

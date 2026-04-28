@@ -599,8 +599,10 @@ namespace Calcpad.Highlighter.Linter.Helpers
             var highestType = CalcpadType.Unknown;
             int depth = 0;
 
-            foreach (var token in tokens)
+            for (int i = 0; i < tokens.Count; i++)
             {
+                var token = tokens[i];
+
                 if (token.Type == TokenType.Bracket)
                 {
                     if (token.Text == "(" || token.Text == "[" || token.Text == "{") depth++;
@@ -623,9 +625,26 @@ namespace Calcpad.Highlighter.Linter.Helpers
                 if (token.Type == TokenType.Variable || token.Type == TokenType.StringVariable ||
                     token.Type == TokenType.LocalVariable)
                 {
-                    // Element access tokens end with '.' — the result is scalar, not vector
-                    if (token.Text.EndsWith("."))
+                    // Element access (v.1, v.i) yields a scalar — skip the base variable's
+                    // type and consume the index token. Bracket-form indices like v.(expr)
+                    // and M.(1;2) are handled by the depth tracking above.
+                    if (i + 1 < tokens.Count &&
+                        tokens[i + 1].Type == TokenType.Operator &&
+                        tokens[i + 1].Text == ".")
+                    {
+                        i++;
+                        if (i + 1 < tokens.Count)
+                        {
+                            var idx = tokens[i + 1];
+                            if (idx.Type == TokenType.Variable ||
+                                idx.Type == TokenType.LocalVariable ||
+                                idx.Type == TokenType.Const)
+                            {
+                                i++;
+                            }
+                        }
                         continue;
+                    }
 
                     if (_variables.TryGetValue(token.Text, out var info))
                     {

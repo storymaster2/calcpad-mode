@@ -32,6 +32,8 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+    <!-- S3-compatible object storage (Garage / AWS S3 / MinIO / RustFS) -->
+    <PackageReference Include="AWSSDK.S3" Version="3.7.412" />
   </ItemGroup>
 
   <ItemGroup>

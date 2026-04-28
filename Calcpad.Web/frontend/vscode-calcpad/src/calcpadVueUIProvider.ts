@@ -283,6 +283,40 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     vscode.commands.executeCommand('calcpad.refreshDocument');
                     break;
 
+                case 'prettifyDocument':
+                    this._outputChannel.appendLine('[Vue UI] Prettify document requested');
+                    vscode.commands.executeCommand('vscode-calcpad.prettifyDocument');
+                    break;
+
+                case 'getPrettifySettings': {
+                    const cfg = vscode.workspace.getConfiguration('calcpad');
+                    webviewView.webview.postMessage({
+                        type: 'prettifySettingsResponse',
+                        indentStyle: cfg.get<string>('prettify.indentStyle', 'tab'),
+                        indentSize: cfg.get<number>('prettify.indentSize', 4),
+                        trimTrailingWhitespace: cfg.get<boolean>('prettify.trimTrailingWhitespace', true)
+                    });
+                    break;
+                }
+
+                case 'updatePrettifyIndentStyle': {
+                    const cfg = vscode.workspace.getConfiguration('calcpad');
+                    await cfg.update('prettify.indentStyle', data.value, vscode.ConfigurationTarget.Global);
+                    break;
+                }
+
+                case 'updatePrettifyIndentSize': {
+                    const cfg = vscode.workspace.getConfiguration('calcpad');
+                    await cfg.update('prettify.indentSize', data.value, vscode.ConfigurationTarget.Global);
+                    break;
+                }
+
+                case 'updatePrettifyTrim': {
+                    const cfg = vscode.workspace.getConfiguration('calcpad');
+                    await cfg.update('prettify.trimTrailingWhitespace', data.value, vscode.ConfigurationTarget.Global);
+                    break;
+                }
+
                 case 'debug':
                     this._outputChannel.appendLine(`[Vue Debug] ${data.message}`);
                     break;

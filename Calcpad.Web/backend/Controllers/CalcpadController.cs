@@ -6,6 +6,7 @@ using ServerAuthSettings = Calcpad.Server.Services.AuthSettings;
 using Calcpad.Highlighter.ContentResolution;
 using Calcpad.Highlighter.Linter;
 using Calcpad.Highlighter.Linter.Models;
+using Calcpad.Highlighter.Prettifier;
 using Calcpad.Highlighter.Snippets;
 using Calcpad.Highlighter.Snippets.Models;
 using Calcpad.Highlighter.Tokenizer;
@@ -675,6 +676,35 @@ namespace Calcpad.Server.Controllers
         }
 
         /// <summary>
+        /// Re-indent Calcpad source by tracking control-block depth across
+        /// #if/#else/#end if, #for/#while/#repeat/#loop, and multiline #def/#end def.
+        /// Only leading whitespace is adjusted; line endings and content are preserved.
+        /// </summary>
+        [HttpPost("prettify")]
+        public IActionResult PrettifyContent([FromBody] PrettifyRequest request)
+        {
+            try
+            {
+                if (request.Content == null)
+                    return BadRequest("Content is required");
+
+                var options = new PrettifierOptions
+                {
+                    IndentUnit = string.IsNullOrEmpty(request.IndentUnit) ? "\t" : request.IndentUnit,
+                    TrimTrailingWhitespace = request.TrimTrailingWhitespace
+                };
+
+                var formatted = CalcpadPrettifier.Prettify(request.Content, options);
+                return Ok(new PrettifyResponse { Content = formatted });
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogError("Prettify request failed", ex);
+                return StatusCode(500, "Error prettifying content: " + ex.Message);
+            }
+        }
+
+        /// <summary>
         /// Get all available snippets for autocomplete/intellisense.
         /// Returns simplified snippet definitions with insert text, descriptions, and categories.
         /// </summary>
@@ -805,6 +835,24 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>Whether this parameter is variadic (the type applies to all remaining arguments).</summary>
         public bool IsVariadic { get; set; }
+    }
+
+    public class PrettifyRequest
+    {
+        /// <summary>The Calcpad source code to prettify</summary>
+        public string Content { get; set; } = string.Empty;
+
+        /// <summary>String emitted per indent level. Defaults to a single tab when null/empty.</summary>
+        public string? IndentUnit { get; set; }
+
+        /// <summary>Trim trailing whitespace on each line. Default true.</summary>
+        public bool TrimTrailingWhitespace { get; set; } = true;
+    }
+
+    public class PrettifyResponse
+    {
+        /// <summary>Prettified source code</summary>
+        public string Content { get; set; } = string.Empty;
     }
 
     public class RefreshCacheRequest

@@ -66,6 +66,16 @@
         @reset-pdf-settings="handleResetPdfSettings"
         @generate-pdf="handleGeneratePdf"
       />
+      <CalcpadFormattingTab
+        v-else-if="activeTab === 'formatting'"
+        :indent-style="prettifyIndentStyle"
+        :indent-size="prettifyIndentSize"
+        :trim-trailing-whitespace="prettifyTrimTrailing"
+        @prettify="handlePrettify"
+        @update-indent-style="handleUpdatePrettifyIndentStyle"
+        @update-indent-size="handleUpdatePrettifyIndentSize"
+        @update-trim-trailing="handleUpdatePrettifyTrim"
+      />
     </div>
   </div>
 </template>
@@ -78,6 +88,7 @@ import CalcpadSettingsTab from './CalcpadSettingsTab.vue'
 import CalcpadVariablesTab from './CalcpadVariablesTab.vue'
 import CalcpadFilesTab from './CalcpadFilesTab.vue'
 import CalcpadPdfTab from './CalcpadPdfTab.vue'
+import CalcpadFormattingTab from './CalcpadFormattingTab.vue'
 import { postMessage } from '../services/messaging'
 import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading, ThemeInfo } from '../types'
 import { DEFAULT_PDF_SETTINGS } from '../types'
@@ -105,6 +116,9 @@ const variablesLoading = ref(false)
 const tocHeadings = ref<TocHeading[]>([])
 const tocLoading = ref(false)
 const pdfSettings = ref<PdfSettings>({ ...DEFAULT_PDF_SETTINGS })
+const prettifyIndentStyle = ref<'tab' | 'space'>('tab')
+const prettifyIndentSize = ref(4)
+const prettifyTrimTrailing = ref(true)
 
 const tabs: Tab[] = [
   { id: 'insert', label: 'Insert' },
@@ -112,7 +126,8 @@ const tabs: Tab[] = [
   { id: 'settings', label: 'Settings' },
   { id: 'variables', label: 'Variables' },
   { id: 'files', label: 'Files' },
-  { id: 'pdf', label: 'PDF' }
+  { id: 'pdf', label: 'PDF' },
+  { id: 'formatting', label: 'Formatting' }
 ]
 
 // Methods
@@ -129,6 +144,11 @@ const switchTab = (tabId: string) => {
   if (tabId === 'toc') {
     tocLoading.value = true
     postMessage({ type: 'getHeadings' })
+  }
+
+  // Request prettify settings when switching to Formatting tab
+  if (tabId === 'formatting') {
+    postMessage({ type: 'getPrettifySettings' })
   }
 }
 
@@ -244,6 +264,25 @@ const handleGoToLine = (line: number) => {
   })
 }
 
+const handlePrettify = () => {
+  postMessage({ type: 'prettifyDocument' })
+}
+
+const handleUpdatePrettifyIndentStyle = (style: 'tab' | 'space') => {
+  prettifyIndentStyle.value = style
+  postMessage({ type: 'updatePrettifyIndentStyle', value: style })
+}
+
+const handleUpdatePrettifyIndentSize = (size: number) => {
+  prettifyIndentSize.value = size
+  postMessage({ type: 'updatePrettifyIndentSize', value: size })
+}
+
+const handleUpdatePrettifyTrim = (enabled: boolean) => {
+  prettifyTrimTrailing.value = enabled
+  postMessage({ type: 'updatePrettifyTrim', value: enabled })
+}
+
 // Message handler
 const handleMessage = (event: MessageEvent) => {
   const message = event.data
@@ -279,6 +318,11 @@ const handleMessage = (event: MessageEvent) => {
       break
     case 'pdfSettingsReset':
       pdfSettings.value = message.settings
+      break
+    case 'prettifySettingsResponse':
+      prettifyIndentStyle.value = message.indentStyle === 'space' ? 'space' : 'tab'
+      prettifyIndentSize.value = typeof message.indentSize === 'number' ? message.indentSize : 4
+      prettifyTrimTrailing.value = message.trimTrailingWhitespace !== false
       break
   }
 }
