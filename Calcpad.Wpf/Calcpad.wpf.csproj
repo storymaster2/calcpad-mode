@@ -21,7 +21,7 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<PlatformTarget>AnyCPU</PlatformTarget>
 	</PropertyGroup>
-	
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
 		<Optimize>false</Optimize>
@@ -32,7 +32,7 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3595.46" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\Calcpad.core\Calcpad.Core.csproj" />
     <ProjectReference Include="..\Calcpad.OpenXml\Calcpad.OpenXml.csproj" />
@@ -301,7 +301,7 @@
     <None Update="Fonts\Roboto-Black.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Fonts\Roboto-BlackItalic.ttf">  
+    <None Update="Fonts\Roboto-BlackItalic.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Fonts\Roboto-Bold.ttf">
@@ -391,7 +391,7 @@
     <None Update="doc\Images\Sample5.bg.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-	
+
 	<!--Chinese (zh)-->
     <None Update="doc\help.zh.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -486,15 +486,15 @@
     <EmbeddedResource Update="ConstantsResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ConstantsResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>	
+    </EmbeddedResource>
     <EmbeddedResource Update="FindReplaceResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>FindReplaceResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>    
+    </EmbeddedResource>
     <EmbeddedResource Update="MainWindowResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>MainWindowResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>	
+    </EmbeddedResource>
     <EmbeddedResource Update="MathResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>MathResources.Designer.cs</LastGenOutput>
@@ -502,8 +502,8 @@
     <EmbeddedResource Update="UnitsResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>UnitsResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>	
-	
+    </EmbeddedResource>
+
 	<EmbeddedResource Update="AppMessages.bg.resx">
       <DependentUpon>AppMessages.resx</DependentUpon>
     </EmbeddedResource>
@@ -522,7 +522,7 @@
     <EmbeddedResource Update="UnitsResources.bg.resx">
       <DependentUpon>UnitsResources.resx</DependentUpon>
     </EmbeddedResource>
-	
+
 	<EmbeddedResource Update="AppMessages.zh.resx">
       <DependentUpon>AppMessages.resx</DependentUpon>
     </EmbeddedResource>

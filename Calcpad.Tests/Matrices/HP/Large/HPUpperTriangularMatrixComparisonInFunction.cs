@@ -1,6 +1,6 @@
 ﻿namespace Calcpad.Tests
 {
-    public class HPUpperTriangularMatrixComparisonInFunction 
+    public class HPUpperTriangularMatrixComparisonInFunction
     {
         #region HPUpperTriangularMatrixOperators
 

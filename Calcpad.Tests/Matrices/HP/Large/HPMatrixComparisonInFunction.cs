@@ -10,7 +10,7 @@
         private const string WellConditionedMatrix = "a = submatrix(qr(random(mfill(matrix(n; n); 1))); 1; n; 1; n)";
 
         private static string[] OperatorTestHelper(char o, string tol = "0") => [
-            "m = 500", 
+            "m = 500",
             "n = 500",
             RandomMatrixA,
             RandomMatrixB,

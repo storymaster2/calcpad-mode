@@ -6,7 +6,7 @@
 
         private const string RandomMatrixA = "a = random(column(n; 1))";
         private const string RandomMatrixB = "b = random(column(n; 1))";
-        
+
 
         private static string[] OperatorTestHelper(char o, string tol = "0") => [
             "n = 500",

@@ -928,7 +928,7 @@
                 $("a").click(function () {
                     chrome.webview.postMessage('clicked');
                 });
-				
+
 				window.addEventListener('click', () => {
 					chrome.webview.postMessage('focused');
 				});

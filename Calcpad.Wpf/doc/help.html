@@ -94,7 +94,7 @@
             color: deeppink;
             padding: 0 1pt 0 1pt;
         }
-		
+
 		.ok {
             color: green;
         }
@@ -571,7 +571,7 @@
                 <a href="#0" data-text="PlotAdaptive ="><var>PlotAdaptive</var></a> - use adaptive mesh (= 1) for function plotting or uniform (= 0);<br />
                 <a href="#0" data-text="PlotStep ="><var>PlotStep</var></a> - the size of the mesh for map plotting;<br />
                 <a href="#0" data-text="PlotShadows ="><var>PlotShadows</var></a> - draw surface plots with shadows;<br />
-                <a href="#0" data-text="PlotLightDir ="><var>PlotLightDir</var></a> - direction to light source (0-7) clockwise: 
+                <a href="#0" data-text="PlotLightDir ="><var>PlotLightDir</var></a> - direction to light source (0-7) clockwise:
 				<select class="insert">
 					<option value="PlotLightDir = 0">0 - North</option>
 					<option value="PlotLightDir = 1">1 - NorthEast</option>
@@ -583,7 +583,7 @@
 					<option value="PlotLightDir = 7">7 – NorthWest</option>
 				</select><br/>
                 <a href="#0" data-text="PlotSmooth ="><var>PlotSmooth</var></a> - smooth gradient coloring (= 1) or  isobands (= 0) for surface plots;<br />
-                <a href="#0" data-text="PlotPalette ="><var>PlotPalette</var></a> - the number of color palette for surface plots (0-9): 
+                <a href="#0" data-text="PlotPalette ="><var>PlotPalette</var></a> - the number of color palette for surface plots (0-9):
                 <select class="insert">
                     <option value="PlotPalette = 0">0 - None</option>
                     <option value="PlotPalette = 1">1 - Gray</option>
@@ -1306,11 +1306,11 @@
                 $("a").click(function () {
                     chrome.webview.postMessage('clicked');
                 });
-				
+
 				$("select.insert").change(function () {
                     chrome.webview.postMessage('clicked');
                 });
-				
+
 				window.addEventListener('click', () => {
 					chrome.webview.postMessage('focused');
 				});
@@ -1318,4 +1318,4 @@
         }
     </script>
 </body>
-</html>	
+</html>

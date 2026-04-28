@@ -13,7 +13,7 @@ using System.Xml.Serialization;
 namespace Calcpad.Cli
 {
     class Program
-    {   
+    {
         private static readonly string _currentCultureName = "en"; //en, bg or zh
         private static readonly char _dirSeparator = Path.DirectorySeparatorChar;
         const string Prompt = " |> ";
@@ -32,19 +32,19 @@ namespace Calcpad.Cli
             }
 
             private string LatinToGreek(string input)
-            { 
+            {
                 var i = input.IndexOf('`');
                 if (i == -1)
                     return input;
 
                 _sb.Clear();
                 var n = 0;
-                while (i >= 0) 
+                while (i >= 0)
                 {
                     if (i > 0)
                         _sb.Append(input[n..i]);
 
-                    n = i + 1;                    
+                    n = i + 1;
                     _sb.Append(LatinToGreekChar(input[n]));
                     i = input.IndexOf('`', n);
                     ++n;
@@ -74,27 +74,27 @@ namespace Calcpad.Cli
             {
                 _width = Math.Min(Math.Min(Console.WindowWidth, Console.BufferWidth), 85);
             }
-            catch 
-            { 
-                _width = 85; 
+            catch
+            {
+                _width = 85;
             }
             Settings settings = GetSettings();
             if (TryConvertOnStartup(settings))
                 return;
-            
+
             MathParser mp = new(settings.Math);
-            
+
             if (OperatingSystem.IsWindows())
             {
                 Console.OutputEncoding = Encoding.Unicode;
-                Console.InputEncoding = Encoding.Unicode;  
+                Console.InputEncoding = Encoding.Unicode;
             }
             else
             {
                 Console.OutputEncoding = Encoding.UTF8;
-                Console.InputEncoding = Encoding.UTF8;  
+                Console.InputEncoding = Encoding.UTF8;
             }
-            
+
             //Console.WindowWidth = 85;
             List<Line> Lines = [];
             var Title = TryOpenOnStartup(Lines);
@@ -217,7 +217,7 @@ namespace Calcpad.Cli
 
         static Settings GetSettings()
         {
-                Settings settings = new(); 
+                Settings settings = new();
                 settings.Math.Decimals = 6;
                 XmlSerializer writer = new(settings.GetType());
                 var path = OperatingSystem.IsWindows() ?
@@ -279,7 +279,7 @@ namespace Calcpad.Cli
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);    
+                Console.WriteLine(e.Message);
             }
             Console.WriteLine();
         }
@@ -297,7 +297,7 @@ namespace Calcpad.Cli
 
             if (OperatingSystem.IsWindows())
                 fileName = fileName.ToLower();
-            
+
             var i = fileName.IndexOf(".cpd");
             if (i < 0)
             {
@@ -317,7 +317,7 @@ namespace Calcpad.Cli
             var outFile = fileName[i..].Trim();
             var isSilent = outFile.EndsWith(" -s");
             if (isSilent)
-                outFile = outFile[..^3]; 
+                outFile = outFile[..^3];
 
             fileName = fileName[..i].Trim();
             if (!File.Exists(fileName))
@@ -374,7 +374,7 @@ namespace Calcpad.Cli
 
                 return true;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 WriteErrorAndWait(ex.Message);
                 return true;
@@ -396,12 +396,12 @@ namespace Calcpad.Cli
             if (n > 1)
             {
                 var fileName = string.Join(" ", args, 1, n - 1); //.ToLower(); cannot be used in linux due to case sensitive file system
-            
+
                 if (OperatingSystem.IsWindows())
                 {
                     fileName = fileName.ToLower();
                 }
-                
+
                 if (File.Exists(fileName))
                 {
                     if (Path.GetExtension(fileName) == ".cpc")
