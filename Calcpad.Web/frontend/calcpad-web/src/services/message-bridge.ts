@@ -238,7 +238,7 @@ export class MessageBridge {
         const content = models?.[0]?.getValue() || '';
         const apiSettings = buildApiSettings(this.settings);
 
-        const result = await this.apiClient.convert(content, apiSettings, 'pdf');
+        const result = await this.apiClient.convert(content, apiSettings, 'pdf', true);
         if (result instanceof ArrayBuffer) {
             // Trigger browser download
             const blob = new Blob([result], { type: 'application/pdf' });

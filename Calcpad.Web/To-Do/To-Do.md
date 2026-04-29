@@ -16,16 +16,13 @@
 ## vscode-calcpad
 
 ### Enhancements
-- Add docstrings for built-in functions using the same hover option. Build this into the snippet provider
 - Make a Vue panel that activates when the cursor is inside a JSON HTML comment. Where you can edit properties and then the line gets updated based on what you put into the UI. This could also work for editing #UI properties
 - Add the ability to focus the preview to the line selected in the code. Add a toggle to automatically sync this in the Vue panel.
 - Switch Vue tabs from text to icons now that they are getting longer.
 - Add quick typing for macros (~1 macro 1, ~2 macro 2, etc.). Add macro mapping to vscode config using json object {macroMapping:{"1": "macroName$", ...}}. Have VS code set cursor position to within () and before first param.
 - Publish to Open VSX but not Visual Studio Marketplace unless I need a personal Azure account for other reasons
 - Fix line links to use source line mapping - this may be fixed? If I run into it again, give test case
-- Add prettify command that does the same thing as eat space and auto-indenting. However, the automatic behavior is not preferred as it caused various bugs in Wpf.
 - Add intermediate step that changes the display name of a variable by using find and replace on the HTML content. This will need some processing of complex characters, for example _ turns into a subscript in the HTML. Read how Calcpad.Core handles this and reverse-engineer it. This can use a displayName property in an HTML comment above the variable definition line. Alternatively, have a variable mapping object as part of the settings and have it change the variable name at the HTML output step in Calcpad.Core.
-- Have variables use the tokenizer for recognition when you highlight text when clicking, commas are not handled properly currently.
 
 ### Bugs
 
@@ -37,6 +34,9 @@
 - Check if the cache needs cleared on intervals
 - Have variables use the tokenizer for recognition when you highlight text when clicking, commas are not handled properly currently.
 - UI state persists across code changes where possible.
+- Add docstrings for built-in functions using the same hover option. Build this into the snippet provider
+- Add prettify command that does the same thing as eat space and auto-indenting. However, the automatic behavior is not preferred as it caused various bugs in Wpf.
+- Have variables use the tokenizer for recognition when you highlight text when clicking, commas are not handled properly currently.
 
 ## Calcpad.Web
 - Do a deep investigation on what is needed to avoid DDoS, provide extra security to the backend, and provide file size/rate limits/etc.
@@ -97,7 +97,10 @@ f(0)
 ```
 - See if Kelvin unit conversion can be made safer.
 - Add more imperial units for engineering (ksf, plf, etc.)
-- Add #hideRegion {cond} and #endHideRegion {cond} to replace hideC/unhideC 
+- Add #hideRegion {cond} and #endHideRegion {cond} to replace hideC/unhideC
+
+### Bugs
+- Route write for the .cpd directory, not the pwd.
 
 ### Testing
 - Test Excel remote URL reading.

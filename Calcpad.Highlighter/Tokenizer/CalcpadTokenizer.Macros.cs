@@ -238,6 +238,13 @@ namespace Calcpad.Highlighter.Tokenizer
                     _state.CurrentType = TokenType.StringVariable;
                     _expectingStringVariable = false;
                 }
+                else if (_expectingReadVariable && !_definedMacros.Contains(name))
+                {
+                    // After #read keyword, a $-suffixed identifier is a string variable definition
+                    // (e.g., #read t$ from script.js TYPE=X). Without this branch, $ falls through
+                    // to the Macro case and the linter flags t$ as an undefined macro.
+                    _state.CurrentType = TokenType.StringVariable;
+                }
                 else
                 {
                     _state.CurrentType = TokenType.Macro;

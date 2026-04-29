@@ -1,4 +1,0 @@
-#include https://gist.githubusercontent.com/imartincei/37f8c6ca705a5e3ffd14350af1847520/raw/f29b0e42afec93fd2a3bae822aa5710ce881ecef/test.cpd
-#read M from https://gist.githubusercontent.com/imartincei/c834617afefead62dad00ac101cc7939/raw/b6b026a518bbdbcd56ad264fdd20d058d955bf1e/test.csv@R1C1:R2C3 TYPE=R SEP=','
-#include import.cpd
-#read M1 from sample-data.csv

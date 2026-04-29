@@ -73,14 +73,15 @@ export class CalcpadApiClient {
     public async convert(
         content: string,
         settings: unknown,
-        outputFormat: string = 'html'
+        outputFormat: string = 'html',
+        forPrint: boolean = false
     ): Promise<ArrayBuffer | string | null> {
         const url = this.baseUrl + '/api/calcpad/convert';
         try {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings, outputFormat }),
+                body: JSON.stringify({ content, settings, outputFormat, forPrint }),
                 signal: AbortSignal.timeout(60000),
             });
             if (!response.ok) return null;

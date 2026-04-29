@@ -121,7 +121,8 @@ namespace Calcpad.Highlighter.Tokenizer
                     //   causing all subsequent uses to cascade as Units too.
                     if (IsKnownUnit(text) &&
                         !_state.Keyword.Equals("#const", StringComparison.OrdinalIgnoreCase) &&
-                        !_beforeFirstCodeToken)
+                        !_beforeFirstCodeToken &&
+                        !_state.IsDataExchangeKeyword)
                         return TokenType.Units;
                     // Otherwise keep as variable - linter will detect if undefined
                     break;
@@ -332,6 +333,19 @@ namespace Calcpad.Highlighter.Tokenizer
                     _pendingVariableLine = _state.Line;
                     _pendingFunctionName = null;
                     _pendingFunctionParenDepth = 0;
+
+                    // #read t$ from ... has no '=' to trigger registration, so commit
+                    // the definition immediately when we see t$ right after #read.
+                    if (_expectingReadVariable)
+                    {
+                        if (!_definedStringVariables.Contains(text))
+                        {
+                            _definedStringVariables.Add(text);
+                            _definedVariables.Add(text);
+                            _result.AddVariableDefinition(text, _state.Line);
+                        }
+                        _expectingReadVariable = false;
+                    }
                     break;
 
                 case TokenType.StringTable:

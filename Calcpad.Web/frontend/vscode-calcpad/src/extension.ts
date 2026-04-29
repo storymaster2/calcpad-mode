@@ -657,7 +657,8 @@ async function generatePdf(panel: vscode.WebviewPanel, content: string, sourceFi
             body: JSON.stringify({
                 content,
                 settings: settings,
-                clientFileCache: clientFileCache
+                clientFileCache: clientFileCache,
+                forPrint: true
             }),
             signal: AbortSignal.timeout(30000)
         });
@@ -788,7 +789,8 @@ async function printToPdf() {
                     body: JSON.stringify({
                         content: documentContent,
                         settings: settings,
-                        clientFileCache: clientFileCache
+                        clientFileCache: clientFileCache,
+                        forPrint: true
                     }),
                     signal: AbortSignal.timeout(30000)
                 });

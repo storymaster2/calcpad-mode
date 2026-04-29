@@ -35,6 +35,7 @@ namespace Calcpad.Server.Services
         private readonly string _tempDirectory;
         private readonly string _htmlTemplate;
         private static readonly FileSettingsExtractor _fileSettingsExtractor = new();
+        private static readonly NoPrintRegionStripper _noPrintRegionStripper = new();
 
         /// <summary>
         /// Global cache of pre-fetched remote content.
@@ -330,7 +331,7 @@ namespace Calcpad.Server.Services
             return outputText;
         }
 
-        public async Task<string> ConvertAsync(string calcpadContent, Settings? settings = null, bool forceUnwrappedCode = false, string theme = "light", WebFetchContext? ctx = null)
+        public async Task<string> ConvertAsync(string calcpadContent, Settings? settings = null, bool forceUnwrappedCode = false, string theme = "light", WebFetchContext? ctx = null, bool forPrint = false)
         {
             if (string.IsNullOrWhiteSpace(calcpadContent))
             {
@@ -341,8 +342,13 @@ namespace Calcpad.Server.Services
             try
             {
                 Console.WriteLine($"=== CALCPAD SERVICE: Starting conversion, length: {calcpadContent.Length} ===");
-                FileLogger.LogInfo("Starting conversion", $"Content length: {calcpadContent.Length}, Has settings: {settings != null}, Force unwrapped: {forceUnwrappedCode}");
+                FileLogger.LogInfo("Starting conversion", $"Content length: {calcpadContent.Length}, Has settings: {settings != null}, Force unwrapped: {forceUnwrappedCode}, For print: {forPrint}");
                 FileLogger.LogInfo("Content preview:", calcpadContent.Substring(0, Math.Min(200, calcpadContent.Length)));
+
+                // When generating for PDF, strip NoPrintStart/NoPrintEnd regions from the source
+                // before any further processing so they never enter the macro/expression pipeline.
+                if (forPrint)
+                    calcpadContent = _noPrintRegionStripper.Strip(calcpadContent);
 
                 // 1. Use Calcpad.Core settings directly (defaults are set in constructors)
                 Settings coreSettings = settings ?? new Settings();

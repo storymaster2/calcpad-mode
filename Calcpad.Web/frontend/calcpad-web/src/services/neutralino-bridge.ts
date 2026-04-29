@@ -234,7 +234,7 @@ export class NeutralinoMessageBridge {
         const content = models?.[0]?.getValue() || '';
         const apiSettings = buildApiSettings(this.settings);
 
-        const result = await this.apiClient.convert(content, apiSettings, 'pdf');
+        const result = await this.apiClient.convert(content, apiSettings, 'pdf', true);
         if (result instanceof ArrayBuffer) {
             const filePath = await os.showSaveDialog('Export PDF', {
                 filters: [{ name: 'PDF Files', extensions: ['pdf'] }],

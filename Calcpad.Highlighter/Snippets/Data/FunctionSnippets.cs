@@ -1234,6 +1234,18 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
+                Insert = "chr$('newline')",
+                Description = "Returns the newline character (\\n)",
+                Documentation = "Returns the literal newline character. Calcpad string literals don't process backslash escapes, so use `chr$('newline')` to embed an actual newline — e.g. `join$(tbl$; chr$('newline'); ', ')` to render each table row on its own line.",
+                Label = "chr$ (newline)",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters = [new SnippetParameter { Name = "name", Type = ParameterType.String, Description = "Character name: 'newline'" }]
+            },
+            new SnippetItem
+            {
                 Insert = "mid$(§; §; §)",
                 Description = "Extracts a substring from a string",
                 Documentation = "Returns the substring of `s$` starting at position `start` (1-based) with length `count`. Result is clipped if it would extend past the end of the string.",

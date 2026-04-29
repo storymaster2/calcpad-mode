@@ -1,3 +1,4 @@
+'<!--{"settings": {"complex": true}}-->'
 ' Complex numbers: literals, arithmetic, functions, phasor
 z1 = 3 + 2i
 z2 = 5 - 4i
@@ -16,7 +17,7 @@ zExp = exp(z1)
 zSqrt = sqr(z1)
 #deg
 phasorVal = 5 ∠ 45
-phasorAlt = 10 << 30
+phasorAlt = 10 < 30
 #phasor
 phasorOut = 3 + 4i
 #complex

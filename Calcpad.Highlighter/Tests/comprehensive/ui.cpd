@@ -106,7 +106,7 @@ color$
 #UI {"type": "radio", "mode": "string", "style": "compact", "keys": ["Steel", "Concrete"], "values": ["steel", "concrete"]} material$ = 'steel'
 material$
 
-' String checkbox (stores 'true' or 'false', styled as a switch)
+' String checkbox (stores true or false, styled as a switch)
 #UI {"type": "checkbox", "mode": "string", "style": "switch"} enabled$ = 'false'
 enabled$
 

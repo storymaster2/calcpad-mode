@@ -50,7 +50,7 @@ total_ok = 0
 	#end if
 #loop
 ' Command block with units and element access
-M = [1*kN; 2*kN | 3*kN; 4*kN]
+M = [1; 2 | 3; 4]
 cellSum(m) = $Inline{s = 0; $Repeat{$Repeat{s = s + m.(i; j) @ j = 1 : n_cols(m)} @ i = 1 : n_rows(m)}; s}
 mTotal = cellSum(M)
 ' Text containing computed values and units

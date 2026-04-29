@@ -1,6 +1,7 @@
+#read t$ from script.js TYPE=X
+t$
 t = 123
-#val
-'<script>'
-'var hi = 5;'
-'console.log(hi);'
-'</script>'
+#string script$ = '<script>var hi = 'string$(t)'; console.log(hi);</script>'
+#HTML
+script$
+#CPD

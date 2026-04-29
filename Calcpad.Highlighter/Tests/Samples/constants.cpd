@@ -1,7 +1,0 @@
-' Constants file
-PI = 3.14159
-E = 2.71828
-GRAVITY = 9.81
-
-' Define a macro for cube volume
-#def cubeVolume$(side$) = side$^3

@@ -783,6 +783,33 @@ Command `vscode-calcpad.exportToPdf`:
 { "status": "ok", "service": "calcpad-pdf", "version": "2.0.0" }
 ```
 
+### 7.12 NoPrint Region Comments
+
+Authors can mark sections of a Calcpad source file to be excluded from PDF output (while remaining visible in the on-screen preview) using paired HTML-comment markers:
+
+```
+'<!--{"NoPrintStart": true}-->
+'These lines are visible in the preview but stripped from the PDF.
+debug_x = 5
+debug_y = x + 1
+'<!--{"NoPrintEnd": true}-->
+```
+
+The markers reuse the existing JSON-payload comment syntax already used by `LintIgnore`/`EndLintIgnore` and per-file `settings`. They are recognized by the new `NoPrintRegionStripper` service ([Calcpad.Web/backend/Services/NoPrintRegionStripper.cs](Calcpad.Web/backend/Services/NoPrintRegionStripper.cs)), which uses the existing `HtmlCommentParser` to locate the markers in the tokenized source.
+
+**Behavior:**
+- Marker lines themselves are also removed.
+- Pairing is stack-based; nested regions collapse to the outermost on close.
+- An unmatched `NoPrintStart` strips through end-of-file.
+- Property-name matching is case-insensitive.
+- The JSON value of each marker is unused; only the property's presence matters.
+
+**Wiring:**
+- New `forPrint` parameter on `CalcpadService.ConvertAsync(...)`. When `true`, the stripper runs on the source *before* macro and expression parsing — so stripped sections never enter the rendered HTML.
+- New `ForPrint` property on `CalcpadRequest` (inherited by `CalcpadUiRequest`). Threaded through `/api/calcpad/convert`, `/api/calcpad/convert-unwrapped`, and `/api/calcpad/convert-ui`.
+- The frontend PDF flows in `vscode-calcpad/extension.ts` (`generatePdf` and `printToPdf`) and the `calcpad-web` message/Neutralino bridges now send `forPrint: true` when converting source for PDF output. On-screen preview converts continue to default to `forPrint: false`, so NoPrint regions remain visible in the live preview.
+- `CalcpadApiClient.convert(...)` gained a `forPrint: boolean = false` parameter.
+
 ---
 
 ## 8. Web Backend Architecture
@@ -1413,3 +1440,51 @@ Every glyph is emitted as **decomposed (base letter + combining mark)** for a si
 - **Linter rebalancing** — fixed linter bugs around macro parameters; tokenizer is now the source of truth for the linter
 - **Vue panel scroll bug** — fixed CSS regression that broke vertical scrolling inside the VS Code Vue webview
 - **Crash log capture** — improved error logging in `FileLogger` and the server-manager so unexpected backend exits and orphaned-server scenarios are captured to disk instead of being silently lost
+
+---
+
+## 17. `#HTML` Verbatim Passthrough and `chr$` Named-Character Function
+
+Two related changes that together make it practical to emit `<style>` and `<script>` blocks (and other multiline text) from Calcpad source.
+
+### 17.1 `#HTML` Mode No Longer Wraps Lines in `<p>` Tags
+
+Previously, every line inside a `#HTML ... #CPD` block that didn't start with `<` was wrapped in `<p>...</p>` before being emitted. That broke `<style>` blocks (CSS rules became `<p>.foo { ... }</p>`, which is invalid CSS and silently dropped by browsers) and `<script>` blocks (each JS statement got wrapped, breaking parsing).
+
+`#HTML` mode now emits its content verbatim. The opening `<style>` / `<script>` tag and the closing tag both pass through unchanged, and so does every line in between:
+
+```
+#HTML
+<style>
+    .foo.bar { background-color: #aaa; }
+</style>
+<script>
+    var hi = 5;
+    console.log(hi);
+</script>
+#CPD
+```
+
+### 17.2 `chr$('name')` — Named Character Function
+
+Calcpad string literals don't process backslash escapes (`'\n'` is the literal two characters `\` + `n`). The new `chr$` function returns characters that can't be written as literals, looked up by name:
+
+```
+#string out$ = join$(tbl$; chr$('newline'); ', ')
+```
+
+Initial supported name: `'newline'`. Additional names (e.g. `'tab'`, `'cr'`) can be added by appending to the `NamedChars` table in `Calcpad.Core/Calculator/StringCalculator.cs` and adding a matching snippet entry in `Calcpad.Highlighter/Snippets/Data/FunctionSnippets.cs`. Unknown names raise a parse error listing the known names.
+
+### 17.3 Embedding Calculated Values in HTML / JS
+
+Combined with `string$(value)` (numeric → string) and the `+` string-concatenation operator, the two changes above let you build dynamic JS payloads from cpd values:
+
+```
+t = 123
+#string script$ = '<script>var hi = ' + string$(t) + '; console.log(hi);</script>'
+#HTML
+script$
+#CPD
+```
+
+This renders as `<script>var hi = 123; console.log(hi);</script>` in the output document, executable by the browser.

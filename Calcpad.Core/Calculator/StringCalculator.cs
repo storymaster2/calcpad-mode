@@ -21,6 +21,7 @@ namespace Calcpad.Core
             { "string$", StringFrom },
             { "val$", Val },
             { "space$", Space },
+            { "chr$", Chr },
             { "tableToStringArray$", TableToStringArrayStub },
             { "typeOf$", TypeOfStub },
         }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
@@ -148,6 +149,23 @@ namespace Calcpad.Core
             var count = ParseInt(a);
             if (count < 0) count = 0;
             return new string(' ', count);
+        }
+
+        // Named-character lookup. Returns the literal character that string
+        // literals can't carry directly (newline, tab, etc.). Add new entries
+        // here and a matching snippet in FunctionSnippets.cs.
+        private static readonly FrozenDictionary<string, string> NamedChars =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "newline", "\n" },
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
+        private static string Chr(string a)
+        {
+            if (NamedChars.TryGetValue(a, out var c))
+                return c;
+            throw new MathParserException(
+                $"chr$: unknown character name \"{a}\". Known names: {string.Join(", ", NamedChars.Keys)}.");
         }
 
         // --- 3-arg functions ---

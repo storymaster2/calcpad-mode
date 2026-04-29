@@ -589,7 +589,7 @@ namespace Calcpad.Core
             if (kwdLength > 0)
                 _sb.Append(_condition.ToHtml());
 
-            if (isHtmlContent)
+            if (isHtmlContent || _parseMode == ParseMode.Html)
                 _sb.Append(InsertAttribute(content, htmlId));
             else
                 _sb.Append($"<p{htmlId}>{content}</p>");

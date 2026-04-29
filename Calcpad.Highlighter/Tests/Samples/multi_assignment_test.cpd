@@ -1,9 +1,0 @@
-'Test: Multiple assignments check at expression level'
-
-'Valid: assignments separated by strings (should NOT warn)
-h = 5', 'g = 6
-a = 1"text"b = 2
-x = 10', 'y = 20', 'z = 30
-
-'Invalid: multiple assignments in same expression (SHOULD warn)
-a = 1  b = 2

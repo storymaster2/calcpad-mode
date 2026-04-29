@@ -61,7 +61,7 @@ namespace Calcpad.Server.Controllers
                     ApiTimeoutMs = request.ApiTimeoutMs,
                     SourceFilePath = request.SourceFilePath
                 };
-                var htmlResult = await _calcpadService.ConvertAsync(request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, ctx);
+                var htmlResult = await _calcpadService.ConvertAsync(request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, ctx, request.ForPrint);
 
                 return Content(htmlResult, "text/html");
             }
@@ -89,7 +89,7 @@ namespace Calcpad.Server.Controllers
                     ApiTimeoutMs = request.ApiTimeoutMs,
                     SourceFilePath = request.SourceFilePath
                 };
-                var result = await _calcpadService.ConvertAsync(request.Content, request.Settings, forceUnwrappedCode: true, request.Theme, ctx);
+                var result = await _calcpadService.ConvertAsync(request.Content, request.Settings, forceUnwrappedCode: true, request.Theme, ctx, request.ForPrint);
 
                 // Process data-text links to make them functional
                 var processedResult = ProcessDataTextLinks(result);
@@ -125,7 +125,7 @@ namespace Calcpad.Server.Controllers
                 settings.EnableUi = true;
                 settings.UiOverrides = request.UiOverrides;
 
-                var htmlResult = await _calcpadService.ConvertAsync(request.Content, settings, request.ForceUnwrappedCode, request.Theme, ctx);
+                var htmlResult = await _calcpadService.ConvertAsync(request.Content, settings, request.ForceUnwrappedCode, request.Theme, ctx, request.ForPrint);
 
                 return Content(htmlResult, "text/html");
             }
@@ -870,6 +870,13 @@ namespace Calcpad.Server.Controllers
         public Settings? Settings { get; set; }
         public bool ForceUnwrappedCode { get; set; } = false;
         public string Theme { get; set; } = "light"; // "light" or "dark"
+
+        /// <summary>
+        /// When true, strip <c>NoPrintStart</c>/<c>NoPrintEnd</c> regions from the source
+        /// before conversion. The frontend should set this for renders destined for PDF
+        /// so those sections do not appear in print output.
+        /// </summary>
+        public bool ForPrint { get; set; } = false;
 
         /// <summary>
         /// Client-side file cache with base64-encoded file contents.

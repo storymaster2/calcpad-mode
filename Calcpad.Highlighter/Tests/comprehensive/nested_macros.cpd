@@ -25,10 +25,10 @@
 #end def
 
 ' Define test variables
-A_s = 0.31|in^2
-d_eff = 5.8125|in
-M_app = 12.5|kip*ft
-V_app = 3.2|kip
+A_s = 0.31in^2
+d_eff = 5.8125in
+M_app = 12.5kip*ft
+V_app = 3.2kip
 check_M = matrix(2; 5)
 check_V = matrix(2; 5)
 
