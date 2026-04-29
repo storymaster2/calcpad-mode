@@ -1369,18 +1369,9 @@ Webview title bar: **Print to PDF**, **View Webview Source**.
 - **Print to PDF** (`calcpad` group, position 1)
 - **View Webview Source** (`calcpad` group, position 2)
 
-### 14.12 Built-in Color Themes
+### 14.12 Semantic Token Scope Mapping
 
-Two themes ship with the extension:
-
-- **CalcPad Light**
-- **CalcPad Dark**
-
-Plus a debug theme (`CalcPad Token Test`) for semantic-token scope inspection.
-
-### 14.13 Semantic Token Scope Mapping
-
-`package.json` defines detailed `semanticTokenScopes` so the 31 Calcpad token types map cleanly onto standard VS Code highlighting roles — meaning third-party themes color `.cpd` files reasonably without additional configuration.
+`package.json` defines detailed `semanticTokenScopes` so the 31 Calcpad token types map cleanly onto standard VS Code highlighting roles — meaning the user's currently-selected theme (built-in or third-party) colors `.cpd` files reasonably without any Calcpad-specific theme. Per-theme overrides for the most common light and dark themes live in the `semanticTokenColors` block of `package.json`.
 
 ### 14.14 Operator Replacer and Auto-Indenter
 

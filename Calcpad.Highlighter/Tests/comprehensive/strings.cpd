@@ -84,11 +84,11 @@ data$
   loopTable$(j; 1) = string$(j)
 #loop
 loopTable$
-' Cross-type: string$ of matrix creates table
+' Cross-type: string of matrix creates table
 #string fromMatrix$ = string$([1; 2 | 3; 4])
 fromMatrix$
 
-' ===== STRING$ WITH UNITS =====
+' ===== STRING WITH UNITS =====
 
 ' Scalar with units
 x = 5m
@@ -104,14 +104,14 @@ withoutUnits$
 upperCase$
 
 ' Vector to table with units
-v = [1; 2; 3]m
+v = [1; 2; 3]*m
 #string vecNoUnits$ = string$(v)
 vecNoUnits$
 #string vecWithUnits$ = string$(v; 'true')
 vecWithUnits$
 
 ' Matrix to table with units
-M = [1; 2 | 3; 4]kN
+M = [1; 2 | 3; 4]*kN
 #string matNoUnits$ = string$(M)
 matNoUnits$
 #string matWithUnits$ = string$(M; 'true')
@@ -127,7 +127,7 @@ values$
 #string col1$ = colToStringArray$(opts$; 1)
 col1$
 
-' tableToStringArray$ — full table as nested JSON array
+' tableToStringArray — full table as nested JSON array
 #string nested$ = tableToStringArray$(opts$)
 nested$
 
@@ -168,7 +168,7 @@ wide$
 #string tall$ = stackT$(left$; left$)
 tall$
 
-' ===== TYPEOF$ FUNCTION =====
+' ===== TYPEOF FUNCTION =====
 
 ' Scalar value
 scalarVar = 5m
@@ -198,3 +198,12 @@ typeTbl$
 ' Expression (not a variable)
 #string typeExpr$ = typeOf$(2 + 3)
 typeExpr$
+
+' ===== STRING WITH UNITS =====
+x = 5in
+#string withUnits$ = string$(x; 'true')
+withUnits$
+
+M = [1; 2 | 3; 4]*kN
+#string matWithUnits$ = string$(M; 'true')
+matWithUnits$

@@ -147,12 +147,6 @@ Set the Calcpad.Server URL in VS Code settings:
 4. Preview updates automatically as you type
 5. Linting errors appear as you work
 
-### Included Themes
-
-- CalcPad Light
-- CalcPad Dark
-- CalcPad Test
-
 ---
 
 ## Web Editor Details

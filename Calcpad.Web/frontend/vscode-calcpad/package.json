@@ -234,23 +234,6 @@
         }
       }
     ],
-    "themes": [
-      {
-        "label": "CalcPad Light",
-        "uiTheme": "vs",
-        "path": "./themes/calcpad-light-theme.json"
-      },
-      {
-        "label": "CalcPad Dark",
-        "uiTheme": "vs-dark",
-        "path": "./themes/calcpad-dark-theme.json"
-      },
-      {
-        "label": "CalcPad Token Test",
-        "uiTheme": "vs-dark",
-        "path": "./themes/calcpad-test-theme.json"
-      }
-    ],
     "commands": [
       {
         "command": "vscode-calcpad.activate",
@@ -973,7 +956,7 @@
           "stringFunction:calcpad": { "foreground": "#4EC9B0", "bold": true },
           "stringTable:calcpad": "#B5CEA8"
         },
-        "[Default Light Modern][Default Light+][Default Light][Light+ (default light)][Light (Visual Studio)][Visual Studio Light][Quiet Light][Solarized Light][GitHub Light][CalcPad Light]": {
+        "[Default Light Modern][Default Light+][Default Light][Light+ (default light)][Light (Visual Studio)][Visual Studio Light][Quiet Light][Solarized Light][GitHub Light]": {
           "enabled": true,
           "rules": {
             "const:calcpad": "#000000",

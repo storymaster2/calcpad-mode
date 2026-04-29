@@ -1,8 +1,8 @@
 import * as monaco from 'monaco-editor';
 
 /**
- * CalcPad dark theme for Monaco, derived from themes/calcpad-dark-theme.json.
- * Maps semantic token types to colors matching the VS Code extension theme.
+ * CalcPad dark theme for Monaco. Maps semantic token types to colors matching
+ * the dark-mode color rules in the VS Code extension's package.json.
  */
 export const calcpadDarkTheme: monaco.editor.IStandaloneThemeData = {
     base: 'vs-dark',

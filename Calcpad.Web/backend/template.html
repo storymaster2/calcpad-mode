@@ -118,15 +118,26 @@
 
             table.bordered {
                 margin-top: 1em;
+                margin-bottom: 0.5em;
             }
 
                 table.bordered th {
                     background-color: #F0F0F0;
                     border: solid 1pt #AAAAAA;
+                    padding: 4pt 8pt;
+                    min-width: 2em;
+                    text-align: center;
                 }
 
                 table.bordered td {
                     border: solid 1pt #CCCCCC;
+                    padding: 4pt 8pt;
+                    min-width: 2em;
+                    height: 1.6em;
+                }
+
+                table.bordered td:empty::after {
+                    content: "\00a0";
                 }
 
             table.centered td, .matrix .td {

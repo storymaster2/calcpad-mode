@@ -450,14 +450,23 @@ namespace Calcpad.Core
             if (n > 0 &&
                 !double.TryParse(numberSpan, CultureInfo.InvariantCulture.NumberFormat, out d) &&
                 !double.TryParse(numberSpan, numFormat, out d))
-                throw Exceptions.InvalidNumber(numberSpan.ToString());
+                return RealValue.NaN;
 
             Unit u = null;
             if (n < s.Length)
             {
                 var unitSpan = s[n..];
                 if (!Unit.TryGet(unitSpan.ToString(), out u))
-                    u = UnitsParser.Parse(unitSpan, null);
+                {
+                    try
+                    {
+                        u = UnitsParser.Parse(unitSpan, null);
+                    }
+                    catch
+                    {
+                        return RealValue.NaN;
+                    }
+                }
             }
             return n == 0 ? new(u) : new(d, u);
         }

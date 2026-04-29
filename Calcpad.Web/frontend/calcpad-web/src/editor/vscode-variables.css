@@ -1,7 +1,7 @@
 /*
  * CSS variable definitions that map --vscode-* vars for non-VS Code contexts.
  * Vue components from calcpad-frontend use these variables for theming.
- * Values are derived from themes/calcpad-dark-theme.json.
+ * Values match the dark-mode color rules in the VS Code extension package.json.
  */
 :root {
     /* Fonts */

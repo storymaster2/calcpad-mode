@@ -359,7 +359,7 @@ namespace Calcpad.Core
 
         private static string[] ParseStringFunctionArgs(string argsText)
         {
-            // Split on ';' respecting nested parentheses and string literals
+            // Split on ';' respecting nested parentheses, brackets, and string literals
             var args = new List<string>();
             var depth = 0;
             var inString = false;
@@ -371,8 +371,8 @@ namespace Calcpad.Core
                 else if (c == '\'' && inString) inString = false;
                 else if (!inString)
                 {
-                    if (c == '(') depth++;
-                    else if (c == ')') depth--;
+                    if (c == '(' || c == '[') depth++;
+                    else if (c == ')' || c == ']') depth--;
                     else if (c == ';' && depth == 0)
                     {
                         args.Add(argsText[start..i].Trim());

@@ -695,6 +695,11 @@ namespace Calcpad.Core
                         {
                             if (_pendingUi != null && Settings.EnableUi)
                             {
+                                // When explicit rows/columns are given, replace the RHS bracket
+                                // literal with a zero matrix of that size before any other handling.
+                                if (_pendingUi.Type == "datagrid")
+                                    expressionText = ResizeDatagridMatrixToFit(expressionText);
+
                                 // Capture matrix/vector values for datagrid before override
                                 if (_pendingUi.Type == "datagrid")
                                     CaptureDatagridValues(expressionText);

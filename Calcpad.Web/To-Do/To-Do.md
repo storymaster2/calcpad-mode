@@ -1,5 +1,13 @@
 # To-Do
 
+## Remaining before deployment
+- Finish testing #UI for common cases
+
+### To Test/Review
+- Make #read and #str process strings that are not numbers as 0/0 (done)
+- Add HTML table styling when a table is called in the code
+- Update documentation for new features
+
 ## General
 
 - Add better documentation for using vs code features

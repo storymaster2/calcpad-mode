@@ -720,7 +720,7 @@ namespace Calcpad.Core
         /// table-returning string functions. Called from #string and from #UI's string
         /// branch to decide whether to route the assignment to _tableVariables.
         /// </summary>
-        private static bool IsTableRhs(ReadOnlySpan<char> rhs)
+        private bool IsTableRhs(ReadOnlySpan<char> rhs)
         {
             if (rhs.Length >= 2 && rhs[0] == '[' && rhs[^1] == ']')
                 return true;
@@ -737,6 +737,34 @@ namespace Calcpad.Core
                 if (rhs.StartsWith(fn, StringComparison.OrdinalIgnoreCase))
                     return true;
             }
+
+            // string$(matrix-or-vector) / string$(matrix-or-vector; flag) — convert to table.
+            // Quick literal check first, then peek at the inner expression's result type.
+            if (rhs.StartsWith("string$(", StringComparison.OrdinalIgnoreCase) && rhs[^1] == ')')
+            {
+                var inner = rhs[8..^1].ToString();
+                var args = ParseStringFunctionArgs(inner);
+                if (args.Length >= 1)
+                {
+                    var firstArg = args[0].Trim();
+                    if (firstArg.Length >= 2 && firstArg[0] == '[' && firstArg[^1] == ']')
+                        return true;
+
+                    try
+                    {
+                        _parser.Parse(firstArg);
+                        _parser.Calculate();
+                        var typeName = _parser.ResultTypeName;
+                        if (typeName == "matrix" || typeName == "vector")
+                            return true;
+                    }
+                    catch
+                    {
+                        // Fall through — treat as scalar/string when inner can't be evaluated here.
+                    }
+                }
+            }
+
             return false;
         }
 

@@ -845,6 +845,32 @@ namespace Calcpad.Core
         private string _pendingUiDataValues;
 
         /// <summary>
+        /// When the #UI JSON block specifies explicit rows and columns for a
+        /// datagrid, replaces the RHS bracket literal with a fresh zero matrix
+        /// of that size. The RHS is honored only in auto-detect mode (when
+        /// either dimension is 0). Returns the expression unchanged when no
+        /// bracket literal is present (e.g. matrix(m;n) function calls).
+        /// </summary>
+        private string ResizeDatagridMatrixToFit(string expressionText)
+        {
+            if (_pendingUi?.Type != "datagrid" || _pendingUi.Rows <= 0 || _pendingUi.Columns <= 0)
+                return expressionText;
+
+            var bracketStart = expressionText.IndexOf('[');
+            var bracketEnd = expressionText.LastIndexOf(']');
+            if (bracketStart < 0 || bracketEnd <= bracketStart)
+                return expressionText;
+
+            var rowText = string.Join("; ", Enumerable.Repeat("0", _pendingUi.Columns));
+            var newContent = string.Join(" | ", Enumerable.Repeat(rowText, _pendingUi.Rows));
+
+            return string.Concat(
+                expressionText.AsSpan(0, bracketStart + 1),
+                newContent,
+                expressionText.AsSpan(bracketEnd));
+        }
+
+        /// <summary>
         /// Captures matrix/vector values from an expression.
         /// Supports bracket literals like [1;2;3] or [1;2|3;4], and
         /// function calls like vector(n) or matrix(m;n) (generates zeros).
