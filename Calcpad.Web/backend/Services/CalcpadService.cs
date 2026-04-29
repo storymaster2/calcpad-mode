@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using Calcpad.Core;
@@ -44,6 +45,27 @@ namespace Calcpad.Server.Services
         /// </summary>
         private static readonly ConcurrentDictionary<string, byte[]> _remoteContentCache
             = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Cache of #write/#append outputs from the most recent convert run, keyed
+        /// by client SourceFilePath. Mirrors how _remoteContentCache stores #read
+        /// inputs. Each convert replaces the prior entry for that source file.
+        /// TODO: scope by user identity when CalcpadAuth lands.
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, ExportSession> _exportSessionsBySource
+            = new(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly TimeSpan ExportSessionTtl = TimeSpan.FromHours(1);
+        private const string AnonymousExportKey = "__anonymous__";
+
+        /// <summary>One captured set of #write outputs for a given client source file.</summary>
+        public sealed class ExportSession
+        {
+            public WriteCache Cache { get; init; } = null!;
+            public DateTime ExpiresUtc { get; set; }
+        }
+
+        public sealed record ExportEntry(string Filename, string ContentType, long Size);
 
         /// <summary>Clears all cached remote content and disk-cached files.</summary>
         public static void ClearRemoteContentCache()
@@ -399,6 +421,10 @@ namespace Calcpad.Server.Services
                 }
                 else
                 {
+                    // Capture #write/#append outputs in memory so the client can download them.
+                    var writeCache = new WriteCache { DiskCacheFolder = DiskCacheCleanupService.CacheFolder };
+                    coreSettings.WriteCache = writeCache;
+
                     try
                     {
                         // 5. Parse expressions and calculate
@@ -411,6 +437,8 @@ namespace Calcpad.Server.Services
                         FileLogger.LogWarning("Expression parsing failed, falling back to unwrapped code", parseEx.Message);
                         htmlResult = ConvertCodeToHtml(outputText);
                     }
+
+                    StoreExportSession(ctx.SourceFilePath, writeCache);
                 }
 
                 // 6. Apply HTML wrapper with theme support
@@ -428,6 +456,95 @@ namespace Calcpad.Server.Services
             {
                 FileLogger.LogError("Calcpad conversion failed", ex);
                 throw new InvalidOperationException($"Calcpad conversion failed: {ex.Message}", ex);
+            }
+        }
+
+        private static string NormalizeExportKey(string? sourceFilePath) =>
+            string.IsNullOrWhiteSpace(sourceFilePath) ? AnonymousExportKey : sourceFilePath;
+
+        private static void StoreExportSession(string? sourceFilePath, WriteCache cache)
+        {
+            var key = NormalizeExportKey(sourceFilePath);
+            if (cache.Count == 0)
+            {
+                _exportSessionsBySource.TryRemove(key, out _);
+                return;
+            }
+            _exportSessionsBySource[key] = new ExportSession
+            {
+                Cache = cache,
+                ExpiresUtc = DateTime.UtcNow + ExportSessionTtl
+            };
+        }
+
+        public IReadOnlyList<ExportEntry> ListExports(string? sourceFilePath)
+        {
+            if (!TryGetSession(sourceFilePath, out var session))
+                return Array.Empty<ExportEntry>();
+            var list = new List<ExportEntry>(session.Cache.Count);
+            foreach (var (filename, contentType, size) in session.Cache.Enumerate())
+                list.Add(new ExportEntry(filename, contentType, size));
+            return list;
+        }
+
+        public bool TryGetExport(string? sourceFilePath, string filename, out byte[] bytes, out string contentType)
+        {
+            bytes = Array.Empty<byte>();
+            contentType = "application/octet-stream";
+            if (!TryGetSession(sourceFilePath, out var session))
+                return false;
+            if (!session.Cache.TryGetBytes(filename, out var b))
+                return false;
+            bytes = b;
+            session.Cache.TryGetContentType(filename, out var ct);
+            if (!string.IsNullOrEmpty(ct)) contentType = ct;
+            return true;
+        }
+
+        public bool TryGetExportZip(string? sourceFilePath, out byte[] zipBytes)
+        {
+            zipBytes = Array.Empty<byte>();
+            if (!TryGetSession(sourceFilePath, out var session) || session.Cache.Count == 0)
+                return false;
+
+            using var ms = new MemoryStream();
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                foreach (var (filename, _, _) in session.Cache.Enumerate())
+                {
+                    if (!session.Cache.TryGetBytes(filename, out var fileBytes))
+                        continue;
+                    var entry = archive.CreateEntry(filename, CompressionLevel.Fastest);
+                    using var entryStream = entry.Open();
+                    entryStream.Write(fileBytes, 0, fileBytes.Length);
+                }
+            }
+            zipBytes = ms.ToArray();
+            return true;
+        }
+
+        private static bool TryGetSession(string? sourceFilePath, out ExportSession session)
+        {
+            var key = NormalizeExportKey(sourceFilePath);
+            if (_exportSessionsBySource.TryGetValue(key, out var s) && s.ExpiresUtc > DateTime.UtcNow)
+            {
+                session = s;
+                return true;
+            }
+            if (s != null)
+                _exportSessionsBySource.TryRemove(key, out _);
+            session = null!;
+            return false;
+        }
+
+        /// <summary>Drops in-memory export sessions whose TTL has elapsed. Called from DiskCacheCleanupService.</summary>
+        public static void CleanupExpiredExportSessions()
+        {
+            var now = DateTime.UtcNow;
+            foreach (var kvp in _exportSessionsBySource)
+            {
+                if (kvp.Value.ExpiresUtc <= now)
+                    _exportSessionsBySource.TryRemove(kvp.Key, out _);
             }
         }
 

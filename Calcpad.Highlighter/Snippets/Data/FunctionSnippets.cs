@@ -1168,13 +1168,29 @@ namespace Calcpad.Highlighter.Snippets.Data
             {
                 Insert = "val$(§)",
                 Description = "Parses a string to a numeric value",
-                Documentation = "Parses `s$` as a number using invariant-culture decimal point. Errors if the string is not a valid number.",
+                Documentation = "Parses `s$` as a number using invariant-culture decimal point. Errors if the string is not a valid number. Units are stripped — use `val$(s$; 'true')` to include them.",
                 Example = "val$('3.14')  ' returns 3.14",
                 Category = "Functions/String",
                 KeywordType = "Function",
                 ReturnType = CalcpadType.Value,
                 ReturnTypeDescription = "Scalar",
                 Parameters = [new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String to parse" }]
+            },
+            new SnippetItem
+            {
+                Insert = "val$(§; 'true')",
+                Description = "Parses a string to a numeric value preserving units",
+                Documentation = "Parses `s$` as a number. When `includeUnits` is `'true'`, the unit suffix is retained (e.g., `val$('3.5 kN'; 'true')` returns `3.5 kN`). For table variables, each cell's units are preserved in the resulting matrix literal.",
+                Label = "val$ (with units)",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.Value,
+                ReturnTypeDescription = "Scalar",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String or table variable to parse" },
+                    new SnippetParameter { Name = "includeUnits", Type = ParameterType.String, Description = "'true' to preserve units, 'false' to strip" }
+                ]
             },
             new SnippetItem
             {

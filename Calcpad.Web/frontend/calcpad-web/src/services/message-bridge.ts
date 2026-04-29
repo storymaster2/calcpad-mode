@@ -4,9 +4,23 @@ import { CalcpadDefinitionsService } from 'calcpad-frontend/services/definitions
 import { parseHeadings } from 'calcpad-frontend/services/headings';
 import { getDefaultSettings, buildApiSettings } from 'calcpad-frontend/types/settings';
 import type { CalcpadSettings } from 'calcpad-frontend/types/settings';
+import {
+    readImageFromClipboard,
+    blobToDataUri,
+    buildImageCommentLine,
+} from './image-insert';
 
 const SETTINGS_KEY = 'calcpad-settings';
 const PDF_SETTINGS_KEY = 'calcpad-pdf-settings';
+
+function triggerBlobDownload(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
 
 /**
  * In-process message bridge for the web platform.
@@ -39,8 +53,23 @@ export class MessageBridge {
         return this.snippetService;
     }
 
+    get definitions(): CalcpadDefinitionsService {
+        return this.definitionsService;
+    }
+
     getSettings(): CalcpadSettings {
         return this.settings;
+    }
+
+    /** Read an "extra" (non-CalcpadSettings) preference like commentFormat / formattingHotkeys. */
+    getExtraSetting(key: string): string | undefined {
+        const stored = localStorage.getItem('calcpad-' + camelToKebab(key));
+        return stored ?? undefined;
+    }
+
+    /** Persist an arbitrary extra preference. */
+    setExtraSetting(key: string, value: string): void {
+        localStorage.setItem('calcpad-' + camelToKebab(key), value);
     }
 
     set onInsertText(handler: (text: string) => void) {
@@ -80,7 +109,7 @@ export class MessageBridge {
                 break;
 
             case 'insertImage':
-                // Not supported in web context
+                this.handleInsertImage();
                 break;
 
             case 'updatePreviewTheme':
@@ -128,10 +157,44 @@ export class MessageBridge {
                 this.handleGoToLine(message.line);
                 break;
 
+            case 'getExports':
+                this.refreshExports();
+                break;
+
+            case 'downloadExport':
+                this.handleDownloadExport(message.filename);
+                break;
+
+            case 'downloadExportZip':
+                this.handleDownloadExportZip();
+                break;
+
             case 'debug':
                 console.debug('[Vue]', message.message);
                 break;
         }
+    }
+
+    /**
+     * Fetches the current export list from the server and pushes it to the Vue sidebar.
+     * Web platform has no source file path; the server falls back to the anonymous bucket.
+     */
+    public async refreshExports(): Promise<void> {
+        const exports = await this.apiClient.listExports();
+        this.postToVue({ type: 'exportsResponse', exports });
+    }
+
+    private async handleDownloadExport(filename: string): Promise<void> {
+        if (!filename) return;
+        const blob = await this.apiClient.downloadExport(filename);
+        if (!blob) return;
+        triggerBlobDownload(blob, filename);
+    }
+
+    private async handleDownloadExportZip(): Promise<void> {
+        const blob = await this.apiClient.downloadExportZip();
+        if (!blob) return;
+        triggerBlobDownload(blob, 'calcpad-exports.zip');
     }
 
     /**
@@ -251,6 +314,22 @@ export class MessageBridge {
         }
     }
 
+    /**
+     * Insert an image into the editor. Tries the system clipboard first;
+     * if no image is present, falls back to an HTML file input dialog.
+     */
+    private async handleInsertImage(): Promise<void> {
+        let dataUri = await readImageFromClipboard();
+
+        if (!dataUri) {
+            dataUri = await pickImageViaInput();
+        }
+
+        if (dataUri && this._onInsertText) {
+            this._onInsertText(buildImageCommentLine(dataUri));
+        }
+    }
+
     /** Send updated headings to the Vue sidebar. Called on-demand and on debounced content changes. */
     public refreshHeadings(): void {
         const models = (window as any).monaco?.editor?.getModels?.();
@@ -285,4 +364,39 @@ export class MessageBridge {
         }
         return getDefaultSettings();
     }
+}
+
+function camelToKebab(s: string): string {
+    return s.replace(/([A-Z])/g, '-$1').toLowerCase();
+}
+
+/** Pop a hidden `<input type="file">` to let the user choose an image; resolve with a data URI. */
+function pickImageViaInput(): Promise<string | null> {
+    return new Promise(resolve => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/png,image/jpeg,image/gif,image/webp,image/svg+xml';
+        input.style.display = 'none';
+        let settled = false;
+        const cleanup = () => { if (input.parentNode) input.parentNode.removeChild(input); };
+        input.onchange = async () => {
+            settled = true;
+            const file = input.files?.[0];
+            if (!file) { cleanup(); resolve(null); return; }
+            const uri = await blobToDataUri(file);
+            cleanup();
+            resolve(uri);
+        };
+        // If the user cancels, no event fires reliably across browsers; clean up on next tick
+        // when focus returns to the window.
+        const onFocus = () => {
+            window.removeEventListener('focus', onFocus);
+            setTimeout(() => {
+                if (!settled) { cleanup(); resolve(null); }
+            }, 200);
+        };
+        window.addEventListener('focus', onFocus);
+        document.body.appendChild(input);
+        input.click();
+    });
 }

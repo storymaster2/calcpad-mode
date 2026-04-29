@@ -14,3 +14,16 @@ export type { CalcpadEditorOptions } from './setup';
 export { registerSemanticTokensProvider } from './semantic-tokens';
 export { setupDiagnostics } from './diagnostics';
 export { registerCompletionProvider } from './completions';
+export { registerHoverProvider } from './hover';
+export {
+    registerDefinitionProvider,
+    registerReferenceProvider,
+    registerRenameProvider,
+} from './references';
+export { attachQuickTyper } from './quick-type';
+export { attachOperatorReplacer } from './operator-replacer';
+export { attachAutoIndenter } from './auto-indent';
+export { registerFormattingCommands } from './formatting-commands';
+export { registerFormatDocumentProvider } from './format-document';
+export type { EditorBridge } from './bridge';
+export { EDITOR_DOCUMENT_KEY } from './bridge';

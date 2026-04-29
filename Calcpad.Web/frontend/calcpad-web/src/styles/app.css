@@ -67,6 +67,17 @@ html, body, #app {
     background: var(--vscode-button-secondaryHoverBackground, #4a4d51);
 }
 
+.toolbar-btn.active {
+    background: var(--vscode-button-background, #0e639c);
+    color: var(--vscode-button-foreground, #fff);
+}
+
+.preview-mode-group {
+    display: inline-flex;
+    gap: 2px;
+    margin-left: 8px;
+}
+
 .editor-container {
     flex: 1;
     min-height: 0;

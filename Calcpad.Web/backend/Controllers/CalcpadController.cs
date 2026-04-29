@@ -271,6 +271,49 @@ namespace Calcpad.Server.Controllers
         }
 
         /// <summary>
+        /// Lists files captured by #write/#append for the most recent convert run
+        /// against the given source file path.
+        /// </summary>
+        [HttpGet("exports")]
+        public IActionResult ListExports([FromQuery] string? sourceFilePath)
+        {
+            var entries = _calcpadService.ListExports(sourceFilePath);
+            return Ok(entries);
+        }
+
+        /// <summary>
+        /// Returns the bytes of a single file captured by #write/#append.
+        /// </summary>
+        [HttpGet("export")]
+        public IActionResult GetExport([FromQuery] string? sourceFilePath, [FromQuery] string? filename)
+        {
+            if (string.IsNullOrWhiteSpace(filename))
+                return BadRequest(new { error = "filename is required" });
+
+            // Defense in depth: never accept paths attempting to traverse.
+            if (filename.Contains("..", StringComparison.Ordinal) ||
+                filename.Contains('/') || filename.Contains('\\'))
+                return BadRequest(new { error = "Invalid filename" });
+
+            if (!_calcpadService.TryGetExport(sourceFilePath, filename, out var bytes, out var contentType))
+                return NotFound();
+
+            return File(bytes, contentType, filename);
+        }
+
+        /// <summary>
+        /// Returns all #write/#append outputs for the given source file as a single ZIP.
+        /// </summary>
+        [HttpGet("exports.zip")]
+        public IActionResult GetExportsZip([FromQuery] string? sourceFilePath)
+        {
+            if (!_calcpadService.TryGetExportZip(sourceFilePath, out var zipBytes))
+                return NotFound();
+
+            return File(zipBytes, "application/zip", "calcpad-exports.zip");
+        }
+
+        /// <summary>
         /// Clears the server-side remote content cache.
         /// If keys are provided, only those entries are removed. Otherwise, the entire cache is cleared.
         /// </summary>

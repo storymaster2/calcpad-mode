@@ -241,6 +241,25 @@ namespace Calcpad.Core
                 {
                     result = EvaluateValForTable(args[0].Trim());
                 }
+                // val$(s$; 'true'/'false') — parse string with optional unit retention
+                else if (funcName.Equals("val$", StringComparison.OrdinalIgnoreCase) && args.Length == 2)
+                {
+                    var includeUnits = ResolveStringFunctionArg(args[1])
+                        .Equals("true", StringComparison.OrdinalIgnoreCase);
+                    var firstArg = args[0].Trim();
+                    if (_tableVariables.ContainsKey(firstArg))
+                    {
+                        result = EvaluateValForTable(firstArg, includeUnits);
+                    }
+                    else
+                    {
+                        var raw = ResolveStringFunctionArg(firstArg);
+                        if (!includeUnits)
+                            result = StringCalculator.Evaluate("val$", new[] { raw });
+                        else
+                            result = raw;
+                    }
+                }
                 // string$(expr; 'true'/'false') — convert to string with/without units
                 else if (funcName.Equals("string$", StringComparison.OrdinalIgnoreCase) && args.Length == 2)
                 {
@@ -1258,7 +1277,7 @@ namespace Calcpad.Core
             return false;
         }
 
-        private string EvaluateValForTable(string tableVarName)
+        private string EvaluateValForTable(string tableVarName, bool includeUnits = false)
         {
             if (!_tableVariables.TryGetValue(tableVarName, out var table))
                 return "0/0";
@@ -1266,11 +1285,7 @@ namespace Calcpad.Core
             var rows = table.GetLength(0);
             var cols = table.GetLength(1);
             if (rows == 1 && cols == 1)
-            {
-                if (double.TryParse(table[0, 0], NumberStyles.Float, CultureInfo.InvariantCulture, out _))
-                    return table[0, 0];
-                return "0/0";
-            }
+                return FormatTableCell(table[0, 0], includeUnits);
 
             // Build matrix literal: [v1; v2 | v3; v4]
             var sb = new StringBuilder("[");
@@ -1280,14 +1295,38 @@ namespace Calcpad.Core
                 for (int c = 0; c < cols; c++)
                 {
                     if (c > 0) sb.Append("; ");
-                    if (double.TryParse(table[r, c], NumberStyles.Float, CultureInfo.InvariantCulture, out var d))
-                        sb.Append(d.ToString(CultureInfo.InvariantCulture));
-                    else
-                        sb.Append("0/0");
+                    sb.Append(FormatTableCell(table[r, c], includeUnits));
                 }
             }
             sb.Append(']');
             return sb.ToString();
+        }
+
+        private static string FormatTableCell(string cell, bool includeUnits)
+        {
+            if (cell is null)
+                return "0/0";
+            var trimmed = cell.Trim();
+            if (!includeUnits)
+            {
+                return double.TryParse(trimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out var d)
+                    ? d.ToString(CultureInfo.InvariantCulture)
+                    : "0/0";
+            }
+
+            // Find the longest leading prefix that parses as a number; the remainder (if any) is the unit token.
+            int splitIndex = -1;
+            for (int i = trimmed.Length; i > 0; i--)
+            {
+                if (double.TryParse(trimmed.AsSpan(0, i), NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+                {
+                    splitIndex = i;
+                    break;
+                }
+            }
+            if (splitIndex < 0)
+                return "0/0";
+            return trimmed;
         }
     }
 }

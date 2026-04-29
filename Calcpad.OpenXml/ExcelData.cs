@@ -225,6 +225,37 @@ namespace Calcpad.OpenXml
                 CreateSpreadsheetWorkbook(filepath, sheetName);
 
             using SpreadsheetDocument document = SpreadsheetDocument.Open(filepath, true);
+            WriteIntoDocument(document, sheetName, rangeStart, rangeEnd, data);
+        }
+
+        /// <summary>
+        /// In-memory equivalent of <see cref="Write(string, string, string, string, string[][], bool)"/>.
+        /// When <paramref name="append"/> is true and <paramref name="existingBytes"/> is non-empty, the
+        /// existing workbook is opened, mutated, and re-serialized; otherwise a fresh workbook is created.
+        /// </summary>
+        public static byte[] Write(byte[] existingBytes, string sheetName, string rangeStart, string rangeEnd, string[][] data, bool append)
+        {
+            using var ms = new MemoryStream();
+            if (append && existingBytes != null && existingBytes.Length > 0)
+            {
+                ms.Write(existingBytes, 0, existingBytes.Length);
+                ms.Position = 0;
+                using (SpreadsheetDocument document = SpreadsheetDocument.Open(ms, true))
+                    WriteIntoDocument(document, sheetName, rangeStart, rangeEnd, data);
+            }
+            else
+            {
+                using (SpreadsheetDocument document = SpreadsheetDocument.Create(ms, SpreadsheetDocumentType.Workbook))
+                {
+                    InitializeEmptyWorkbook(document, sheetName);
+                    WriteIntoDocument(document, sheetName, rangeStart, rangeEnd, data);
+                }
+            }
+            return ms.ToArray();
+        }
+
+        private static void WriteIntoDocument(SpreadsheetDocument document, string sheetName, string rangeStart, string rangeEnd, string[][] data)
+        {
             WorkbookPart wbPart = document.WorkbookPart ?? document.AddWorkbookPart();
             Sheet sheet = null;
             if (string.IsNullOrWhiteSpace(sheetName))
@@ -265,14 +296,20 @@ namespace Calcpad.OpenXml
         private static void CreateSpreadsheetWorkbook(string filePath, string sheetName)
         {
             using SpreadsheetDocument document = SpreadsheetDocument.Create(filePath, SpreadsheetDocumentType.Workbook);
+            InitializeEmptyWorkbook(document, sheetName);
+        }
+
+        private static void InitializeEmptyWorkbook(SpreadsheetDocument document, string sheetName)
+        {
             WorkbookPart wbPart = document.AddWorkbookPart();
             wbPart.Workbook = new();
             WorksheetPart wsPart = wbPart.AddNewPart<WorksheetPart>();
             wsPart.Worksheet = new(new SheetData());
             Sheets sheets = wbPart.Workbook.AppendChild(new Sheets());
-            Sheet sheet = new() { 
-                Id = wbPart.GetIdOfPart(wsPart), 
-                SheetId = 1, 
+            Sheet sheet = new()
+            {
+                Id = wbPart.GetIdOfPart(wsPart),
+                SheetId = 1,
                 Name = string.IsNullOrWhiteSpace(sheetName) ? defaultSheet : sheetName,
             };
             sheets.Append(sheet);

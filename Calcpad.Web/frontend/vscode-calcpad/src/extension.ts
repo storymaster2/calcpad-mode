@@ -361,6 +361,58 @@ function getErrorNavigationScript(): string {
     `;
 }
 
+interface ExportEntryDto {
+    filename: string;
+    contentType: string;
+    size: number;
+}
+
+/**
+ * After a convert run, materialize #write/#append outputs based on calcpad.write.mode.
+ * - "localFile": fetch each entry from the server export cache and write to disk.
+ * - "cacheDownload": leave them in the server cache; the Vue Export tab handles download.
+ *
+ * Path resolution mirrors #read: absolute paths are written as-is; relative paths
+ * resolve against the source .cpd directory.
+ */
+async function processWriteOutputs(apiBaseUrl: string, sourceFsPath: string): Promise<void> {
+    try {
+        const config = vscode.workspace.getConfiguration('calcpad');
+        const mode = config.get<string>('write.mode', 'localFile');
+        if (mode !== 'localFile') return;
+
+        const listUrl = `${apiBaseUrl}/api/calcpad/exports?sourceFilePath=${encodeURIComponent(sourceFsPath)}`;
+        const listRes = await fetch(listUrl, { signal: AbortSignal.timeout(10000) });
+        if (!listRes.ok) return;
+        const entries = (await listRes.json()) as ExportEntryDto[];
+        if (!entries || entries.length === 0) return;
+
+        const sourceDir = path.dirname(sourceFsPath);
+        for (const entry of entries) {
+            try {
+                const fileRes = await fetch(
+                    `${apiBaseUrl}/api/calcpad/export?sourceFilePath=${encodeURIComponent(sourceFsPath)}&filename=${encodeURIComponent(entry.filename)}`,
+                    { signal: AbortSignal.timeout(60000) }
+                );
+                if (!fileRes.ok) continue;
+                const buf = Buffer.from(await fileRes.arrayBuffer());
+
+                const targetPath = path.isAbsolute(entry.filename)
+                    ? entry.filename
+                    : path.resolve(sourceDir, entry.filename);
+
+                await vscode.workspace.fs.createDirectory(vscode.Uri.file(path.dirname(targetPath)));
+                await vscode.workspace.fs.writeFile(vscode.Uri.file(targetPath), buf);
+                outputChannel.appendLine(`#write: wrote ${buf.length} bytes to ${targetPath}`);
+            } catch (err) {
+                outputChannel.appendLine(`#write: failed to materialize ${entry.filename}: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        }
+    } catch (err) {
+        outputChannel.appendLine(`#write: processWriteOutputs failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
+}
+
 async function updatePreviewContent(panel: vscode.WebviewPanel, content: string, sourceFileUri: vscode.Uri, unwrapped: boolean = false) {
     const mode = unwrapped ? 'unwrapped' : 'wrapped';
     outputChannel.appendLine(`Starting updatePreviewContent (${mode})...`);
@@ -499,6 +551,11 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
 
         outputChannel.appendLine('Webview HTML set directly');
 
+        // Materialize #write/#append outputs to disk if the user opted into localFile mode.
+        if (!unwrapped) {
+            void processWriteOutputs(apiBaseUrl, sourceFileUri.fsPath);
+        }
+
     } catch (error) {
         outputChannel.appendLine(`ERROR in updatePreviewContent: ${error instanceof Error ? error.message : 'Unknown error'}`);
         const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
@@ -615,6 +672,9 @@ async function updateUiPreviewContent(panel: vscode.WebviewPanel, content: strin
         panel.webview.html = htmlWithScript;
         outputChannel.appendLine('UI Preview webview HTML set');
         outputChannel.appendLine(`Datagrid CDN injected: ${datagridCdn.length > 0 ? 'yes' : 'no'}`);
+
+        // Materialize #write/#append outputs to disk if the user opted into localFile mode.
+        void processWriteOutputs(apiBaseUrl, sourceFileUri.fsPath);
 
     } catch (error) {
         outputChannel.appendLine(`ERROR in updateUiPreviewContent: ${error instanceof Error ? error.message : 'Unknown error'}`);

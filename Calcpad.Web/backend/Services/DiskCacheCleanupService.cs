@@ -32,21 +32,26 @@ namespace Calcpad.Server.Services
                 var cutoff = DateTime.UtcNow - MaxAge;
                 var deletedCount = 0;
 
-                foreach (var file in Directory.EnumerateFiles(CacheFolder, "*.cache"))
+                foreach (var pattern in new[] { "*.cache", "*.wcache" })
                 {
-                    try
+                    foreach (var file in Directory.EnumerateFiles(CacheFolder, pattern))
                     {
-                        if (File.GetLastWriteTimeUtc(file) < cutoff)
+                        try
                         {
-                            File.Delete(file);
-                            deletedCount++;
+                            if (File.GetLastWriteTimeUtc(file) < cutoff)
+                            {
+                                File.Delete(file);
+                                deletedCount++;
+                            }
+                        }
+                        catch
+                        {
+                            // Skip files that can't be deleted (in use, permissions, etc.)
                         }
                     }
-                    catch
-                    {
-                        // Skip files that can't be deleted (in use, permissions, etc.)
-                    }
                 }
+
+                CalcpadService.CleanupExpiredExportSessions();
 
                 if (deletedCount > 0)
                     FileLogger.LogInfo($"Disk cache cleanup removed {deletedCount} expired file(s)");

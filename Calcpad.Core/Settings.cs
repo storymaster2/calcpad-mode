@@ -38,6 +38,14 @@ namespace Calcpad.Core
         /// is used instead of the value defined in the source.
         /// </summary>
         public Dictionary<string, string> UiOverrides { get; set; }
+
+        /// <summary>
+        /// In-memory capture target for #write/#append. When set, file output is
+        /// stashed here instead of being written to disk. The Web layer enables
+        /// this so generated CSV/XLSX/text files can be downloaded by the client.
+        /// Null (the default) preserves disk-write behavior used by Wpf and CLI.
+        /// </summary>
+        public WriteCache WriteCache { get; set; }
     }
 
     /// <summary>
@@ -205,6 +213,152 @@ namespace Calcpad.Core
         private void WriteToDisk(int index, byte[] bytes)
         {
             DiskGuids[index] = WriteToDisk(Filenames[index], bytes);
+        }
+    }
+
+    /// <summary>
+    /// In-memory write target for #write/#append. Mirrors <see cref="ClientFileCache"/>
+    /// but mutable: entries are produced by Calcpad code rather than supplied up front.
+    /// Entries larger than 50 KB are offloaded to disk when DiskCacheFolder is set.
+    /// </summary>
+    [Serializable()]
+    public class WriteCache
+    {
+        private const int DiskThresholdBytes = 51_200; // 50 KB
+        private const string CacheFileExtension = ".wcache";
+
+        public List<string> Filenames { get; } = new();
+        public List<string> ContentTypes { get; } = new();
+        public List<long> Sizes { get; } = new();
+        private readonly List<byte[]> _contents = new();
+        private readonly List<string> _diskGuids = new();
+
+        /// <summary>
+        /// Path to the folder where large cache entries are stored on disk.
+        /// When null, all entries stay in memory.
+        /// </summary>
+        public string DiskCacheFolder { get; set; }
+
+        public int Count => Filenames.Count;
+
+        public bool Contains(string filename) => IndexOf(filename) >= 0;
+
+        public bool TryGetBytes(string filename, out byte[] bytes)
+        {
+            bytes = null;
+            var idx = IndexOf(filename);
+            if (idx < 0)
+                return false;
+
+            if (_contents[idx] != null)
+            {
+                bytes = _contents[idx];
+                return true;
+            }
+
+            if (_diskGuids[idx] != null && DiskCacheFolder != null)
+            {
+                var path = Path.Combine(DiskCacheFolder, _diskGuids[idx] + CacheFileExtension);
+                if (File.Exists(path))
+                {
+                    bytes = File.ReadAllBytes(path);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool TryGetContentType(string filename, out string contentType)
+        {
+            contentType = null;
+            var idx = IndexOf(filename);
+            if (idx < 0) return false;
+            contentType = ContentTypes[idx];
+            return true;
+        }
+
+        /// <summary>Replaces (or adds) an entry. #write semantics.</summary>
+        public void PutBytes(string filename, string contentType, byte[] bytes)
+        {
+            var idx = IndexOf(filename);
+            if (idx >= 0)
+                RemoveAt(idx);
+            AddEntry(filename, contentType, bytes);
+        }
+
+        /// <summary>Appends bytes to an existing entry, or adds a new one. #append semantics.</summary>
+        public void AppendBytes(string filename, string contentType, byte[] tail)
+        {
+            var idx = IndexOf(filename);
+            if (idx < 0)
+            {
+                AddEntry(filename, contentType, tail);
+                return;
+            }
+
+            TryGetBytes(filename, out var existing);
+            var combined = new byte[(existing?.Length ?? 0) + (tail?.Length ?? 0)];
+            if (existing != null) Buffer.BlockCopy(existing, 0, combined, 0, existing.Length);
+            if (tail != null) Buffer.BlockCopy(tail, 0, combined, existing?.Length ?? 0, tail.Length);
+            RemoveAt(idx);
+            AddEntry(filename, contentType, combined);
+        }
+
+        public IEnumerable<(string Filename, string ContentType, long Size)> Enumerate()
+        {
+            for (int i = 0; i < Filenames.Count; i++)
+                yield return (Filenames[i], ContentTypes[i], Sizes[i]);
+        }
+
+        private int IndexOf(string filename) =>
+            Filenames.FindIndex(f => string.Equals(f, filename, StringComparison.OrdinalIgnoreCase));
+
+        private void AddEntry(string filename, string contentType, byte[] bytes)
+        {
+            byte[] inMemory;
+            string guid;
+            if (bytes != null && bytes.Length > DiskThresholdBytes && DiskCacheFolder != null)
+            {
+                guid = WriteToDisk(filename, bytes);
+                inMemory = null;
+            }
+            else
+            {
+                guid = null;
+                inMemory = bytes;
+            }
+            Filenames.Add(filename);
+            ContentTypes.Add(contentType);
+            Sizes.Add(bytes?.LongLength ?? 0);
+            _contents.Add(inMemory);
+            _diskGuids.Add(guid);
+        }
+
+        private void RemoveAt(int idx)
+        {
+            // Best-effort cleanup of the prior disk entry (if any) before overwriting.
+            if (_diskGuids[idx] != null && DiskCacheFolder != null)
+            {
+                var path = Path.Combine(DiskCacheFolder, _diskGuids[idx] + CacheFileExtension);
+                try { if (File.Exists(path)) File.Delete(path); } catch { }
+            }
+            Filenames.RemoveAt(idx);
+            ContentTypes.RemoveAt(idx);
+            Sizes.RemoveAt(idx);
+            _contents.RemoveAt(idx);
+            _diskGuids.RemoveAt(idx);
+        }
+
+        private static string GetDiskCacheKey(string filename) =>
+            Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes("write:" + filename)))[..32];
+
+        private string WriteToDisk(string filename, byte[] bytes)
+        {
+            var cacheKey = GetDiskCacheKey(filename);
+            Directory.CreateDirectory(DiskCacheFolder);
+            var path = Path.Combine(DiskCacheFolder, cacheKey + CacheFileExtension);
+            File.WriteAllBytes(path, bytes);
+            return cacheKey;
         }
     }
 

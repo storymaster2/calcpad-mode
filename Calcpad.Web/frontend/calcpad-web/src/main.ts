@@ -5,10 +5,27 @@ import CalcpadAppVue from 'calcpad-frontend/vue/components/CalcpadApp.vue';
 import { initMessaging } from 'calcpad-frontend/vue/services/messaging';
 import { MessageBridge } from './services/message-bridge';
 import { buildApiSettings } from 'calcpad-frontend/types/settings';
+import {
+    getDatagridCdnTags,
+    getUiEventScript,
+    htmlHasDatagrids,
+} from 'calcpad-frontend/services/ui-preview';
 import { registerCalcpadLanguage, registerCalcpadTheme, createCalcpadEditor } from './editor/setup';
 import { registerSemanticTokensProvider } from './editor/semantic-tokens';
 import { setupDiagnostics } from './editor/diagnostics';
 import { registerCompletionProvider } from './editor/completions';
+import { registerHoverProvider } from './editor/hover';
+import {
+    registerDefinitionProvider,
+    registerReferenceProvider,
+    registerRenameProvider,
+} from './editor/references';
+import { attachQuickTyper } from './editor/quick-type';
+import { attachOperatorReplacer } from './editor/operator-replacer';
+import { attachAutoIndenter } from './editor/auto-indent';
+import { registerFormattingCommands } from './editor/formatting-commands';
+import { registerFormatDocumentProvider } from './editor/format-document';
+import { EDITOR_DOCUMENT_KEY, type EditorBridge } from './editor/bridge';
 import './editor/vscode-variables.css';
 import './styles/app.css';
 
@@ -64,11 +81,26 @@ async function waitForServerExtension(timeoutMs: number = 10000): Promise<string
 }
 
 /**
- * Set up the Neutralino native menu bar.
- * Menu click events are dispatched as custom window events.
+ * Set up the Neutralino native menu bar. The recents submenu is rebuilt
+ * each time this function is called.
  */
-async function setupNeutralinoMenu(): Promise<void> {
-    const { window: nWindow, events } = await import('@neutralinojs/lib');
+async function setupNeutralinoMenu(recents: string[], previewMode: PreviewMode): Promise<void> {
+    const { window: nWindow } = await import('@neutralinojs/lib');
+
+    const sep = { id: '-', text: '-' };
+    const recentItems: any[] = recents.length === 0
+        ? [{ id: 'recent-empty', text: '(no recent files)' }]
+        : recents.map((p, i) => ({ id: `recent:${i}`, text: shortenPath(p) }));
+    if (recents.length > 0) {
+        recentItems.push(sep);
+        recentItems.push({ id: 'recent-clear', text: 'Clear Recently Opened' });
+    }
+
+    const previewModeItems: any[] = [
+        { id: 'preview-mode:wrapped',    text: previewMode === 'wrapped'    ? '✓ Wrapped'    : '  Wrapped' },
+        { id: 'preview-mode:unwrapped',  text: previewMode === 'unwrapped'  ? '✓ Unwrapped'  : '  Unwrapped' },
+        { id: 'preview-mode:ui',         text: previewMode === 'ui'         ? '✓ Interactive' : '  Interactive' },
+    ];
 
     await nWindow.setMainMenu([
         {
@@ -77,12 +109,13 @@ async function setupNeutralinoMenu(): Promise<void> {
             menuItems: [
                 { id: 'new', text: 'New', shortcut: 'Ctrl+N' },
                 { id: 'open', text: 'Open...', shortcut: 'Ctrl+O' },
-                { id: '-' },
+                { id: 'open-recent', text: 'Open Recent', menuItems: recentItems },
+                sep,
                 { id: 'save', text: 'Save', shortcut: 'Ctrl+S' },
                 { id: 'save-as', text: 'Save As...', shortcut: 'Ctrl+Shift+S' },
-                { id: '-' },
+                sep,
                 { id: 'export-pdf', text: 'Export PDF...' },
-                { id: '-' },
+                sep,
                 { id: 'quit', text: 'Quit', shortcut: 'Ctrl+Q' },
             ],
         },
@@ -91,13 +124,33 @@ async function setupNeutralinoMenu(): Promise<void> {
             text: 'View',
             menuItems: [
                 { id: 'toggle-sidebar', text: 'Toggle Sidebar', shortcut: 'Ctrl+B' },
+                { id: 'toggle-preview', text: 'Toggle Preview', shortcut: 'Ctrl+P' },
+                { id: 'preview-mode', text: 'Preview Mode', menuItems: previewModeItems },
             ],
         },
     ]);
+}
 
-    events.on('mainMenuItemClicked', (evt: any) => {
-        window.dispatchEvent(new CustomEvent('neu-menu', { detail: evt.detail.id }));
-    });
+type PreviewMode = 'wrapped' | 'unwrapped' | 'ui';
+
+/** Inject datagrid CDN + UI event script into UI-mode preview HTML. */
+function injectUiAssets(html: string): string {
+    const cdn = htmlHasDatagrids(html) ? getDatagridCdnTags() : '';
+    const script = getUiEventScript('window.parent.postMessage', true);
+    const head = '<head>';
+    const idx = html.indexOf(head);
+    if (idx >= 0) {
+        return html.slice(0, idx + head.length) + cdn + html.slice(idx + head.length) + script;
+    }
+    // No <head> — concatenate.
+    return cdn + html + script;
+}
+
+function shortenPath(path: string, max = 60): string {
+    if (path.length <= max) return path;
+    const parts = path.split(/[\\/]/);
+    const name = parts.pop() ?? path;
+    return '…' + (path.length - name.length > 0 ? path.slice(-(max - name.length - 1)) : name);
 }
 
 async function bootstrap(): Promise<void> {
@@ -186,9 +239,32 @@ async function bootstrap(): Promise<void> {
     appInstance.appendOutput('info', `CalcPad Web started — server: ${serverUrl}`);
 
     // Register Monaco providers
+    const editorBridge = activeBridge as unknown as EditorBridge;
     registerSemanticTokensProvider(activeBridge.api);
     setupDiagnostics(editor, activeBridge.api);
     registerCompletionProvider(activeBridge.snippets);
+    registerHoverProvider(editorBridge);
+    registerDefinitionProvider(editorBridge);
+    registerReferenceProvider(editorBridge);
+    registerRenameProvider(editorBridge);
+    registerFormatDocumentProvider(editorBridge);
+    attachQuickTyper(editor, editorBridge);
+    attachOperatorReplacer(editor);
+    attachAutoIndenter(editor);
+    registerFormattingCommands(editor, editorBridge);
+
+    // Keep the definitions cache fresh so hover provider has data to show.
+    // Debounced — same cadence as TOC refresh.
+    let definitionsTimer: ReturnType<typeof setTimeout> | null = null;
+    const refreshDefinitions = () => {
+        const content = editor.getValue();
+        editorBridge.definitions.refreshDefinitions(content, EDITOR_DOCUMENT_KEY);
+    };
+    editor.onDidChangeModelContent(() => {
+        if (definitionsTimer) clearTimeout(definitionsTimer);
+        definitionsTimer = setTimeout(refreshDefinitions, 800);
+    });
+    setTimeout(refreshDefinitions, 500);
 
     // Problems panel: listen for marker changes and feed into App
     function markerToSeverityInfo(severity: monaco.MarkerSeverity) {
@@ -242,18 +318,50 @@ async function bootstrap(): Promise<void> {
     // TOC headings refresh (debounced)
     let tocTimer: ReturnType<typeof setTimeout> | null = null;
 
+    // Initialize preview mode from saved extra setting (Neutralino) or localStorage (web).
+    const savedMode = (editorBridge.getExtraSetting('previewMode') as 'wrapped' | 'unwrapped' | 'ui' | undefined);
+    if (savedMode === 'wrapped' || savedMode === 'unwrapped' || savedMode === 'ui') {
+        appInstance.setPreviewMode(savedMode);
+    }
+
     async function refreshPreview(): Promise<void> {
         if (!appInstance.isPreviewVisible()) return;
 
         const content = editor.getValue();
         const settings = activeBridge.getSettings();
         const apiSettings = buildApiSettings(settings);
-        const html = await activeBridge.api.convert(content, apiSettings, 'html');
+        const mode = appInstance.getPreviewMode() as 'wrapped' | 'unwrapped' | 'ui';
+
+        let html: string | ArrayBuffer | null;
+        if (mode === 'unwrapped') {
+            html = await activeBridge.api.convertUnwrapped(content, apiSettings);
+        } else if (mode === 'ui') {
+            html = await activeBridge.api.convertUi(content, apiSettings);
+        } else {
+            html = await activeBridge.api.convert(content, apiSettings, 'html');
+        }
 
         if (typeof html === 'string') {
-            appInstance.setPreviewHtml(html);
+            const finalHtml = mode === 'ui' ? injectUiAssets(html) : html;
+            appInstance.setPreviewHtml(finalHtml);
+        }
+
+        // Push #write/#append outputs (if any) to the Export tab.
+        if (typeof (activeBridge as any).refreshExports === 'function') {
+            void (activeBridge as any).refreshExports();
         }
     }
+
+    // Stub overwritten in the Neutralino branch below; harmless on web.
+    let rebuildMenu: (mode: PreviewMode) => Promise<void> = async () => { /* no-op */ };
+
+    appInstance.onPreviewModeChanged = (mode: 'wrapped' | 'unwrapped' | 'ui') => {
+        editorBridge.setExtraSetting('previewMode', mode);
+        refreshPreview();
+        if (isNeutralino) {
+            void rebuildMenu(mode);
+        }
+    };
 
     editor.onDidChangeModelContent(() => {
         if (appInstance.isPreviewVisible()) {
@@ -274,13 +382,62 @@ async function bootstrap(): Promise<void> {
 
     // Neutralino-specific: native menu + file operations
     if (isNeutralino && neuBridge) {
-        await setupNeutralinoMenu();
+        const { events: neuEvents, app: neuApp, window: neuWin, os: neuOs } = await import('@neutralinojs/lib');
 
         let currentFilePath: string | null = null;
+        let recents: string[] = await neuBridge.getRecentFiles();
+        let menuPreviewMode: PreviewMode =
+            (appInstance.getPreviewMode() as PreviewMode) ?? 'wrapped';
 
-        window.addEventListener('neu-menu', async (e: Event) => {
-            const action = (e as CustomEvent).detail;
-            switch (action) {
+        rebuildMenu = async (mode: PreviewMode) => {
+            menuPreviewMode = mode;
+            recents = await neuBridge.getRecentFiles();
+            await setupNeutralinoMenu(recents, menuPreviewMode);
+        };
+
+        await setupNeutralinoMenu(recents, menuPreviewMode);
+
+        async function loadFile(path: string): Promise<void> {
+            try {
+                const content = await neuBridge!.readFile(path);
+                editor.setValue(content);
+                currentFilePath = path;
+                const name = path.split(/[\\/]/).pop() || path;
+                appInstance.setFileName(name);
+                appInstance.setDirty(false);
+                await neuBridge!.addRecentFile(path);
+                await rebuildMenu(menuPreviewMode);
+            } catch (err) {
+                appInstance.appendOutput('error', 'Failed to open file: ' + (err instanceof Error ? err.message : String(err)));
+            }
+        }
+
+        // Single mainMenuItemClicked listener — handles static + dynamic IDs.
+        neuEvents.on('mainMenuItemClicked', async (evt: any) => {
+            const id: string = evt.detail.id;
+
+            // Recent file shortcut
+            if (id.startsWith('recent:')) {
+                const idx = parseInt(id.split(':')[1], 10);
+                const path = recents[idx];
+                if (path) await loadFile(path);
+                return;
+            }
+            if (id === 'recent-clear') {
+                await neuBridge.clearRecentFiles();
+                await rebuildMenu(menuPreviewMode);
+                return;
+            }
+            if (id === 'recent-empty') return;
+
+            // Preview mode picker
+            if (id.startsWith('preview-mode:')) {
+                const mode = id.split(':')[1] as PreviewMode;
+                appInstance.setPreviewMode(mode);
+                return;
+            }
+
+            switch (id) {
                 case 'new':
                     editor.setValue('');
                     currentFilePath = null;
@@ -290,13 +447,7 @@ async function bootstrap(): Promise<void> {
 
                 case 'open': {
                     const result = await neuBridge.openFile();
-                    if (result) {
-                        editor.setValue(result.content);
-                        currentFilePath = result.path;
-                        const name = result.path.split(/[\\/]/).pop() || result.path;
-                        appInstance.setFileName(name);
-                        appInstance.setDirty(false);
-                    }
+                    if (result) await loadFile(result.path);
                     break;
                 }
 
@@ -312,6 +463,8 @@ async function bootstrap(): Promise<void> {
                             const name = newPath.split(/[\\/]/).pop() || newPath;
                             appInstance.setFileName(name);
                             appInstance.setDirty(false);
+                            await neuBridge.addRecentFile(newPath);
+                            await rebuildMenu(menuPreviewMode);
                         }
                     }
                     break;
@@ -325,6 +478,8 @@ async function bootstrap(): Promise<void> {
                         const name = newPath.split(/[\\/]/).pop() || newPath;
                         appInstance.setFileName(name);
                         appInstance.setDirty(false);
+                        await neuBridge.addRecentFile(newPath);
+                        await rebuildMenu(menuPreviewMode);
                     }
                     break;
                 }
@@ -337,11 +492,13 @@ async function bootstrap(): Promise<void> {
                     appInstance.toggleSidebar();
                     break;
 
-                case 'quit': {
-                    const { app: nApp } = await import('@neutralinojs/lib');
-                    nApp.exit();
+                case 'toggle-preview':
+                    appInstance.togglePreview();
                     break;
-                }
+
+                case 'quit':
+                    await tryExit();
+                    break;
             }
         });
 
@@ -349,6 +506,63 @@ async function bootstrap(): Promise<void> {
         editor.onDidChangeModelContent(() => {
             appInstance.setDirty(true);
         });
+
+        // ---- Drag-drop file open ----
+        const dropTarget = document.querySelector('.editor-container') as HTMLElement | null;
+        if (dropTarget) {
+            dropTarget.addEventListener('dragover', e => {
+                e.preventDefault();
+                if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+            });
+            dropTarget.addEventListener('drop', async e => {
+                e.preventDefault();
+                const files = e.dataTransfer?.files;
+                if (!files || files.length === 0) return;
+                // Neutralino exposes the OS path on `File.path` (Chromium extension).
+                const dropped = files[0] as File & { path?: string };
+                if (dropped.path) {
+                    await loadFile(dropped.path);
+                } else {
+                    // Fallback: read text content via FileReader.
+                    const text = await dropped.text();
+                    editor.setValue(text);
+                    currentFilePath = null;
+                    appInstance.setFileName(dropped.name);
+                    appInstance.setDirty(false);
+                }
+            });
+        }
+
+        // ---- Close-with-unsaved guard ----
+        async function tryExit(): Promise<void> {
+            if (!appInstance.isDirty?.()) {
+                await neuApp.exit();
+                return;
+            }
+            const choice = await neuOs.showMessageBox(
+                'Unsaved changes',
+                'You have unsaved changes. Save before closing?',
+                'YES_NO_CANCEL' as any,
+                'QUESTION' as any,
+            );
+            if (choice === 'CANCEL') return;
+            if (choice === 'YES') {
+                const content = editor.getValue();
+                if (currentFilePath) {
+                    await neuBridge.saveFile(currentFilePath, content);
+                } else {
+                    const path = await neuBridge.saveFileAs(content);
+                    if (!path) return; // user cancelled save dialog → abort exit
+                }
+            }
+            await neuApp.exit();
+        }
+
+        // Intercept the window close button.
+        try {
+            await neuWin.setAlwaysOnTop(false); // touch the API to verify presence; no-op
+        } catch { /* ignore */ }
+        neuEvents.on('windowClose', () => { void tryExit(); });
     }
 }
 

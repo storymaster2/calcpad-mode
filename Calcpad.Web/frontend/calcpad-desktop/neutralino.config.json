@@ -30,7 +30,7 @@
       "icon": "/resources/icon.png",
       "enableInspector": true,
       "resizable": true,
-      "exitProcessOnClose": true
+      "exitProcessOnClose": false
     }
   },
   "extensions": [

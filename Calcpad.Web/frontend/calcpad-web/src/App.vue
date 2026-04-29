@@ -87,6 +87,26 @@
     <div v-if="previewVisible" class="preview-pane">
       <div class="preview-toolbar">
         <span>Preview</span>
+        <div class="preview-mode-group">
+          <button
+            class="toolbar-btn"
+            :class="{ active: previewMode === 'wrapped' }"
+            @click="setPreviewMode('wrapped')"
+            title="Full HTML document"
+          >Wrapped</button>
+          <button
+            class="toolbar-btn"
+            :class="{ active: previewMode === 'unwrapped' }"
+            @click="setPreviewMode('unwrapped')"
+            title="Body markup only"
+          >Unwrapped</button>
+          <button
+            class="toolbar-btn"
+            :class="{ active: previewMode === 'ui' }"
+            @click="setPreviewMode('ui')"
+            title="Interactive UI inputs"
+          >Interactive</button>
+        </div>
         <span class="spacer"></span>
         <button class="toolbar-btn" @click="togglePreview">✕</button>
       </div>
@@ -114,8 +134,12 @@ defineProps<{
   isNeutralino?: boolean
 }>()
 
+export type PreviewMode = 'wrapped' | 'unwrapped' | 'ui'
+
 const onGotoProblem = ref<((problem: ProblemItem) => void) | null>(null)
 const onPreviewToggled = ref<((visible: boolean) => void) | null>(null)
+const onPreviewModeChanged = ref<((mode: PreviewMode) => void) | null>(null)
+const previewMode = ref<PreviewMode>('wrapped')
 
 function gotoProblem(problem: ProblemItem): void {
   onGotoProblem.value?.(problem)
@@ -182,6 +206,10 @@ function setDirty(dirty: boolean): void {
   isDirty.value = dirty
 }
 
+function getIsDirty(): boolean {
+  return isDirty.value
+}
+
 function toggleSidebar(): void {
   sidebarVisible.value = !sidebarVisible.value
 }
@@ -193,6 +221,16 @@ function togglePreview(): void {
 
 function isPreviewVisible(): boolean {
   return previewVisible.value
+}
+
+function setPreviewMode(mode: PreviewMode): void {
+  if (previewMode.value === mode) return
+  previewMode.value = mode
+  onPreviewModeChanged.value?.(mode)
+}
+
+function getPreviewMode(): PreviewMode {
+  return previewMode.value
 }
 
 function setPreviewHtml(html: string): void {
@@ -232,6 +270,7 @@ defineExpose({
   editorContainer,
   setFileName,
   setDirty,
+  isDirty: getIsDirty,
   toggleSidebar,
   togglePreview,
   isPreviewVisible,
@@ -239,6 +278,9 @@ defineExpose({
   setProblems,
   onGotoProblem,
   onPreviewToggled,
+  onPreviewModeChanged,
+  setPreviewMode,
+  getPreviewMode,
   appendOutput,
   clearOutput,
 })

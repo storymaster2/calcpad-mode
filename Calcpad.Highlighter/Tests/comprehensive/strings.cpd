@@ -1,5 +1,4 @@
 ' String Variables and Functions
-' String variables are implicitly created with the $ suffix
 
 ' Basic string variable assignment
 #string s$ = trim$('  hello world  ')
@@ -30,7 +29,7 @@ concatenated$
 ' String function calls - 3 arguments
 #string mid3$ = mid$(s$; 1; 5)
 #string replaced$ = replace$(s$; 'world'; 'earth')
-pos = instr$(s$; 'world'; 0)
+pos = instr$(0; s$; 'world')
 
 ' Variadic string function
 #string joined$ = concat$(s$; ' '; u$)
@@ -116,6 +115,39 @@ M = [1; 2 | 3; 4]*kN
 matNoUnits$
 #string matWithUnits$ = string$(M; 'true')
 matWithUnits$
+
+' ===== VAL WITH UNITS =====
+
+' Scalar string with units, parsed back to a value with units
+#string forceStr$ = '3.5 kN'
+forceWithUnits = val$(forceStr$; 'true')
+forceWithUnits
+forceNoUnits = val$(forceStr$; 'false')
+forceNoUnits
+forceDefault = val$('3.5 kN')
+forceDefault
+
+' Round-trip: string then val
+y = 7.25 m
+#string yStr$ = string$(y; 'true')
+yRound = val$(yStr$; 'true')
+yRound
+
+' Unit propagation in arithmetic
+total = val$('10 kN'; 'true') + val$('5 kN'; 'true')
+total
+
+' Table with mixed units, preserved in matrix literal
+#string unitTbl$ = ['3.5kN'; '2kN' | '1 m'; '4 m']
+Mu = val$(unitTbl$; 'true')
+Mu
+Mu_no = val$(unitTbl$; 'false')
+Mu_no
+
+' Table 1x1 with units
+#string singleCell$ = ['9.81 m/s^2']
+g = val$(singleCell$; 'true')
+g
 
 ' ===== ROW/COL TO STRING ARRAY =====
 

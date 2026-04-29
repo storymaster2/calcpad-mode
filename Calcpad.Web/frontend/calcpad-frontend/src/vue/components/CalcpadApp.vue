@@ -76,6 +76,13 @@
         @update-indent-size="handleUpdatePrettifyIndentSize"
         @update-trim-trailing="handleUpdatePrettifyTrim"
       />
+      <CalcpadExportTab
+        v-else-if="activeTab === 'export'"
+        :exports="exportEntries"
+        @download="handleDownloadExport"
+        @download-zip="handleDownloadExportZip"
+        @refresh="requestExports"
+      />
     </div>
   </div>
 </template>
@@ -89,8 +96,10 @@ import CalcpadVariablesTab from './CalcpadVariablesTab.vue'
 import CalcpadFilesTab from './CalcpadFilesTab.vue'
 import CalcpadPdfTab from './CalcpadPdfTab.vue'
 import CalcpadFormattingTab from './CalcpadFormattingTab.vue'
+import CalcpadExportTab from './CalcpadExportTab.vue'
 import { postMessage } from '../services/messaging'
 import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading, ThemeInfo } from '../types'
+import type { ExportMeta } from '../../types/api'
 import { DEFAULT_PDF_SETTINGS } from '../types'
 
 // State
@@ -127,8 +136,11 @@ const tabs: Tab[] = [
   { id: 'variables', label: 'Variables' },
   { id: 'files', label: 'Files' },
   { id: 'pdf', label: 'PDF' },
-  { id: 'formatting', label: 'Formatting' }
+  { id: 'formatting', label: 'Formatting' },
+  { id: 'export', label: 'Export' }
 ]
+
+const exportEntries = ref<ExportMeta[]>([])
 
 // Methods
 const switchTab = (tabId: string) => {
@@ -150,6 +162,23 @@ const switchTab = (tabId: string) => {
   if (tabId === 'formatting') {
     postMessage({ type: 'getPrettifySettings' })
   }
+
+  // Request export list when switching to Export tab
+  if (tabId === 'export') {
+    requestExports()
+  }
+}
+
+const requestExports = () => {
+  postMessage({ type: 'getExports' })
+}
+
+const handleDownloadExport = (filename: string) => {
+  postMessage({ type: 'downloadExport', filename })
+}
+
+const handleDownloadExportZip = () => {
+  postMessage({ type: 'downloadExportZip' })
 }
 
 const handleInsertText = (text: string) => {
@@ -324,6 +353,9 @@ const handleMessage = (event: MessageEvent) => {
       prettifyIndentSize.value = typeof message.indentSize === 'number' ? message.indentSize : 4
       prettifyTrimTrailing.value = message.trimTrailingWhitespace !== false
       break
+    case 'exportsResponse':
+      exportEntries.value = message.exports || []
+      break
   }
 }
 
@@ -358,6 +390,7 @@ onMounted(() => {
 
 .tab-container {
   display: flex;
+  flex-wrap: wrap;
   border-bottom: 1px solid var(--vscode-widget-border);
   background: var(--vscode-editor-background);
 }

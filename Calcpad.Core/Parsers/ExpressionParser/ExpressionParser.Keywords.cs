@@ -829,7 +829,7 @@ namespace Calcpad.Core
                         var varName = options.Name.ToString();
                         if (!_stringVariables.TryGetValue(varName, out var content))
                             throw new MathParserException($"String variable \"{varName}\" does not exist.");
-                        DataExchange.WriteString(options, content);
+                        DataExchange.WriteString(options, content, Settings.WriteCache);
                     }
                     else
                     {
@@ -844,7 +844,7 @@ namespace Calcpad.Core
                         else
                             m = _parser.GetMatrix(options.Name.ToString(), options.Type);
 
-                        DataExchange.Write(options, m);
+                        DataExchange.Write(options, m, Settings.WriteCache);
                     }
                     if (_isVisible)
                         ReportDataExchageResult(options, keyword == Keyword.Write ? "written to" : "appended to");

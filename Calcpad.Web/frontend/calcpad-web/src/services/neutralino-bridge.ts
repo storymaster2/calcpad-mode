@@ -2,10 +2,19 @@ import { filesystem, os, storage } from '@neutralinojs/lib';
 import { CalcpadApiClient } from 'calcpad-frontend/api/client';
 import { CalcpadSnippetService } from 'calcpad-frontend/services/snippets';
 import { CalcpadDefinitionsService } from 'calcpad-frontend/services/definitions';
+import { parseHeadings } from 'calcpad-frontend/services/headings';
 import { getDefaultSettings, buildApiSettings } from 'calcpad-frontend/types/settings';
 import type { CalcpadSettings } from 'calcpad-frontend/types/settings';
+import {
+    readImageFromClipboard,
+    bytesToBase64,
+    mimeFromExtension,
+    buildImageCommentLine,
+} from './image-insert';
 
 const SETTINGS_KEY = 'calcpad-settings';
+const RECENT_FILES_KEY = 'calcpad-recent-files';
+const MAX_RECENT_FILES = 10;
 
 /**
  * Message bridge for the Neutralino.js desktop platform.
@@ -38,6 +47,59 @@ export class NeutralinoMessageBridge {
         return this.snippetService;
     }
 
+    get definitions(): CalcpadDefinitionsService {
+        return this.definitionsService;
+    }
+
+    getSettings(): CalcpadSettings {
+        return this.settings;
+    }
+
+    /** Read an "extra" preference (commentFormat, formattingHotkeys, quickTyping, …). */
+    getExtraSetting(key: string): string | undefined {
+        return this._extraSettings[key];
+    }
+
+    /** Persist an arbitrary extra preference. */
+    setExtraSetting(key: string, value: string): void {
+        this.persistSetting(key, value);
+    }
+
+    /**
+     * Insert an image into the editor. Tries the system clipboard first;
+     * if no image is present, falls back to a native file picker.
+     */
+    private async handleInsertImage(): Promise<void> {
+        let dataUri = await readImageFromClipboard();
+
+        if (!dataUri) {
+            const entries = await os.showOpenDialog('Insert Image', {
+                filters: [
+                    { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] },
+                    { name: 'All Files', extensions: ['*'] },
+                ],
+            });
+            if (!entries || entries.length === 0) return;
+
+            const filePath = entries[0];
+            const buffer = await filesystem.readBinaryFile(filePath);
+            const mimeType = mimeFromExtension(filePath);
+            dataUri = `data:${mimeType};base64,${bytesToBase64(buffer)}`;
+        }
+
+        if (this._onInsertText) {
+            this._onInsertText(buildImageCommentLine(dataUri));
+        }
+    }
+
+    /** Send updated TOC headings to the Vue sidebar. */
+    public refreshHeadings(): void {
+        const models = (window as any).monaco?.editor?.getModels?.();
+        const content = models?.[0]?.getValue() || '';
+        const headings = parseHeadings(content);
+        this.postToVue({ type: 'updateHeadings', headings });
+    }
+
     set onInsertText(handler: (text: string) => void) {
         this._onInsertText = handler;
     }
@@ -65,7 +127,7 @@ export class NeutralinoMessageBridge {
                 }
                 break;
             case 'insertImage':
-                // Not yet supported in Neutralino context
+                this.handleInsertImage();
                 break;
             case 'updatePreviewTheme':
                 this.persistSetting('previewTheme', message.theme);
@@ -119,6 +181,32 @@ export class NeutralinoMessageBridge {
 
     async saveFile(filePath: string, content: string): Promise<void> {
         await filesystem.writeFile(filePath, content);
+    }
+
+    async readFile(filePath: string): Promise<string> {
+        return filesystem.readFile(filePath);
+    }
+
+    async getRecentFiles(): Promise<string[]> {
+        try {
+            const raw = await storage.getData(RECENT_FILES_KEY);
+            const list = JSON.parse(raw);
+            return Array.isArray(list) ? list : [];
+        } catch {
+            return [];
+        }
+    }
+
+    async addRecentFile(path: string): Promise<void> {
+        const list = await this.getRecentFiles();
+        const filtered = list.filter(p => p !== path);
+        filtered.unshift(path);
+        const trimmed = filtered.slice(0, MAX_RECENT_FILES);
+        await storage.setData(RECENT_FILES_KEY, JSON.stringify(trimmed));
+    }
+
+    async clearRecentFiles(): Promise<void> {
+        await storage.setData(RECENT_FILES_KEY, JSON.stringify([]));
     }
 
     async saveFileAs(content: string): Promise<string | null> {

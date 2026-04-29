@@ -285,6 +285,17 @@ export interface SymbolLocation {
     isAssignment: boolean; // true for definitions/reassignments
 }
 
+// ============================================
+// Export API Types (#write/#append output)
+// ============================================
+
+/** One file captured by #write/#append during a convert run. */
+export interface ExportMeta {
+    filename: string;
+    contentType: string;
+    size: number;
+}
+
 // Type IDs for variables and function return types
 export enum CalcpadTypeId {
     Unknown = 0,

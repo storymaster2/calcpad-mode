@@ -11,6 +11,7 @@ import type {
     FindReferencesResponse,
     PrettifyRequest,
     PrettifyResponse,
+    ExportMeta,
 } from '../types/api';
 import type { SnippetsResponse } from '../types/snippets';
 
@@ -92,6 +93,103 @@ export class CalcpadApiClient {
             return response.text();
         } catch (error) {
             this.logError('Convert', error);
+            return null;
+        }
+    }
+
+    /**
+     * Convert calcpad to "unwrapped" HTML — server returns just the body markup
+     * without the document chrome. Used for preview-pane rendering.
+     */
+    public async convertUnwrapped(
+        content: string,
+        settings: unknown,
+        clientFileCache?: ClientFileCache,
+    ): Promise<string | null> {
+        const url = this.baseUrl + '/api/calcpad/convert-unwrapped';
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content, settings, clientFileCache }),
+                signal: AbortSignal.timeout(60000),
+            });
+            if (!response.ok) return null;
+            return response.text();
+        } catch (error) {
+            this.logError('ConvertUnwrapped', error);
+            return null;
+        }
+    }
+
+    /**
+     * Convert with the interactive UI shell — inputs, dropdowns, datagrids.
+     * Pass `uiOverrides` to apply the user's input edits (empty `{}` for first render).
+     */
+    public async convertUi(
+        content: string,
+        settings: unknown,
+        uiOverrides: Record<string, unknown> = {},
+        clientFileCache?: ClientFileCache,
+    ): Promise<string | null> {
+        const url = this.baseUrl + '/api/calcpad/convert-ui';
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content, settings, uiOverrides, clientFileCache }),
+                signal: AbortSignal.timeout(60000),
+            });
+            if (!response.ok) return null;
+            return response.text();
+        } catch (error) {
+            this.logError('ConvertUi', error);
+            return null;
+        }
+    }
+
+    /**
+     * Lists files captured by #write/#append for the most recent convert run.
+     * Mirrors how the backend keys #read content by URL: exports are keyed by
+     * the client's source file path so the frontend can poll after each convert.
+     */
+    public async listExports(sourceFilePath?: string): Promise<ExportMeta[]> {
+        const url = this.baseUrl + '/api/calcpad/exports' + (sourceFilePath ? `?sourceFilePath=${encodeURIComponent(sourceFilePath)}` : '');
+        try {
+            const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+            if (!response.ok) return [];
+            return (await response.json()) as ExportMeta[];
+        } catch (error) {
+            this.logError('ListExports', error);
+            return [];
+        }
+    }
+
+    /** Downloads a single export file. */
+    public async downloadExport(filename: string, sourceFilePath?: string): Promise<Blob | null> {
+        const params = new URLSearchParams();
+        if (sourceFilePath) params.set('sourceFilePath', sourceFilePath);
+        params.set('filename', filename);
+        const url = this.baseUrl + '/api/calcpad/export?' + params.toString();
+        try {
+            const response = await fetch(url, { signal: AbortSignal.timeout(60000) });
+            if (!response.ok) return null;
+            return await response.blob();
+        } catch (error) {
+            this.logError('DownloadExport', error);
+            return null;
+        }
+    }
+
+    /** Downloads all exports for the source file as a single ZIP. */
+    public async downloadExportZip(sourceFilePath?: string): Promise<Blob | null> {
+        const url = this.baseUrl + '/api/calcpad/exports.zip' + (sourceFilePath ? `?sourceFilePath=${encodeURIComponent(sourceFilePath)}` : '');
+        try {
+            const response = await fetch(url, { signal: AbortSignal.timeout(60000) });
+            if (!response.ok) return null;
+            return await response.blob();
+        } catch (error) {
+            this.logError('DownloadExportZip', error);
             return null;
         }
     }

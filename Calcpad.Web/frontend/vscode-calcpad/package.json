@@ -624,6 +624,19 @@
           "default": true,
           "description": "Strip trailing whitespace from each line when prettifying."
         },
+        "calcpad.write.mode": {
+          "type": "string",
+          "default": "localFile",
+          "enum": [
+            "localFile",
+            "cacheDownload"
+          ],
+          "enumDescriptions": [
+            "Write #write/#append outputs to local files alongside the source .cpd (relative paths resolve against the source file directory, mirroring #read).",
+            "Stash #write/#append outputs in the server export cache; download manually from the Export tab."
+          ],
+          "description": "How #write and #append outputs are delivered. localFile writes the bytes returned by the server to the user's filesystem; cacheDownload leaves them in the server cache for download."
+        },
         "calcpad.linter.minimumSeverity": {
           "type": "string",
           "default": "information",
