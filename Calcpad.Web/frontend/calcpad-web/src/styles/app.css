@@ -10,6 +10,33 @@ html, body, #app {
     overflow: hidden;
 }
 
+/* Tell the browser the page is dark so native widgets (the <select> popup,
+ * scrollbars, form controls) render with the dark OS theme instead of the
+ * default light one. CSS alone cannot style the popup of a <select>. */
+html {
+    color-scheme: dark;
+}
+
+/* Style every <select> consistently, not just the output channel one.
+ * `option` styling is honored by Chromium/WebKit on Linux when color-scheme
+ * is set above. */
+select {
+    background: var(--vscode-dropdown-background, #3c3c3c);
+    color: var(--vscode-dropdown-foreground, #cccccc);
+    border: 1px solid var(--vscode-dropdown-border, #3c3c3c);
+    border-radius: 2px;
+    padding: 2px 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+select:focus {
+    outline: 1px solid var(--vscode-focusBorder, #007acc);
+}
+select option {
+    background: var(--vscode-dropdown-listBackground, #252526);
+    color: var(--vscode-dropdown-foreground, #cccccc);
+}
+
 .app-layout {
     display: flex;
     height: 100vh;
@@ -83,30 +110,172 @@ html, body, #app {
     min-height: 0;
 }
 
+/* ---- Tab strip (VS Code-style) ---- */
+.tab-strip {
+    display: flex;
+    align-items: stretch;
+    background: var(--vscode-editorGroupHeader-tabsBackground, #252526);
+    border-bottom: 1px solid var(--vscode-editorGroupHeader-tabsBorder, #1e1e1e);
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-shrink: 0;
+    height: 30px;
+    user-select: none;
+}
+
+.tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px 0 12px;
+    height: 100%;
+    background: var(--vscode-tab-inactiveBackground, #2d2d2d);
+    color: var(--vscode-tab-inactiveForeground, #969696);
+    border-right: 1px solid var(--vscode-tab-border, #252526);
+    cursor: pointer;
+    font-size: 13px;
+    white-space: nowrap;
+    max-width: 240px;
+    box-sizing: border-box;
+    border-top: 1px solid transparent;
+}
+
+.tab:hover {
+    background: var(--vscode-tab-hoverBackground, #2a2d2e);
+    color: var(--vscode-tab-hoverForeground, #ffffff);
+}
+
+.tab.active {
+    background: var(--vscode-tab-activeBackground, #1e1e1e);
+    color: var(--vscode-tab-activeForeground, #ffffff);
+    border-top-color: var(--vscode-tab-activeBorderTop, #007acc);
+}
+
+.tab-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tab-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    margin-left: 2px;
+    background: transparent;
+    color: inherit;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.tab-close:hover {
+    background: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.1));
+}
+
+.tab-dirty-dot {
+    color: var(--vscode-tab-activeForeground, #ffffff);
+    font-size: 14px;
+}
+
+.tab-new {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 100%;
+    background: transparent;
+    color: var(--vscode-tab-inactiveForeground, #969696);
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.tab-new:hover {
+    background: var(--vscode-tab-hoverBackground, #2a2d2e);
+    color: var(--vscode-tab-hoverForeground, #ffffff);
+}
+
 .sidebar-pane {
-    width: 320px;
-    min-width: 240px;
-    max-width: 480px;
+    /* Width is set inline from sidebarWidth in App.vue. Min/max enforced
+     * here as a guard rail against bad inline values. */
+    min-width: 180px;
+    max-width: 600px;
+    flex-shrink: 0;
     border-right: 1px solid var(--vscode-widget-border);
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
+/* The Vue sidebar app mounts here. Fill the pane height and let the panel
+ * scroll vertically when wrapped tabs + content exceed the visible area. */
+#vue-sidebar {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
 .sidebar-toggle {
     display: none;
 }
 
-/* Resizable handle placeholder — can be enhanced with JS later */
-.resize-handle {
-    width: 4px;
-    cursor: col-resize;
-    background: transparent;
-    transition: background 0.2s;
+/* Legacy rail (replaced by .resize-handle as combined resizer + collapse
+ * button). Hidden in case any markup still references it. */
+.sidebar-rail {
+    width: 16px;
+    background: var(--vscode-activityBar-background, #333333);
+    color: var(--vscode-activityBar-foreground, #cccccc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    border-right: 1px solid var(--vscode-widget-border, #1e1e1e);
+    transition: background 0.15s;
+}
+.sidebar-rail:hover {
+    background: var(--vscode-toolbar-hoverBackground, #2a2d2e);
+}
+.sidebar-rail-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+.sidebar-rail.collapsed {
+    /* Slightly wider when collapsed so it's easier to grab. */
+    width: 20px;
 }
 
-.resize-handle:hover {
-    background: var(--vscode-focusBorder);
+/* Combined resizer + collapse / expand control.
+ *  - Drag horizontally to resize the sidebar.
+ *  - Double-click while open to collapse.
+ *  - Single click while collapsed to re-expand. */
+.resize-handle {
+    width: 4px;
+    flex-shrink: 0;
+    cursor: col-resize;
+    background: transparent;
+    transition: background 0.15s;
+}
+.resize-handle:hover,
+.resize-handle.dragging {
+    background: var(--vscode-focusBorder, #007acc);
+}
+/* When the sidebar is collapsed, widen the strip so it's easy to grab and
+ * give it a subtle activity-bar tint so the user can see where to click. */
+.resize-handle.collapsed {
+    width: 8px;
+    cursor: pointer;
+    background: var(--vscode-activityBar-background, #333333);
+    border-right: 1px solid var(--vscode-widget-border, #1e1e1e);
+}
+.resize-handle.collapsed:hover {
+    background: var(--vscode-toolbar-hoverBackground, #2a2d2e);
 }
 
 /* Preview pane */
@@ -177,6 +346,73 @@ html, body, #app {
 .panel-tab.active {
     color: var(--vscode-panelTitle-activeForeground, #e7e7e7);
     border-bottom-color: var(--vscode-panelTitle-activeBorder, #e7e7e7);
+}
+
+.output-channel-select {
+    background: var(--vscode-dropdown-background, #3c3c3c);
+    color: var(--vscode-dropdown-foreground, #cccccc);
+    border: 1px solid var(--vscode-dropdown-border, #3c3c3c);
+    font-size: 11px;
+    padding: 2px 6px;
+    margin-left: 8px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+.output-channel-select:focus {
+    outline: 1px solid var(--vscode-focusBorder, #007acc);
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+.modal-card {
+    min-width: 360px;
+    max-width: 520px;
+    background: var(--vscode-editorWidget-background, #252526);
+    color: var(--vscode-editorWidget-foreground, #cccccc);
+    border: 1px solid var(--vscode-editorWidget-border, #454545);
+    border-radius: 4px;
+    padding: 16px 18px 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    font-size: 13px;
+}
+.modal-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.modal-message {
+    white-space: pre-wrap;
+    margin-bottom: 14px;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.modal-btn {
+    background: var(--vscode-button-secondaryBackground, #3a3d41);
+    color: var(--vscode-button-secondaryForeground, #cccccc);
+    border: none;
+    padding: 4px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.modal-btn:hover {
+    background: var(--vscode-button-secondaryHoverBackground, #45494e);
+}
+.modal-btn.primary {
+    background: var(--vscode-button-background, #0e639c);
+    color: var(--vscode-button-foreground, #ffffff);
+}
+.modal-btn.primary:hover {
+    background: var(--vscode-button-hoverBackground, #1177bb);
 }
 
 .problems-badge {

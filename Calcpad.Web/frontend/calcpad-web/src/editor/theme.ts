@@ -4,9 +4,12 @@ import * as monaco from 'monaco-editor';
  * CalcPad dark theme for Monaco. Maps semantic token types to colors matching
  * the dark-mode color rules in the VS Code extension's package.json.
  */
+// `semanticHighlighting: true` is recognized by Monaco at runtime but isn't
+// in IStandaloneThemeData's public types, so we cast at the property level.
 export const calcpadDarkTheme: monaco.editor.IStandaloneThemeData = {
     base: 'vs-dark',
     inherit: true,
+    ...({ semanticHighlighting: true } as object),
     rules: [
         // Core syntax
         { token: 'comment', foreground: '57A64A' },

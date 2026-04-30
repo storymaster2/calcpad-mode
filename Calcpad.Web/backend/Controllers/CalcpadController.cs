@@ -11,6 +11,7 @@ using Calcpad.Highlighter.Snippets;
 using Calcpad.Highlighter.Snippets.Models;
 using Calcpad.Highlighter.Tokenizer;
 using Calcpad.Highlighter.Tokenizer.Models;
+using Calcpad.OpenXml;
 
 namespace Calcpad.Server.Controllers
 {
@@ -268,6 +269,52 @@ namespace Calcpad.Server.Controllers
         public IActionResult PdfHealth()
         {
             return Ok(new { status = "ok", service = "calcpad-pdf", version = "2.0.0" });
+        }
+
+        /// <summary>
+        /// Convert calcpad → HTML → DOCX (Word) using Calcpad.OpenXml.OpenXmlWriter.
+        /// Returns the .docx bytes; the frontend handles the download / save dialog.
+        /// </summary>
+        [HttpPost("docx")]
+        public async Task<IActionResult> GenerateDocx([FromBody] CalcpadRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Content))
+                    return BadRequest(new { error = "Content is required" });
+
+                var ctx = new WebFetchContext
+                {
+                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
+                    AuthSettings = request.AuthSettings,
+                    ApiTimeoutMs = request.ApiTimeoutMs,
+                    SourceFilePath = request.SourceFilePath
+                };
+                // forPrint=true so the HTML is the printable / unwrapped form,
+                // matching what the OpenXmlWriter expects.
+                var html = await _calcpadService.ConvertAsync(
+                    request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, ctx, forPrint: true);
+
+                using var ms = new MemoryStream();
+                // Calcpad's plot/inline-expression list isn't surfaced through
+                // CalcpadService yet; pass an empty list so equations render
+                // as text (still well-formed). Plot images embedded in HTML
+                // are picked up by OpenXmlWriter's image processor as normal.
+                var writer = new OpenXmlWriter(new List<string>());
+                writer.Convert(html, ms);
+                var bytes = ms.ToArray();
+
+                FileLogger.LogInfo("DOCX generated successfully", $"Size: {bytes.Length} bytes");
+                return File(
+                    bytes,
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "document.docx");
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogError("DOCX generation failed", ex);
+                return StatusCode(500, new { error = "DOCX generation failed", message = ex.Message });
+            }
         }
 
         /// <summary>

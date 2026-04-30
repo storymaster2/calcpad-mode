@@ -57,9 +57,27 @@ The VS Code extension scans generated HTML for `<img src="…">` and, for each l
 1. Explicit `browserPath` (request field, env var, or `appsettings.json`)
 2. **Microsoft Edge** (Windows: Program Files, Program Files (x86), LocalAppData)
 3. **Google Chrome** (same three locations)
-4. **Linux** — `chromium`, `chromium-browser`, `google-chrome`, `google-chrome-stable`, `/snap/bin/chromium`
+4. **Linux** — `chromium`, `chromium-browser`, `ungoogled-chromium`, `google-chrome`, `google-chrome-stable`, `/snap/bin/chromium`
 5. **macOS** — Chrome, Edge, Chromium in `/Applications`
 6. **Fallback** — auto-download `ChromeHeadlessShell` via `BrowserFetcher` into `{AppContext.BaseDirectory}/chromium`
+
+## Desktop pre-flight check (Calcpad-Desktop)
+
+The Neutralino desktop launcher (`extensions/server/start-server.sh`) probes for a Chromium binary on `PATH` at startup and writes the result to `extensions/server/logs/server-stderr.log`. Before issuing a PDF request, the desktop UI scans that log; if the launcher reported "no Chromium-family browser found" (or PuppeteerSharp logged a launch failure on a previous attempt), the user gets a native message box with **per-distribution install instructions** instead of waiting for a 10-second timeout:
+
+- **Arch / CachyOS / Manjaro / EndeavourOS / Garuda** — `yay -S ungoogled-chromium-bin` (or `sudo pacman -S chromium`)
+- **Debian / Ubuntu / Mint** — `sudo apt install chromium`
+- **Fedora / RHEL / Rocky / Alma** — `sudo dnf install chromium`
+- **openSUSE** — `sudo zypper install chromium`
+- **Alpine** — `sudo apk add chromium`
+- **macOS** — `brew install --cask google-chrome`
+- **Windows** — install Microsoft Edge or Google Chrome
+
+Distribution detection reads `ID` and `ID_LIKE` from `/etc/os-release`. The Arch packaging (`packaging/arch/PKGBUILD`) lists `ungoogled-chromium-bin` as the preferred `optdepend`.
+
+## Server stderr log
+
+The desktop launcher tees the .NET server's stderr into `extensions/server/logs/server-stderr.log` (truncated per launch, preserved on the original stderr stream too). The desktop app's **Server → Show Server Log** menu item — and any failed PDF request — pipes the most recent 200 lines into the **Output** panel under the **Server** channel, mirroring how the VS Code extension's spawned-process stderr surfaces in its Output channel.
 
 ## Complete `PdfOptions` reference
 

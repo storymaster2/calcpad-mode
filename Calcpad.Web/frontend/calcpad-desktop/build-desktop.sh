@@ -117,11 +117,27 @@ find_browser() {
 }
 
 # ─── Build .NET server ──────────────────────────────────────────────────────
+# Delegates to the shared sync-bundled-server.mjs script (which lives in
+# vscode-calcpad/scripts/) so the desktop and the VS Code extension stay in
+# lock-step on dependency layout, deps.json freshness, executable bits, and
+# pdb stripping. Runs the script with --keep-skia-natives because the
+# desktop ships standalone — there's no runtime download path for the
+# SkiaSharp natives that vscode-calcpad downloads on first activation.
 build_server() {
     info "Building Calcpad.Server for ${DOTNET_RID}..."
 
     if ! command -v dotnet &>/dev/null; then
         err "dotnet CLI not found. Install .NET 10 SDK: https://dotnet.microsoft.com/download"
+        exit 1
+    fi
+    if ! command -v node &>/dev/null; then
+        err "node not found. Install Node.js to run the shared sync-bundled-server.mjs script."
+        exit 1
+    fi
+
+    local sync_script="$FRONTEND_DIR/vscode-calcpad/scripts/sync-bundled-server.mjs"
+    if [ ! -f "$sync_script" ]; then
+        err "Shared sync script not found at $sync_script"
         exit 1
     fi
 
@@ -132,50 +148,12 @@ build_server() {
     # Skip Playwright browser download — we use the system browser
     export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
-    local csproj="$BACKEND_DIR/Calcpad.Server.csproj"
-
-    info "Restoring NuGet packages..."
-    dotnet restore "$csproj" -r "$DOTNET_RID" --verbosity quiet
-
-    info "Publishing self-contained build..."
-    dotnet publish "$csproj" \
-        -c Release \
-        -r "$DOTNET_RID" \
-        --self-contained true \
-        -o "$EXTENSIONS_DIR" \
-        --verbosity quiet
-
-    # Strip platform runtimes we don't need (SkiaSharp ships natives for all platforms)
-    if [ -d "$EXTENSIONS_DIR/runtimes" ]; then
-        info "Stripping SkiaSharp native assets for other platforms..."
-        local kept=0 removed=0
-        for dir in "$EXTENSIONS_DIR/runtimes"/*/; do
-            local rid_name
-            rid_name="$(basename "$dir")"
-            if [[ "$rid_name" == "$DOTNET_RID" || "$rid_name" == "${PLATFORM_OS}" ]]; then
-                kept=$((kept + 1))
-            else
-                rm -rf "$dir"
-                removed=$((removed + 1))
-            fi
-        done
-        ok "Kept ${kept} runtime(s), removed ${removed} unused runtime(s)"
-    fi
-
-    # Strip Playwright drivers for other platforms
-    if [ -d "$EXTENSIONS_DIR/.playwright/node" ]; then
-        info "Stripping Playwright drivers for other platforms..."
-        for dir in "$EXTENSIONS_DIR/.playwright/node"/*/; do
-            local node_rid
-            node_rid="$(basename "$dir")"
-            if [[ "$node_rid" != "$DOTNET_RID" ]]; then
-                rm -rf "$dir"
-            fi
-        done
-    fi
-
-    # Remove debug symbols
-    find "$EXTENSIONS_DIR" -name "*.pdb" -delete 2>/dev/null || true
+    info "Publishing self-contained build via shared sync script..."
+    node "$sync_script" \
+        --target="$EXTENSIONS_DIR" \
+        --rid="$DOTNET_RID" \
+        --configuration=Release \
+        --keep-skia-natives
 
     # Verify the executable
     local exe_name="Calcpad.Server"
@@ -193,64 +171,27 @@ build_server() {
     fi
 }
 
-# ─── Create server launcher wrapper ─────────────────────────────────────────
-# The wrapper sets BROWSER_PATH and other env vars before starting the server.
-# Neutralino extensions use the command* fields in neutralino.config.json.
-create_launcher() {
-    info "Creating server launcher..."
-
-    local launcher="$EXTENSIONS_DIR/start-server.sh"
-
-    cat > "$launcher" << 'LAUNCHER_EOF'
-#!/bin/bash
-# CalcPad Server launcher — sets environment and starts the .NET server
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Browser detection (if BROWSER_PATH not already set)
-if [ -z "$BROWSER_PATH" ]; then
-    for candidate in chromium chromium-browser google-chrome-stable google-chrome microsoft-edge-stable; do
-        resolved="$(command -v "$candidate" 2>/dev/null || true)"
-        if [ -n "$resolved" ]; then
-            export BROWSER_PATH="$resolved"
-            break
-        fi
-    done
-fi
-
-# Default server settings
-export CALCPAD_PORT="${CALCPAD_PORT:-9420}"
-export CALCPAD_HOST="${CALCPAD_HOST:-localhost}"
-export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-
-exec "$SCRIPT_DIR/Calcpad.Server" "$@"
-LAUNCHER_EOF
-
-    chmod +x "$launcher"
-
-    # Update neutralino.config.json to use the wrapper
-    ok "Launcher created: ${launcher}"
-}
-
-# ─── Update Neutralino config for current platform ──────────────────────────
-update_neutralino_config() {
-    info "Updating Neutralino extension config for ${DOTNET_RID}..."
-
-    local config="$DESKTOP_DIR/neutralino.config.json"
-
-    # The config already has commandLinux/commandWindows/commandDarwin
-    # For dev, we want to use the launcher wrapper
-    case "$PLATFORM_OS" in
-        linux)
-            # Replace the extension command to use our launcher
-            sed -i 's|"commandLinux":.*|"commandLinux": "${NL_PATH}/extensions/server/start-server.sh",|' "$config"
-            ;;
-        osx)
-            sed -i '' 's|"commandDarwin":.*|"commandDarwin": "${NL_PATH}/extensions/server/start-server.sh",|' "$config"
-            ;;
-    esac
-
-    ok "Neutralino config updated"
-}
+# ─── Server launcher (no wrapper script needed) ────────────────────────────
+# The .NET server is invoked directly by Neutralino on every platform —
+# `Calcpad.Server[.exe]` is a self-contained apphost. All the behaviour
+# that used to live in the bash/cmd wrapper now lives in Program.cs:
+#
+#   - Browser detection: PdfGeneratorService.ResolveBrowserPathAsync
+#     searches the user's PATH when BROWSER_PATH is not set.
+#   - Stderr/stdout logging: FileLogger writes to logs/CalcpadServer-*.log
+#     and crash records to logs/last-crash.txt.
+#   - Random free port: Program.cs adds `--urls http://127.0.0.1:0` when
+#     no --urls flag and no CALCPAD_PORT env var was given.
+#   - Port-file publishing: Program.cs writes the bound URL to
+#     `.calcpad-server.port` next to the binary by default.
+#   - EOF watchdog: Program.cs exits when stdin closes (default-on for
+#     piped-stdin launches; opt out with CALCPAD_DETACHED=1).
+#
+# This means Neutralino's commandWindows / commandDarwin / commandLinux
+# all point at the apphost directly — see neutralino.config.json. The
+# only consumer that opts out is the VS Code extension's
+# server-manager.ts, which exports CALCPAD_DETACHED=1 because it shares
+# one server across multiple windows via the lock-file mechanism.
 
 # ─── Print summary ──────────────────────────────────────────────────────────
 print_summary() {
@@ -301,10 +242,8 @@ main() {
     fi
     mkdir -p "$EXTENSIONS_DIR"
 
-    # Build
+    # Build (no separate launcher step — see comment block above)
     build_server
-    create_launcher
-    update_neutralino_config
 
     print_summary
 }

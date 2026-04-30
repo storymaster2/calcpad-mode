@@ -194,6 +194,42 @@
                 "panel": "dedicated"
             }
         },
+        {
+            "label": "Desktop: Clean & Rebuild",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "rm -rf dist resources && npx neu build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
+            },
+            "group": "build",
+            "dependsOn": "Desktop: Build Server + Assets",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Desktop: Install via pacman (Arch)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "rm -f *.pkg.tar.zst && makepkg -sif && sudo pacman -U --noconfirm calcpad-ce-*.pkg.tar.zst"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/packaging/arch"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
 
         // ── Server → Extension DLL sync (dev builds) ──────────────────
         {

@@ -28,7 +28,7 @@
       "minHeight": 600,
       "center": true,
       "icon": "/resources/icon.png",
-      "enableInspector": true,
+      "enableInspector": false,
       "resizable": true,
       "exitProcessOnClose": false
     }
@@ -36,16 +36,15 @@
   "extensions": [
     {
       "id": "com.calcpad.server",
-      "commandLinux": "${NL_PATH}/extensions/server/start-server.sh",
-      "commandWindows": "${NL_PATH}/extensions/server/CalcpadServer.exe",
-      "commandDarwin": "${NL_PATH}/extensions/server/CalcpadServer"
+      "commandLinux": "${NL_PATH}/extensions/server/Calcpad.Server",
+      "commandWindows": "${NL_PATH}/extensions/server/Calcpad.Server.exe",
+      "commandDarwin": "${NL_PATH}/extensions/server/Calcpad.Server"
     }
   ],
   "cli": {
     "binaryName": "calcpad-desktop",
     "resourcesPath": "/resources/",
     "extensionsPath": "/extensions/",
-    "clientLibrary": "/resources/js/neutralino.js",
     "frontendLibrary": {
       "patchFile": "/resources/index.html",
       "devUrl": "http://localhost:5173",

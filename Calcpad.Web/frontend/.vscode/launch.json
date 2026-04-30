@@ -11,7 +11,7 @@
             "outFiles": [
                 "${workspaceFolder}/vscode-calcpad/out/**/*.js"
             ],
-            "preLaunchTask": "npm: compile"
+            "preLaunchTask": "prep-extension"
         }
     ]
 }

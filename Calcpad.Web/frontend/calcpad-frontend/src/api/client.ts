@@ -98,6 +98,39 @@ export class CalcpadApiClient {
     }
 
     /**
+     * Convert calcpad → DOCX (Word). Backend renders to HTML internally,
+     * then runs the Calcpad.OpenXml writer over it. Returns the .docx
+     * bytes, or null on failure.
+     */
+    public async convertDocx(
+        content: string,
+        settings: unknown,
+        clientFileCache?: ClientFileCache,
+        sourceFilePath?: string,
+    ): Promise<ArrayBuffer | null> {
+        const url = this.baseUrl + '/api/calcpad/docx';
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content,
+                    settings,
+                    clientFileCache,
+                    sourceFilePath,
+                    forPrint: true,
+                }),
+                signal: AbortSignal.timeout(60000),
+            });
+            if (!response.ok) return null;
+            return response.arrayBuffer();
+        } catch (error) {
+            this.logError('ConvertDocx', error);
+            return null;
+        }
+    }
+
+    /**
      * Convert calcpad to "unwrapped" HTML — server returns just the body markup
      * without the document chrome. Used for preview-pane rendering.
      */

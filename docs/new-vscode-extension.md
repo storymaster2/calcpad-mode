@@ -115,6 +115,8 @@ All three panels:
 |---------|-------------|
 | `exportToPdf` | Full-fidelity PDF export with save dialog and 60-second timeout |
 | `printToPdf` | Print-style PDF generated from the live webview |
+| `saveSourceHtml` | Renders the active document via `/api/calcpad/convert` and saves the HTML through a native save dialog. Available from the **Save HTML…** button on the sidebar's **Export** tab and from the Command Palette as *CalcPad: Save Source HTML…* |
+| `saveDocx` | Renders the active document, then converts to Word `.docx` via `/api/calcpad/docx` (Calcpad.OpenXml). Available from the **Save Word…** button on the sidebar's **Export** tab and from the Command Palette as *CalcPad: Save as Word Document…* |
 | `viewWebviewSource` | Opens the rendered HTML in a scratch editor for debugging |
 | `insertImage` | File picker to insert an `<img>` tag with relative path |
 

@@ -11,6 +11,26 @@
                 "reveal": "silent"
             },
             "problemMatcher": "$tsc"
+        },
+        {
+            "label": "sync-server:debug",
+            "type": "npm",
+            "script": "sync-server:debug",
+            "path": "vscode-calcpad",
+            "presentation": {
+                "panel": "shared",
+                "reveal": "silent"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "prep-extension",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "sync-server:debug",
+                "npm: compile"
+            ],
+            "problemMatcher": []
         }
     ]
 }
