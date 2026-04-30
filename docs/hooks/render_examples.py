@@ -6,20 +6,46 @@ Each top-level key becomes an examples/<slug>.md page showing source code
 alongside the rendered HTML output in a two-column grid.
 """
 
+import importlib.util
 import logging
 import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
+import urllib.parse
+
 import mkdocs.structure.files as mkdocs_files
+from pygments import highlight as _pyg_highlight
+from pygments.formatters import HtmlFormatter
 
 log = logging.getLogger("mkdocs")
 
 _temp_dir: str | None = None
+
+
+# Load the sibling calcpad_lexer.py module by path. MkDocs loads hooks as
+# free-standing files (not a package), so a normal `import` does not resolve.
+def _load_calcpad_lexer():
+    lexer_path = Path(__file__).parent / "calcpad_lexer.py"
+    spec = importlib.util.spec_from_file_location("calcpad_lexer", lexer_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["calcpad_lexer"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_calcpad_lexer_mod = _load_calcpad_lexer()
+_CALCPAD_LEXER = _calcpad_lexer_mod.CalcpadLexer(stripnl=False)
+# wrapcode=True wraps highlighted output in <pre><code>…</code></pre>, which is
+# what Material's copy-button JS looks for to attach itself.
+_CALCPAD_FORMATTER = HtmlFormatter(nowrap=False, wrapcode=True, cssclass="highlight")
+# Make ```calcpad / ```cpd fenced blocks in narrative .md pages work too.
+_calcpad_lexer_mod.register()
 
 
 # ---------------------------------------------------------------------------
@@ -104,39 +130,42 @@ def on_files(files, config, **kwargs):
             )
             all_files.append(virtual)
 
-    # Inject asset files (e.g. .js, .css, images) referenced by examples.
-    # Assets are referenced from example pages via relative URLs like ./Models/bolt_and_nut.glb.
-    # With use_directory_urls=false the page is at examples/<slug>.html, so the URL resolves to
-    # examples/Models/bolt_and_nut.glb — we must preserve sub-directory structure relative to
-    # the category folder, not flatten everything to examples/<filename>.
+    # Collect all assets to serve, keyed by their virtual path under examples/.
+    # Two different "anchors" are needed because URLs in the rendered HTML differ:
+    #   - Category-local files (e.g. ./Models/bolt_and_nut.glb) are referenced
+    #     relative to the category dir → serve at examples/<rel-from-cat-dir>
+    #   - Shared images (../../Images/..., stripped to Images/...) are referenced
+    #     relative to Examples/ → serve at examples/<rel-from-examples-root>
     _ASSET_SUFFIXES = {".js", ".css", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".txt", ".glb"}
-    assets_temp = Path(_temp_dir) / "assets"
-    assets_examples = assets_temp / "examples"
-    assets_examples.mkdir(parents=True)
-    seen_asset_paths: set[str] = set()
+    assets_to_serve: dict[str, Path] = {}  # path_key → source file
+
     for group_name, categories in examples.items():
         folder = group_folders[group_name]
         for category in categories:
             cat_dir = examples_root / folder / category
             for asset in cat_dir.rglob("*"):
-                if asset.suffix.lower() not in _ASSET_SUFFIXES:
-                    continue
-                rel = asset.relative_to(cat_dir)  # e.g. Models/bolt_and_nut.glb
-                path_key = rel.as_posix()
-                if path_key in seen_asset_paths:
-                    continue
-                seen_asset_paths.add(path_key)
-                dest = assets_examples / rel
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(asset, dest)
-                log.info(f"Copying asset {asset.relative_to(examples_root)}")
-                virtual_asset = mkdocs_files.File(
-                    path=f"examples/{path_key}",
-                    src_dir=str(assets_temp),
-                    dest_dir=config["site_dir"],
-                    use_directory_urls=False,
-                )
-                all_files.append(virtual_asset)
+                if asset.is_file() and asset.suffix.lower() in _ASSET_SUFFIXES:
+                    assets_to_serve.setdefault(asset.relative_to(cat_dir).as_posix(), asset)
+
+    images_src = examples_root / "Images"
+    if images_src.is_dir():
+        for asset in images_src.rglob("*"):
+            if asset.is_file():
+                assets_to_serve.setdefault(asset.relative_to(examples_root).as_posix(), asset)
+
+    assets_temp = Path(_temp_dir) / "assets"
+    assets_examples = assets_temp / "examples"
+    assets_examples.mkdir(parents=True)
+    for path_key, asset in assets_to_serve.items():
+        dest = assets_examples / path_key
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(asset, dest)
+        all_files.append(mkdocs_files.File(
+            path=f"examples/{path_key}",
+            src_dir=str(assets_temp),
+            dest_dir=config["site_dir"],
+            use_directory_urls=False,
+        ))
 
     return mkdocs_files.Files(all_files)
 
@@ -193,7 +222,7 @@ def _load_examples(repo_root: Path) -> dict[str, dict[str, list[str]]]:
     current_category: str | None = None
     for lineno, raw in enumerate(yaml_path.read_text(encoding="utf-8").splitlines(), 1):
         line = raw.rstrip()
-        if not line or line.startswith("#"):
+        if not line or line.lstrip().startswith("#"):
             continue
         if line.startswith("    - "):          # 4-space list item → stem
             if current_category is None:
@@ -309,8 +338,14 @@ def _render_fragment(cpd_file: Path, cli_path: Path, label: str = "") -> str:
             raise SystemExit(
                 f"render_examples: CLI produced no output for {cpd_file.name}"
             )
+        html = Path(out_path).read_text(encoding="utf-8")
+        # Strip ../../ from src/href attributes: .cpd files use paths like
+        # ../../Images/... which work locally but not in the docs site where
+        # pages live at examples/<slug>.html.
+        # Handles both src="../../..." and src = "../../..." (spaces around =).
+        html = re.sub(r'(src|href)\s*=\s*"\.\./\.\./\s*', r'\1="', html)
         log.info(f"Rendered  {name}")
-        return Path(out_path).read_text(encoding="utf-8")
+        return html
     except subprocess.TimeoutExpired:
         raise SystemExit(f"render_examples: CLI timed out rendering {cpd_file.name}")
     except OSError as exc:
@@ -328,8 +363,15 @@ def _strip_headings(fragment: str) -> str:
 
 
 def _render_category_page(category: str, cpd_files: list[Path], fragments: dict[Path, str]) -> str:
-    """Build the Markdown content for one category page from pre-rendered fragments."""
-    lines = [f"# {_display_name(category)}\n"]
+    """Build the Markdown content for one category page from pre-rendered fragments.
+
+    The example grid is emitted as a raw HTML block (no markdown="block" attribute)
+    so that Python-Markdown / md_in_html passes it through verbatim.  This prevents
+    the md_in_html preprocessor from HTML-escaping '>' characters inside <script>
+    tag bodies (which would break inline JavaScript such as arrow functions).
+    The source code is HTML-escaped in Python before being written into <pre><code>.
+    """
+    lines = ["---\nsearch:\n  exclude: true\n---\n", f"# {_display_name(category)}\n"]
 
     for cpd_file in cpd_files:
         name = cpd_file.stem
@@ -337,16 +379,32 @@ def _render_category_page(category: str, cpd_files: list[Path], fragments: dict[
 
         source = cpd_file.read_text(encoding="utf-8", errors="replace")
         fragment = _strip_headings(fragments[cpd_file])
+        highlighted_source = _pyg_highlight(
+            source.rstrip(), _CALCPAD_LEXER, _CALCPAD_FORMATTER
+        )
 
-        lines.append('<div class="example-grid" markdown="block">')
-        lines.append('<div class="example-source" markdown="block">\n')
-        lines.append("```")
-        lines.append(source.rstrip())
-        lines.append("```\n")
-        lines.append("</div>")
-        lines.append('<div class="example-output">\n')
+        # No markdown="block" on any div here — the outer <div class="example-grid">
+        # has no markdown attribute so md_in_html passes the entire block through
+        # unchanged (including blank lines and raw <script> content inside it).
+        lines.append('<div class="example-grid">')
+        lines.append('<div class="example-source">')
+        lines.append(highlighted_source)
+        lines.append('</div>')
+        lines.append('<div class="example-output">')
         lines.append(fragment)
-        lines.append("</div>")
-        lines.append("</div>\n")
+        lines.append('</div>')
+        lines.append('</div>\n')
+
+    # Footer: link to the category folder on GitHub
+    if cpd_files:
+        cat_path = cpd_files[0].parent
+        parts = cat_path.parts
+        try:
+            idx = next(i for i, p in enumerate(parts) if p == "Examples")
+            rel = "/".join(urllib.parse.quote(p, safe="") for p in parts[idx + 1:])
+        except StopIteration:
+            rel = urllib.parse.quote(cat_path.name, safe="")
+        github_url = f"https://github.com/imartincei/CalcpadCE/tree/main/Examples/{rel}"
+        lines.append(f"\nSpotted an error? [Edit these examples.]({github_url})\n")
 
     return "\n".join(lines)

@@ -1,6 +1,5 @@
 #include svg_drawing.cpd
-"Prestressed TT Panel
-'<hr/>
+"Prestressed TT Panel - Parametric SVG Generation
 #deg
 'Dimensions:
 'Rib height -'h = ? {750}'mm

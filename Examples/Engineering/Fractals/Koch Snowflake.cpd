@@ -3,17 +3,17 @@
 a = sqrt(3)/2
 x = hp([0; 1; 0.5; 0])
 y = hp([0; 0; a; 0])
-'Number of iterations -'n = 6
+'Number of iterations -'n = 5
 #val
 '<style>polygon {stroke:steelBlue; stroke-width:0.2; stroke-opacity:0.4;}</style>
 #hide
-w = 300', 'h = 1.2*w', 'k = 100
+w = 150', 'h = 1.2*w', 'k = 100
 #for i = 1 : n
 	n_p = len(x)
 	#show
 	'<h4>Iteration 'i'</h4>
-	'<svg viewbox="0 10 'k' 'k'" style="transform:scale(0.9); width:'w'pt; height:'h'pt">
-	'<defs><radialGradient id="sff" cx="50%" cy="50%"><stop offset="0%" stop-color="lightCyan"/><stop offset="100%" stop-color="lightBlue"/></defs>
+	'<svg viewBox="0 10 'k' 'k'" style="transform:scale(0.9); width:'w'pt; height:'h'pt">
+	'<defs><radialGradient id="sff" cx="50%" cy="50%"><stop offset="0%" stop-color="lightCyan"/><stop offset="100%" stop-color="lightBlue"/></radialGradient></defs>
 	'<polygon id = "sf'i'" points = "
 	#for j = 1 : n_p
 		x.j*k','(a - y.j)*k' '

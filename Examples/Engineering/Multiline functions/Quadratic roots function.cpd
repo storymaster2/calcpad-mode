@@ -1,5 +1,4 @@
 "Quadratic Equation Roots function
-'<hr/>
 'Multiline code block example:
 quadRoots(a; b; c) = _
 $block{

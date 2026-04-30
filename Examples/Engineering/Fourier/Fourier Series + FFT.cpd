@@ -1,5 +1,4 @@
 "Fourier series expansion (classic)
-'<hr/>
 #rad
 'Number of iterations -'n = 20
 'Interval length -'l = 10

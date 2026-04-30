@@ -1,5 +1,5 @@
 "Area and Perimeter of Triangle
-'<hr /><div style="max-width:110mm;"><img style="height:55pt;" class="side" alt="triangle.png" src="../../Images/math/area/triangle.png"></div>
+'<div style="max-width:110mm;"><img style="height:55pt;" class="side" alt="triangle.png" src="../../Images/math/area/triangle.png"></div>
 'Side lengths
 a = ?','b = ?','c = ?
 '<!--

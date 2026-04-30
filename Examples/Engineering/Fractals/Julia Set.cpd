@@ -1,5 +1,4 @@
 "Julia set
-'<hr/>
 'Function:' _
 J(z; c; n) = abs($Repeat{z = if(abs(z) < 2; z^2 + c; 4) @ i = 1 : n})
 JuliaSet(z; c) = $Find{J(z; c; x) - 2 @ x = 1 : n}

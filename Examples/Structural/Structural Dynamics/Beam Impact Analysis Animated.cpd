@@ -235,9 +235,9 @@ z_0 = z_0(0s)
 PlotHeight = 100*(1 + z_0/100mm)
 k_R = PlotWidth*mm/L
 #show
-'Animation of beam elastic response (slowed down) <button id="start">Drop</button>
+'Animation of beam elastic response (slowed down)
 #val
-'<style>#start{height:1.8em; padding-top:0;} .fr{display:none;} circle{stroke-width: 0;} .fr circle.Series3{stroke-width:'6*R_s*k_R'px!Important;stroke-opacity:1; fill:none;}</style>
+'<style>.fr{display:none;} circle{stroke-width: 0;} .fr circle.Series3{stroke-width:'6*R_s*k_R'px!Important;stroke-opacity:1; fill:none;}</style>
 #for k = 1 : N
 	#hide
 	k_0 = max(k - n_0; 1)
@@ -245,11 +245,11 @@ k_R = PlotWidth*mm/L
 	j_m = ceiling(n_J/2)
 	z_b(k) = if(k ≤ n_0; z_0((k - 1)*Δt); -spline(j_m; z)) + R_s*k_R
 	#show
-	'<div class="fr" id="fr-'k'">
+	'<div class="fr" id="beamimpact-fr-'k'">
 	$Plot{j*Δx|-spline(j + 1; z) & 0m|-100mm & j_m*Δx|z_b(k) & L|z_0 + 50mm @ j = 0 : n_J + 1}
 	'</div>
 #loop
-'<script>$("#fr-1").show();$("#start").click(function(){$(this).hide();var i='N';var fr=$("#fr-"+i);setInterval(function(){fr.hide();if(++i>'N')i=1;fr=$("#fr-"+i);fr.show();}, 20);});</script>
+'<script>(function(){$("#beamimpact-fr-1").show();var i=1;var fr=$("#beamimpact-fr-1");setInterval(function(){fr.hide();if(++i>'N')i=1;fr=$("#beamimpact-fr-"+i);fr.show();}, 20);})();</script>
 #equ
 '[1] Harris C. M., Piersol A.G., HARRIS’ SHOCK AND VIBRATION HANDBOOK, Fifth Edition, McGraw-Hill 2002, ISBN 0-07-137081-1
 '[2] Qing Peng, Xiaoming Liu, Yueguang Wei, Elastic impact of sphere on large plate, Journal of the Mechanics and Physics of Solids, Volume 156, 2021, 104604, ISSN 0022 - 5096, <a href="https://doi.org/10.1016/j.jmps.2021.104604">https://doi.org/10.1016/j.jmps.2021.104604</a>

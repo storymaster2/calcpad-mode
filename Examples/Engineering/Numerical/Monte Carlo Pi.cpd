@@ -1,5 +1,4 @@
 "Calculation of π by Monte-Carlo algorithm
-'<hr/>
 'Number of points -'n = 10000
 'Point coordinates:
 x = random(fill(vector_hp(n); 1))

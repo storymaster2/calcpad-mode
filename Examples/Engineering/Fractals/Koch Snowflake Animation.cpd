@@ -1,22 +1,21 @@
 "Koch Snowflake Animation
-'<hr/>
 'Initial triangle coordinates
 #def a$ = sqrt(3)/2
 x = hp([0; 1; 0.5; 0])', 'y = hp([0; 0; a$; 0])
-'Number of iterations -'n = 6'&emsp;<button id="start">Start</button>
+'Number of iterations -'n = 6
 
 #val
-'<style>polygon{display:none; stroke:#08a; stroke-width:0.1}</style>
+'<style>#kochAnim polygon{display:none; stroke:#08a; stroke-width:0.1}</style>
 #hide
 w = 300', 'h = 1.2*w', 'k = 100
 #show
-'<center><svg viewbox="0 10 'k' 'k'" style="width:'w'pt; height:'h'pt;">
-'<defs><radialGradient id="sff" cx="50%" cy="50%"><stop offset="0%" stop-color="lightCyan"/><stop offset="70%" stop-color="lightBlue"/><stop offset="120%" stop-color="#8ac8df"/></defs>
+'<center><svg id="kochAnim" viewBox="0 10 'k' 'k'" style="width:'w'pt; height:'h'pt;">
+'<defs><radialGradient id="sff" cx="50%" cy="50%"><stop offset="0%" stop-color="lightSkyBlue"/><stop offset="70%" stop-color="steelBlue"/><stop offset="120%" stop-color="#2060a0"/></radialGradient></defs>
 #for i = 1 : n
 	#hide
 	n_p = len(x)
 	#show
-	'<polygon id="fr-'i'" points="
+	'<polygon id="kochAnim-fr-'i'" points="
 	#for j = 1 : n_p
 		x.j*k','(a$ - y.j)*k' '
 	#loop
@@ -42,4 +41,4 @@ w = 300', 'h = 1.2*w', 'k = 100
 	#show
 #loop
 '</svg></center>
-'<script>var i='1';var f=$("#fr-1");f.show();$("#start").click(function(){$("html, body").animate({scrollTop:$("#start").offset().top},800);$("#start").hide();setInterval(function(){if(++i>'n'){i=1;$("polygon:not(#fr-1)").hide();}f=$("#fr-"+i);f.show(600);},'1000');})</script>
+'<script>(function(){var i=1;var f=$("#kochAnim-fr-1");f.show();setInterval(function(){if(++i>'n'){i=1;$("#kochAnim polygon:not(#kochAnim-fr-1)").hide();}f=$("#kochAnim-fr-"+i);f.show(600);},500);})();</script>

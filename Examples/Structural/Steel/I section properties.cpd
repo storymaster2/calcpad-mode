@@ -324,3 +324,4 @@ e_z = t_f1/2 + h_2*I_z1/I_z
 '<tr><td>'I_z'mm<sup>4</sup></td><td>'r_z'mm</td><td>'W_el_z'mm<sup>3</sup></td><td>'W_pl_z'mm<sup>3</sup></td></tr>
 '<tr><td>'I_t'mm<sup>4</sup></td><td>'I_w'mm<sup>6</sup></td><td>'W_t'mm<sup>3</sup></td><td></td></tr>
 '</table>
+'</div>

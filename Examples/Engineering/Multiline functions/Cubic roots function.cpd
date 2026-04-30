@@ -1,5 +1,4 @@
 "Cubic Equation Roots Function
-'<hr/>
 'For solving equations of type:'f(x) = x^3 + a*x^2 + b*x + c'= 0
 
 #rad

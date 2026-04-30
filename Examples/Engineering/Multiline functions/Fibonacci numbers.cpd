@@ -1,5 +1,4 @@
 "Fibonacci numbers function
-'<hr/>
 'Function:
 fib(n) = if(n ≡ 1; 1;
   $block{

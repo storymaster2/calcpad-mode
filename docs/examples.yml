@@ -1,122 +1,98 @@
 Engineering Examples:
   Areas:
+    - Square
     - Circle
-    - Ellipse
-    - Equilateral Triangle
-    - Parabola
-    - Polygon
     - Rectangle
+    - Trapezoid
+    - Polygon
+    - Equilateral Triangle
     - Right Triangle
+    - Triangle
+    - Triangle (height)
+    - Parabola
+    - Ellipse
     - Sector (angle)
     - Sector (chord)
     - Segment (angle)
     - Segment (chord)
-    - Square
-    - Trapezoid
-    - Triangle
-    - Triangle (height)
   Volumes:
-    - Cone
     - Cube
-    - Cylinder
-    - Ellipsoid
-    - Rectangular Frustum
-    - Rectangular Prism
-    - Rectangular Pyramid
-    - Right Polygonal Prism
     - Sphere
+    - Cone
+    - Ellipsoid
     - Spherical Cap
     - Spherical Segment
-    - Tetrahedron
+    - Cylinder
+    - Rectangular Frustum
+    - Rectangular Pyramid
+    - Right Polygonal Prism
     - Triangular Frustum
     - Triangular Pyramid
     - Triangular prism
+    - Tetrahedron
+    - Rectangular Prism
   Geometrical:
+    - Solution of a triangle
+    - Tee Section
+    - Double Tee Section
+    - Polygon
     - Angle Section
+    - Zed Section
     - Channel Section
     - Circle
+    - Sector
     - Circlular Pipe
-    - Double Tee Section
     - Ellipse
     - Elliptical Pipe
     - Equilateral Triangle
     - Half Circle
     - Hexagon
-    - Polygon
     - Quarter Circle
     - Rectangle
     - Rectangular Tube
     - Rhombus
     - Rhombus (square)
     - Right Triangle
-    - Sector
     - Segment
-    - Solution of a triangle
     - Square
-    - Tee Section
     - Trapezoid
-    - Zed Section
-  3D, Plotting, Drawing:
-    - Bolt 3D Model
-    - Parametric 3D Drawing of RC Beam
-    - Plot with attributes
-    - Plotly
-    - Plotting Easter Egg in 2D and 3D
-    - TT Panel
   Fractals:
-    - Julia Set
+    - Mandelbrot Set
     - Koch Snowflake
     - Koch Snowflake Animation
     - Kochwave Animation
     - Kochwave Snowflake Animation
-    - Mandelbrot Set
+    # - Julia Set # Currently not possible, because CLI does not support enabling complex numbers
     - Sierpinski Christmas Tree
+  3D, Plotting, Drawing:
+    - Heart Function Animation
+    - Plot with Title, Legend and Labels
+    - Bolt 3D Model
+    - 3D Plot with Plotly
+    - Parametric 3D Drawing of RC Beam
+    - Plotting Easter Egg in 2D and 3D
+    - Parametric SVG Generation
   Interpolation:
-    - Double Interpolation
-    - Interpolation
     - Interpolation of Functions
+    - Interpolation
+    - Double Interpolation
   Numerical:
-    - Least Squares Fitting
     - Monte Carlo Pi
-    - Newton's method animated
+    - Newton's Method Animated
+    - Least Squares Fitting
     - Numerical Differentiation
     - Numerical Integration
     - Rayleigh Quotient Iteration
     - System of nonlinear equations
-  Vectors:
-    - Vector Initialization, indexing and operators
-    - Vector data functions
-    - Vector math functions
-    - Vector structural functions
-  Vectors - High Performance:
-    - Vector Initialization, indexing and operators
-    - Vector data functions
-    - Vector math functions
-    - Vector structural functions
-  Matrices:
-    - Matrix creational functions
-    - Matrix data functions
-    - Matrix initialization and indexing
-    - Matrix math functions
-    - Matrix operators
-    - Matrix structural functions
-  Matrices - High Performance:
-    - Least squares
-    - Matrix creational functions
-    - Matrix data functions
-    - Matrix initialization and indexing
-    - Matrix math functions
-    - Matrix operators
-    - Matrix structural functions
-    - Rayleigh quotient iteration
   Pendulums:
+    - Simple undamped
+    - Simple damped
+    - Elastic damped
+    - Double damped
     - Comparison of different methods for analysis of simple undamped pendulum
-    - Double damped pendulum simulation by RK4 method
-    - Double damped pendulum simulation by RK4 method ver 2
-    - Elastic damped pendulum simulation by RK4 method
-    - Simple damped pendulum simulation by RK4 method
-    - Simple undamped pendulum animatation by RK4 method
   Waves:
+    - Waves 2D on Water Interference Animated
+    - Waves 2D on Water Interference
     - Diffraction of Light on Single Slit - General View
     - Diffraction of Light on Single Slit - Screen View
     - Interference of Light - 2 Slits General View
@@ -125,8 +101,6 @@ Engineering Examples:
     - Interference of Light - 4 Slits Screen View
     - Interference of Light - 6 Slits General View
     - Interference of Light - 6 Slits Screen View
-    - Waves 2D on Water Interference
-    - Waves 2D on Water Interference Animated
   Parametric Curves:
     - Common Spirals
     - Cornu Spiral
@@ -148,6 +122,32 @@ Engineering Examples:
     - Fourier Series
     - Fourier Series + FFT
     - Strong Motion FFT
+  Special Math Functions:
+    - Special Math Functions
+  Vectors:
+    - Vector Initialization, indexing and operators
+    - Vector data functions
+    - Vector math functions
+    - Vector structural functions
+  Vectors - High Performance:
+    - Vector Initialization, indexing and operators
+    - Vector data functions
+    - Vector math functions
+    - Vector structural functions
+  Matrices:
+    - Matrix initialization and indexing
+    - Matrix creational functions
+    - Matrix data functions
+    - Matrix math functions
+    - Matrix structural functions
+    - Matrix operators
+  Matrices - High Performance:
+    - Matrix initialization and indexing
+    - Matrix creational functions
+    - Matrix data functions
+    - Matrix math functions
+    - Matrix structural functions
+    - Matrix operators
   Multiline functions:
     - Cubic roots function
     - Fibonacci numbers
@@ -157,24 +157,22 @@ Engineering Examples:
     - Currency units
     - Information units
   Formatting:
-    - Beam design with Markdown
-    - Css Classes
+    - CSS Classes
     - Design Check
-    - Markdown
     - Page header with logo
+    - Markdown
+    - Beam design with Markdown
     - Rounding and formatting
-    - toc
+#    - toc # Broken when rendered with CLI and displayed in MkDocs
   Others:
-    - Bitwise operations
-    - Collatz Check
-    - Combinatorics
-    - Cubic Equation
-    - Functions of Multiple Parameters
-    - Heart Function Animation
-    - Himmelblau function
     - Html UI
+    - Collatz Check
     - Quadratic Equation
-    - Special functions
+    - Cubic Equation
+    - Bitwise operations
+    - Combinatorics
+    - Functions of Multiple Parameters
+    - Himmelblau function
 
 Structural Engineering Examples:
   Cantilevers:
@@ -228,12 +226,11 @@ Structural Engineering Examples:
     - I section properties
     - I section properties Excel
     - I section properties and drawing
-    - svg_drawing
   Structural Dynamics:
     - Beam Impact Analysis Animated
-    - Free Vibrations of Steel Pole
     - Free Vibrations of Steel Pole Animation
     - Free Vibrations of Steel Pole Animation Plotly
+    - Free Vibrations of Steel Pole
   Reinforced Concrete:
     - Areas of Reinforcement Bars
     - Bending Capacity of Tee Section

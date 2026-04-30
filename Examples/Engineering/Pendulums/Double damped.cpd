@@ -1,6 +1,6 @@
 #rad
 "Simulation of damped double pendulum by Runge-Kutta 4 method
-'<hr/><table width="120%"><tr><td>
+'<table width="120%"><tr><td>
 '<h4>Input parameters</h4>
 'Gravitational acceleration -'g = 9.80665m/s^2
 'Pendulum lengths -'l_1 = 1.5m', 'l_2 = 1m
@@ -74,21 +74,21 @@ b_cr,1 = 2*m_1*sqrt(g*l_1)','b_cr,2 = 2*m_2*sqrt(g*l_2)
 b_1 = β*b_cr,1','b_2 = β*b_cr,2
 'Maximum simulation time -'t_max = 20s
 '<h4>Solution by Runge-Kutta RK4 method (explicit)</h4>
-'Differential equations (<a href="https://www.myphysicslab.com/pendulum/double-pendulum-en.html">www.myphysicslab.com</a>)
+'Differential equations (<a href="https://seamplex.com/feenox/examples/daes.html#the-double-pendulum">https://seamplex.com</a>)
 #noc
-l_1*D*θ″_1 + g*((2*m_1 + m_2)*sin(θ_1) + m_2*sin(θ_1 - 2*θ_2)) + 2*m_2*sin(Δ_θ)*(l_2*θ′_2^2 + l_1*cos(Δ_θ)*θ′_1^2) + b_1*θ′ = 0
-l_2*D*θ″_2 - 2*sin(Δ_θ)*(m*(l_1*θ′_1^2 + g*cos(θ_1)) + l_2*m_2*cos(Δ_θ)*θ′_2^2) + b_2*θ′ = 0
-'where'Δ_θ = θ_1 - θ_2'and'D = 2*(m_1 + m_2*sin(Δ_θ)^2)
+m*l_1^2*θ″_1 + m_2*l_1*l_2*θ″_2*cos(Δ_θ) + m_2*l_1*l_2*θ′_2^2*sin(Δ_θ) + l_1*m*g*sin(θ_1) + b_1*θ′_1 = 0
+m_2*l_2^2*θ″_2 + m_2*l_1*l_2*θ″_1*cos(Δ_θ) - m_2*l_1*l_2*θ′_1^2*sin(Δ_θ) + l_2*m_2*g*sin(θ_2) + b_2*θ′_2 = 0
 #equ
 'The II order system of 2 equations is first reduced to the following I order system of 4 equations
 #noc
 θ′_1 = ω_1
-ω′_1 = -(g*(2*m_1 + m_2)*sin(θ_1) + m_2*g*sin(θ_1 - 2*θ_2) + 2*m_2*sin(Δ_θ)*(l_2*ω_2^2 + l_1*cos(Δ_θ)*ω_1^2) + b_1*ω_1)*(1/(l_1*D))
+ω_1′ = -(m_2*l_1*ω_1^2*sin(2*Δ(θ_1; θ_2)) + 2*m_2*sin(Δ(θ_1; θ_2))*(l_2*ω_2^2 + g*cos(θ_2)) + 2*g*m_1*sin(θ_1) + b_1*ω_1)*(1/(l_1*D(θ_1; θ_2)))
 θ′_2 = ω_2
-ω′_2 = (2*sin(Δ_θ)*(m*(l_1*ω_1^2 + g*cos(θ_1)) + l_2*m_2*cos(Δ_θ)*ω_2^2) - b_2*ω_2)*(1/(l_2*D))
+ω_2′ = (m_2*l_2*ω_2^2*sin(2*Δ(θ_1; θ_2)) + 2*m*sin(Δ(θ_1; θ_2))*(l_1*ω_1^2 + g*cos(θ_1)) - b_2*ω_2)*(W1/(l_2*D(θ_1; θ_2)))
+'where'D = 2*(m_1 + m_2*sin(Δ_θ)^2)
 #equ
 'The solution is performed iteratively
-'Step size -'h = 0.01s
+'Step size -'h = 0.001s
 'Number of steps -'n = t_max/h
 #hide
 N = min(n; 250)
@@ -102,11 +102,13 @@ N = n\k_N
 θ_1.1 = θ_01/1rad','ω_1.1 = ω_01/1rad
 θ_2.1 = θ_02/1rad','ω_2.1 = ω_02/1rad
 'Define the system of ODEs
-D(Δ_θ) = 2*(m_1 + m_2*sin(Δ_θ)^2)
+Δ(θ_1; θ_2) = θ_1 - θ_2
+D(θ_1; θ_2) = 2*(m_1 + m_2*sin(Δ(θ_1; θ_2))^2)
 f_θ1(θ_1; ω_1; θ_2; ω_2) = ω_1
-f_ω1(θ_1; ω_1; θ_2; ω_2) = -(g*(2*m_1 + m_2)*sin(θ_1) + m_2*g*sin(θ_1 - 2*θ_2) + 2*m_2*sin(θ_1 - θ_2)*(l_2*ω_2^2 + l_1*cos(θ_1 - θ_2)*ω_1^2) + b_1*ω_1)*(1/(l_1*D(θ_1 - θ_2)))
+f_ω1(θ_1; ω_1; θ_2; ω_2) = -(m_2*l_1*ω_1^2*sin(2*Δ(θ_1; θ_2)) + 2*m_2*sin(Δ(θ_1; θ_2))*(l_2*ω_2^2 + g*cos(θ_2)) + 2*g*m_1*sin(θ_1) + b_1*ω_1)*(1/(l_1*D(θ_1; θ_2)))
 f_θ2(θ_1; ω_1; θ_2; ω_2) = ω_2
-f_ω2(θ_1; ω_1; θ_2; ω_2) = (2*sin(θ_1 - θ_2)*(m*(l_1*ω_1^2 + g*cos(θ_1)) + l_2*m_2*cos(θ_1 - θ_2)*ω_2^2) - b_2*ω_2)*(1/(l_2*D(θ_1 - θ_2)))
+f_ω2(θ_1; ω_1; θ_2; ω_2) = (m_2*l_2*ω_2^2*sin(2*Δ(θ_1; θ_2)) + 2*m*sin(Δ(θ_1; θ_2))*(l_1*ω_1^2 + g*cos(θ_1)) - b_2*ω_2)*(1/(l_2*D(θ_1; θ_2)))
+#equ
 'Perform Runge-Kutta 4 steps
 #for i = 1 : n - 1
 	θ_1i = θ_1.i', 'ω_1i = ω_1.i
@@ -120,16 +122,16 @@ f_ω2(θ_1; ω_1; θ_2; ω_2) = (2*sin(θ_1 - θ_2)*(m*(l_1*ω_1^2 + g*cos(θ_1)
 	θ_1i = θ_1.i + k_2θ1/2', 'ω_1i = ω_1.i + k_2ω1/2
 	θ_2i = θ_2.i + k_2θ2/2', 'ω_2i = ω_2.i + k_2ω2/2
 	k_3θ1 = h*ω_1i', 'k_3ω1 = h*f_ω1(θ_1i; ω_1i; θ_2i; ω_2i)
-	k_3θ2 = h*ω_2i', 'k_3ω = h*f_ω2(θ_1i; ω_1i; θ_2i; ω_2i)
+	k_3θ2 = h*ω_2i', 'k_3ω2 = h*f_ω2(θ_1i; ω_1i; θ_2i; ω_2i)
 	θ_1i = θ_1.i + k_3θ1', 'ω_1i = ω_1.i + k_3ω1
-	θ_2i = θ_2.i + k_3θ2', 'ω_2i = ω_2.i + k_3ω
+	θ_2i = θ_2.i + k_3θ2', 'ω_2i = ω_2.i + k_3ω2
 	k_4θ1 = h*ω_1i', 'k_4ω1 = h*f_ω1(θ_1i; ω_1i; θ_2i; ω_2i)
 	k_4θ2 = h*ω_2i', 'k_4ω2 = h*f_ω2(θ_1i; ω_1i; θ_2i; ω_2i)
 	'Update values for the next step
 	θ_1.(i + 1) = θ_1.i + (k_1θ1 + 2*k_2θ1 + 2*k_3θ1 + k_4θ1)/6
 	ω_1.(i + 1) = ω_1.i + (k_1ω1 + 2*k_2ω1 + 2*k_3ω1 + k_4ω1)/6
 	θ_2.(i + 1) = θ_2.i + (k_1θ2 + 2*k_2θ2 + 2*k_3θ2 + k_4θ2)/6
-	ω_2.(i + 1) = ω_2.i + (k_1ω2 + 2*k_2ω2 + 2*k_3ω + k_4ω2)/6
+	ω_2.(i + 1) = ω_2.i + (k_1ω2 + 2*k_2ω2 + 2*k_3ω2 + k_4ω2)/6
 	#hide
 #loop
 t(i) = i*h - h
@@ -157,49 +159,42 @@ $Plot{x_1.i|-y_1.i & 0m|0m & 0m|0m & 0m|0m & 0m|0m & x_2.i|-y_2.i @ i = 1 : n}
 '</td><td>Еnergy - <var>E</var>(<var>t</var>), [J]
 $Plot{t(i)|E_p(i) + E_k(i) & 0s|0J & 0s|0J & 0s|0J & t(i)|E_p(i) & t(i)|E_k(i) @ i = 1 : n}
 '<br/><b style="color:MediumVioletRed">━━</b> Potential - <var>E</var><sub>p</sub>,
-'<b style="color:MediumSpringGreen">━━</b> Kinetic - <var>E</var><sub>k</sub>,
+'<b style="color:DarkCyan">━━</b> Kinetic - <var>E</var><sub>k</sub>,
 '<b style="color:Tomato">━━</b> Total - <var>E</var><sub>tot</sub>
 '</td></tr></table>
-'<style>.Series3, .Series4{stroke:none!Important; fill:none!Important;} #start{height:1.8em; padding-top:0;} .fr{display:none;} .fr svg{margin-right:50pt; align:center;} .trace{stroke:red; stroke-width:1; fill:none;}</style>
-'<h4>Animate results &emsp;<button id="start">Start</button></h4>
+'<style>.Series3, .Series4{stroke:none!Important; fill:none!Important;} .fr{display:none;} .fr svg{margin-right:64pt; align:center;} .trace{stroke:red; stroke-width:1; fill:none; opacity:0.5;}</style>
+'<h4>Animate results</h4>
 #format 0.00
 #hide
 k = W/w
-x1 = round(x_1*k*100)/100','y1 = round(y_1*k*100)/100
-x2 = round(x_2*k*100)/100','y2 = round(y_2*k*100)/100
+x1 = round(x_1*k*10)/10','y1 = round(y_1*k*10)/10
+x2 = round(x_2*k*10)/10','y2 = round(y_2*k*10)/10
+p = join_cols(x2; y2)
+n_tr = 40
 #val
+#show
+'<script>var p ='p'</script>
 #for i_N = 1 : N
 	#hide
 	i = i_N*k_N
 	x_1i = x1.i','y_1i = y1.i
 	x_2i = x2.i','y_2i = y2.i
 	t = t(i)
-	n_tr = 40
 	i_0 = max((i_N - n_tr)*k_N; 2)
-	j2 = 1
 	#show
 	#val
-	'<div class="fr" id="fr-'i_N'">
+	'<div class="fr" id="p3v2-fr-'i_N'">
 	#equ
 	#nosub
 	'Simulation time -'t'<br/>
-	'<table width="120%"><tr><td>Top angle - <var>θ</var><sub>1</sub>(<var>t</var>), [°]<br>
+	'<table width="120%"><tr><td>Top angle - <var>θ</var><sub>1</sub>(<var>t</var>), [°]<br/>
 	$Plot{t(i)|θ_1.i*r2d & t(j)|θ_1.j*r2d & t_max|θ_01/1rad*r2d & t_max|-θ_01/1rad*r2d @ j = 1 : i}
-	'Bottom angle - <var>θ</var><sub>2</sub>(<var>t</var>), [°]<br>
+	'Bottom angle - <var>θ</var><sub>2</sub>(<var>t</var>), [°]<br/>
 	$Plot{t(i)|θ_2.i*r2d & t(j)|θ_2.j*r2d & t_max|θ_02/1rad*r2d & t_max|-θ_02/1rad*r2d @ j = 1 : i}
 	'</td><td>
 	#val
 	svg$
-	#for j = i_0 : i
-		#if j⦼2 ≡ 0
-			#hide
-			j1 = j2
-			j2 = j
-			o = round((j - i_0)/(i - i_0)*100)/100
-			#show
-			'<line x1="'x2.j1'" y1="'y2.j1'" x2="'x2.j2'" y2="'y2.j2'" class="trace" opacity="'o'"/>
-		#end if
-	#loop
+	'<polyline points="" class="trace" id="trace-'i_N'"/>' _
 	'<polygon points="0,0 '-δ','-δ' 'δ','-δ'" solid_style$/>' _
 	line$(0; 0; x_1i; y_1i; thick_style$)' _
 	line$(x_1i; y_1i; x_2i; y_2i; thick_style$)' _
@@ -208,6 +203,7 @@ x2 = round(x_2*k*100)/100','y2 = round(y_2*k*100)/100
 	circle$(x_1i; y_1i; R_1; ball_style$)' _
 	circle$(x_2i; y_2i; R_2; ball_style$)
 	'</svg></td></tr></table></div>
+	'<script>$("#trace-'i_N'").attr("points", p.slice('i_0','i + 1').map(function(e){return e[0]+","+e[1];}).join(" "));</script>
 #loop
-'<script>$("#fr-1").show();$("#start").click(function(){$(this).hide(); var i='N';var fr=$("#fr-"+i);setInterval(function(){fr.hide();if(++i>'N')i=1;fr=$("#fr-"+i);fr.show();}, '900*h*k_N');});</script>
+'<script>(function(){$("#p3v2-fr-1").show();var i=1;var fr=$("#p3v2-fr-1");setInterval(function(){fr.hide();if(++i>'N')i=1;fr=$("#p3v2-fr-"+i);fr.show();},'900*h*k_N');})();</script>
 #equ

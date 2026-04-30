@@ -1,5 +1,4 @@
 "Vector initialization
-'<hr/>
 'Direct:
 a = hp([cos(0); 2; 3; 2*2; 6 - 1])
 'Direct with another vector:

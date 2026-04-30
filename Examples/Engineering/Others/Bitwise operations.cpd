@@ -1,5 +1,4 @@
-"Bitwize functions
-'<hr/>
+"Bitwise Functions
 '<h5>Decimal to binary:</h5>
 dec2bin(x; n) = $sum{mod(floor(x/2^k); 2)*10^k @ k = 0 : n - 1}
 #def dec2bin$(x; n$) = dec2bin(x; n$):Dn$'₂

@@ -160,10 +160,10 @@ T_1 = 1/n_1
 'Animation for mode'i = 2
 #val
 #rad
-'<style>[id^="fr-"]{display:none;}</style>
+'<style>[id^="steelpole-fr-"]{display:none;}</style>
 #for k = 0 : n_T.i
-	'<div id="fr-'k'">
+	'<div id="steelpole-fr-'k'">
 	$Plot{spline(j + 1; i; X)*cos((k/n_T.i*2*π))|j*Δx & -0.6|0m & 0.6|0m @ j = 0 : n_J}
 	'</div>
 #loop
-'<script>var i='n_T.i';f=$("#fr-0");setInterval(function(){f.hide();if(++i>'n_T.i')i=1;f=$("#fr-"+i);f.show();},'1000/n_T.i*T.i');</script>
+'<script>var i='n_T.i';f=$("#steelpole-fr-0");setInterval(function(){f.hide();if(++i>'n_T.i')i=1;f=$("#steelpole-fr-"+i);f.show();},'1000/n_T.i*T.i');</script>

@@ -3,6 +3,7 @@ use_directory_urls: false
 
 theme:
   name: material
+  custom_dir: docs/overrides
   palette:
     - scheme: default
       primary: indigo
@@ -79,6 +80,7 @@ markdown_extensions:
 extra_javascript:
   - javascripts/mathjax.js
   - javascripts/mathjax/tex-mml-chtml.js
+  - javascripts/example-layout.js
 
 extra_css:
   - stylesheets/extra.css

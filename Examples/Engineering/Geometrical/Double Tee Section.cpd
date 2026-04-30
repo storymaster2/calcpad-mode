@@ -1,5 +1,5 @@
 "Geometrical Properties of Double Tee Section
-'<hr /><div style="max-width:150mm"><img style="height:165pt;" alt="double-tee.png" class="side" src="../../Images/mechanics/sections/double-tee.png"></div>
+'<div style="max-width:150mm"><img style="height:165pt;" alt="double-tee.png" class="side" src="../../Images/mechanics/sections/double-tee.png"></div>
 'Dimensions
 h = ?'%u,'t_w = ?'%u
 b_f1 = ?'%u,'t_f1 = ?'%u

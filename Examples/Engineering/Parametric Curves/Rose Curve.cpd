@@ -1,5 +1,4 @@
 "Rose Curve
-'<hr />
 'General equation:
 r(θ) = cos(a/b*θ)
 x(θ) = r(θ)*cos(θ)

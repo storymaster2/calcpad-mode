@@ -1,5 +1,5 @@
 "Geometrical Properties of Elliptical Pipe
-'<hr /><div style="max-width:120mm"><img style="height:112pt;" alt="elliptical-pipe.png" class="side" src="../../Images/mechanics/sections/elliptical-pipe.png"></div>
+'<div style="max-width:120mm"><img style="height:112pt;" alt="elliptical-pipe.png" class="side" src="../../Images/mechanics/sections/elliptical-pipe.png"></div>
 '(ellipse with elliptical hole)
 'Dimensions
 a = ?'%u,'b = ?'%u

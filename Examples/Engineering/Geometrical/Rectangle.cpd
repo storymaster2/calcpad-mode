@@ -1,5 +1,5 @@
 "Geometrical Properties of Rectangle
-'<hr /><div style = "max-width:120mm"><img style="height:150pt;" alt="rectangle.png" class="side" src="../../Images/mechanics/sections/rectangle.png"></div>
+'<div style = "max-width:120mm"><img style="height:150pt;" alt="rectangle.png" class="side" src="../../Images/mechanics/sections/rectangle.png"></div>
 'Dimensions
 h = ?'%u,'b = ?'%u
 'Area

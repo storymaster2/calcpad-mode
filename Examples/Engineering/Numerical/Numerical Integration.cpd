@@ -1,5 +1,4 @@
 "Comparision of three quadrature formulas
-'<hr/>
 'Function -'f(x) = sqrt(1 - x^2)
 'Theoretical value of the integral - 'I = π/2
 'Number of nodes -'n = 5

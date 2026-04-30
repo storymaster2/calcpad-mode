@@ -208,8 +208,7 @@ results$
 #hide
 n = 51
 #show
-'Animation&emsp;<button id="start">Start</button>
-'<style>#start{height:1.8em; padding-top:0;} .fr{display:none;}</style>
+'<style>.fr{display:none;}</style>
 #for j = 1 : n
 	#hide
 	F_y = F_y,max*(j - 1)/(n - 1)
@@ -220,5 +219,5 @@ n = 51
 	results$
 	'</div>
 #loop
-'<script>$("#fr-1").show();$("#start").click(function(){$(this).hide();var i='n';var fr=$("#fr-"+i);setInterval(function(){fr.hide();if(++i>'n')i=1;fr=$("#fr-"+i);fr.show();}, 100);});</script>
+'<script>(function(){$("#fr-1").show();var i=1;var fr=$("#fr-1");setInterval(function(){fr.hide();if(++i>'n')i=1;fr=$("#fr-"+i);fr.show();}, 100);})();</script>
 #equ

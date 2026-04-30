@@ -1,5 +1,3 @@
-"Mandelbrot set (undocumented function)
-'<hr/>
 #hide
 PlotStep = 1','PlotWidth = 1200','PlotHeight = PlotWidth
 PlotShadows = 0','PlotSmooth = 1','PlotPalette = 4

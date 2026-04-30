@@ -1,5 +1,4 @@
 "Greatest common divisor by Euclid algorithm
-'<hr/>
 'Custom function:
 mygcd(a; b) = $while{
   b > 0;

@@ -6,8 +6,9 @@
 #val
 '<script src="https://cdn.jsdelivr.net/npm/three@0.145/build/three.min.js"></script>
 '<script src="https://cdn.jsdelivr.net/npm/three@0.145/examples/js/controls/OrbitControls.js"></script>
+'<div id="beam-3d-canvas"></div>
 '<script>
-'window.addEventListener("DOMContentLoaded", () => {
+'(function() {
 'if (typeof THREE === "undefined"|| typeof THREE.OrbitControls === "undefined") {
 'alert("Failed to load Three.js or OrbitControls.");
 'return;
@@ -21,8 +22,8 @@
 'camera.position.set(1.2*bf, 1.3*h, 0.7*l);
 'camera.lookAt(0, 0, 0);
 'const renderer = new THREE.WebGLRenderer({antialias: true});
-'renderer.setSize(700, 350);
-'document.body.appendChild(renderer.domElement);
+'renderer.setSize(600, 350);
+'document.getElementById("beam-3d-canvas").appendChild(renderer.domElement);
 'const controls = new THREE.OrbitControls(camera, renderer.domElement);
 'controls.target.set(0, 0, 0);
 'controls.update();
@@ -75,5 +76,5 @@
 'renderer.render(scene, camera);
 '}
 'animate();
-'});
+'})();
 '</script>
