@@ -1479,3 +1479,125 @@ script$
 ```
 
 This renders as `<script>var hi = 123; console.log(hi);</script>` in the output document, executable by the browser.
+
+---
+
+## 18. `#write`/`#append` in a Server Context (Export Cache)
+
+`#write` and `#append` historically wrote CSV, XLSX, and text outputs straight to the local filesystem — fine for the WPF desktop and CLI, meaningless on a shared web server. This release adds an in-memory capture path that mirrors how `#read` was adapted in section 5: the server stashes write outputs in a per-source cache, and the frontend pulls them back via download endpoints.
+
+### 18.1 `WriteCache` Primitive in Calcpad.Core
+
+A new `WriteCache` class lives next to `ClientFileCache` in [Calcpad.Core/Settings.cs](../Calcpad.Core/Settings.cs). It is a mutable parallel-list store keyed by filename with the same disk-offload semantics as `ClientFileCache` (entries above 50 KB are written to `DiskCacheFolder` as `*.wcache` files).
+
+`Settings` exposes a new `WriteCache` property. **Null is the default** — meaning the existing disk-write path is unchanged for WPF and CLI. Setting `Settings.WriteCache` to a non-null instance switches `DataExchange.WriteString`, `DataExchange.WriteCSV`, and `DataExchange.WriteExcel` ([Calcpad.Core/Parsers/ExpressionParser/ExpressionParser.DataExchange.cs](../Calcpad.Core/Parsers/ExpressionParser/ExpressionParser.DataExchange.cs)) into in-memory mode:
+
+- CSV writes go to a `MemoryStream`-backed `StreamWriter`, then `PutBytes`/`AppendBytes` into the cache with `text/csv`.
+- Text writes (`type=X`) UTF-8-encode the content, then `PutBytes`/`AppendBytes` with a content type guessed from the extension (`text/plain`, `application/json`, `application/xml`, `text/html`).
+- XLSX writes call a new in-memory overload `ExcelData.Write(byte[] existingBytes, …)` ([Calcpad.OpenXml/ExcelData.cs](../Calcpad.OpenXml/ExcelData.cs)) that round-trips a `MemoryStream` through `SpreadsheetDocument.Open`/`Create`. Append re-opens the cached bytes and mutates the workbook in place.
+
+`#append` semantics are honored in cache mode: subsequent appends to the same filename concatenate raw bytes (CSV/text) or re-open the workbook (XLSX). `#write` to an existing filename overwrites.
+
+### 18.2 Server-Side Export Sessions
+
+[Calcpad.Web/backend/Services/CalcpadService.cs](backend/Services/CalcpadService.cs) gained a static `ConcurrentDictionary<string, ExportSession>` keyed by the client's `SourceFilePath`. After each `convert` run, if any `#write`/`#append` produced output, the populated `WriteCache` is stashed under that key with a 1-hour TTL. Re-running a convert against the same source file replaces the prior entry — within-single-run semantics, no cross-run accumulation.
+
+When `SourceFilePath` is empty (e.g. the web editor with no file open), the cache falls under an `__anonymous__` bucket. A `// TODO: scope by user when CalcpadAuth lands` comment marks the spot where multi-user scoping will plug in.
+
+`DiskCacheCleanupService` was extended to clean both `*.cache` and `*.wcache` files, and to call `CalcpadService.CleanupExpiredExportSessions()` on its hourly sweep.
+
+### 18.3 New REST Endpoints
+
+Three GET endpoints on [CalcpadController.cs](backend/Controllers/CalcpadController.cs):
+
+```
+GET /api/calcpad/exports?sourceFilePath=...
+GET /api/calcpad/export?sourceFilePath=...&filename=...
+GET /api/calcpad/exports.zip?sourceFilePath=...
+```
+
+- `exports` returns a JSON array `[{filename, contentType, size}, ...]` — the listing the Vue Export tab uses to populate itself.
+- `export` returns the raw bytes for one cached file with a `Content-Disposition: attachment` header. Filenames containing `..`, `/`, or `\` are rejected.
+- `exports.zip` builds a `ZipArchive` over the cache and returns it as `application/zip`.
+
+The `convert` endpoint and its siblings (`convert-unwrapped`, `convert-ui`) are **unchanged** — no new headers, no envelope. Frontends poll `exports` after each successful convert.
+
+### 18.4 New Vue Export Tab
+
+A new tab labeled **Export** appears in the Vue side panel ([CalcpadApp.vue](frontend/calcpad-frontend/src/vue/components/CalcpadApp.vue)). It is always visible, with an empty-state message when no exports exist. The component itself is [CalcpadExportTab.vue](frontend/calcpad-frontend/src/vue/components/CalcpadExportTab.vue) — it lists each captured file with a type icon, content-type label, human-readable size, and a per-row Download button. A footer "Download all (.zip)" button appears when more than one file is present, and a Refresh button re-polls the listing endpoint.
+
+To make room for the new tab without horizontal scrolling, `.tab-container` in CalcpadApp.vue now uses `flex-wrap: wrap` so headers wrap to a second row at narrow widths.
+
+The frontend wiring lives in three places:
+
+- [api/client.ts](frontend/calcpad-frontend/src/api/client.ts) gained `listExports`, `downloadExport`, and `downloadExportZip` helpers, plus an `ExportMeta` type in [types/api.ts](frontend/calcpad-frontend/src/types/api.ts).
+- [services/message-bridge.ts](frontend/calcpad-web/src/services/message-bridge.ts) (web) and [calcpadVueUIProvider.ts](frontend/vscode-calcpad/src/calcpadVueUIProvider.ts) (VS Code) both handle `getExports` / `downloadExport` / `downloadExportZip` messages from the Vue panel.
+- After every preview convert, the host triggers a `refreshExports()` so the Export tab updates without manual intervention.
+
+### 18.5 VS Code `calcpad.write.mode` Setting
+
+VS Code has filesystem access, so it offers a choice via a new setting in [package.json](frontend/vscode-calcpad/package.json):
+
+```json
+"calcpad.write.mode": "localFile"   // (default)
+"calcpad.write.mode": "cacheDownload"
+```
+
+- `localFile` — after each convert, the extension fetches every cached export and writes it to disk. Path resolution mirrors `#read`: absolute paths are honored as-is, relative paths resolve against the source `.cpd` directory (using `path.resolve(sourceDir, filename)`, the same shape as `ReadWriteOptions.FullPath`). This restores the historical "writes go to the file system" behavior on a non-shared dev machine.
+- `cacheDownload` — same UX as the web frontend: nothing is auto-written, the user downloads from the Export tab.
+
+The auto-materialize step lives in `processWriteOutputs()` in [extension.ts](frontend/vscode-calcpad/src/extension.ts) and runs at the end of both `updatePreviewContent` and `updateUiPreviewContent` (skipped for the unwrapped variant, which doesn't run calculations).
+
+---
+
+## 19. Desktop App Feature Parity with VS Code Extension
+
+The Neutralino desktop app ([calcpad-desktop](frontend/calcpad-desktop/)) wraps the Monaco-based [calcpad-web](frontend/calcpad-web/) editor in a native window. Until this release the desktop shell shipped only the basics — Monaco with semantic tokens / completions / diagnostics, a sidebar, live HTML preview, and File/View menus with New/Open/Save/Save As/Export PDF. Productivity features that the VS Code extension has had for some time were missing. This release closes that gap by wiring the missing editor providers and bridge handlers — and, because the work lives in `calcpad-web`, the pure-web build inherits everything except the few Neutralino-only touches.
+
+### 19.1 Monaco Editor Power Features
+
+Nine new files in [calcpad-web/src/editor/](frontend/calcpad-web/src/editor/) port behavior that previously only existed in the VS Code extension. Each feature reuses the platform-agnostic logic already exposed by [calcpad-frontend](frontend/calcpad-frontend/) rather than duplicating it.
+
+- **Hover tooltips** ([hover.ts](frontend/calcpad-web/src/editor/hover.ts)) — built on top of the existing `CalcpadDefinitionsService` cache (no extra round-trip on hover) plus a Monaco-friendly version of the built-in function docs in [builtin-docs.ts](frontend/calcpad-web/src/editor/builtin-docs.ts). Shows a markdown-formatted signature, parameter list, defaults, and return type for user-defined macros, functions, variables, custom units, and built-in functions.
+- **Go to Definition / Find References / Rename** ([references.ts](frontend/calcpad-web/src/editor/references.ts)) — three Monaco providers backed by `CalcpadApiClient.findReferences`. F12 jumps to the first assignment of the symbol under the cursor, Shift+F12 lists every local occurrence, F2 renames all local occurrences atomically. Cross-file rename is currently scoped to the active document (include-file rename rejects with a reason).
+- **Format Document (`Shift+Alt+F`)** ([format-document.ts](frontend/calcpad-web/src/editor/format-document.ts)) — registers a `DocumentFormattingEditProvider` that calls `apiClient.prettify` and replaces the full model with the server's reformatted output. Right-click → Format Document also works.
+- **Quick-type shortcuts** ([quick-type.ts](frontend/calcpad-web/src/editor/quick-type.ts)) — typing `~a ` rewrites to `α`, etc. The shortcut map is rebuilt when snippets reload from `/api/calcpad/snippets`. Gated on `extraSettings.quickTyping`.
+- **Operator replacer** ([operator-replacer.ts](frontend/calcpad-web/src/editor/operator-replacer.ts)) — `==` → `≡`, `!=` → `≠`, `>=` → `≥`, `<=` → `≤`, `&&` → `∧`, `||` → `∨`, `<*` → `←`, etc. Skips inside strings and comments via the shared `isInsideStringOrComment` helper.
+- **Auto-indenter** ([auto-indent.ts](frontend/calcpad-web/src/editor/auto-indent.ts)) — Enter after `#if` / `#for` / `#repeat` / `#def` opens a block at the next indent level; typing block-closing keywords (`#end if`, `#else`, `#loop`, `#end def`) snaps back to the matching opener's indent. Reuses `INDENT_INCREASE_PATTERNS` / `calculateExpectedIndent` from `calcpad-frontend/text/auto-indent`.
+- **Comment-formatting hotkeys** ([formatting-commands.ts](frontend/calcpad-web/src/editor/formatting-commands.ts)) — 18 commands wired via `editor.addAction` with platform-aware Cmd/Ctrl bindings, all gated on `extraSettings.formattingHotkeys`. The full set: Bold (`B`), Italic (`I`), Underline (`U`), Subscript (`=`), Superscript (`Shift+=`), Headings 1–6 (`1`–`6`), Paragraph (`L`), Line Break (`R`), Bulleted List (`Shift+L`), Numbered List (`Shift+N`), Toggle Comment (`Q`), Uncomment (`Shift+Q`), Paste-as-Comment (`Shift+V`). HTML vs Markdown output is decided per-cursor: `markdown` and `html` settings are honored verbatim, `auto` walks back from the cursor looking for the most recent `#md on` / `#md off` directive.
+
+A shared [bridge.ts](frontend/calcpad-web/src/editor/bridge.ts) defines an `EditorBridge` interface — `api`, `snippets`, `definitions`, `getSettings`, `getExtraSetting`, `setExtraSetting` — that both the in-process [`MessageBridge`](frontend/calcpad-web/src/services/message-bridge.ts) (web) and [`NeutralinoMessageBridge`](frontend/calcpad-web/src/services/neutralino-bridge.ts) (desktop) implement, so providers don't depend on platform specifics. To keep hover responsive, [main.ts](frontend/calcpad-web/src/main.ts) runs an 800ms-debounced `definitionsService.refreshDefinitions` whenever the model changes, populating the cache hover reads from.
+
+### 19.2 Image Insertion (Clipboard + File Picker)
+
+The Vue Insert tab's Image button has always emitted `{ type: 'insertImage' }`, but both bridges had stub handlers. They are now live, sharing the helper module [services/image-insert.ts](frontend/calcpad-web/src/services/image-insert.ts):
+
+- `readImageFromClipboard()` uses the standard `navigator.clipboard.read()` API and walks the items for `image/*` types, returning a `data:` URI when found.
+- `bytesToBase64`, `mimeFromExtension`, and `buildImageCommentLine` build the `'<img src="data:…">` calcpad comment-line.
+
+The Neutralino bridge tries the clipboard first; on miss, it shows a native file dialog (`os.showOpenDialog`) filtered to image extensions, reads the file via `filesystem.readBinaryFile`, and base64-encodes the bytes. The web bridge tries the clipboard first too, then falls back to a hidden `<input type="file">` element. Both paths post the resulting comment-line through `_onInsertText`, which lands at the editor cursor.
+
+### 19.3 Recent Files & File-UX Polish
+
+The Neutralino bridge gained a `Neutralino.storage`-backed recent-files list (max 10, key `calcpad-recent-files`) with `addRecentFile`, `getRecentFiles`, and `clearRecentFiles` methods. [main.ts](frontend/calcpad-web/src/main.ts) calls `addRecentFile` after every successful Open, Save (when prompted to a new path), and Save As, then rebuilds the menu.
+
+`setupNeutralinoMenu` is now parameterized with `(recents, previewMode)` and rebuilt on demand:
+
+- `File → Open Recent →` populates with the current list (newest first), shortened paths, plus a separator and a "Clear Recently Opened" entry. An empty list shows a disabled "(no recent files)" placeholder.
+- `View → Toggle Preview` (`Ctrl+P`) and `View → Preview Mode →` were added to expose the new multi-mode preview (see 19.4).
+
+Three more UX improvements:
+
+- **Drag-drop file open** — listening for `dragover`/`drop` on `.editor-container`. When a `.cpd` is dropped, the OS path (Chromium's non-standard `File.path`) is read directly via `filesystem.readFile` and added to recents; if no path is exposed, the browser's `File.text()` content is loaded into a fresh untitled buffer.
+- **Close-with-unsaved guard** — [neutralino.config.json](frontend/calcpad-desktop/neutralino.config.json) now sets `"exitProcessOnClose": false`, and the renderer listens for `windowClose`. If the document is dirty, `os.showMessageBox(YES_NO_CANCEL)` prompts to Save / Discard / Cancel before calling `app.exit()`.
+- The latent bug where `main.ts` called `activeBridge.getSettings()` and `activeBridge.refreshHeadings()` (which the Neutralino bridge had never implemented) was fixed at the same time as adding `getSettings`, `getExtraSetting`/`setExtraSetting`, and `refreshHeadings` to satisfy the new shared interface.
+
+### 19.4 Multi-Mode Preview
+
+The HTML preview pane previously had a single mode (full wrapped document). It now matches the three modes the VS Code extension exposes:
+
+- **Wrapped** — `apiClient.convert(content, settings, 'html')` (existing behavior, unchanged).
+- **Unwrapped** — body markup only, via the new [`convertUnwrapped`](frontend/calcpad-frontend/src/api/client.ts) method that hits `/api/calcpad/convert-unwrapped`.
+- **Interactive** — UI-mode rendering via the new `convertUi` method (`/api/calcpad/convert-ui`). [main.ts](frontend/calcpad-web/src/main.ts) injects the datagrid CDN tags (`getDatagridCdnTags`) and the UI event script (`getUiEventScript`) into the iframe HTML, so entry inputs, dropdowns, radio groups, checkboxes, and jspreadsheet datagrids render and emit `uiValueChange` events. (Re-running convert with overrides is wired through the existing `CalcpadApiClient` plumbing; bi-directional source updates remain a follow-up.)
+
+A segmented control on the preview-pane toolbar lets the user pick a mode, with an `.active` style added in [styles/app.css](frontend/calcpad-web/src/styles/app.css). The selection persists via `setExtraSetting('previewMode', mode)` — `Neutralino.storage` on the desktop, `localStorage` on the web — and the desktop's `View → Preview Mode →` menu shows a checkmark next to the active item, rebuilt whenever the mode changes.
