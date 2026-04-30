@@ -279,6 +279,16 @@
         "icon": "$(file-pdf)"
       },
       {
+        "command": "vscode-calcpad.saveSourceHtml",
+        "title": "CalcPad: Save Source HTML…",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "vscode-calcpad.saveDocx",
+        "title": "CalcPad: Save as Word Document…",
+        "icon": "$(file)"
+      },
+      {
         "command": "vscode-calcpad.insertImage",
         "title": "Insert Image",
         "icon": "$(file-media)"
@@ -1014,9 +1024,12 @@
     "vscode:prepublish": "npm run package",
     "compile": "npm run build:vue && rollup -c",
     "watch": "concurrently \"npm run watch:vue\" \"rollup -c -w\"",
-    "package": "npm run build:vue && rollup -c --sourcemap",
-    "package:full": "npm run build:vue && rollup -c --sourcemap && node -e \"require('fs').mkdirSync('dist/bin',{recursive:true})\" && echo 'Place CalcpadServer.dll in dist/bin/ before packaging'",
-    "package:lite": "npm run build:vue && rollup -c --sourcemap",
+    "sync-server": "node scripts/sync-bundled-server.mjs",
+    "sync-server:slim": "node scripts/sync-bundled-server.mjs --framework-dependent",
+    "sync-server:debug": "node scripts/sync-bundled-server.mjs --configuration=Debug",
+    "package": "npm run sync-server && npm run build:vue && rollup -c --sourcemap",
+    "package:full": "npm run sync-server && npm run build:vue && rollup -c --sourcemap",
+    "package:lite": "npm run sync-server:slim && npm run build:vue && rollup -c --sourcemap",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "build:vue": "vite build",

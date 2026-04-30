@@ -9,6 +9,7 @@ import {
     blobToDataUri,
     buildImageCommentLine,
 } from './image-insert';
+import { getActiveEditorContent } from './active-editor';
 
 const SETTINGS_KEY = 'calcpad-settings';
 const PDF_SETTINGS_KEY = 'calcpad-pdf-settings';
@@ -149,6 +150,14 @@ export class MessageBridge {
                 this.handleGeneratePdf();
                 break;
 
+            case 'saveSourceHtml':
+                this.handleSaveSourceHtml();
+                break;
+
+            case 'saveDocx':
+                this.handleSaveDocx();
+                break;
+
             case 'getHeadings':
                 this.handleGetHeadings();
                 break;
@@ -249,8 +258,7 @@ export class MessageBridge {
 
     private async handleGetVariables(): Promise<void> {
         // Get content from the Monaco editor via the current model
-        const models = (window as any).monaco?.editor?.getModels?.();
-        const content = models?.[0]?.getValue() || '';
+        const content = getActiveEditorContent();
 
         const response = await this.definitionsService.refreshDefinitions(content, 'web-editor');
         if (response) {
@@ -297,8 +305,7 @@ export class MessageBridge {
     }
 
     private async handleGeneratePdf(): Promise<void> {
-        const models = (window as any).monaco?.editor?.getModels?.();
-        const content = models?.[0]?.getValue() || '';
+        const content = getActiveEditorContent();
         const apiSettings = buildApiSettings(this.settings);
 
         const result = await this.apiClient.convert(content, apiSettings, 'pdf', true);
@@ -312,6 +319,31 @@ export class MessageBridge {
             a.click();
             URL.revokeObjectURL(url);
         }
+    }
+
+    /**
+     * Save the rendered HTML for the active document. On the web platform
+     * we trigger a browser download; the user picks the path via the
+     * browser's standard save dialog.
+     */
+    private async handleSaveSourceHtml(): Promise<void> {
+        const content = getActiveEditorContent();
+        const apiSettings = buildApiSettings(this.settings);
+        const html = await this.apiClient.convert(content, apiSettings, 'html');
+        if (typeof html !== 'string') return;
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        triggerBlobDownload(blob, 'calcpad-output.html');
+    }
+
+    private async handleSaveDocx(): Promise<void> {
+        const content = getActiveEditorContent();
+        const apiSettings = buildApiSettings(this.settings);
+        const buf = await this.apiClient.convertDocx(content, apiSettings);
+        if (!buf) return;
+        const blob = new Blob([buf], {
+            type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        });
+        triggerBlobDownload(blob, 'calcpad-output.docx');
     }
 
     /**
@@ -332,8 +364,7 @@ export class MessageBridge {
 
     /** Send updated headings to the Vue sidebar. Called on-demand and on debounced content changes. */
     public refreshHeadings(): void {
-        const models = (window as any).monaco?.editor?.getModels?.();
-        const content = models?.[0]?.getValue() || '';
+        const content = getActiveEditorContent();
         const headings = parseHeadings(content);
         this.postToVue({ type: 'updateHeadings', headings });
     }

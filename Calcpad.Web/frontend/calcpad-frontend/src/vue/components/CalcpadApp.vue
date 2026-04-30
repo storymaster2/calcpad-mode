@@ -82,6 +82,8 @@
         @download="handleDownloadExport"
         @download-zip="handleDownloadExportZip"
         @refresh="requestExports"
+        @save-html="handleSaveSourceHtml"
+        @save-docx="handleSaveDocx"
       />
     </div>
   </div>
@@ -181,6 +183,14 @@ const handleDownloadExportZip = () => {
   postMessage({ type: 'downloadExportZip' })
 }
 
+const handleSaveSourceHtml = () => {
+  postMessage({ type: 'saveSourceHtml' })
+}
+
+const handleSaveDocx = () => {
+  postMessage({ type: 'saveDocx' })
+}
+
 const handleInsertText = (text: string) => {
   postMessage({
     type: 'insertText',
@@ -193,6 +203,7 @@ const handleInsertImage = () => {
 }
 
 const handleUpdateSettings = (newSettings: Settings) => {
+  settings.value = { ...newSettings }
   postMessage({
     type: 'updateSettings',
     settings: newSettings
@@ -200,59 +211,43 @@ const handleUpdateSettings = (newSettings: Settings) => {
 }
 
 const handleUpdatePreviewTheme = (theme: string) => {
-  postMessage({
-    type: 'updatePreviewTheme',
-    theme
-  })
+  previewTheme.value = theme
+  postMessage({ type: 'updatePreviewTheme', theme })
 }
 
 const handleUpdateColorTheme = (theme: string) => {
-  postMessage({
-    type: 'updateColorTheme',
-    theme
-  })
+  colorTheme.value = theme
+  postMessage({ type: 'updateColorTheme', theme })
 }
 
 const handleUpdateQuickTyping = (enabled: boolean) => {
-  postMessage({
-    type: 'updateQuickTyping',
-    enabled
-  })
+  enableQuickTyping.value = enabled
+  postMessage({ type: 'updateQuickTyping', enabled })
 }
 
 const handleUpdateCommentFormat = (format: string) => {
-  postMessage({
-    type: 'updateCommentFormat',
-    format
-  })
+  commentFormat.value = format
+  postMessage({ type: 'updateCommentFormat', format })
 }
 
 const handleUpdateFormattingHotkeys = (enabled: boolean) => {
-  postMessage({
-    type: 'updateFormattingHotkeys',
-    enabled
-  })
+  enableFormattingHotkeys.value = enabled
+  postMessage({ type: 'updateFormattingHotkeys', enabled })
 }
 
 const handleUpdateDarkBackground = (color: string) => {
-  postMessage({
-    type: 'updateDarkBackground',
-    color
-  })
+  darkBackground.value = color
+  postMessage({ type: 'updateDarkBackground', color })
 }
 
 const handleUpdateLinterMinSeverity = (severity: string) => {
-  postMessage({
-    type: 'updateLinterMinSeverity',
-    severity
-  })
+  linterMinSeverity.value = severity
+  postMessage({ type: 'updateLinterMinSeverity', severity })
 }
 
 const handleUpdateLibraryPath = (path: string) => {
-  postMessage({
-    type: 'updateLibraryPath',
-    path
-  })
+  libraryPath.value = path
+  postMessage({ type: 'updateLibraryPath', path })
 }
 
 const handleResetSettings = () => {
@@ -379,9 +374,12 @@ onMounted(() => {
 
 <style scoped>
 .calcpad-vue-ui {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+  /* Natural document flow inside the parent (#vue-sidebar in calcpad-desktop,
+   * <body> in the VS Code webview). Avoids flex-column edge cases where a
+   * wrapped .tab-container can render on top of .tab-content because the
+   * column's fixed height was computed before the wrap layout pass. */
+  height: 100%;
+  display: block;
   font-family: var(--vscode-font-family);
   font-size: var(--vscode-font-size);
   color: var(--vscode-foreground);
@@ -391,6 +389,10 @@ onMounted(() => {
 .tab-container {
   display: flex;
   flex-wrap: wrap;
+  /* Sticky so the tab strip stays visible while .tab-content scrolls. */
+  position: sticky;
+  top: 0;
+  z-index: 1;
   border-bottom: 1px solid var(--vscode-widget-border);
   background: var(--vscode-editor-background);
 }
@@ -419,8 +421,8 @@ onMounted(() => {
 }
 
 .tab-content {
-  flex: 1;
-  overflow: auto;
+  /* Natural-flow content area — grows with its content. The parent
+   * (#vue-sidebar) handles overflow scrolling for the whole panel. */
   padding: 0;
 }
 

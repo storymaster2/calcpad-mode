@@ -6,7 +6,7 @@ import type {
     CustomUnitDefinition,
 } from 'calcpad-frontend/types/api';
 import { buildBuiltinDocMarkdown, extractFunctionName } from './builtin-docs';
-import { EDITOR_DOCUMENT_KEY, type EditorBridge } from './bridge';
+import { getActiveDocumentKey, type EditorBridge } from './bridge';
 
 /**
  * Single-character test for CalcPad identifier chars: ASCII letters/digits/underscore,
@@ -27,7 +27,7 @@ export function registerHoverProvider(bridge: EditorBridge): monaco.IDisposable 
                 position.lineNumber, match.end + 1,
             );
 
-            const definitions = bridge.definitions.getCachedDefinitions(EDITOR_DOCUMENT_KEY);
+            const definitions = bridge.definitions.getCachedDefinitions(getActiveDocumentKey());
             if (definitions) {
                 const macro = definitions.macros.find(m => m.name === word);
                 if (macro) return { contents: [{ value: buildMacroMarkdown(macro), isTrusted: true }], range };

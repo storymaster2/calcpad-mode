@@ -16,5 +16,21 @@ export interface EditorBridge {
     setExtraSetting(key: string, value: string): void;
 }
 
-/** Stable key used by editor providers when caching/looking up definitions for the active document. */
+/**
+ * Indirection so editor providers (hover, definitions, etc.) can ask "what
+ * document am I in?" at call time. With multi-tab editing, the answer
+ * changes when the user switches tabs. main.ts installs the resolver after
+ * the TabManager is wired up.
+ */
+let activeDocumentKeyResolver: () => string = () => 'calcpad-editor';
+
+export function getActiveDocumentKey(): string {
+    return activeDocumentKeyResolver();
+}
+
+export function setActiveDocumentKeyResolver(resolver: () => string): void {
+    activeDocumentKeyResolver = resolver;
+}
+
+/** @deprecated Use getActiveDocumentKey(). Kept for callers that haven't migrated. */
 export const EDITOR_DOCUMENT_KEY = 'calcpad-editor';

@@ -11,6 +11,20 @@
             Refresh
           </button>
           <button
+            class="btn"
+            @click="$emit('saveHtml')"
+            :title="'Save the rendered HTML for the current document'"
+          >
+            Save HTML…
+          </button>
+          <button
+            class="btn"
+            @click="$emit('saveDocx')"
+            :title="'Export the current document as a Word .docx file'"
+          >
+            Save Word…
+          </button>
+          <button
             v-if="exports.length > 1"
             class="btn"
             @click="$emit('downloadZip')"
@@ -67,6 +81,8 @@ defineEmits<{
   download: [filename: string]
   downloadZip: []
   refresh: []
+  saveHtml: []
+  saveDocx: []
 }>()
 
 void props // silence unused warning when template-only access

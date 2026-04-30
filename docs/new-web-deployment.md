@@ -15,6 +15,7 @@ The web backend (`Calcpad.Web/backend`) is an ASP.NET Core Web API that drives t
 | `/api/calcpad/sample` | GET | Retrieve a sample document |
 | `/api/calcpad/pdf` | POST | Generate a PDF |
 | `/api/calcpad/pdf/health` | GET | PDF service health check |
+| `/api/calcpad/docx` | POST | Generate a Word `.docx` from the source — runs the calcpad → HTML pipeline (`forPrint: true`) and feeds it through `Calcpad.OpenXml.OpenXmlWriter` |
 | `/api/calcpad/resolve-content` | POST | Three-stage content resolution, all stages returned |
 | `/api/calcpad/highlight` | POST | Tokenize full document for syntax highlighting |
 | `/api/calcpad/highlight-line` | POST | Tokenize a single line (incremental) |

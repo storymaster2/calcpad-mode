@@ -30,7 +30,7 @@ export function createCalcpadEditor(
     container: HTMLElement,
     options?: CalcpadEditorOptions
 ): monaco.editor.IStandaloneCodeEditor {
-    return monaco.editor.create(container, {
+    const editor = monaco.editor.create(container, {
         language: 'calcpad',
         theme: 'calcpad-dark',
         value: options?.value ?? '',
@@ -46,5 +46,14 @@ export function createCalcpadEditor(
         tabSize: 4,
         insertSpaces: true,
         bracketPairColorization: { enabled: true },
+        'semanticHighlighting.enabled': true,
+        // Match VS Code's default-but-flipped suggest behavior: Tab accepts
+        // the current suggestion, Enter never does. Without this, Enter
+        // accepts the suggestion when the suggest widget is open, which
+        // surprises users who just want a newline.
+        acceptSuggestionOnEnter: 'off',
+        acceptSuggestionOnCommitCharacter: false,
+        tabCompletion: 'on',
     });
+    return editor;
 }

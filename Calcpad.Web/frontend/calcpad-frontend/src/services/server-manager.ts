@@ -67,6 +67,18 @@ export class CalcpadServerManager {
     }
 
     /**
+     * Check if the bundled native apphost binary exists. When present,
+     * the server can be spawned directly without a system `dotnet` —
+     * the apphost is a self-contained .NET host (ships libcoreclr +
+     * libhostfxr alongside it on Linux/macOS, calcpad-server.exe on
+     * Windows).
+     */
+    public static appHostExists(basePath: string): boolean {
+        const exeName = process.platform === 'win32' ? 'Calcpad.Server.exe' : 'Calcpad.Server';
+        return fs.existsSync(path.join(basePath, 'bin', exeName));
+    }
+
+    /**
      * Read the lock file and verify the recorded server is alive and healthy.
      * Returns the lock contents if reusable, or null if the lock is missing/stale.
      */
@@ -173,6 +185,27 @@ export class CalcpadServerManager {
         const exePath = path.join(this.basePath, 'bin', exeName);
         const useAppHost = fs.existsSync(exePath);
 
+        // VSIX packaging strips the executable bit on POSIX, so the bundled
+        // apphost can sit on disk but spawn fails silently with EACCES — the
+        // user sees no server URL and falls back to the (possibly empty)
+        // configured remote URL. Re-set the bit before every spawn so this
+        // self-heals on first launch after an install. Also chmod the
+        // libraries the apphost needs to dlopen at startup so a partially-
+        // restored bundle doesn't half-work.
+        if (useAppHost && process.platform !== 'win32') {
+            try {
+                fs.chmodSync(exePath, 0o755);
+            } catch (err) {
+                this.log(`Warning: could not chmod ${exeName}: ${err instanceof Error ? err.message : String(err)}`);
+            }
+            // createdump is invoked by the .NET runtime on crash; without +x
+            // the runtime aborts startup on some distros.
+            const createdump = path.join(this.basePath, 'bin', 'createdump');
+            if (fs.existsSync(createdump)) {
+                try { fs.chmodSync(createdump, 0o755); } catch { /* best-effort */ }
+            }
+        }
+
         // `detached: true` starts the child in its own process group / session,
         // so it survives when this VS Code window exits. We still pipe stdio
         // while we're alive to capture startup logs; once the owner exits,
@@ -195,6 +228,13 @@ export class CalcpadServerManager {
             DOTNET_DbgMiniDumpType: '2',
             DOTNET_DbgMiniDumpName: path.join(dumpDir, 'last-crash.dmp'),
             DOTNET_EnableCrashReport: '1',
+            // The server defaults to "exit when stdin EOFs" so the
+            // Neutralino desktop doesn't leak orphan processes. The VS Code
+            // extension shares one server across multiple windows via the
+            // lock file, so it must explicitly opt out — without this,
+            // closing the spawning window would kill the server even if
+            // other VS Code windows are still using it.
+            CALCPAD_DETACHED: '1',
         };
         const spawnOpts = {
             stdio: ['pipe', 'pipe', 'pipe'] as ['pipe', 'pipe', 'pipe'],

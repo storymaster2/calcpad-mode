@@ -783,6 +783,151 @@ async function generatePdf(panel: vscode.WebviewPanel, content: string, sourceFi
     }
 }
 
+/**
+ * Convert the active CalcPad document to HTML on the server, then save
+ * the result via a native Save dialog. Used by the Export tab's
+ * "Save HTML…" button.
+ */
+async function saveSourceHtml() {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+        vscode.window.showErrorMessage('No active CalcPad document found');
+        return;
+    }
+    try {
+        const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
+        const apiBaseUrl = settingsManager.getServerUrl();
+        if (!apiBaseUrl) {
+            vscode.window.showErrorMessage('Server URL not configured');
+            return;
+        }
+
+        const currentDir = path.dirname(activeEditor.document.fileName);
+        const baseFilename = path.basename(activeEditor.document.fileName, path.extname(activeEditor.document.fileName));
+        const defaultPath = path.join(currentDir, baseFilename + '.html');
+        const saveUri = await vscode.window.showSaveDialog({
+            defaultUri: vscode.Uri.file(defaultPath),
+            filters: { 'HTML Files': ['html', 'htm'] },
+        });
+        if (!saveUri) return;
+
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: 'Generating HTML…',
+            cancellable: false,
+        }, async () => {
+            const settings = await settingsManager.getApiSettings();
+            const documentContent = activeEditor.document.getText();
+            const vsFileSystem = new VSCodeFileSystem();
+            const vsLogger = new VSCodeLogger(outputChannel);
+            const sourceDir = path.dirname(activeEditor.document.uri.fsPath);
+            const clientFileCache = await buildClientFileCacheFromContent(documentContent, sourceDir, vsFileSystem, vsLogger, '[HTML]');
+
+            const response = await fetch(`${apiBaseUrl}/api/calcpad/convert`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: documentContent,
+                    settings,
+                    clientFileCache,
+                    sourceFilePath: activeEditor.document.uri.fsPath,
+                    forPrint: false,
+                }),
+                signal: AbortSignal.timeout(30000),
+            });
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}`);
+            }
+            const html = await response.text();
+            await vscode.workspace.fs.writeFile(saveUri, new TextEncoder().encode(html));
+        });
+
+        const openChoice = await vscode.window.showInformationMessage(
+            `HTML saved to ${saveUri.fsPath}`,
+            'Open HTML',
+        );
+        if (openChoice === 'Open HTML') {
+            vscode.env.openExternal(saveUri);
+        }
+    } catch (error) {
+        const msg = error instanceof Error ? error.message : 'Unknown error';
+        outputChannel.appendLine(`ERROR in saveSourceHtml: ${msg}`);
+        vscode.window.showErrorMessage(`Failed to save HTML: ${msg}`);
+    }
+}
+
+/**
+ * Convert the active CalcPad document to DOCX (Word) on the server and
+ * save the result. Used by the Export tab's "Save Word…" button.
+ */
+async function saveDocx() {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+        vscode.window.showErrorMessage('No active CalcPad document found');
+        return;
+    }
+    try {
+        const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
+        const apiBaseUrl = settingsManager.getServerUrl();
+        if (!apiBaseUrl) {
+            vscode.window.showErrorMessage('Server URL not configured');
+            return;
+        }
+
+        const currentDir = path.dirname(activeEditor.document.fileName);
+        const baseFilename = path.basename(activeEditor.document.fileName, path.extname(activeEditor.document.fileName));
+        const defaultPath = path.join(currentDir, baseFilename + '.docx');
+        const saveUri = await vscode.window.showSaveDialog({
+            defaultUri: vscode.Uri.file(defaultPath),
+            filters: { 'Word Documents': ['docx'] },
+        });
+        if (!saveUri) return;
+
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: 'Generating Word document…',
+            cancellable: false,
+        }, async () => {
+            const settings = await settingsManager.getApiSettings();
+            const documentContent = activeEditor.document.getText();
+            const vsFileSystem = new VSCodeFileSystem();
+            const vsLogger = new VSCodeLogger(outputChannel);
+            const sourceDir = path.dirname(activeEditor.document.uri.fsPath);
+            const clientFileCache = await buildClientFileCacheFromContent(documentContent, sourceDir, vsFileSystem, vsLogger, '[DOCX]');
+
+            const response = await fetch(`${apiBaseUrl}/api/calcpad/docx`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: documentContent,
+                    settings,
+                    clientFileCache,
+                    sourceFilePath: activeEditor.document.uri.fsPath,
+                    forPrint: true,
+                }),
+                signal: AbortSignal.timeout(60000),
+            });
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}`);
+            }
+            const buf = await response.arrayBuffer();
+            await vscode.workspace.fs.writeFile(saveUri, new Uint8Array(buf));
+        });
+
+        const openChoice = await vscode.window.showInformationMessage(
+            `Word document saved to ${saveUri.fsPath}`,
+            'Open',
+        );
+        if (openChoice === 'Open') {
+            vscode.env.openExternal(saveUri);
+        }
+    } catch (error) {
+        const msg = error instanceof Error ? error.message : 'Unknown error';
+        outputChannel.appendLine(`ERROR in saveDocx: ${msg}`);
+        vscode.window.showErrorMessage(`Failed to save Word document: ${msg}`);
+    }
+}
+
 async function printToPdf() {
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) {
@@ -1249,7 +1394,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
         if (serverMode === 'auto' || serverMode === 'local') {
             const dllExists = CalcpadServerManager.dllExists(context.extensionPath);
+            const appHostExists = CalcpadServerManager.appHostExists(context.extensionPath);
             outputChannel.appendLine(`Bundled DLL exists: ${dllExists}`);
+            outputChannel.appendLine(`Bundled apphost exists: ${appHostExists}`);
 
             if (dllExists) {
                 const config = vscode.workspace.getConfiguration('calcpad');
@@ -1257,8 +1404,19 @@ export async function activate(context: vscode.ExtensionContext) {
                 const dotnetManager = new DotnetRuntimeManager(outputChannel);
                 const globalStorage = context.globalStorageUri.fsPath;
 
-                // Resolve dotnet path: local runtime → system dotnet → prompt user
-                dotnetManager.resolveDotnetPath(globalStorage, configuredDotnetPath, serverMode).then((resolvedDotnetPath) => {
+                // When the self-contained apphost binary is bundled, the
+                // server starts via `Calcpad.Server[.exe]` and brings its
+                // own .NET runtime — there's no need to resolve / install a
+                // system `dotnet`. Skipping the resolver fixes the Linux
+                // case where users without a system .NET 10 install were
+                // silently falling back to the remote URL (default
+                // http://localhost:9420), making VS Code talk to whatever
+                // server happened to be on that port (e.g. Calcpad-Desktop).
+                const dotnetPromise: Promise<string | null> = appHostExists
+                    ? Promise.resolve('dotnet') // unused — apphost path takes over in start()
+                    : dotnetManager.resolveDotnetPath(globalStorage, configuredDotnetPath, serverMode);
+
+                dotnetPromise.then((resolvedDotnetPath) => {
                     if (!resolvedDotnetPath) {
                         if (serverMode === 'local') {
                             outputChannel.appendLine('.NET runtime not available, server cannot start');
@@ -1268,7 +1426,11 @@ export async function activate(context: vscode.ExtensionContext) {
                         return;
                     }
 
-                    outputChannel.appendLine(`Using dotnet at: ${resolvedDotnetPath}`);
+                    if (appHostExists) {
+                        outputChannel.appendLine('Using bundled apphost (self-contained, no system dotnet required)');
+                    } else {
+                        outputChannel.appendLine(`Using dotnet at: ${resolvedDotnetPath}`);
+                    }
                     serverManager = new CalcpadServerManager(context.extensionPath, serverDebugChannel, resolvedDotnetPath, outputChannel);
                     context.subscriptions.push(serverManager);
 
@@ -1317,7 +1479,22 @@ export async function activate(context: vscode.ExtensionContext) {
                         } else if (serverMode === 'local') {
                             vscode.window.showErrorMessage(`CalcPad: Failed to start local server: ${message}`);
                         } else {
-                            outputChannel.appendLine('Falling back to remote API');
+                            // Auto mode. Falling back to remote only makes
+                            // sense if the user actually configured a remote
+                            // URL — otherwise every API call will fail with
+                            // "Server URL not configured" / a fetch against
+                            // `/api/calcpad/*` with no host. Tell them.
+                            const remoteUrl = settingsManager.getRemoteServerUrl();
+                            if (!remoteUrl || remoteUrl.length === 0) {
+                                vscode.window.showErrorMessage(
+                                    `CalcPad: Bundled server failed to start and no remote URL is configured (${message}).`,
+                                    'Show Output',
+                                ).then(choice => {
+                                    if (choice === 'Show Output') serverDebugChannel.show();
+                                });
+                            } else {
+                                outputChannel.appendLine(`Falling back to remote API at ${remoteUrl}`);
+                            }
                         }
                     });
                 }).catch((err) => {
@@ -1550,6 +1727,14 @@ export async function activate(context: vscode.ExtensionContext) {
         printToPdf();
     });
 
+    const saveSourceHtmlCommand = vscode.commands.registerCommand('vscode-calcpad.saveSourceHtml', () => {
+        saveSourceHtml();
+    });
+
+    const saveDocxCommand = vscode.commands.registerCommand('vscode-calcpad.saveDocx', () => {
+        saveDocx();
+    });
+
     // Readonly virtual document provider for viewing webview source HTML
     let webviewSourceHtml = '';
     const webviewSourceProvider = new class implements vscode.TextDocumentContentProvider {
@@ -1581,19 +1766,32 @@ export async function activate(context: vscode.ExtensionContext) {
 
     const stopServerCommand = vscode.commands.registerCommand('calcpad.stopServer', async () => {
         outputChannel.appendLine('[Stop] Manual server stop triggered');
-        if (serverManager && serverManager.isRunning) {
-            try {
-                await serverManager.stop();
-                outputChannel.appendLine('[Stop] Server stopped successfully');
-                vscode.window.showInformationMessage('CalcPad server stopped. Use the refresh button to restart.');
-            } catch (err) {
-                const msg = err instanceof Error ? err.message : String(err);
-                outputChannel.appendLine(`[Stop] Server stop failed: ${msg}`);
-                vscode.window.showErrorMessage(`CalcPad: Failed to stop server: ${msg}`);
-            }
-        } else {
-            outputChannel.appendLine('[Stop] Server is not running');
-            vscode.window.showInformationMessage('CalcPad server is not running.');
+        if (!serverManager) {
+            outputChannel.appendLine('[Stop] No serverManager available');
+            vscode.window.showInformationMessage('CalcPad server is not configured.');
+            return;
+        }
+        // Don't gate on `isRunning` — that flag only reflects whether *this*
+        // VS Code window owns or has connected to the server. A peer window
+        // may have spawned it (or this window may have been opened after the
+        // server was already alive). serverManager.stop() handles the
+        // lock-file fallback: it reads {basePath}/bin/.calcpad-server.lock
+        // and kills the recorded PID even when there's no in-process child
+        // reference. Without this, Linux users hit "server is not running"
+        // and the lock-held server keeps going.
+        const wasRunning = serverManager.isRunning;
+        try {
+            await serverManager.stop();
+            outputChannel.appendLine(`[Stop] Server stopped successfully (wasRunning=${wasRunning})`);
+            vscode.window.showInformationMessage(
+                wasRunning
+                    ? 'CalcPad server stopped. Use the refresh button to restart.'
+                    : 'CalcPad server stopped via lock file. Use the refresh button to restart.',
+            );
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            outputChannel.appendLine(`[Stop] Server stop failed: ${msg}`);
+            vscode.window.showErrorMessage(`CalcPad: Failed to stop server: ${msg}`);
         }
     });
 
@@ -1774,6 +1972,8 @@ export async function activate(context: vscode.ExtensionContext) {
             saveUiStateCommand,
             showInsertCommand,
             printToPdfCommand,
+            saveSourceHtmlCommand,
+            saveDocxCommand,
             refreshVariablesCommand,
             refreshDocumentCommand,
             stopServerCommand,
