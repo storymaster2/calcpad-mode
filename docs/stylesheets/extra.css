@@ -1,9 +1,9 @@
 /* Inline icons are exported at 2x (HiDPI). Scale them down to
    match the surrounding text and keep line spacing consistent. */
 img[height="20"] {
-  height: 1.2em;
-  width: auto;
-  vertical-align: text-bottom;
+    height: 1.2em;
+    width: auto;
+    vertical-align: text-bottom;
 }
 
 /* CalcpadCE internal sylesheets */
@@ -24,4 +24,55 @@ img[height="20"] {
     background-color: #F8FFF0;
     margin-top: 0;
     margin-bottom: 0;
+}
+
+/* Full-width layout for Examples pages (override Material's max-width container) */
+body:has(.calcpad-output) .md-grid {
+    max-width: 100%;
+}
+
+body:has(.calcpad-output) .md-content {
+    max-width: 100%;
+}
+
+/* Side-by-side layout for Examples pages */
+.example-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+    margin: 1rem 0;
+}
+
+.example-source,
+.example-output {
+    overflow: auto;
+}
+
+.example-source pre {
+    white-space: pre;
+    overflow-x: auto;
+}
+
+/* Headings inside calcpad output (replaced from <hN> to avoid polluting MkDocs TOC) */
+.calcpad-h1,
+.calcpad-h2,
+.calcpad-h3 {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0.6em 0 0.3em;
+}
+
+.calcpad-h4,
+.calcpad-h5,
+.calcpad-h6 {
+    font-size: 1em;
+    font-weight: 600;
+    margin: 0.5em 0 0.2em;
+}
+
+@media (max-width: 960px) {
+    .example-grid {
+        grid-template-columns: 1fr;
+    }
 }

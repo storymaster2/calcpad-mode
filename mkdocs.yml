@@ -25,6 +25,7 @@ theme:
 
 hooks:
   - docs/hooks/math_fix.py
+  - docs/hooks/render_examples.py
 
 nav:
   - Documentation:
@@ -81,3 +82,4 @@ extra_javascript:
 
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/calcpad-output.css
