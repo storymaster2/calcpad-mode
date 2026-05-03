@@ -182,7 +182,7 @@ k = L/10
 #val
 #def results$
 	#hide
-	N = Δl(v)/l*EA
+	N = round(Δl(v)/l*EA)
 	α = atan2(l; v)
 	R_x = F_x(v)'='N*cos(α)
 	R_y = F_y(v)'='N*sin(α)
@@ -195,10 +195,10 @@ k = L/10
 	'<polygon points="'2*L','0' '2*L','-4*δ' '2*L - 0.32*δ','-2.8*δ' '2*L + 0.32*δ','-2.8*δ' '2*L','-4*δ'" load_style$/>
 	'<polygon points="'-0.32*δ','0' '-4*δ','0' '-2.8*δ','-0.32*δ' '-2.8*δ','0.32*δ' '-4*δ','0'" load_style$/>
 	'<polygon points="'2*L + 0.32*δ','0' '2*L + 4*δ','0' '2*L + 2.8*δ','-0.32*δ' '2*L + 2.8*δ','0.32*δ' '2*L + 4*δ','0'" load_style$/>
-	texth$(-4*δ;-δ;Rx='R_x'kN)
-	texth$(2*L+4*δ;-δ;Rx='R_x'kN)
-	texth$(3.2*δ;-3.2*δ;Ry='R_y'kN)
-	texth$(2*L-3.2*δ;-3.2*δ;Ry='R_y'kN)
+	texth$(-4*δ;-δ;Rx='round(R_x)'kN)
+	texth$(2*L+4*δ;-δ;Rx='round(R_x)'kN)
+	texth$(3.2*δ;-3.2*δ;Ry='round(R_y)'kN)
+	texth$(2*L-3.2*δ;-3.2*δ;Ry='round(R_y)'kN)
 	texth$(L/2;0;N='N'kN)
 	texth$(3*L/2;0;N='N'kN)
 	frame$
