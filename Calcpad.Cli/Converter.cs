@@ -12,20 +12,27 @@ namespace Calcpad.Cli
         private readonly StringBuilder _sb = new();
         private readonly string _htmlWorksheet;
         private readonly bool _isSilent;
+        private readonly bool _isBodyOnly;
 
-        internal Converter(bool isSilent)
+        internal Converter(bool isSilent, bool isBodyOnly = false)
         {
             var appUrl = $"file:///{Program.AppPath.Replace("\\", "/")}doc/";
             var templatePath =  $"{Program.AppPath}doc{Path.DirectorySeparatorChar}template{Program.AddCultureExt("html")}";
             _htmlWorksheet = File.ReadAllText(templatePath).Replace("jquery", appUrl + "jquery");
             _isSilent = isSilent;
+            _isBodyOnly = isBodyOnly;
         }
 
         internal void ToHtml(string html, string path)
         {
-            File.WriteAllText(path, HtmlApplyWorksheet(html));
-            if (!_isSilent && File.Exists(path))
-                Run(path);
+            if (_isBodyOnly)
+                File.WriteAllText(path, $"<div class=\"calcpad-output\">{html}</div>");
+            else
+            {
+                File.WriteAllText(path, HtmlApplyWorksheet(html));
+                if (!_isSilent && File.Exists(path))
+                    Run(path);
+            }
         }
 
         internal void ToOpenXml(string html, string path, List<string> expressions)

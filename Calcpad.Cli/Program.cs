@@ -316,9 +316,14 @@ namespace Calcpad.Cli
             }
             i += 4;
             var outFile = fileName[i..].Trim();
-            var isSilent = outFile.EndsWith(" -s");
-            if (isSilent)
-                outFile = outFile[..^3];
+            var isSilent = false;
+            var isBodyOnly = false;
+            while (true)
+            {
+                if (outFile.EndsWith(" -s", StringComparison.Ordinal))      { isSilent    = true; outFile = outFile[..^3].TrimEnd(); }
+                else if (outFile.EndsWith(" -b", StringComparison.Ordinal)) { isBodyOnly  = true; outFile = outFile[..^3].TrimEnd(); }
+                else break;
+            }
 
             fileName = fileName[..i].Trim();
             if (!File.Exists(fileName))
@@ -351,7 +356,7 @@ namespace Calcpad.Cli
                 };
                 var hasMacroErrors = macroParser.Parse(code, out var unwrappedCode, null, 0, true);
                 string htmlResult;
-                Converter converter = new(isSilent);
+                Converter converter = new(isSilent, isBodyOnly);
                 if (hasMacroErrors)
                 {
                     htmlResult = CalcpadReader.CodeToHtml(unwrappedCode);
