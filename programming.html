@@ -41,12 +41,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="stylesheets/extra.css">
@@ -2790,7 +2784,8 @@ It will not be possible to unlock it inside CalcpadCE anymore.
 Also, no one could edit the file in external text editor, because it is encoded.
 That is how you can protect your source code from unauthorized copying, viewing and modification.</p>
 <p>You can put question marks "<strong>?</strong>" not only in variable definitions, but at any place in the code e.g.:</p>
-<p><code>2 + ?</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="m">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nt">?</span>
+</code></pre></div>
 <p>2 +
 <img alt="input field" src="media/Image%201.png" style="height: 32px; vertical-align: text-bottom; margin-bottom: -5px;" /></p>
 <p>Then, you can enter a value and calculate the result.
@@ -2804,30 +2799,30 @@ This is performed by enclosing the text box into an outer html element (paragrap
 Then, the content of the source element's value attribute will be automatically filled in the target text box.
 You can use the following sample code:</p>
 <h3 id="selection-box">Selection box</h3>
-<div class="highlight"><pre><span></span><code>&#39;Select an option: &lt;select name=&quot;**target1**&quot;&gt;
-&#39;&lt;option value=&quot;11;12&quot;&gt;x1; y1&lt;/option&gt;
-&#39;&lt;option value=&quot;21;22&quot;&gt;x2; y2&lt;/option&gt;
-&#39;&lt;option value=&quot;31;32&quot;&gt;x3; y3&lt;/option&gt;
-&#39;&lt;/select&gt;
-&#39;...
-&#39;&lt;p id=&quot;**target1**&quot;&gt; Values:&#39;x = ? {21}&#39;,&#39;y = ? {22}&#39;&lt;/p&gt;
+<div class="language-calcpad highlight"><pre><span></span><code><span class="c1">&#39;Select an option: &lt;select name=&quot;**target1**&quot;&gt;</span>
+<span class="c1">&#39;&lt;option value=&quot;11;12&quot;&gt;x1; y1&lt;/option&gt;</span>
+<span class="c1">&#39;&lt;option value=&quot;21;22&quot;&gt;x2; y2&lt;/option&gt;</span>
+<span class="c1">&#39;&lt;option value=&quot;31;32&quot;&gt;x3; y3&lt;/option&gt;</span>
+<span class="c1">&#39;&lt;/select&gt;</span>
+<span class="c1">&#39;...</span>
+<span class="c1">&#39;&lt;p id=&quot;**target1**&quot;&gt; Values:&#39;</span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">21</span><span class="p">}</span><span class="c1">&#39;,&#39;</span><span class="nv">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">22</span><span class="p">}</span><span class="c1">&#39;&lt;/p&gt;</span>
 </code></pre></div>
 <p><img alt="Dropdown and two input field" src="media/Image%2045.png" style="width: 300px" /></p>
 <h3 id="radio-buttons">Radio buttons</h3>
-<div class="highlight"><pre><span></span><code>&#39;&lt;p&gt;Select:
-&#39;&lt;input name=&quot;target2&quot; type=&quot;radio&quot; id=&quot;opt1&quot; value=&quot;1&quot;/&gt;
-&#39;&lt;label for=&quot;opt1&quot;&gt;option 1&lt;/label&gt;
-&#39;&lt;input name=&quot;target2&quot; type=&quot;radio&quot; id=&quot;opt2&quot; value=&quot;2&quot;/&gt;
-&#39;&lt;label for=&quot;opt2&quot;&gt;option 2&lt;/label&gt;
-&#39;...
-&#39;&lt;p id=&quot;target2&quot;&gt;Value -&#39;opt = ? {2}&#39;&lt;/p&gt;
+<div class="language-calcpad highlight"><pre><span></span><code><span class="c1">&#39;&lt;p&gt;Select:</span>
+<span class="c1">&#39;&lt;input name=&quot;target2&quot; type=&quot;radio&quot; id=&quot;opt1&quot; value=&quot;1&quot;/&gt;</span>
+<span class="c1">&#39;&lt;label for=&quot;opt1&quot;&gt;option 1&lt;/label&gt;</span>
+<span class="c1">&#39;&lt;input name=&quot;target2&quot; type=&quot;radio&quot; id=&quot;opt2&quot; value=&quot;2&quot;/&gt;</span>
+<span class="c1">&#39;&lt;label for=&quot;opt2&quot;&gt;option 2&lt;/label&gt;</span>
+<span class="c1">&#39;...</span>
+<span class="c1">&#39;&lt;p id=&quot;target2&quot;&gt;Value -&#39;</span><span class="nv">opt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;&lt;/p&gt;</span>
 </code></pre></div>
 <p><img alt="Two radio buttons and an input field" src="media/Image%2046.png" style="width: 250px" /></p>
 <h3 id="check-box">Check box</h3>
-<div class="highlight"><pre><span></span><code>&#39;&lt;p&gt;&lt;input name=&quot;target3&quot; type=&quot;checkbox&quot; id=&quot;chk1&quot; value=&quot;3&quot;/&gt;
-&#39;&lt;label for=&quot;chk1&quot;&gt;Checkbox 1&lt;/label&gt;&lt;/p&gt;
-&#39;...
-&#39;&lt;p id=&quot;target3&quot;&gt;Value -&#39;chk = ? {3}&#39;&lt;/p&gt;
+<div class="language-calcpad highlight"><pre><span></span><code><span class="c1">&#39;&lt;p&gt;&lt;input name=&quot;target3&quot; type=&quot;checkbox&quot; id=&quot;chk1&quot; value=&quot;3&quot;/&gt;</span>
+<span class="c1">&#39;&lt;label for=&quot;chk1&quot;&gt;Checkbox 1&lt;/label&gt;&lt;/p&gt;</span>
+<span class="c1">&#39;...</span>
+<span class="c1">&#39;&lt;p id=&quot;target3&quot;&gt;Value -&#39;</span><span class="nv">chk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">3</span><span class="p">}</span><span class="c1">&#39;&lt;/p&gt;</span>
 </code></pre></div>
 <p><img alt="Checkbox and an input field" src="media/Image%2047.png" style="width: 120px" /></p>
 <p>As you can see from the first example, one "value" attribute can contain multiple values, separated by semicolons ";". In this case, you have to provide the respective number of text boxes in the target paragraph.
@@ -2859,28 +2854,28 @@ You can use <code>#Val</code> to create a table with values, but without the for
 <p>Sometimes the solution has to continue in different ways, depending on some intermediate values.
 Such feature is included in CalcpadCE, similarly to other programming languages.
 It is called "conditional execution block" and has the following general form:</p>
-<div class="highlight"><pre><span></span><code>#If condition1
-    contents if condition1 is satisfied
-#Else If condition2
-    contents if condition2 is satisfied
-#Else If condition3
-    contents if condition3 is satisfied
-. . .
-#Else
-    contents if none of the conditions is satisfied
-#end if
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#If</span><span class="w"> </span><span class="nv">condition1</span>
+<span class="w">    </span><span class="nv">contents</span><span class="w"> </span><span class="nv">if</span><span class="w"> </span><span class="nv">condition1</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">satisfied</span>
+<span class="k">#Else If</span><span class="w"> </span><span class="nv">condition2</span>
+<span class="w">    </span><span class="nv">contents</span><span class="w"> </span><span class="nv">if</span><span class="w"> </span><span class="nv">condition2</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">satisfied</span>
+<span class="k">#Else If</span><span class="w"> </span><span class="nv">condition3</span>
+<span class="w">    </span><span class="nv">contents</span><span class="w"> </span><span class="nv">if</span><span class="w"> </span><span class="nv">condition3</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">satisfied</span>
+<span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="w"> </span><span class="p">.</span>
+<span class="k">#Else</span>
+<span class="w">    </span><span class="nv">contents</span><span class="w"> </span><span class="nv">if</span><span class="w"> </span><span class="nv">none</span><span class="w"> </span><span class="nv">of</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">conditions</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">satisfied</span>
+<span class="k">#end if</span>
 </code></pre></div>
 <p>Shorter forms are also possible:</p>
-<div class="highlight"><pre><span></span><code>#If condition
-    contents if the condition is satisfied
-#Else
-    contents if the condition is not satisfied
-#end if
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#If</span><span class="w"> </span><span class="nv">condition</span>
+<span class="w">    </span><span class="nv">contents</span><span class="w"> </span><span class="nv">if</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">condition</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">satisfied</span>
+<span class="k">#Else</span>
+<span class="w">    </span><span class="nv">contents</span><span class="w"> </span><span class="nv">if</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">condition</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">not</span><span class="w"> </span><span class="nv">satisfied</span>
+<span class="k">#end if</span>
 </code></pre></div>
 <p>or:</p>
-<div class="highlight"><pre><span></span><code>#If condition
-    contents if the condition is satisfied
-#end if
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#If</span><span class="w"> </span><span class="nv">condition</span>
+<span class="w">    </span><span class="nv">contents</span><span class="w"> </span><span class="nv">if</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">condition</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">satisfied</span>
+<span class="k">#end if</span>
 </code></pre></div>
 <p>Condition blocks affect not only the calculation path but also the report content like text and images.
 The "#" symbol must be the first one in the line.
@@ -2899,9 +2894,9 @@ We can do this, using conditional execution, as follows:</p>
 <h2 id="iteration-blocks">Iteration blocks</h2>
 <p>You can have simple iterations inside a CalcpadCE program.
 For that purpose, you have to define a "<strong>repeat-loop</strong>" block:</p>
-<div class="highlight"><pre><span></span><code>#Repeat n
-    code to be executed repeatedly
-#Loop
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#Repeat</span><span class="w"> </span><span class="nv">n</span>
+<span class="w">    </span><span class="nv">code</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">be</span><span class="w"> </span><span class="nv">executed</span><span class="w"> </span><span class="nv">repeatedly</span>
+<span class="k">#Loop</span>
 </code></pre></div>
 <p>The symbol <em>n</em> stands for the number of repetitions.
 Instead of <em>n</em>, you can put a number, variable or any valid expression.
@@ -2910,13 +2905,13 @@ You can exit the repeat-loop cycle prematurely by putting <code>#Break</code> in
 It will make sense only if you combine it a conditional block.
 Otherwise, it will always break at the same line, without performing any loops.
 A typical "<strong>repeat-break-loop</strong>" will look like this:</p>
-<div class="highlight"><pre><span></span><code>#Repeat
-    code to be executed repeatedly
-    #If condition
-        #Break
-    #End if
-    you can have more code here
-#Loop
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#Repeat</span>
+<span class="w">    </span><span class="nv">code</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">be</span><span class="w"> </span><span class="nv">executed</span><span class="w"> </span><span class="nv">repeatedly</span>
+<span class="w">    </span><span class="k">#If</span><span class="w"> </span><span class="nv">condition</span>
+<span class="w">        </span><span class="k">#Break</span>
+<span class="w">    </span><span class="k">#End if</span>
+<span class="w">    </span><span class="nv">you</span><span class="w"> </span><span class="nv">can</span><span class="w"> </span><span class="nv">have</span><span class="w"> </span><span class="nv">more</span><span class="w"> </span><span class="nv">code</span><span class="w"> </span><span class="nv">here</span>
+<span class="k">#Loop</span>
 </code></pre></div>
 <p>You can also use <code>#Continue</code> instead of <code>#Break</code> inside the condition.
 The program will skip the remaining lines, return to the top of the loop block and continue with the next iteration.
@@ -2924,12 +2919,12 @@ You can omit the number of repetitions <em>n</em> only if you are sure that the 
 However, to avoid infinite loops, the number of iterations is limited internally to 10 000 000.</p>
 <p>Besides repetitive calculations, you can use loops to generate repetitive report content (like table rows). If you want to hide the iteration details, you can use output control directives (see the previous section). For example, you can enclose the "repeat-loop" block with <code>#Hide</code> and <code>#Show</code> statements.</p>
 <p>Since version VM 7.0, two new iteration blocks were added: "for-loop" and "while-loop", as follows:</p>
-<div class="highlight"><pre><span></span><code>#For counter = start : end
-    code to be executed repeatedly
-    #Loop
-#While condition
-    code to be executed repeatedly
-#Loop
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#For</span> <span class="nv">counter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">start</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">end</span>
+<span class="w">    </span><span class="nv">code</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">be</span><span class="w"> </span><span class="nv">executed</span><span class="w"> </span><span class="nv">repeatedly</span>
+<span class="w">    </span><span class="k">#Loop</span>
+<span class="k">#While</span> <span class="nv">condition</span>
+<span class="w">    </span><span class="nv">code</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">be</span><span class="w"> </span><span class="nv">executed</span><span class="w"> </span><span class="nv">repeatedly</span>
+<span class="k">#Loop</span>
 </code></pre></div>
 <h2 id="interactive-step-by-step-execution">Interactive (step-by-step) execution</h2>
 <p>You can make a CalcpadCE worksheet to execute interactively (step-by-step) by defining "breakpoints" at certain lines.
@@ -2954,7 +2949,8 @@ The execution will pause at the current line as if <code>#Pause</code> is detect
 If you have pieces of code that is repeated in different worksheets, you can organize it in modules and reuse it multiple times.
 Also, if you have a longer worksheet, you can split it into modules that will be easier to maintain.
 Then, you can include them into the main file by using the following statement:</p>
-<p><code>#include filename</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#include</span><span class="w"> </span><span class="nv">filename</span>
+</code></pre></div>
 <p>The "<em>filename</em>" must contain the full path to a local file.
 If the file is the same folder as the current one, you can specify only the filename.</p>
 <p>By default, CalcpadCE will include the whole contents of the external module.
@@ -2969,22 +2965,24 @@ They can be inline or multiline.
 Unlike string variables, macros can have parameters.
 You can define them by using the following statements:</p>
 <p>Inline string variable:</p>
-<p><code>#def variable_name$ = content</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#def</span><span class="w"> </span><span class="nv">variable_name$</span><span class="w"> </span><span class="o">=</span> content
+</code></pre></div>
 <p>Multiline string variable:</p>
-<div class="highlight"><pre><span></span><code>#def variable_name$
-    content line 1
-    content line 2
-    ...
-#end def
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#def</span><span class="w"> </span><span class="nv">variable_name</span>$
+<span class="w">    </span><span class="nv">content</span><span class="w"> </span><span class="nv">line</span><span class="w"> </span><span class="m">1</span>
+<span class="w">    </span><span class="nv">content</span><span class="w"> </span><span class="nv">line</span><span class="w"> </span><span class="m">2</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="k">#end def</span>
 </code></pre></div>
 <p>Inline string macro:</p>
-<p><code>#def *macro_name$(param1$; param2$;...) = content</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#def</span><span class="w"> </span><span class="o">*</span><span class="nv">macro_name</span>$<span class="p">(</span><span class="nv">param1</span>$<span class="p">;</span><span class="w"> </span><span class="nv">param2</span>$<span class="p">;...)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">content</span>
+</code></pre></div>
 <p>Multiline string macro:  </p>
-<div class="highlight"><pre><span></span><code>#def macro_name$(param1$; param2$;...)
-    content line 1
-    content line 2  
-    ...
-#end def
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#def</span><span class="w"> </span><span class="nv">macro_name</span>$<span class="p">(</span><span class="nv">param1</span>$<span class="p">;</span><span class="w"> </span><span class="nv">param2</span>$<span class="p">;...)</span>
+    <span class="nv">content</span><span class="w"> </span><span class="nv">line</span><span class="w"> </span><span class="m">1</span>
+    <span class="nv">content</span><span class="w"> </span><span class="nv">line</span><span class="w"> </span><span class="m">2</span><span class="w">  </span>
+    <span class="p">...</span>
+<span class="k">#end def</span>
 </code></pre></div>
 <p>Names of string variables, macros, and their parameters can contain small and capital Latin letters and underscore "_". They must end with the "$" symbol.
 The contents can be virtually any string.
@@ -3012,17 +3010,20 @@ Structured storage of special matrices is supported for saving space.
 The following commands are available:</p>
 <h3 id="textcsv-files">Text/CSV files</h3>
 <p>Reads data from the specified text/CSV file into the matrix/vector <em>M</em>. The file must exist:</p>
-<p><code>#read M from filename.txt@R1C1:R2C2 TYPE=R SEP=','</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#read</span><span class="w"> </span><span class="nv">M</span><span class="w"> </span><span class="nv">from</span><span class="w"> </span><span class="nv">filename</span><span class="p">.</span><span class="nv">txt</span><span class="p">@</span><span class="nv">R1C1</span><span class="p">:</span><span class="nv">R2C2</span> <span class="nv">TYPE</span><span class="o">=</span><span class="nv">R</span> <span class="nv">SEP</span><span class="o">=</span><span class="c1">&#39;,&#39;</span>
+</code></pre></div>
 <p>Writes data from matrix/vector <em>M</em> to the specified text/CSV file.
 If the file exists, it is entirely overwritten.
 Otherwise, a new file is created.
 In all cases, the path to the file must exist.</p>
-<p><code>#write M to filename.txt@R1C1:R2C2 TYPE=N SEP=','</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#write</span> <span class="nv">M</span> <span class="nv">to</span> <span class="nv">filename</span><span class="p">.</span><span class="nv">txt</span><span class="p">@</span><span class="nv">R1C1</span><span class="p">:</span><span class="nv">R2C2</span> <span class="nv">TYPE</span><span class="o">=</span><span class="nv">N</span> <span class="nv">SEP</span><span class="o">=</span><span class="c1">&#39;,&#39;</span>
+</code></pre></div>
 <p>Appends data from matrix/vector <em>M</em> to the specified text/CSV file.
 If the file exists, the data is appended at the end of the existing file.
 Otherwise, a new file is created.
 In all cases, the path to the file must exist.</p>
-<p><code>#append M to filename.txt@R1C1:R2C2 TYPE=N SEP=','</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#append</span> <span class="nv">M</span> <span class="nv">to</span> <span class="nv">filename</span><span class="p">.</span><span class="nv">txt</span><span class="p">@</span><span class="nv">R1C1</span><span class="p">:</span><span class="nv">R2C2</span> <span class="nv">TYPE</span><span class="o">=</span><span class="nv">N</span> <span class="nv">SEP</span><span class="o">=</span><span class="c1">&#39;,&#39;</span>
+</code></pre></div>
 <p>Command options:</p>
 <ul>
 <li><code>M</code> the name of the matrix/vector that contains the data [required];</li>
@@ -3073,17 +3074,20 @@ In all cases, the path to the file must exist.</p>
 </ul>
 <h3 id="excel-files">Excel files</h3>
 <p>Reads the data from the specified Excel file into the matrix/vector <em>M</em>. The file must exist as well as the specified worksheet:</p>
-<p><code>#read M from filename.xlsx@Sheet1!A1:B2 TYPE=R</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#read</span> <span class="nv">M</span> <span class="nv">from</span> <span class="nv">filename</span><span class="p">.</span><span class="nv">xlsx</span><span class="p">@</span><span class="nv">Sheet1</span><span class="o">!</span><span class="nv">A1</span><span class="p">:</span><span class="nv">B2</span> <span class="nv">TYPE</span><span class="o">=</span><span class="nv">R</span>
+</code></pre></div>
 <p>Writes data from matrix/vector <em>M</em> to the specified Excel file.
 A new file with a single worksheet is created.
 If the file exists, it is entirely overwritten.
 The path to the file must exist;  </p>
-<p><code>#write M to filename.xlsx@Sheet1!A1:B2 TYPE=N</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#write</span> <span class="nv">M</span> <span class="nv">to</span> <span class="nv">filename</span><span class="p">.</span><span class="nv">xlsx</span><span class="p">@</span><span class="nv">Sheet1</span><span class="o">!</span><span class="nv">A1</span><span class="p">:</span><span class="nv">B2</span> <span class="nv">TYPE</span><span class="o">=</span><span class="nv">N</span>
+</code></pre></div>
 <p>Appends data from matrix/vector <em>M</em> to the specified Excel file.
 If the file exists, the data is written in the existing file at the specified location.
 Otherwise, a new file is created.
 In all cases, the path to the file must exist.</p>
-<p><code>#append M to filename.xlsx@Sheet1!A1:B2 TYPE=N</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#append</span> <span class="nv">M</span> <span class="nv">to</span> <span class="nv">filename</span><span class="p">.</span><span class="nv">xlsx</span><span class="p">@</span><span class="nv">Sheet1</span><span class="o">!</span><span class="nv">A1</span><span class="p">:</span><span class="nv">B2</span> <span class="nv">TYPE</span><span class="o">=</span><span class="nv">N</span>
+</code></pre></div>
 <p>Command options:</p>
 <ul>
 <li><code>M</code> the name of the matrix/vector that contains the data [required];</li>
@@ -3094,20 +3098,17 @@ In all cases, the path to the file must exist.</p>
 <li><code>!A1:B2</code> target cell range [optional]:
     - <code>A1</code> starting cell reference [optional], where A is the column name and 1 is the row index;
     - <code>:B2</code> ending cell reference as above [optional];<br />
-        Column names start at <strong>A</strong>, and row numbers start at <strong>1</strong>. You can skip any of the starting and ending column/row references.
-        In this case, data is read to the first and last nonempty cells, respectively.
-        The starting cell references can be greater than the ending ones.
-        Examples for data import settings are provided below:<pre><code>  ![Excel addressing examples](media/Image%2050.png)
-
-  The behavior of data export commands `#write` and `#append` is a bit different.
-  The starting reference indicates the location of the first element $M_{1,1}$ of the output matrix.
+    Column names start at <strong>A</strong>, and row numbers start at <strong>1</strong>. You can skip any of the starting and ending column/row references.
+    In this case, data is read to the first and last nonempty cells, respectively.
+    The starting cell references can be greater than the ending ones.
+    Examples for data import settings are provided below:<p><img alt="Excel addressing examples" src="media/Image%2050.png" /></p>
+<p>The behavior of data export commands <code>#write</code> and <code>#append</code> is a bit different.
+  The starting reference indicates the location of the first element <span class="arithmatex">\(M_{1,1}\)</span> of the output matrix.
   So, even if it is greater than A1, it will not truncate the first rows and columns.
   Unless bound by the ending reference, the entire matrix will be written after the specified location.
   Otherwise, the remaining rows and columns after the ending reference will be truncated.
-  For example: `#write M to filename.xlsx@Sheet1!C2` will produce the following output:
-
-  ![Excel example](media/Image%2051.png){style="width: 300px;"}
-</code></pre>
+  For example: <code>#write M to filename.xlsx@Sheet1!C2</code> will produce the following output:</p>
+<p><img alt="Excel example" src="media/Image%2051.png" style="width: 300px;" /></p>
 </li>
 </ul>
 <ul>
@@ -3176,7 +3177,7 @@ In all cases, the path to the file must exist.</p>
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/tex-mml-chtml.js"></script>
+        <script src="javascripts/mathjax/startup.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       

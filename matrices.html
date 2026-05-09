@@ -41,12 +41,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="stylesheets/extra.css">
@@ -4335,7 +4329,8 @@ The indexing operator for each type is internally redefined in order to return d
 For example, you cannot assign a non-zero value to an element outside the main diagonal of a diagonal type of matrix.</p>
 <h2 id="definition">Definition</h2>
 <p>Similar to vectors, you can define matrices by using the "square brackets" syntax, but the rows must be separated by vertical bars " | ", as follows:</p>
-<p><code>A_m⨯n = [a_11; a_12; …; a_1n|a_21; a_22; …;a_2n|…| a_m1; a_m2; …; a_mn]</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nv">A_m</span>⨯<span class="nv">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nv">a_11</span><span class="p">;</span><span class="w"> </span><span class="nv">a_12</span><span class="p">;</span><span class="w"> </span>…<span class="p">;</span><span class="w"> </span><span class="nv">a_1n</span><span class="p">|</span><span class="nv">a_21</span><span class="p">;</span><span class="w"> </span><span class="nv">a_22</span><span class="p">;</span><span class="w"> </span>…<span class="p">;</span><span class="nv">a_2n</span><span class="p">|</span>…<span class="p">|</span><span class="w"> </span><span class="nv">a_m1</span><span class="p">;</span><span class="w"> </span><span class="nv">a_m2</span><span class="p">;</span><span class="w"> </span>…<span class="p">;</span><span class="w"> </span><span class="nv">a_mn</span><span class="p">]</span>`
+</code></pre></div>
 <p>In this way, you can create only general (rectangular) types of matrices.
 For special types of matrices, you have to use the respective creational functions as described further in this manual.
 If you have rows with different lengths, the number of columns <em>n</em> is assumed to be the maximum number of elements in a row.
@@ -4367,19 +4362,20 @@ For the Vandermonde matrix from the above example:</p>
 <p>In this way, you can iterate through matrix elements in a loop and include the loop counters in the respective indexes.
 You can use both inline and block loops for that purpose.
 The code below creates a Vandermonde matrix from vector <span class="arithmatex">\(\vec{x}\)</span> with the specified number of columns (6):</p>
-<div class="highlight"><pre><span></span><code><span class="n">x</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="mi">4</span><span class="p">]</span>
-<span class="n">A</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">matrix</span><span class="p">(</span><span class="n">len</span><span class="p">(</span><span class="n">x</span><span class="p">);</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span>
-#<span class="n">hide</span>
-#<span class="k">for</span><span class="w"> </span><span class="nb">i</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">n_rows</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-<span class="w">  </span>#<span class="k">for</span><span class="w"> </span><span class="nb">j</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">n_cols</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-<span class="w">    </span><span class="n">A</span><span class="p">.(</span><span class="nb">i</span><span class="p">;</span><span class="w"> </span><span class="nb">j</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">x</span><span class="p">.</span><span class="n">i</span><span class="o">^</span><span class="p">(</span><span class="nb">j</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
-<span class="w">  </span>#<span class="n">loop</span>
-#<span class="n">loop</span>
-#<span class="n">show</span>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">4</span><span class="p">]</span>
+<span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">matrix</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nv">x</span><span class="p">);</span><span class="w"> </span><span class="m">7</span><span class="p">)</span>
+<span class="k">#hide</span>
+<span class="k">#for</span><span class="w"> </span><span class="nv">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">n_rows</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span>
+<span class="w">  </span><span class="k">#for</span><span class="w"> </span><span class="nv">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">n_cols</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span>
+<span class="w">    </span><span class="nv">A</span><span class="p">.(</span><span class="nv">i</span><span class="p">;</span><span class="w"> </span><span class="nv">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">x</span><span class="p">.</span><span class="nv">i</span><span class="o">^</span><span class="p">(</span><span class="nv">j</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">)</span>
+<span class="w">  </span><span class="k">#loop</span>
+<span class="k">#loop</span>
+<span class="k">#show</span>
 </code></pre></div>
 <p><code>A</code> <span class="arithmatex">\(= \begin{bmatrix} 1 &amp; 1 &amp; 1 &amp; 1 &amp; 1 &amp; 1 &amp; 1 \\ 1 &amp; 2 &amp; 4 &amp; 8 &amp; 16 &amp; 32 &amp; 64 \\ 1 &amp; 3 &amp; 9 &amp; 27 &amp; 81 &amp; 243 &amp; 729 \\ 1 &amp; 4 &amp; 16 &amp; 64 &amp; 256 &amp; 1024 &amp; 4096 \end{bmatrix}\)</span></p>
 <p>The inline equivalent of the above loop is the following:</p>
-<p><code>$Repeat{$Repeat{A.(i; j) = x.i^(j - 1) @ j = 1 : n_cols(A)} @ i = 1 : n_rows(A)}</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Repeat</span><span class="p">{</span><span class="nd">$Repeat</span><span class="p">{</span><span class="nv">A</span><span class="p">.(</span><span class="nv">i</span><span class="p">;</span><span class="w"> </span><span class="nv">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">x</span><span class="p">.</span><span class="nv">i</span><span class="o">^</span><span class="p">(</span><span class="nv">j</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">n_cols</span><span class="p">(</span><span class="nv">A</span><span class="p">)}</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">n_rows</span><span class="p">(</span><span class="nv">A</span><span class="p">)}</span>
+</code></pre></div>
 <h2 id="creational-functions">Creational functions</h2>
 <p>The "square brackets" syntax is very powerful and flexible for creating small matrices with predefined sizes.
 However, it also has a lot of limitations.
@@ -4936,7 +4932,7 @@ The result is always a general (rectangular) type of matrix, even if the source 
 </div>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<p><div class="highlight"><pre><span></span><code>A = [1;  2;  3; 4 | _
+<p><div class="language-text highlight"><pre><span></span><code>A = [1;  2;  3; 4 | _
      5;  6;  7; 8 | _
      9; 10; 11; 12| _
     13; 14; 15; 16]
@@ -5578,7 +5574,7 @@ Otherwise, direct symmetric QL algorithm with implicit shifts is used.</p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<p><div class="highlight"><pre><span></span><code>A = copy( _
+<p><div class="language-text highlight"><pre><span></span><code>A = copy( _
 [4; 12; -16| _
 12; 37; -43| _
 -16; -43; 98]; _
@@ -5603,7 +5599,7 @@ symmetric(3); 1; 1)
 </div>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<p><div class="highlight"><pre><span></span><code>A = copy( _
+<p><div class="language-text highlight"><pre><span></span><code>A = copy( _
 [4; 12; -16| _
 12; 37; -43| _
 -16; -43; 98]; _
@@ -5629,7 +5625,7 @@ The same rules as for <strong>eigenvals</strong>(<em>M</em>; <span class="arithm
 </div>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<p><div class="highlight"><pre><span></span><code>A = copy( _
+<p><div class="language-text highlight"><pre><span></span><code>A = copy( _
 [4; 12; -16| _
 12; 37; -43| _
 -16; -43; 98]; _
@@ -5652,7 +5648,7 @@ symmetric(3); 1; 1)
 </div>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<p><div class="highlight"><pre><span></span><code>A = copy( _
+<p><div class="language-text highlight"><pre><span></span><code>A = copy( _
 [4; 12; -16| _
 12; 37; -43| _
 -16; -43; 98]; _
@@ -6012,7 +6008,8 @@ In this case you must specify exactly three arguments: the first two must be sca
 <code>spline(1.5; 2.5; A)</code> <span class="arithmatex">\(= 6.625\)</span></p>
 </div>
 <p>You can use interpolation functions to plot matrix data, as in the example below:</p>
-<p><code>$Map{spline(x; y; A) @ x = 1 : n_rows(A) &amp; y = 1 : n_cols(A)}</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Map</span><span class="p">{</span><span class="nb">spline</span><span class="p">(</span><span class="nv">x</span><span class="p">;</span><span class="w"> </span><span class="nv">y</span><span class="p">;</span><span class="w"> </span><span class="nv">A</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">n_rows</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="nv">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">n_cols</span><span class="p">(</span><span class="nv">A</span><span class="p">)}</span>
+</code></pre></div>
 <p>A full list of the available aggregate and interpolation functions is provided earlier in this manual (see "Expressions/Functions" above).</p>
 <h2 id="operators">Operators</h2>
 <p>All operators can be used with matrix operands.
@@ -6104,7 +6101,7 @@ For example:</p>
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/tex-mml-chtml.js"></script>
+        <script src="javascripts/mathjax/startup.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       

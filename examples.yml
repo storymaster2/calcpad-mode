@@ -59,13 +59,13 @@ Engineering Examples:
   Fractals:
     - Mandelbrot Set
     - Koch Snowflake
-    - Koch Snowflake Animation
-    - Kochwave Animation
-    - Kochwave Snowflake Animation
+    - Koch Snowflake Animated
+    - Kochwave Animated
+    - Kochwave Snowflake Animated
     # - Julia Set # Currently not possible, because CLI does not support enabling complex numbers
     - Sierpinski Christmas Tree
   3D, Plotting, Drawing:
-    - Heart Function Animation
+    - Heart Function Animated
     - Plot with Title, Legend and Labels
     - Bolt 3D Model
     - 3D Plot with Plotly
@@ -85,10 +85,10 @@ Engineering Examples:
     - Rayleigh Quotient Iteration
     - System of nonlinear equations
   Pendulums:
-    - Simple undamped
-    - Simple damped
-    - Elastic damped
-    - Double damped
+    - Simple undamped Animated
+    - Simple damped Animated
+    - Elastic damped Animated
+    - Double damped Animated
     - Comparison of different methods for analysis of simple undamped pendulum
   Waves:
     - Waves 2D on Water Interference Animated
@@ -211,7 +211,7 @@ Structural Engineering Examples:
     - Wind Load
   Nonlinear:
     - Material and geometric nonlinear analysis of prestressed asymmetric Biot truss
-    - Nonlinear analysis of a Von-Mises truss
+    - Nonlinear analysis of a Von-Mises truss Animated
     - Third order geometric nonlinearity analysis of a double-strut Biot system
   Simply Supported Beams:
     - Concentrated Force
@@ -228,8 +228,8 @@ Structural Engineering Examples:
     - I section properties and drawing
   Structural Dynamics:
     - Beam Impact Analysis Animated
-    - Free Vibrations of Steel Pole Animation
-    - Free Vibrations of Steel Pole Animation Plotly
+    - Free Vibrations of Steel Pole Animated
+    - Free Vibrations of Steel Pole Plotly Animated
     - Free Vibrations of Steel Pole
   Reinforced Concrete:
     - Areas of Reinforcement Bars

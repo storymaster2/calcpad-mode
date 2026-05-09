@@ -41,12 +41,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="stylesheets/extra.css">
@@ -2565,7 +2559,8 @@ For example, the following expression will be evaluated as:</p>
 <p><code>1.23 m + 35 cm + 12 mm</code> <span class="arithmatex">\(= 1.59m\)</span> (and not: 1.23 + 35 + 12 = 48.23)</p>
 <p>The result is usually obtained into the first unit in the expression.
 If you want to use particular units, write a vertical bar "|" followed by the target units at the end:</p>
-<p><code>1.23 m + 35 cm + 12 mm | cm</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="m">1.23</span><span class="w"> </span><span class="na">m</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">35</span><span class="w"> </span><span class="na">cm</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">12</span><span class="w"> </span><span class="na">mm</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">cm</span>
+</code></pre></div>
 <p>The above expression will be evaluated to 159.2 <em>cm</em>. If you simply want to convert units, just write the source and the target units, separated by a vertical bar, like: mm | cm or 10 m/s | km/h.</p>
 <p>Unit consistency is also verified automatically.
 For example, you cannot add <em>m</em> and <em>s</em> (e.g. <code>6 m + 2 s</code>), but you can multiply and divide them: <code>6 m / 2 s = 3 m/s</code>.</p>
@@ -2679,15 +2674,15 @@ If you put a dot before the literal, you will force it to be parsed as a unit, e
 <h2 id="custom-units">Custom units</h2>
 <p>You can define your own "custom" units and use them like any others in your code.
 Defining a unit is similar to defining a variable, but the name must be prefixed with a dot ".":</p>
-<div class="highlight"><pre><span></span><code><span class="o">.*</span><span class="n">Name</span><span class="o">*</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">expression</span>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="p">.</span><span class="o">*</span><span class="nv">Name</span><span class="o">*</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">expression</span>
 </code></pre></div>
 <p>Names can include some currency symbols like: €, £, ₤, ¥, ¢, ₽, ₹, ₩, ₪. If you need to create a unit, that derive from others, you can write an expression with numbers and units on the right side.
 You can also define dimensionless units, like currency (USD, EUR, €, ₤) or information (bit, byte, KiB, etc), by specifying "= 1" for the first unit and setting the others as multiples.
 For example:</p>
-<div class="highlight"><pre><span></span><code><span class="p">.</span><span class="n">bit</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1</span>
-<span class="p">.</span><span class="n">byte</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">8</span><span class="o">*</span><span class="n">bit</span>
-<span class="p">.</span><span class="n">KiB</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">1024</span><span class="o">*</span><span class="n">byte</span>
-<span class="k">...</span>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="p">.</span><span class="nv">bit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
+<span class="p">.</span><span class="nv">byte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="o">*</span><span class="nv">bit</span>
+<span class="p">.</span><span class="nv">KiB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1024</span><span class="o">*</span><span class="nv">byte</span>
+<span class="p">...</span>
 </code></pre></div>
 <p>Custom dimensionless units exist in a special (ninth) non-physical dimension.
 That is how they do not cancel or convert to other dimensionless units, like percents or angles, when mixed.
@@ -2755,7 +2750,7 @@ However, if you have two types of dimensionless units in a single file, they wil
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/tex-mml-chtml.js"></script>
+        <script src="javascripts/mathjax/startup.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       

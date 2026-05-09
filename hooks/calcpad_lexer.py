@@ -232,8 +232,11 @@ def register():
     it for ```calcpad / ```cpd fenced code blocks.
 
     MkDocs hooks are loaded by file path, not as a regular Python package, so
-    entry-point discovery is unavailable. Patch the lookup functions in-process.
+    entry-point discovery is unavailable. Patch the lookup functions in-process,
+    including any consumer module (pymdownx.highlight, mkdocs.contrib...) that
+    has already imported those names by the time we run.
     """
+    import sys
     import pygments.lexers as _pl
 
     aliases = set(CalcpadLexer.aliases)
@@ -253,3 +256,17 @@ def register():
 
     _pl.get_lexer_by_name = get_lexer_by_name
     _pl.find_lexer_class_by_name = find_lexer_class_by_name
+
+    # Also patch every already-loaded module that re-exported the originals
+    # (e.g. pymdownx.highlight does `from pygments.lexers import get_lexer_by_name`
+    # and would otherwise keep the unpatched reference forever).
+    for mod in list(sys.modules.values()):
+        if mod is None or mod is _pl:
+            continue
+        try:
+            if getattr(mod, "get_lexer_by_name", None) is _orig_get:
+                mod.get_lexer_by_name = get_lexer_by_name
+            if getattr(mod, "find_lexer_class_by_name", None) is _orig_find:
+                mod.find_lexer_class_by_name = find_lexer_class_by_name
+        except Exception:
+            pass

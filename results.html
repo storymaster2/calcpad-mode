@@ -41,12 +41,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="stylesheets/extra.css">
@@ -2776,13 +2770,17 @@ You will also need the cloud version of CalcpadCE for that purpose.</p>
 <h2 id="custom-format-strings">Custom format strings</h2>
 <p>You can specify format strings for different parts of your worksheet and even for individual output values.
 At worksheet level you can do that by following command:</p>
-<p><code>#format format string</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#</span><span class="nv">format</span><span class="w"> </span><span class="nv">format</span><span class="w"> </span><span class="nv">string</span>
+</code></pre></div>
 <p>To restore the default formatting, add the following line:</p>
-<p><code>#format default</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#</span><span class="nv">format</span><span class="w"> </span><span class="nv">default</span>
+</code></pre></div>
 <p>To specify a custom format string for an individual output value, add a colon followed by the respective string, e.g.:</p>
-<p><code>x = 12.345:format string</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nv">x</span> <span class="o">=</span><span class="w"> </span><span class="m">12.345</span><span class="p">:</span><span class="nv">format</span><span class="w"> </span><span class="nv">string</span>
+</code></pre></div>
 <p>If you have units, the format specifier is positioned after the units:</p>
-<p><code>x = 12.345cm:format string</code></p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nv">x</span> <span class="o">=</span><span class="w"> </span><span class="m">12.345</span><span class="na">cm</span><span class="p">:</span><span class="nv">format</span><span class="w"> </span><span class="nv">string</span>
+</code></pre></div>
 <p>There are several types of format strings that you can use:</p>
 <table style="width:96%;">
 <colgroup>
@@ -3000,7 +2998,7 @@ Detailed description of printing from CalcpadCE is provided above.</p>
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/tex-mml-chtml.js"></script>
+        <script src="javascripts/mathjax/startup.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       

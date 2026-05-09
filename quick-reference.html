@@ -41,12 +41,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="stylesheets/extra.css">
@@ -2855,19 +2849,19 @@ Results will appear in the "<strong>Output</strong>" box on the right as a profe
 <ul>
 <li><strong>Program flow control</strong><ul>
 <li>Simple
-  <div class="highlight"><pre><span></span><code>#if *condition*
+  <div class="language-text highlight"><pre><span></span><code>#if *condition*
     *your code goes here*
 #end if
 </code></pre></div></li>
 <li>Alternative
-  <div class="highlight"><pre><span></span><code>#if *condition*
+  <div class="language-text highlight"><pre><span></span><code>#if *condition*
     *your code goes here*
 #else
     *some other code*
 #end if
 </code></pre></div></li>
 <li>Complete
-  <div class="highlight"><pre><span></span><code>#if *condition1*
+  <div class="language-text highlight"><pre><span></span><code>#if *condition1*
     *your code goes here*
 #else if *condition2*
     *your code goes here*
@@ -2882,12 +2876,12 @@ Results will appear in the "<strong>Output</strong>" box on the right as a profe
 </li>
 <li><strong>Iteration blocks</strong><ul>
 <li>Simple
-  <div class="highlight"><pre><span></span><code>#repeat *number of repetitions
+  <div class="language-text highlight"><pre><span></span><code>#repeat *number of repetitions
     your code goes here*
 #loop
 </code></pre></div></li>
 <li>With conditional break/continue
-  <div class="highlight"><pre><span></span><code>#repeat *number of repetitions*
+  <div class="language-text highlight"><pre><span></span><code>#repeat *number of repetitions*
     *your code goes here*
 #if *condition*
     #break or #continue
@@ -2896,12 +2890,12 @@ Results will appear in the "<strong>Output</strong>" box on the right as a profe
 # loop
 </code></pre></div></li>
 <li>With counter
-  <div class="highlight"><pre><span></span><code>#for counter = *start* : *end*
+  <div class="language-text highlight"><pre><span></span><code>#for counter = *start* : *end*
     *your code goes here*
 #loop
 </code></pre></div></li>
 <li>With condition
-  <div class="highlight"><pre><span></span><code>#while *condition*
+  <div class="language-text highlight"><pre><span></span><code>#while *condition*
     *your code goes here*  
 #loop
 </code></pre></div></li>
@@ -2916,7 +2910,7 @@ Results will appear in the "<strong>Output</strong>" box on the right as a profe
 </li>
 <li>Inline string variable: <code>#def variable_name$ = *content*</code></li>
 <li>Multiline string variable
-  <div class="highlight"><pre><span></span><code>#def variable_name$
+  <div class="language-text highlight"><pre><span></span><code>#def variable_name$
     *content line 1*
     *content line 2*
     …
@@ -3123,7 +3117,7 @@ Results will appear in the "<strong>Output</strong>" box on the right as a profe
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/tex-mml-chtml.js"></script>
+        <script src="javascripts/mathjax/startup.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       

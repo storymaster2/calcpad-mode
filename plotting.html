@@ -41,12 +41,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="stylesheets/extra.css">
@@ -872,6 +866,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotting
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="plotting.html" class="md-nav__link md-nav__link--active">
         
   
@@ -888,6 +900,86 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parametric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parametric
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-parametric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Parametric
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#color-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Color Map
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -2358,6 +2450,75 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parametric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parametric
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-parametric" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Parametric
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#color-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Color Map
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -2380,26 +2541,39 @@ Their names start with "$" to be distinguished from normal functions.
 Their parameters must be enclosed in curly brackets: "{" and "}". Such is the plotting command $Plot.
 It can plot a function of one variable in the specified interval.
 It has the following format:</p>
-<p><code>$Plot{y(x) @ x = a : b}</code>, where:</p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Plot</span><span class="p">{</span><span class="nv">y</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">b</span><span class="p">}</span>
+</code></pre></div>
+<p>Where:</p>
 <ul>
 <li><strong>y</strong>(<em>x</em>) - the function to be plotted. Instead of <strong>y</strong>(<em>x</em>) you can put any valid expression. It will be used to calculate the ordinate values;</li>
 <li><em>x</em> - the name of the variable along the abscissa. You can put here only a single name. It is not required to define the variable preliminary;</li>
 <li><em>a</em> and <em>b</em> are the limits of the interval for the <em>x</em> variable. Instead of <em>a</em> and <em>b</em> you can put numbers, variables or any valid expressions.</li>
 </ul>
-<p>For example, if you enter: <code>$Plot{x^2 - 5*x + 3 @ x = -1:6}</code>, you will get the following result:</p>
+<p>For example, if you enter:</p>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Plot</span><span class="p">{</span><span class="nv">x</span><span class="o">^</span><span class="m">2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">5</span><span class="o">*</span><span class="nv">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="m">1</span><span class="p">:</span><span class="m">6</span><span class="p">}</span>
+</code></pre></div>
+<p>you will get the following result:</p>
 <p><img src="./media/image20.png" style="width:4.01795in;height:2.81417in" alt="Картина, която съдържа диаграма, заговорнича, линия Описанието е генерирано автоматично" /></p>
 <p>The above command plots only one function of one variable at a time.
 There are also other formats that you can use:</p>
 <ul>
-<li><code>$Plot{x(t) | y(t) @ t = a:b}</code> parametric plot: both coordinates are functions of a parameter;  </li>
-<li><code>$Plot{y1(x) &amp; y_2(x) &amp; … @ x = a:b}</code> multiple: plots several functions on a single graph;  </li>
-<li><code>$Plot{x1(t) | y_1(t) &amp; x_2(t) | y_2(t) &amp; … @ t = a:b}</code> multiple parametric;  </li>
-<li><code>$Map{f(x; y) @ x = a:b &amp; y = c:d}</code> draws a 2D color map of a 3D surface, defined by <strong>f</strong>(<em>x</em>; <em>y</em>).</li>
+<li>Parametric Plot: both coordinates are functions of a parameter
+  <div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Plot</span><span class="p">{</span><span class="nv">x</span><span class="p">(</span><span class="nv">t</span><span class="p">)</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">y</span><span class="p">(</span><span class="nv">t</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="p">:</span><span class="nv">b</span><span class="p">}</span>
+</code></pre></div></li>
+<li>Multiple: plots several functions on a single graph
+  <div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Plot</span><span class="p">{</span><span class="nv">y1</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="nv">y_2</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span>…<span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="p">:</span><span class="nv">b</span><span class="p">}</span>
+</code></pre></div></li>
+<li>Multiple Parametric:
+  <div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Plot</span><span class="p">{</span><span class="nv">x1</span><span class="p">(</span><span class="nv">t</span><span class="p">)</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">y_1</span><span class="p">(</span><span class="nv">t</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="nv">x_2</span><span class="p">(</span><span class="nv">t</span><span class="p">)</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="nv">y_2</span><span class="p">(</span><span class="nv">t</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span>…<span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="p">:</span><span class="nv">b</span><span class="p">}</span>
+</code></pre></div></li>
+<li>Draws a 2D color map of a 3D surface, defined by f(<em>x</em>; <em>y</em>):
+  <div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Map</span><span class="p">{</span><span class="nv">f</span><span class="p">(</span><span class="nv">x</span><span class="p">;</span><span class="w"> </span><span class="nv">y</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="p">:</span><span class="nv">b</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="nv">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">c</span><span class="p">:</span><span class="nv">d</span><span class="p">}</span>
+</code></pre></div></li>
 </ul>
-<p>The $Plot function must be the first thing on a line.
+<p>The <code>$Plot</code> function must be the first thing on a line.
 You can have only spaces and tabs before, not even comments.
 Otherwise, the program will return an error.
-Any text after the closing bracket "}" will be ignored.
+Any text after the closing bracket <code>}</code> will be ignored.
 Plotting supports only real numbers.
 You can use it in complex mode, only if <em>x</em> and <em>y</em> are real and the function returns real result along the plotting interval.</p>
 <p>You can specify the size of the plot area by defining two variables: <em>PlotWidth</em> and <em>PlotHeight</em> in pixels.
@@ -2417,50 +2591,67 @@ Where the function is smoother, the mesh remains coarser, so that the total numb
 You can switch adaptive plotting on and off by clicking the "<strong>Adaptive</strong>" checkbox or setting the <em>PlotAdaptive</em> variable to 1 and 0, respectively.
 Adaptive potting will work for relatively smooth plots with limited number of breaks and jumps.
 If you have rapidly oscillating functions, it is possible to miss some peaks, so it is recommended to turn it off.</p>
-<p>The $Map function can work with different color palettes.
+<p>The <code>$Map</code> function can work with different color palettes.
 Select the preferred one from the "<strong>Palette</strong>" combo box on the bottom of the program window.
 If you check the "<strong>Smooth</strong>" checkbox, the coloring will be displayed as a smooth gradient.
 Otherwise, the program will display strips.
 You can also add 3D effects to the graph by selecting the "<strong>Shadows</strong>" checkbox.
 You can also specify light direction by the respective combo.
 Besides UI controls, you can specify these options by using variables at worksheet level, as follows:</p>
-<ul>
-<li><em>PlotShadows</em> - draw surface plots with shadows;</li>
-<li><em>PlotLightDir</em> - direction to light source (0-7) clockwise:
-    - 0 - North
-    - 1 - NorthEast
-    - 2 - East
-    - 3 - SouthEast
-    - 4 - South
-    - 5 - SouthWest
-    - 6 - West
-    - 7 – NorthWest</li>
-<li><em>PlotPalette</em> - the number of color palette to be used for surface plots (0-9); <img src="./media/Image%202.png" width="300" alt="Table showing the palette colors" /></li>
-<li><em>PlotSmooth</em> - smooth transition of colors (= 1) or isobands (= 0) for surface plots.
-    Examples of different plotting methods are provided below:<p>- <strong>Parametric</strong><br />
-    Equation: <strong>r</strong>(<em>θ</em>) = <strong>cos</strong>(5/2*<em>θ</em>)<br />
-<code>$Plot{r(θ)*cos(θ)|r(θ)*sin(θ) @ θ = 0:6*π}</code><br />
-    Result: "rose" curve<br />
+<table>
+<thead>
+<tr>
+<th>Parameter Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>PlotShadows</em></td>
+<td>Draw surface plots with shadows</td>
+</tr>
+<tr>
+<td><em>PlotLightDir</em></td>
+<td>Direction to light source (0-7) clockwise:<br/>0 - North, 1 - NorthEast, 2 - East, 3 - SouthEast, 4 - South, 5 - SouthWest, 6 - West, 7 - NorthWest</td>
+</tr>
+<tr>
+<td><em>PlotPalette</em></td>
+<td>The number of color palette to be used for surface plots (0-9); <img src="./media/Image%202.png" width="300" alt="Table showing the palette colors" /></td>
+</tr>
+<tr>
+<td><em>PlotSmooth</em></td>
+<td>Smooth transition of colors (= 1) or isobands (= 0) for surface plots.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="examples">Examples</h2>
+<p>Examples of different plotting methods are provided below. Set Angles to "R" (icon bar).</p>
+<h3 id="parametric">Parametric</h3>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nv">r</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">cos</span><span class="p">(</span><span class="m">5</span><span class="o">/</span><span class="m">2</span><span class="o">*</span><span class="nv">θ</span><span class="p">)</span><span class="w">  </span>
+<span class="nd">$Plot</span><span class="p">{</span><span class="nv">r</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="o">*</span><span class="nb">cos</span><span class="p">(</span><span class="nv">θ</span><span class="p">)|</span><span class="nv">r</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="o">*</span><span class="nb">sin</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">θ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">:</span><span class="m">6</span><span class="o">*</span><span class="nv">π</span><span class="p">}</span>
+</code></pre></div>
+<p>Result: "rose" curve<br />
 <img alt="rose curve" src="media/image21.png" width="300" /></p>
-<p>- <strong>Multiple</strong><br />
-    Equation: <strong>y</strong>1(<em>θ</em>) = <strong>cos</strong>(<em>θ</em>) - <strong>sin</strong>(<em>θ</em>)<br />
-<strong>y</strong>2(<em>θ</em>) = <strong>cos</strong>(<em>θ</em>) + <strong>sin</strong>(<em>θ</em>)<br />
-<code>$Plot{cos(θ) &amp; y1(θ) &amp; y2(θ) @ θ = 0:π}</code><br />
-    Result: leaf by three trigonometric functions<br />
+<h3 id="multiple">Multiple</h3>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nv">y_1</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">cos</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w">  </span>
+<span class="nv">y_2</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">cos</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w">  </span>
+<span class="nd">$Plot</span><span class="p">{</span><span class="nb">cos</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="nv">y_1</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="nv">y_2</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">θ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">:</span><span class="nv">π</span><span class="p">}</span>
+</code></pre></div>
+<p>Result: leaf by three trigonometric functions<br />
 <img alt="leaf plot" src="media/image22.png" width="300" /></p>
-<p>- <strong>Multiple parametric</strong><br />
-    Equation: <strong>x</strong>(<em>θ</em>) = <strong>sqr</strong>(<em>θ</em>)*<strong>cos</strong>(<em>θ</em>)<br />
-<strong>y</strong>(<em>θ</em>) = <strong>sqr</strong>(<em>θ</em>)*<strong>sin</strong>(<em>θ</em>)<br />
-<code>$Plot{x(θ)|y(θ) &amp; -x(θ)|-y(θ) @ θ = 0:3*π}</code><br />
-    Result: double Fermat spiral<br />
+<h3 id="multiple-parametric">Multiple Parametric</h3>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nv">x</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="o">*</span><span class="nb">cos</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w">  </span>
+<span class="nv">y</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="o">*</span><span class="nb">sin</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w">  </span>
+<span class="nd">$Plot</span><span class="p">{</span><span class="nv">x</span><span class="p">(</span><span class="nv">θ</span><span class="p">)|</span><span class="nv">y</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="o">-</span><span class="nv">x</span><span class="p">(</span><span class="nv">θ</span><span class="p">)|</span><span class="o">-</span><span class="nv">y</span><span class="p">(</span><span class="nv">θ</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">θ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">:</span><span class="m">3</span><span class="o">*</span><span class="nv">π</span><span class="p">}</span>
+</code></pre></div>
+<p>Result: double Fermat spiral<br />
 <img alt="double Fermat spiral" src="media/image23.png" width="300" /></p>
-<p>- <strong>Color map</strong><br />
-    Equation: <strong>f</strong>(<em>x</em>; <em>y</em>) = <strong>cos</strong>(<em>x</em>/3) + <strong>sin</strong>(<em>y</em>) -<strong>sin</strong>(<em>x</em>)*<strong>cos</strong>(<em>y</em>/4)<br />
-<code>$Map{f(x; y) @ x = -15:15 &amp; y = -15:15}</code><br />
-    Result: 2D waves<br />
+<h3 id="color-map">Color Map</h3>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nv">f</span><span class="p">(</span><span class="nv">x</span><span class="p">;</span><span class="w"> </span><span class="nv">y</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">cos</span><span class="p">(</span><span class="nv">x</span><span class="o">/</span><span class="m">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="nv">y</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="o">*</span><span class="nb">cos</span><span class="p">(</span><span class="nv">y</span><span class="o">/</span><span class="m">4</span><span class="p">)</span>
+<span class="nd">$Map</span><span class="p">{</span><span class="nv">f</span><span class="p">(</span><span class="nv">x</span><span class="p">;</span><span class="w"> </span><span class="nv">y</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="m">15</span><span class="p">:</span><span class="m">15</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="nv">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="m">15</span><span class="p">:</span><span class="m">15</span><span class="p">}</span>
+</code></pre></div>
+<p>Result: 2D waves<br />
 <img alt="2D waves" src="media/image24.png" width="300" /></p>
-</li>
-</ul>
 
 
 
@@ -2524,7 +2715,7 @@ Besides UI controls, you can specify these options by using variables at workshe
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/tex-mml-chtml.js"></script>
+        <script src="javascripts/mathjax/startup.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       

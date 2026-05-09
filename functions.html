@@ -41,12 +41,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="stylesheets/extra.css">
@@ -3173,8 +3167,8 @@ Some examples for rounding of negative and positive numbers are provided in the 
 Custom functions can have unlimited number of parameters.
 They are specified after the function name, enclosed in brackets "(" … ")" and separated by semicolons ";". Each function is defined, using the following format: "<strong>f</strong> ( <em>x</em>; <em>y</em>; <em>z</em>; … ) = <strong>expression</strong>", where "<strong>f</strong>" is the function name and "<strong>x</strong>", "<strong>y</strong>" and "<strong>z</strong>" are function parameters.
 On the right side you can have any valid expression including constants, operators, variables and even other functions, e.g.:</p>
-<div class="highlight"><pre><span></span><code><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">x</span><span class="o">^</span><span class="mi">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="nb">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w">  </span>
-<span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">;</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="nv">f</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">x</span><span class="o">^</span><span class="m">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="nv">x</span><span class="o">*</span><span class="nb">sin</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w">  </span>
+<span class="nv">g</span><span class="p">(</span><span class="nv">x</span><span class="p">;</span><span class="w"> </span><span class="nv">y</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="nv">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">4</span><span class="p">)</span>
 </code></pre></div>
 <p>Once defined, you can use a function in any expression by inserting a function call.
 Just write the function name and then specify the arguments in brackets, e. g. <em>b</em> = <strong>g</strong>(<em>a</em> + 2; 3) + 3. Function names must conform to the same rules as variable names.
@@ -3258,7 +3252,7 @@ For example:</p>
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/tex-mml-chtml.js"></script>
+        <script src="javascripts/mathjax/startup.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       

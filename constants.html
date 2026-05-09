@@ -41,12 +41,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="stylesheets/extra.css">
@@ -2498,9 +2492,9 @@ In CalcpadCE, the imaginary unit can be entered either as "<em>i</em>" or as "1<
 <h2 id="custom">Custom</h2>
 <p>You can declare any variable or function as constant (readonly) by adding "#const" before its definition.
 For example:</p>
-<div class="highlight"><pre><span></span><code>#<span class="n">const</span><span class="w"> </span>γ<span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mf">0.57721566490153286</span>
+<div class="language-calcpad highlight"><pre><span></span><code><span class="k">#const</span> <span class="nv">γ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.57721566490153286</span>
 
-#<span class="n">const</span><span class="w"> </span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">x</span><span class="o">^</span><span class="mi">2</span>
+<span class="k">#const</span> <span class="nv">f</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">x</span><span class="o">^</span><span class="m">2</span>
 </code></pre></div>
 <p>After that, any attempt to assign a new value to the variable or new expression to the function throws an error message.</p>
 
@@ -2566,7 +2560,7 @@ For example:</p>
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/tex-mml-chtml.js"></script>
+        <script src="javascripts/mathjax/startup.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       

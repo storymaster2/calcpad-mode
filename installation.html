@@ -41,12 +41,6 @@
     
     
       
-        
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
-      
     
     
       <link rel="stylesheet" href="stylesheets/extra.css">
@@ -2474,34 +2468,34 @@ After installation it can be found at:
 <li>
 <p>CalcpadCE is a .NET application, so you need .NET 10.0 to run it on Linux.
     Use the following commands to install .NET 10.0 runtime:</p>
-<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>update
+<div class="language-bash highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>update
 
 sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>dotnet-runtime-10.0
 </code></pre></div>
 <p>If you need to uninstall older dotnet versions, run this command before the above ones:</p>
-<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>remove<span class="w"> </span>dotnet*
+<div class="language-bash highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>remove<span class="w"> </span>dotnet*
 </code></pre></div>
 </li>
 <li>
 <p>If you do not have Chromium installed, you will need it to download CalcpadCE and view the reports after calculation.
     Install it with the following command:</p>
-<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>snap<span class="w"> </span>install<span class="w"> </span>chromium
+<div class="language-bash highlight"><pre><span></span><code>sudo<span class="w"> </span>snap<span class="w"> </span>install<span class="w"> </span>chromium
 </code></pre></div>
 </li>
 <li>
 <p>Download the CalcpadCE setup package from the following link: <a href="https://github.com/imartincei/CalcpadCE/releases">https://github.com/imartincei/CalcpadCE/releases</a>
     Then, install CalcpadCE, using the following command:</p>
-<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>&lt;path-to-your-downloads-folder&gt;/Calcpad.7.5.9.deb
+<div class="language-bash highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>&lt;path-to-your-downloads-folder&gt;/Calcpad.7.5.9.deb
 </code></pre></div>
 <p>Instead of &lt;path-to-your-downloads-folder&gt; you must put the actual path, something like this:</p>
-<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>/home/&lt;user&gt;/snap/chromium/3235/Downloads/Calcpad.7.5.9.deb
+<div class="language-bash highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>/home/&lt;user&gt;/snap/chromium/3235/Downloads/Calcpad.7.5.9.deb
 </code></pre></div>
 <p>If you get a message like the one below, please ignore it: N: Download is performed unsandboxed as root as file '.../Calcpad.7.5.9.deb' couldn't be accessed by user '_apt'. - pkgAcquire::Run (13: Permission denied)</p>
 </li>
 </ol>
 <p>And that's it.
 You can start the CalcpadCE command line interpreter (CLI) by simply typing:</p>
-<div class="highlight"><pre><span></span><code>calcpad
+<div class="language-bash highlight"><pre><span></span><code>calcpad
 </code></pre></div>
 <p>You can use it to perform calculations in console mode:</p>
 <p><img src="./media/image4.png" style="width:6.69306in;height:3.49583in" alt="Cli" /></p>
@@ -2509,7 +2503,7 @@ You can start the CalcpadCE command line interpreter (CLI) by simply typing:</p>
 Instructions on how to install Sublime Text on Linux are provided here: </p>
 <p><a href="https://www.sublimetext.com/docs/linux_repositories.html">https://www.sublimetext.com/docs/linux_repositories.html</a></p>
 <p>For Ubuntu, you can use the following commands:</p>
-<div class="highlight"><pre><span></span><code>wget<span class="w"> </span>-qO<span class="w"> </span>-<span class="w"> </span>https://download.sublimetext.com/sublimehq-pub.gpg<span class="w"> </span><span class="p">|</span><span class="w"> </span>gpg<span class="w"> </span>--dearmor<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>tee<span class="w"> </span>/etc/apt/trusted.gpg.d/sublimehq-archive.gpg<span class="w"> </span>&gt;<span class="w"> </span>/dev/null
+<div class="language-bash highlight"><pre><span></span><code>wget<span class="w"> </span>-qO<span class="w"> </span>-<span class="w"> </span>https://download.sublimetext.com/sublimehq-pub.gpg<span class="w"> </span><span class="p">|</span><span class="w"> </span>gpg<span class="w"> </span>--dearmor<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>tee<span class="w"> </span>/etc/apt/trusted.gpg.d/sublimehq-archive.gpg<span class="w"> </span>&gt;<span class="w"> </span>/dev/null
 
 sudo<span class="w"> </span>apt-get<span class="w"> </span>update
 
@@ -2528,7 +2522,7 @@ sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w
 <p>/home/&lt;user&gt;/.config/sublime-text/Packages/User</p>
 <p>Here, &lt;user&gt; must be your actual username.
 Finally, you can open Sublime Text and Chromium with the following commands:</p>
-<div class="highlight"><pre><span></span><code>subl &amp;
+<div class="language-text highlight"><pre><span></span><code>subl &amp;
 chromium &amp;
 </code></pre></div>
 <p>Put them side to side.
@@ -2537,7 +2531,7 @@ Press Ctrl+B to calculate.
 If everything is OK, the results will show in Chromium:</p>
 <p><img src="./media/image5.png" style="width:6.69306in;height:3.50556in" alt="Sublime+Chromium" /></p>
 <p>Finally, if you want to uninstall Calcpad, type the following:</p>
-<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>--purge<span class="w"> </span>remove<span class="w"> </span>calcpad
+<div class="language-bash highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>--purge<span class="w"> </span>remove<span class="w"> </span>calcpad
 </code></pre></div>
 
 
@@ -2602,7 +2596,7 @@ If everything is OK, the results will show in Chromium:</p>
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/tex-mml-chtml.js"></script>
+        <script src="javascripts/mathjax/startup.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       
