@@ -120,19 +120,27 @@ CalcpadCE uses for decimal separator the symbol defined in the Windows' Regional
 You can specify format strings for different parts of your worksheet and even for individual output values.
 At worksheet level you can do that by following command:
 
-`#format format string`
+```calcpad
+#format format string
+```
 
 To restore the default formatting, add the following line:
 
-`#format default`
+```calcpad
+#format default
+```
 
 To specify a custom format string for an individual output value, add a colon followed by the respective string, e.g.:
 
-`x = 12.345:format string`
+```calcpad
+x = 12.345:format string
+```
 
 If you have units, the format specifier is positioned after the units:
 
-`x = 12.345cm:format string`
+```calcpad
+x = 12.345cm:format string
+```
 
 There are several types of format strings that you can use:
 

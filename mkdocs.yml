@@ -4,6 +4,7 @@ use_directory_urls: false
 theme:
   name: material
   custom_dir: docs/overrides
+  font: false
   palette:
     - scheme: default
       primary: indigo
@@ -66,6 +67,9 @@ markdown_extensions:
   - def_list
   - admonition
   - pymdownx.details
+  - pymdownx.highlight:
+      use_pygments: true
+      pygments_lang_class: true
   - pymdownx.superfences
   - pymdownx.arithmatex:
       generic: true
@@ -79,7 +83,7 @@ markdown_extensions:
 
 extra_javascript:
   - javascripts/mathjax.js
-  - javascripts/mathjax/tex-mml-chtml.js
+  - javascripts/mathjax/startup.js
   - javascripts/example-layout.js
 
 extra_css:

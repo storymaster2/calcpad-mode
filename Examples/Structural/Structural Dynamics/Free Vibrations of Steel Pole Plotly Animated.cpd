@@ -183,7 +183,7 @@ y = range(1; n_J; 1)*L/n_J
 	'transition:{duration:tn$,easing:"cos"},
 	'frame:{duration:tn$, redraw: false},
 	'mode: "next"
-	'});requestAnimationFrame(animateModen$);}
+	'}).then(()=>requestAnimationFrame(animateModen$)).catch(()=>{});}
 	'requestAnimationFrame(animateModen$);
 	'</script>
 	#equ

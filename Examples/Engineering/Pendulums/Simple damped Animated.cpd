@@ -63,7 +63,7 @@ texth$(x+3*δ_x; y_g-δ;g)
 'Step size -'h = 0.02s
 'Number of steps -'n = t_max/h
 #hide
-N = min(n; 250)
+N = min(n; 120)
 k_N = floor(n/N)
 N = n\k_N
 #show

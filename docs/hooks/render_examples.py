@@ -374,7 +374,11 @@ def _render_category_page(category: str, cpd_files: list[Path], fragments: dict[
     lines = ["---\nsearch:\n  exclude: true\n---\n", f"# {_display_name(category)}\n"]
 
     for cpd_file in cpd_files:
-        name = cpd_file.stem
+        name = re.sub(
+            r"\s*\bAnimated\b",
+            ' <span title="Animated" aria-label="Animated" style="cursor:default">🎬</span>',
+            cpd_file.stem,
+        )
         lines.append(f"\n## {name}\n")
 
         source = cpd_file.read_text(encoding="utf-8", errors="replace")

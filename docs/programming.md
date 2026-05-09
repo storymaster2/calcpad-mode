@@ -1,4 +1,4 @@
-﻿# Programming
+# Programming
 
 ## Input Forms
 
@@ -46,7 +46,9 @@ That is how you can protect your source code from unauthorized copying, viewing 
 
 You can put question marks "**?**" not only in variable definitions, but at any place in the code e.g.:
 
-`2 + ?`
+```calcpad
+2 + ?
+```
 
 2 +
 ![input field](media/Image%201.png){style="height: 32px; vertical-align: text-bottom; margin-bottom: -5px;"}
@@ -66,7 +68,7 @@ You can use the following sample code:
 
 ### Selection box
 
-```text
+```calcpad
 'Select an option: <select name="**target1**">
 '<option value="11;12">x1; y1</option>
 '<option value="21;22">x2; y2</option>
@@ -80,7 +82,7 @@ You can use the following sample code:
 
 ### Radio buttons
 
-```text
+```calcpad
 '<p>Select:
 '<input name="target2" type="radio" id="opt1" value="1"/>
 '<label for="opt1">option 1</label>
@@ -94,7 +96,7 @@ You can use the following sample code:
 
 ### Check box
 
-```text
+```calcpad
 '<p><input name="target3" type="checkbox" id="chk1" value="3"/>
 '<label for="chk1">Checkbox 1</label></p>
 '...
@@ -138,7 +140,7 @@ Sometimes the solution has to continue in different ways, depending on some inte
 Such feature is included in CalcpadCE, similarly to other programming languages.
 It is called "conditional execution block" and has the following general form:
 
-```text
+```calcpad
 #If condition1
     contents if condition1 is satisfied
 #Else If condition2
@@ -153,7 +155,7 @@ It is called "conditional execution block" and has the following general form:
 
 Shorter forms are also possible:
 
-```text
+```calcpad
 #If condition
     contents if the condition is satisfied
 #Else
@@ -163,7 +165,7 @@ Shorter forms are also possible:
 
 or:
 
-```text
+```calcpad
 #If condition
     contents if the condition is satisfied
 #end if
@@ -191,7 +193,7 @@ We can do this, using conditional execution, as follows:
 You can have simple iterations inside a CalcpadCE program.
 For that purpose, you have to define a "**repeat-loop**" block:
 
-```text
+```calcpad
 #Repeat n
     code to be executed repeatedly
 #Loop
@@ -205,7 +207,7 @@ It will make sense only if you combine it a conditional block.
 Otherwise, it will always break at the same line, without performing any loops.
 A typical "**repeat-break-loop**" will look like this:
 
-```text
+```calcpad
 #Repeat
     code to be executed repeatedly
     #If condition
@@ -224,7 +226,7 @@ Besides repetitive calculations, you can use loops to generate repetitive report
 
 Since version VM 7.0, two new iteration blocks were added: "for-loop" and "while-loop", as follows:
 
-```text
+```calcpad
 #For counter = start : end
     code to be executed repeatedly
     #Loop
@@ -264,7 +266,9 @@ If you have pieces of code that is repeated in different worksheets, you can org
 Also, if you have a longer worksheet, you can split it into modules that will be easier to maintain.
 Then, you can include them into the main file by using the following statement:
 
-`#include filename`
+```calcpad
+#include filename
+```
 
 The "*filename*" must contain the full path to a local file.
 If the file is the same folder as the current one, you can specify only the filename.
@@ -285,11 +289,13 @@ You can define them by using the following statements:
 
 Inline string variable:
 
-`#def variable_name$ = content`
+```calcpad
+#def variable_name$ = content
+```
 
 Multiline string variable:
 
-```text
+```calcpad
 #def variable_name$
     content line 1
     content line 2
@@ -299,11 +305,13 @@ Multiline string variable:
 
 Inline string macro:
 
-`#def *macro_name$(param1$; param2$;...) = content`
+```calcpad
+#def *macro_name$(param1$; param2$;...) = content
+```
 
 Multiline string macro:  
 
-```text
+```calcpad
 #def macro_name$(param1$; param2$;...)
     content line 1
     content line 2  
@@ -344,21 +352,27 @@ The following commands are available:
 
 Reads data from the specified text/CSV file into the matrix/vector *M*. The file must exist:
 
-`#read M from filename.txt@R1C1:R2C2 TYPE=R SEP=','`
+```calcpad
+#read M from filename.txt@R1C1:R2C2 TYPE=R SEP=','
+```
 
 Writes data from matrix/vector *M* to the specified text/CSV file.
 If the file exists, it is entirely overwritten.
 Otherwise, a new file is created.
 In all cases, the path to the file must exist.
 
-`#write M to filename.txt@R1C1:R2C2 TYPE=N SEP=','`
+```calcpad
+#write M to filename.txt@R1C1:R2C2 TYPE=N SEP=','
+```
 
 Appends data from matrix/vector *M* to the specified text/CSV file.
 If the file exists, the data is appended at the end of the existing file.
 Otherwise, a new file is created.
 In all cases, the path to the file must exist.
 
-`#append M to filename.txt@R1C1:R2C2 TYPE=N SEP=','`
+```calcpad
+#append M to filename.txt@R1C1:R2C2 TYPE=N SEP=','
+```
 
 Command options:
 
@@ -418,21 +432,27 @@ The minimum allowed syntax for the above commands if all optional keywords are s
 
 Reads the data from the specified Excel file into the matrix/vector *M*. The file must exist as well as the specified worksheet:
 
-`#read M from filename.xlsx@Sheet1!A1:B2 TYPE=R`
+```calcpad
+#read M from filename.xlsx@Sheet1!A1:B2 TYPE=R
+```
 
 Writes data from matrix/vector *M* to the specified Excel file.
 A new file with a single worksheet is created.
 If the file exists, it is entirely overwritten.
 The path to the file must exist;  
 
-`#write M to filename.xlsx@Sheet1!A1:B2 TYPE=N`
+```calcpad
+#write M to filename.xlsx@Sheet1!A1:B2 TYPE=N
+```
 
 Appends data from matrix/vector *M* to the specified Excel file.
 If the file exists, the data is written in the existing file at the specified location.
 Otherwise, a new file is created.
 In all cases, the path to the file must exist.
 
-`#append M to filename.xlsx@Sheet1!A1:B2 TYPE=N`
+```calcpad
+#append M to filename.xlsx@Sheet1!A1:B2 TYPE=N
+```
 
 Command options:
 
@@ -444,20 +464,20 @@ Command options:
 - `!A1:B2` target cell range \[optional\]:
     - `A1` starting cell reference \[optional\], where A is the column name and 1 is the row index;
     - `:B2` ending cell reference as above \[optional\];  
-        Column names start at **A**, and row numbers start at **1**. You can skip any of the starting and ending column/row references.
-        In this case, data is read to the first and last nonempty cells, respectively.
-        The starting cell references can be greater than the ending ones.
-        Examples for data import settings are provided below:
+    Column names start at **A**, and row numbers start at **1**. You can skip any of the starting and ending column/row references.
+    In this case, data is read to the first and last nonempty cells, respectively.
+    The starting cell references can be greater than the ending ones.
+    Examples for data import settings are provided below:
 
-        ![Excel addressing examples](media/Image%2050.png)
+    ![Excel addressing examples](media/Image%2050.png)
 
-        The behavior of data export commands `#write` and `#append` is a bit different.
-        The starting reference indicates the location of the first element $M_{1,1}$ of the output matrix.
-        So, even if it is greater than A1, it will not truncate the first rows and columns.
-        Unless bound by the ending reference, the entire matrix will be written after the specified location.
-        Otherwise, the remaining rows and columns after the ending reference will be truncated.
-        For example: `#write M to filename.xlsx@Sheet1!C2` will produce the following output:
+    The behavior of data export commands `#write` and `#append` is a bit different.
+    The starting reference indicates the location of the first element $M_{1,1}$ of the output matrix.
+    So, even if it is greater than A1, it will not truncate the first rows and columns.
+    Unless bound by the ending reference, the entire matrix will be written after the specified location.
+    Otherwise, the remaining rows and columns after the ending reference will be truncated.
+    For example: `#write M to filename.xlsx@Sheet1!C2` will produce the following output:
 
-        ![Excel example](media/Image%2051.png){style="width: 300px;"}
+    ![Excel example](media/Image%2051.png){style="width: 300px;"}
 
 - `TYPE=R` type of matrix/vector for structured storage \[optional\]. The same rules apply as for text/CSV files above.

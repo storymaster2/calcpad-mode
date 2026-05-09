@@ -80,7 +80,7 @@ v′ = r*ω^2 - k/m*(r - l) - b_r/m*v + g*cos(θ)
 'Step size -'h = 0.01s
 'Number of steps -'n = t_max/h
 #hide
-N = min(n; 250)
+N = min(n; 120)
 k_N = floor(n/N)
 N = n\k_N
 #show
