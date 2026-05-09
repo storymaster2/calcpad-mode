@@ -1,6 +1,5 @@
 '<!-- Creational helpers for matrices: $matrix$, $identity$, $diagonal$, $utriang$, $ltriang$, $symmetric$, banded, random and Vandermonde constructors. -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Matrix creational functions
 '<p><b>Matrix</b>(<em>m</em>; <em>n</em>)</p><hr/>
 matrix(3; 4)'- creates a 3x4 full (rectangular) matrix
 

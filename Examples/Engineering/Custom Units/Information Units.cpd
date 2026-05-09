@@ -1,6 +1,4 @@
 '<!-- Defines bit, byte and the [binary prefixes](https://en.wikipedia.org/wiki/Binary_prefix) (KiB, MiB, GiB, TiB) as custom units, ready for bandwidth and storage calculations. -->
-"Information units
-'<hr/>
 '<p><b>Definition</b></p>
 .bit = 1
 .byte = 8bit

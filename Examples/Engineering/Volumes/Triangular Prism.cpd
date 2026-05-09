@@ -1,5 +1,4 @@
 '<!-- Volume and surface area of a right triangular prism, from triangle sides and prism length. -->
-"Volume and Surface Area of Triangular Prism
 '<div style = "max-width:120mm"><img style="height:60pt;" class="side" alt="triangular-prism.png" src = "../../Images/math/volume/triangular-prism.png"></div>
 'Dimensions of base
 a = ?','b = ?','c = ?

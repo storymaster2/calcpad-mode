@@ -1,6 +1,5 @@
 '<!-- Linear-algebra primitives: Hadamard product, determinant, inverse, transpose, trace, rank, $L_p$ and Frobenius norms, plus solver and decomposition helpers. -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Matrix math functions
 '<p><b>Hprod</b>(<em>first matrix</em>; <em>second matrix</em>)</p><hr/>
 A = [1; 2|3; 4|5; 6]'- first matrix
 B = [9; 8|7; 6|5; 4]'- second matrix

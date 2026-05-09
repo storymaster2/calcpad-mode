@@ -1,5 +1,4 @@
 '<!-- Recursive multiline definition of the [Fibonacci](https://en.wikipedia.org/wiki/Fibonacci_number) function $fib(n)$, illustrating self-referential calls and conditional base cases. -->
-"Fibonacci numbers function
 'Function:
 fib(n) = if(n ≡ 1; 1;
   $block{

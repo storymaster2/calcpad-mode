@@ -1,5 +1,4 @@
 '<!-- Area $A = \tfrac{1}{2} a\, b$ and perimeter of a right triangle from its two legs (hypotenuse via Pythagoras). -->
-"Area and Perimeter of Right Triangle
 '<div style="max-width:110mm;"><img style="height:60pt;" class="side" alt="right-triangle.png" src="../../Images/math/area/right-triangle.png"></div>
 'Dimensions
 a = ?','b = ?

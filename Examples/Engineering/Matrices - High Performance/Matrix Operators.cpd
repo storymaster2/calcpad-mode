@@ -1,5 +1,4 @@
 '<!-- HP variant of the matrix operators: element-wise vs. algebraic multiplication, comparison and logical operators broadcasting across packed storage. -->
-"Matrix operators
 '<h4>Matrix-matrix</h4>
 A = hp([0; 1; 2|3; 4; 5])', 'B = hp([11; 10; 9|8; 7; 6])
 'Arithmetic:

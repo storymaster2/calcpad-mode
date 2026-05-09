@@ -1,5 +1,4 @@
 '<!-- Foundations of vectors in CalcpadCE: literal lists with $[\, \ldots\, ]$, splicing existing vectors, custom-function generators and creational helpers like $vector$, $range$ and $fill$. Covers indexing, slicing and the element-wise operators that broadcast scalars across whole arrays. -->
-"Vector initialization
 'Direct:
 a = [cos(0); 2; 3; 2*2; 6 - 1]
 'Direct with another vector:

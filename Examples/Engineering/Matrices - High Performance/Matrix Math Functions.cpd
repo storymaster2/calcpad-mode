@@ -1,6 +1,5 @@
 '<!-- HP variant of the linear-algebra toolkit: Hadamard product, determinant, inverse, transpose, norms and decomposition helpers on packed numerical storage. -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Matrix math functions
 '<p><b>Hprod</b>(<em>first matrix</em>; <em>second matrix</em>)</p><hr/>
 A = hp([1; 2|3; 4|5; 6])'- first matrix
 B = hp([9; 8|7; 6|5; 4])'- second matrix

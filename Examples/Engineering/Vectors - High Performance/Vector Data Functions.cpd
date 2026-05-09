@@ -1,6 +1,5 @@
 '<!-- HP variant of the data-oriented toolkit: $sort$, $rsort$, $order$, $find$, $count$ and the standard reductions, all running on packed numerical storage. -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Vector data functions
 '<p><b>Sort</b>(<em>vector</em>) and <b>Rsort</b>(<em>vector</em>)</p><hr/>
 a = hp([4; 0; 2; 3; -1; 1])
 b = sort(a)'- vector sorted in ascending order

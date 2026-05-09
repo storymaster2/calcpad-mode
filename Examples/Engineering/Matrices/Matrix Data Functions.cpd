@@ -1,6 +1,5 @@
 '<!-- Data-oriented matrix toolkit: row- and column-wise sorting, ordering, search, plus the standard reductions ($sum$, $product$, $min$, $max$, $mean$). -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Matrix data functions
 '<p><b>Sort_Cols</b>(<em>matrix</em>; <em>row index</em>) and <b>Rsort_Cols</b>(<em>matrix</em>; <em>row index</em>)</p><hr/>
 A = [5; 2; 3|4; 9; 1|6; 8; 7]
 B = sort_cols(A; 2)'- the matrix sorted by row 2 in ascending order

@@ -1,6 +1,4 @@
 '<!-- Defines USD, EUR and other currencies as custom units with cross-rates, so monetary expressions auto-convert and round consistently across the worksheet. -->
-"Currency units
-'<hr/>
 '<p><b>Definition</b></p>
 .EUR = 1
 .USD = 0.92EUR

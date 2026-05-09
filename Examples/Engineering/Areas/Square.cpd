@@ -1,5 +1,4 @@
 '<!-- Area $A = a^2$ and perimeter $P = 4a$ of a square from a single side length. -->
-"Area and Perimeter of Square
 '<div style="max-width:80mm;"><img style="height:60pt;" class="side" alt="square.png" src="../../Images/math/area/square.png"></div>
 'Side length
 a = ?

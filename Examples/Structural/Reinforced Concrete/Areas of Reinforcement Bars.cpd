@@ -1,5 +1,3 @@
-"Areas of Reinforcement Bars
-'<hr/>
 '<style>td:hover {color:red;} table {cursor:default;}</style>
 'Required reinforcement area -'A_s,req = ? {7}'cm²
 #pre

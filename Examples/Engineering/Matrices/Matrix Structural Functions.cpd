@@ -1,6 +1,5 @@
 '<!-- Structural plumbing for matrices: $n_{rows}$, $n_{cols}$, resize, join, reshape, submatrix and the slicing helpers that feed the rest of the toolkit. -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Matrix structural functions
 '<p><b>N_Rows</b>(<em>matrix</em>)</p><hr/>
 A = [1; 2|3; 4|5; 6]
 n_rows(A)'- the number of rows in A

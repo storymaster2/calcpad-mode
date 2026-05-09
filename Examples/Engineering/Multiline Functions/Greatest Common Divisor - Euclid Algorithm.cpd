@@ -1,5 +1,4 @@
 '<!-- Iterative greatest common divisor built around a $while$ block, implementing the classical [Euclid algorithm](https://en.wikipedia.org/wiki/Euclidean_algorithm). -->
-"Greatest common divisor by Euclid algorithm
 'Custom function:
 mygcd(a; b) = $while{
   b > 0;

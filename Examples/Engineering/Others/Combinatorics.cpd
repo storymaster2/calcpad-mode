@@ -1,5 +1,4 @@
 '<!-- Tabulates permutations and combinations with and without repetition using the built-in $perm$ and $comb$ helpers. -->
-"Combinatorics
 '<h4>1. Permutations</h4> (order of element matters)
 '<h5>1.1. Permutations without repetitions </h5>
 'Number of permutations of n elements -'P(n) = n!'(factorial function)

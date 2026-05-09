@@ -1,5 +1,4 @@
 '<!-- Area and arc length of a circular segment specified by chord and height, with a chord-vs-height feasibility guard. -->
-"Area and Arc Length of Circular Segment
 '<div style="max-width:120mm;"><img style="height:60pt;" class="side" alt="segment-chord.png" src="../../Images/math/area/segment-chord.png"></div>
 'Dimensions
 'Chord -'a = ?

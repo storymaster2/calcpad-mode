@@ -1,5 +1,4 @@
 '<!-- Foundations of matrices in CalcpadCE: literal construction with $|$ row separators, single- and double-index access, slicing, submatrix extraction and assignment by index. -->
-"Matrix initialization
 'Direct:
 A = [1|2; 3|4; 5; 6|7; 8]
 'Direct with vectors:

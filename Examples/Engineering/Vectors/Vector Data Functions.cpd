@@ -1,6 +1,5 @@
 '<!-- Reference for the data-oriented vector toolkit: $sort$, $rsort$, $order$ and $revorder$ for ranking, $find$, $count$ and $search$ for lookup, plus the standard reductions ($sum$, $product$, $min$, $max$, $mean$ and friends) used to condense a series into a single number. -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Vector data functions
 '<p><b>Sort</b>(<em>vector</em>) and <b>Rsort</b>(<em>vector</em>)</p><hr/>
 a = [4; 0; 2; 3; -1; 1]
 b = sort(a)'- vector sorted in ascending order

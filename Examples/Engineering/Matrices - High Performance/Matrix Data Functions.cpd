@@ -1,6 +1,5 @@
 '<!-- HP variant of the data toolkit: row- and column-wise sorting, ordering, search and reductions, all on packed numerical storage. -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Matrix data functions
 '<p><b>Sort_Cols</b>(<em>matrix</em>; <em>row index</em>) and <b>Rsort_Cols</b>(<em>matrix</em>; <em>row index</em>)</p><hr/>
 A = hp([5; 2; 3|4; 9; 1|6; 8; 7])
 B = sort_cols(A; 2)'- the matrix sorted by row 2 in ascending order

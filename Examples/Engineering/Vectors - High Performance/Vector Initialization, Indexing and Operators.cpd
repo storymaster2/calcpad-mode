@@ -1,5 +1,4 @@
 '<!-- HP foundations: literal vectors wrapped with $hp(...)$, the corresponding creational helpers, indexing and the broadcast operators on packed storage. -->
-"Vector initialization
 'Direct:
 a = hp([cos(0); 2; 3; 2*2; 6 - 1])
 'Direct with another vector:

@@ -1,6 +1,5 @@
 '<!-- Mathematical operations on vectors: $L_p$, $L_1$, $L_2$ and $L_\infty$ norms, dot and cross products, element-wise transcendental functions, plus the statistical primitives ($mean$, $median$, $variance$, standard deviation) used to characterise a sample. -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Vector math functions
 '<p><b>Norm_p</b>(<em>vector</em>)</p><hr/>
 norm_p([1; 2; 3]; 3)'- the Lp norm of the vector for 'p = 3
 

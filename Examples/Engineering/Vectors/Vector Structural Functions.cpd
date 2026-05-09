@@ -1,6 +1,5 @@
 '<!-- Structural plumbing for vectors: $len$ and $size$, $resize$ to grow or shrink, $slice$ and $first/last$ to extract ranges, plus $join$ and $reverse$ to assemble new vectors out of existing ones — the glue between the data and math toolkits. -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Vector structural functions
 '<p><b>Len</b>(<em>vector</em>) and <b>Size</b>(<em>vector</em>)</p><hr/>
 'Explicitly initialized short vectors:
 len([1; 2; 3; 0; 0])'- vector length

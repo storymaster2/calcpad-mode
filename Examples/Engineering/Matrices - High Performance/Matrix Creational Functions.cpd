@@ -1,6 +1,5 @@
 '<!-- HP variant of the creational helpers: $matrix$, $identity$, $diagonal$, banded, random and Vandermonde constructors emitting packed storage. -->
 '<style>em {font-family:"Times New Roman";}</style>
-"Matrix creational functions
 '<p><b>Matrix</b>(<em>m</em>; <em>n</em>)</p><hr/>
 matrix_hp(3; 4)'- creates a 3x4 full (rectangular) matrix
 
