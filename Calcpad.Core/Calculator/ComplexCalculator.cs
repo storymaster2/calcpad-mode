@@ -100,7 +100,7 @@ namespace Calcpad.Core
                 Fact,     // 42
                 (in ComplexValue a) => -a,   // 43
                 Not,      // 44
-                Timer     // 45  
+                Timer     // 45
             ];
 
             Functions2 =
@@ -148,20 +148,20 @@ namespace Calcpad.Core
 
         private ComplexValue Sin(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("sin", value.Units);
+            CheckFunctionUnits("sin", value.Units);
             return new(Complex.Sin(FromAngleUnits(value)));
         }
 
         private ComplexValue Cos(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("cos", value.Units);
+            CheckFunctionUnits("cos", value.Units);
             return new(Complex.Cos(FromAngleUnits(value)));
         }
 
 
         internal static ComplexValue Phasor(ComplexValue a, ComplexValue b)
         {
-            CheckTrigFunctionUnits("phasor", b.Units);
+            CheckFunctionUnits("phasor", b.Units);
             var u = b.Units;
             var d = u is null ? 1d : u.ConvertTo(Unit.Get("rad"));
             var phi = b.A * d;
@@ -171,85 +171,85 @@ namespace Calcpad.Core
 
         private ComplexValue Tan(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("tan", value.Units);
+            CheckFunctionUnits("tan", value.Units);
             return new(Complex.Tan(FromAngleUnits(value)));
         }
 
         private ComplexValue Csc(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("csc", value.Units);
+            CheckFunctionUnits("csc", value.Units);
             return new(1d / Complex.Sin(FromAngleUnits(value)));
         }
 
         private ComplexValue Sec(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("sec", value.Units);
+            CheckFunctionUnits("sec", value.Units);
             return new(1d / Complex.Cos(FromAngleUnits(value)));
         }
 
         private ComplexValue Cot(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("cot", value.Units);
+            CheckFunctionUnits("cot", value.Units);
             return new(Complex.Cot(FromAngleUnits(value)));
         }
 
         private static ComplexValue Sinh(in ComplexValue value) /* Hyperbolic sin */
         {
-            CheckTrigFunctionUnits("sinh", value.Units);
+            CheckFunctionUnits("sinh", value.Units);
             return new(Complex.Sinh(value.Complex));
         }
 
         private static ComplexValue Cosh(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("cosh", value.Units);
+            CheckFunctionUnits("cosh", value.Units);
             return new(Complex.Cosh(value.Complex));
         }
 
         private static ComplexValue Tanh(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("tanh", value.Units);
+            CheckFunctionUnits("tanh", value.Units);
             return new(Complex.Tanh(value.Complex));
         }
 
         private static ComplexValue Csch(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("csch", value.Units);
+            CheckFunctionUnits("csch", value.Units);
             return new(1d / Complex.Sinh(value.Complex));
         }
 
         private static ComplexValue Sech(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("sech", value.Units);
+            CheckFunctionUnits("sech", value.Units);
             return new(1d / Complex.Cosh(value.Complex));
         }
 
         private static ComplexValue Coth(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("coth", value.Units);
+            CheckFunctionUnits("coth", value.Units);
             return new(Complex.Coth(value.Complex));
         }
 
         private ComplexValue Asin(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("asin", value.Units);
+            CheckFunctionUnits("asin", value.Units);
             return ToAngleUnits(Complex.Asin(value.Complex));
         }
 
         private ComplexValue Acos(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("acos", value.Units);
+            CheckFunctionUnits("acos", value.Units);
             return ToAngleUnits(Complex.Acos(value.Complex));
         }
 
         private ComplexValue Atan(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("atan", value.Units);
+            CheckFunctionUnits("atan", value.Units);
             return ToAngleUnits(Complex.Atan(value.Complex));
         }
 
         private ComplexValue Acsc(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("acsc", value.Units);
+            CheckFunctionUnits("acsc", value.Units);
             return value.IsZero ?
                 ComplexValue.ComplexInfinity :
                 ToAngleUnits(Complex.Asin(1d / value.Complex));
@@ -257,7 +257,7 @@ namespace Calcpad.Core
 
         private ComplexValue Asec(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("asec", value.Units);
+            CheckFunctionUnits("asec", value.Units);
             return value.IsZero ?
                 ComplexValue.ComplexInfinity :
                 ToAngleUnits(Complex.Acos(1d / value.Complex));
@@ -265,31 +265,31 @@ namespace Calcpad.Core
 
         private ComplexValue Acot(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("acot", value.Units);
+            CheckFunctionUnits("acot", value.Units);
             return ToAngleUnits(Complex.Acot(value.Complex));
         }
 
         private static ComplexValue Asinh(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("asinh", value.Units);
+            CheckFunctionUnits("asinh", value.Units);
             return new(Complex.Asinh(value.Complex));
         }
 
         private static ComplexValue Acosh(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("acosh", value.Units);
+            CheckFunctionUnits("acosh", value.Units);
             return new(Complex.Acosh(value.Complex));
         }
 
         private static ComplexValue Atanh(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("atanh", value.Units);
+            CheckFunctionUnits("atanh", value.Units);
             return new(Complex.Atanh(value.Complex));
         }
 
         private static ComplexValue Acsch(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("acsch", value.Units);
+            CheckFunctionUnits("acsch", value.Units);
             return value.IsZero ?
                 ComplexValue.ComplexInfinity :
                 new(Complex.Asinh(1d / value.Complex));
@@ -297,7 +297,7 @@ namespace Calcpad.Core
 
         private static ComplexValue Asech(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("asech", value.Units);
+            CheckFunctionUnits("asech", value.Units);
             return value.IsZero ?
                 ComplexValue.ComplexInfinity :
                 new(Complex.Acosh(1d / value.Complex));
@@ -305,7 +305,7 @@ namespace Calcpad.Core
 
         private static ComplexValue Acoth(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("acoth", value.Units);
+            CheckFunctionUnits("acoth", value.Units);
             return new(Complex.Acoth(value.Complex));
         }
 
@@ -322,25 +322,25 @@ namespace Calcpad.Core
 
         private static ComplexValue Log(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("ln", value.Units);
+            CheckFunctionUnits("ln", value.Units);
             return new(Complex.Log(value.Complex));
         }
 
         private static ComplexValue Log10(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("log", value.Units);
+            CheckFunctionUnits("log", value.Units);
             return new(Complex.Log10(value.Complex));
         }
 
         private static ComplexValue Log2(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("log_2", value.Units);
+            CheckFunctionUnits("log_2", value.Units);
             return new(Complex.Log2(value.Complex));
         }
 
         private static ComplexValue Exp(in ComplexValue value)
         {
-            CheckTrigFunctionUnits("exp", value.Units);
+            CheckFunctionUnits("exp", value.Units);
             return new(Complex.Exp(value.Complex));
         }
 

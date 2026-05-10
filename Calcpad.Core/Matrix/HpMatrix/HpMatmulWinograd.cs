@@ -40,9 +40,6 @@ namespace Calcpad.Core
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal Span<double> GetRow(int row) => _data.AsSpan(_offset + row * Stride, Cols);
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public ref double GetRowReference(int row) => ref _data[_offset + row * Stride];
-
             internal double this[int row, int col]
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -89,28 +86,22 @@ namespace Calcpad.Core
         private static void CopyToFlat(HpMatrix src, double[] dst, int n, int stride)
         {
             var rows = src.HpRows;
-            var ii = 0;
             if (src.Type == Matrix.MatrixType.Full || src.Type == Matrix.MatrixType.LowerTriangular)
                 for (int i = 0; i < n; ++i)
                 {
                     var row = rows[i];
-                    Array.Copy(row.Raw, 0, dst, ii, row.Size);
-                    ii += stride;
+                    Array.Copy(row.Raw, 0, dst, i * stride, row.Size);
                 }
             else
                 for (int i = 0; i < n; ++i)
-                {
                     for (int j = 0; j < n; ++j)
-                        dst[ii + j] = src.GetValue(i, j);
-
-                    ii += stride;
-                }    
+                        dst[i * stride + j] = src.GetValue(i, j);
         }
 
         private static int NextPowerOfTwo(int n)
         {
             var power = 1;
-            while (power < n) 
+            while (power < n)
                 power *= 2;
 
             return power;
@@ -123,7 +114,7 @@ namespace Calcpad.Core
             {
                 if (Avx512F.IsSupported)
                     MultiplyAvx512Kernel_64x64(A, B, C);
-                else 
+                else
                     MultiplyFmaKernel_64x64(A, B, C);
                 return;
             }
@@ -434,56 +425,95 @@ namespace Calcpad.Core
             }
         }
 
-        // Optimized 64x64 AVX-512 micro-kernel with register blocking
-        // No loop unrolling here - we rely on the compiler to do that, and it does a good job with the independent FMA chains we create
+        // Optimized 64x64 micro-kernel with register blocking
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private static void MultiplyAvx512Kernel_64x64(MatrixView A, MatrixView B, MatrixView C)
         {
-            const int VectorSize = 8;
-            const int VectorsPerRow = KernelSize / VectorSize;
-
-            // Allocate accumulator arrays outside the loop
-            Span<Vector512<double>> vC0 = stackalloc Vector512<double>[VectorsPerRow];
-            Span<Vector512<double>> vC1 = stackalloc Vector512<double>[VectorsPerRow];
-
+            // For 64x64, process entire matrix with optimal micro-kernels
+            // Using 2x8 register blocking (2 rows of C, 8 vectors per row)
             for (int i = 0; i < KernelSize; i += 2)
             {
-                ref double rC0 = ref C.GetRowReference(i);
-                ref double rC1 = ref C.GetRowReference(i + 1);
-                // Get references to the start of accumulator arrays
-                ref var refC0 = ref MemoryMarshal.GetReference(vC0);
-                ref var refC1 = ref MemoryMarshal.GetReference(vC1);
-                // Clear/initialize for this i-iteration
-                for (int j = 0; j < VectorsPerRow; ++j)
+                ref double rC0 = ref MemoryMarshal.GetReference(C.GetRow(i));
+                ref double rC1 = ref MemoryMarshal.GetReference(C.GetRow(i + 1));
+                // Clear the two rows
+                for (int j = 0; j < KernelSize; j += 8)
                 {
-                    Unsafe.Add(ref refC0, j) = Vector512<double>.Zero;
-                    Unsafe.Add(ref refC1, j) = Vector512<double>.Zero;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, j)) = Vector512<double>.Zero;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, j)) = Vector512<double>.Zero;
                 }
                 for (int k = 0; k < KernelSize; ++k)
                 {
-                    var vA0 = Vector512.Create(A[i, k]);
-                    var vA1 = Vector512.Create(A[i + 1, k]);
-                    ref double rB = ref B.GetRowReference(k);
+                    double a0 = A[i, k];
+                    double a1 = A[i + 1, k];
+                    var vA0 = Vector512.Create(a0);
+                    var vA1 = Vector512.Create(a1);
+                    ref double rB = ref MemoryMarshal.GetReference(B.GetRow(k));
 
-                    // Process all 8 vectors
-                    for (int j = 0; j < VectorsPerRow; ++j)
-                    {
-                        var vB = Unsafe.As<double, Vector512<double>>(ref rB);
-                        Unsafe.Add(ref refC0, j) = Avx512F.FusedMultiplyAdd(vA0, vB, Unsafe.Add(ref refC0, j));
-                        Unsafe.Add(ref refC1, j) = Avx512F.FusedMultiplyAdd(vA1, vB, Unsafe.Add(ref refC1, j));
-                        rB = ref Unsafe.Add(ref rB, VectorSize);
-                    }
-                }
+                    // Process entire row with 8 vector registers (64 doubles)
+                    var vB0 = Unsafe.As<double, Vector512<double>>(ref rB);
+                    var vB1 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rB, 8));
+                    var vB2 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rB, 16));
+                    var vB3 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rB, 24));
+                    var vB4 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rB, 32));
+                    var vB5 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rB, 40));
+                    var vB6 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rB, 48));
+                    var vB7 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rB, 56));
 
-                // Store results
-                ref double pC0 = ref rC0;
-                ref double pC1 = ref rC1;
-                for (int j = 0; j < VectorsPerRow; ++j)
-                {
-                    Unsafe.As<double, Vector512<double>>(ref pC0) = Unsafe.Add(ref refC0, j);
-                    Unsafe.As<double, Vector512<double>>(ref pC1) = Unsafe.Add(ref refC1, j);
-                    pC0 = ref Unsafe.Add(ref pC0, VectorSize);
-                    pC1 = ref Unsafe.Add(ref pC1, VectorSize);
+                    // Row 0: 8 FMAs
+                    var vC00 = Unsafe.As<double, Vector512<double>>(ref rC0);
+                    var vC01 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 8));
+                    var vC02 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 16));
+                    var vC03 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 24));
+                    var vC04 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 32));
+                    var vC05 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 40));
+                    var vC06 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 48));
+                    var vC07 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 56));
+
+                    vC00 = Avx512F.FusedMultiplyAdd(vA0, vB0, vC00);
+                    vC01 = Avx512F.FusedMultiplyAdd(vA0, vB1, vC01);
+                    vC02 = Avx512F.FusedMultiplyAdd(vA0, vB2, vC02);
+                    vC03 = Avx512F.FusedMultiplyAdd(vA0, vB3, vC03);
+                    vC04 = Avx512F.FusedMultiplyAdd(vA0, vB4, vC04);
+                    vC05 = Avx512F.FusedMultiplyAdd(vA0, vB5, vC05);
+                    vC06 = Avx512F.FusedMultiplyAdd(vA0, vB6, vC06);
+                    vC07 = Avx512F.FusedMultiplyAdd(vA0, vB7, vC07);
+
+                    Unsafe.As<double, Vector512<double>>(ref rC0) = vC00;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 8)) = vC01;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 16)) = vC02;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 24)) = vC03;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 32)) = vC04;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 40)) = vC05;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 48)) = vC06;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC0, 56)) = vC07;
+
+                    // Row 1: 8 FMAs
+                    var vC10 = Unsafe.As<double, Vector512<double>>(ref rC1);
+                    var vC11 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 8));
+                    var vC12 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 16));
+                    var vC13 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 24));
+                    var vC14 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 32));
+                    var vC15 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 40));
+                    var vC16 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 48));
+                    var vC17 = Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 56));
+
+                    vC10 = Avx512F.FusedMultiplyAdd(vA1, vB0, vC10);
+                    vC11 = Avx512F.FusedMultiplyAdd(vA1, vB1, vC11);
+                    vC12 = Avx512F.FusedMultiplyAdd(vA1, vB2, vC12);
+                    vC13 = Avx512F.FusedMultiplyAdd(vA1, vB3, vC13);
+                    vC14 = Avx512F.FusedMultiplyAdd(vA1, vB4, vC14);
+                    vC15 = Avx512F.FusedMultiplyAdd(vA1, vB5, vC15);
+                    vC16 = Avx512F.FusedMultiplyAdd(vA1, vB6, vC16);
+                    vC17 = Avx512F.FusedMultiplyAdd(vA1, vB7, vC17);
+
+                    Unsafe.As<double, Vector512<double>>(ref rC1) = vC10;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 8)) = vC11;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 16)) = vC12;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 24)) = vC13;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 32)) = vC14;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 40)) = vC15;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 48)) = vC16;
+                    Unsafe.As<double, Vector512<double>>(ref Unsafe.Add(ref rC1, 56)) = vC17;
                 }
             }
         }
@@ -492,52 +522,148 @@ namespace Calcpad.Core
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private static void MultiplyFmaKernel_64x64(MatrixView A, MatrixView B, MatrixView C)
         {
-            const int VectorSize = 4;
-            const int VectorsPerRow = KernelSize / VectorSize;
-
-            // Allocate outside the loop
-            Span<Vector256<double>> vC0 = stackalloc Vector256<double>[VectorsPerRow];
-            Span<Vector256<double>> vC1 = stackalloc Vector256<double>[VectorsPerRow];
-
+            // 2x16 register blocking for AVX2 (2 rows, 16 vectors of 4 doubles each)
             for (int i = 0; i < KernelSize; i += 2)
             {
-                ref double rC0 = ref C.GetRowReference(i);
-                ref double rC1 = ref C.GetRowReference(i + 1);
-                // Get references to the start of accumulator arrays
-                ref var refC0 = ref MemoryMarshal.GetReference(vC0);
-                ref var refC1 = ref MemoryMarshal.GetReference(vC1);
-
-                // Clear/initialize for this i-iteration
-                for (int j = 0; j < VectorsPerRow; ++j)
+                ref double rC0 = ref MemoryMarshal.GetReference(C.GetRow(i));
+                ref double rC1 = ref MemoryMarshal.GetReference(C.GetRow(i + 1));
+                // Clear rows
+                for (int j = 0; j < KernelSize; j += 4)
                 {
-                    Unsafe.Add(ref refC0, j) = Vector256<double>.Zero;
-                    Unsafe.Add(ref refC1, j) = Vector256<double>.Zero;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, j)) = Vector256<double>.Zero;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, j)) = Vector256<double>.Zero;
                 }
                 for (int k = 0; k < KernelSize; ++k)
                 {
-                    var vA0 = Vector256.Create(A[i, k]);
-                    var vA1 = Vector256.Create(A[i + 1, k]);
-                    ref double rB = ref B.GetRowReference(k);
+                    double a0 = A[i, k];
+                    double a1 = A[i + 1, k];
+                    var vA0 = Vector256.Create(a0);
+                    var vA1 = Vector256.Create(a1);
+                    ref double rB = ref MemoryMarshal.GetReference(B.GetRow(k));
 
-                    // Process all 8 vectors
-                    for (int j = 0; j < VectorsPerRow; ++j)
-                    {
-                        var vB = Unsafe.As<double, Vector256<double>>(ref rB);
-                        Unsafe.Add(ref refC0, j) = Fma.MultiplyAdd(vA0, vB, Unsafe.Add(ref refC0, j));
-                        Unsafe.Add(ref refC1, j) = Fma.MultiplyAdd(vA1, vB, Unsafe.Add(ref refC1, j));
-                        rB = ref Unsafe.Add(ref rB, VectorSize);
-                    }
-                }
+                    // Manually unrolled: process all 16 vectors (64 doubles)
+                    // This creates 16 independent dependency chains
+                    // Load all B vectors
+                    var vB00 = Unsafe.As<double, Vector256<double>>(ref rB);
+                    var vB01 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 4));
+                    var vB02 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 8));
+                    var vB03 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 12));
+                    var vB04 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 16));
+                    var vB05 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 20));
+                    var vB06 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 24));
+                    var vB07 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 28));
+                    var vB08 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 32));
+                    var vB09 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 36));
+                    var vB10 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 40));
+                    var vB11 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 44));
+                    var vB12 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 48));
+                    var vB13 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 52));
+                    var vB14 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 56));
+                    var vB15 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rB, 60));
 
-                // Store results
-                ref double pC0 = ref rC0;
-                ref double pC1 = ref rC1;
-                for (int j = 0; j < VectorsPerRow; ++j)
-                {
-                    Unsafe.As<double, Vector256<double>>(ref pC0) = Unsafe.Add(ref refC0, j);
-                    Unsafe.As<double, Vector256<double>>(ref pC1) = Unsafe.Add(ref refC1, j);
-                    pC0 = ref Unsafe.Add(ref pC0, VectorSize);
-                    pC1 = ref Unsafe.Add(ref pC1, VectorSize);
+                    // Row 0
+                    var vC00 = Unsafe.As<double, Vector256<double>>(ref rC0);
+                    var vC01 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 4));
+                    var vC02 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 8));
+                    var vC03 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 12));
+                    var vC04 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 16));
+                    var vC05 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 20));
+                    var vC06 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 24));
+                    var vC07 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 28));
+                    var vC08 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 32));
+                    var vC09 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 36));
+                    var vC10 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 40));
+                    var vC11 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 44));
+                    var vC12 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 48));
+                    var vC13 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 52));
+                    var vC14 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 56));
+                    var vC15 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 60));
+
+                    vC00 = Fma.MultiplyAdd(vA0, vB00, vC00);
+                    vC01 = Fma.MultiplyAdd(vA0, vB01, vC01);
+                    vC02 = Fma.MultiplyAdd(vA0, vB02, vC02);
+                    vC03 = Fma.MultiplyAdd(vA0, vB03, vC03);
+                    vC04 = Fma.MultiplyAdd(vA0, vB04, vC04);
+                    vC05 = Fma.MultiplyAdd(vA0, vB05, vC05);
+                    vC06 = Fma.MultiplyAdd(vA0, vB06, vC06);
+                    vC07 = Fma.MultiplyAdd(vA0, vB07, vC07);
+                    vC08 = Fma.MultiplyAdd(vA0, vB08, vC08);
+                    vC09 = Fma.MultiplyAdd(vA0, vB09, vC09);
+                    vC10 = Fma.MultiplyAdd(vA0, vB10, vC10);
+                    vC11 = Fma.MultiplyAdd(vA0, vB11, vC11);
+                    vC12 = Fma.MultiplyAdd(vA0, vB12, vC12);
+                    vC13 = Fma.MultiplyAdd(vA0, vB13, vC13);
+                    vC14 = Fma.MultiplyAdd(vA0, vB14, vC14);
+                    vC15 = Fma.MultiplyAdd(vA0, vB15, vC15);
+
+                    Unsafe.As<double, Vector256<double>>(ref rC0) = vC00;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 4)) = vC01;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 8)) = vC02;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 12)) = vC03;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 16)) = vC04;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 20)) = vC05;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 24)) = vC06;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 28)) = vC07;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 32)) = vC08;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 36)) = vC09;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 40)) = vC10;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 44)) = vC11;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 48)) = vC12;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 52)) = vC13;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 56)) = vC14;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC0, 60)) = vC15;
+
+                    // Row 1
+                    var vC10_1 = Unsafe.As<double, Vector256<double>>(ref rC1);
+                    var vC11_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 4));
+                    var vC12_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 8));
+                    var vC13_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 12));
+                    var vC14_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 16));
+                    var vC15_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 20));
+                    var vC16_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 24));
+                    var vC17_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 28));
+                    var vC18_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 32));
+                    var vC19_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 36));
+                    var vC1A_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 40));
+                    var vC1B_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 44));
+                    var vC1C_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 48));
+                    var vC1D_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 52));
+                    var vC1E_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 56));
+                    var vC1F_1 = Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 60));
+
+                    vC10_1 = Fma.MultiplyAdd(vA1, vB00, vC10_1);
+                    vC11_1 = Fma.MultiplyAdd(vA1, vB01, vC11_1);
+                    vC12_1 = Fma.MultiplyAdd(vA1, vB02, vC12_1);
+                    vC13_1 = Fma.MultiplyAdd(vA1, vB03, vC13_1);
+                    vC14_1 = Fma.MultiplyAdd(vA1, vB04, vC14_1);
+                    vC15_1 = Fma.MultiplyAdd(vA1, vB05, vC15_1);
+                    vC16_1 = Fma.MultiplyAdd(vA1, vB06, vC16_1);
+                    vC17_1 = Fma.MultiplyAdd(vA1, vB07, vC17_1);
+                    vC18_1 = Fma.MultiplyAdd(vA1, vB08, vC18_1);
+                    vC19_1 = Fma.MultiplyAdd(vA1, vB09, vC19_1);
+                    vC1A_1 = Fma.MultiplyAdd(vA1, vB10, vC1A_1);
+                    vC1B_1 = Fma.MultiplyAdd(vA1, vB11, vC1B_1);
+                    vC1C_1 = Fma.MultiplyAdd(vA1, vB12, vC1C_1);
+                    vC1D_1 = Fma.MultiplyAdd(vA1, vB13, vC1D_1);
+                    vC1E_1 = Fma.MultiplyAdd(vA1, vB14, vC1E_1);
+                    vC1F_1 = Fma.MultiplyAdd(vA1, vB15, vC1F_1);
+
+                    Unsafe.As<double, Vector256<double>>(ref rC1) = vC10_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 4)) = vC11_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 8)) = vC12_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 12)) = vC13_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 16)) = vC14_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 20)) = vC15_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 24)) = vC16_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 28)) = vC17_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 32)) = vC18_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 36)) = vC19_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 40)) = vC1A_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 44)) = vC1B_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 48)) = vC1C_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 52)) = vC1D_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 56)) = vC1E_1;
+                    Unsafe.As<double, Vector256<double>>(ref Unsafe.Add(ref rC1, 60)) = vC1F_1;
                 }
             }
         }

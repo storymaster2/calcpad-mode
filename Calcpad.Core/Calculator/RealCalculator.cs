@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Calcpad.Core
 {
@@ -99,34 +99,6 @@ namespace Calcpad.Core
                 (in RealValue a) => -a, // 43
                 Not,       // 44
                 Timer,     // 45
-                GammaLn,   // 46
-                Gamma,     // 47
-                Erf,       // 48
-                Erfc,      // 49
-                FresnelC,  // 50
-                FresnelS,  // 51
-                Si,        // 52
-                Ci,        // 53
-                Shi,       // 54
-                Chi,       // 55
-                Ei,        // 56
-                Li,        // 57
-                DawsonF,   // 58
-                EllipticK, // 59
-                EllipticE, // 60
-                BesselJ0,  // 61
-                BesselJ1,  // 62
-                BesselY0,  // 63
-                BesselY1,  // 64
-                BesselI0,  // 65
-                BesselI1,  // 66
-                BesselK0,  // 67
-                BesselK1,  // 68
-                Ai,        // 69
-                Aip,       // 70
-                Bi,        // 71
-                Bip,       // 72
-                LambertW   // 73
             ];
 
             _functions2 =
@@ -135,41 +107,6 @@ namespace Calcpad.Core
                 UnitRoot,   // 1
                 (in RealValue a, in RealValue b) => a % b, // 2
                 (in RealValue a, in RealValue b) => MandelbrotSet(a, b), // 3
-                GammaIncU,  // 4
-                GammaIncL,  // 5
-                Beta,       // 6
-                EllipticF,  // 7
-                EllipticEi, // 8
-                EllipticP,  // 9
-                JacobiAM,   // 10
-                JacobiSN,   // 11
-                JacobiCN,   // 12
-                JacobiDN,   // 13
-                JacobiCS,   // 14
-                JacobiCD,   // 15
-                JacobiDC,   // 16
-                JacobiSC,   // 17
-                JacobiSD,   // 18
-                JacobiDS,   // 19
-                JacobiNS,   // 20
-                JacobiNC,   // 21
-                JacobiND,   // 22
-                BesselJn,   // 23
-                BesselYn,   // 24
-                BesselJv,   // 25
-                BesselYv,   // 26
-                BesselJvp,  // 27
-                BesselYvp,  // 28
-                BesselJs,   // 29
-                BesselYs,   // 30
-                BesselJsp,  // 31
-                BesselYsp,  // 32
-                BesselIn,   // 33
-                BesselKn,   // 34
-                BesselIv,   // 35
-                BesselKv,   // 36
-                BesselIvp,  // 37
-                BesselKvp   // 38
             ];
         }
 
@@ -210,97 +147,97 @@ namespace Calcpad.Core
 
         private RealValue Sin(in RealValue value)
         {
-            CheckTrigFunctionUnits("sin", value.Units);
+            CheckFunctionUnits("sin", value.Units);
             return new(Complex.RealSin(FromAngleUnits(value)));
         }
 
         private RealValue Cos(in RealValue value)
         {
-            CheckTrigFunctionUnits("cos", value.Units);
+            CheckFunctionUnits("cos", value.Units);
             return new(Complex.RealCos(FromAngleUnits(value)));
         }
 
         private RealValue Tan(in RealValue value)
         {
-            CheckTrigFunctionUnits("tan", value.Units);
+            CheckFunctionUnits("tan", value.Units);
             return new(Math.Tan(FromAngleUnits(value)));
         }
 
         private RealValue Csc(in RealValue value)
         {
-            CheckTrigFunctionUnits("csc", value.Units);
+            CheckFunctionUnits("csc", value.Units);
             return new(1 / Math.Sin(FromAngleUnits(value)));
         }
 
         private RealValue Sec(in RealValue value)
         {
-            CheckTrigFunctionUnits("sec", value.Units);
+            CheckFunctionUnits("sec", value.Units);
             return new(1 / Math.Cos(FromAngleUnits(value)));
         }
 
         private RealValue Cot(in RealValue value)
         {
-            CheckTrigFunctionUnits("cot", value.Units);
+            CheckFunctionUnits("cot", value.Units);
             return new(1 / Math.Tan(FromAngleUnits(value)));
         }
 
         private static RealValue Sinh(in RealValue value) /* Hyperbolic sin */
         {
-            CheckTrigFunctionUnits("sinh", value.Units);
+            CheckFunctionUnits("sinh", value.Units);
             return new(Math.Sinh(value.D));
         }
 
         private static RealValue Cosh(in RealValue value)
         {
-            CheckTrigFunctionUnits("cosh", value.Units);
+            CheckFunctionUnits("cosh", value.Units);
             return new(Math.Cosh(value.D));
         }
 
         private static RealValue Tanh(in RealValue value)
         {
-            CheckTrigFunctionUnits("tanh", value.Units);
+            CheckFunctionUnits("tanh", value.Units);
             return new(Math.Tanh(value.D));
         }
 
         private static RealValue Csch(in RealValue value)
         {
-            CheckTrigFunctionUnits("csch", value.Units);
+            CheckFunctionUnits("csch", value.Units);
             return new(1 / Math.Sinh(value.D));
         }
 
         private static RealValue Sech(in RealValue value)
         {
-            CheckTrigFunctionUnits("sech", value.Units);
+            CheckFunctionUnits("sech", value.Units);
             return new(1 / Math.Cosh(value.D));
         }
 
         private static RealValue Coth(in RealValue value)
         {
-            CheckTrigFunctionUnits("coth", value.Units);
+            CheckFunctionUnits("coth", value.Units);
             return new(1 / Math.Tanh(value.D));
         }
 
         private RealValue Asin(in RealValue value)
         {
-            CheckTrigFunctionUnits("asin", value.Units);
+            CheckFunctionUnits("asin", value.Units);
             return ToAngleUnits(Math.Asin(value.D));
         }
 
         private RealValue Acos(in RealValue value)
         {
-            CheckTrigFunctionUnits("acos", value.Units);
+            CheckFunctionUnits("acos", value.Units);
             return ToAngleUnits(Math.Acos(value.D));
         }
 
         private RealValue Atan(in RealValue value)
         {
-            CheckTrigFunctionUnits("atan", value.Units);
+            CheckFunctionUnits("atan", value.Units);
             return ToAngleUnits(Math.Atan(value.D));
         }
 
         private RealValue Acsc(in RealValue value)
         {
-            CheckTrigFunctionUnits("acsc", value.Units);
+            CheckFunctionUnits("acsc", value.Units);
             return value.D == 0d ?
                 RealValue.PositiveInfinity :
                 ToAngleUnits(Math.Asin(1d / value.D));
@@ -308,7 +245,7 @@ namespace Calcpad.Core
 
         private RealValue Asec(in RealValue value)
         {
-            CheckTrigFunctionUnits("asec", value.Units);
+            CheckFunctionUnits("asec", value.Units);
             return value.D == 0d ?
                 RealValue.PositiveInfinity :
                 ToAngleUnits(Math.Acos(1d / value.D));
@@ -316,67 +253,67 @@ namespace Calcpad.Core
 
         private RealValue Acot(in RealValue value)
         {
-            CheckTrigFunctionUnits("acot", value.Units);
+            CheckFunctionUnits("acot", value.Units);
             return ToAngleUnits(Math.Atan(1d / value.D));
         }
 
         private static RealValue Asinh(in RealValue value)
         {
-            CheckTrigFunctionUnits("asinh", value.Units);
+            CheckFunctionUnits("asinh", value.Units);
             return new(Math.Asinh(value.D));
         }
 
         private static RealValue Acosh(in RealValue value)
         {
-            CheckTrigFunctionUnits("acosh", value.Units);
+            CheckFunctionUnits("acosh", value.Units);
             return new(Math.Acosh(value.D));
         }
 
         private static RealValue Atanh(in RealValue value)
         {
-            CheckTrigFunctionUnits("atanh", value.Units);
+            CheckFunctionUnits("atanh", value.Units);
             return new(Math.Atanh(value.D));
         }
 
         private static RealValue Acsch(in RealValue value)
         {
-            CheckTrigFunctionUnits("acsch", value.Units);
+            CheckFunctionUnits("acsch", value.Units);
             return new(Math.Asinh(1d / value.D));
         }
 
         private static RealValue Asech(in RealValue value)
         {
-            CheckTrigFunctionUnits("asech", value.Units);
+            CheckFunctionUnits("asech", value.Units);
             return new(Math.Acosh(1d / value.D));
         }
 
         private static RealValue Acoth(in RealValue value)
         {
-            CheckTrigFunctionUnits("acoth", value.Units);
+            CheckFunctionUnits("acoth", value.Units);
             return new(Math.Atanh(1 / value.D));
         }
 
         private static RealValue Log(in RealValue value)
         {
-            CheckTrigFunctionUnits("ln", value.Units);
+            CheckFunctionUnits("ln", value.Units);
             return new(Math.Log(value.D));
         }
 
         private static RealValue Log10(in RealValue value)
         {
-            CheckTrigFunctionUnits("log", value.Units);
+            CheckFunctionUnits("log", value.Units);
             return new(Math.Log10(value.D));
         }
 
         private static RealValue Log2(in RealValue value)
         {
-            CheckTrigFunctionUnits("log_2", value.Units);
+            CheckFunctionUnits("log_2", value.Units);
             return new(Math.Log2(value.D));
         }
 
         private static RealValue Exp(in RealValue value)
         {
-            CheckTrigFunctionUnits("exp", value.Units);
+            CheckFunctionUnits("exp", value.Units);
             return new(Math.Exp(value.D));
         }
 
@@ -582,404 +519,5 @@ namespace Calcpad.Core
             new(value * FromRad[_degrees]);
 
         protected static RealValue Timer(in RealValue _) => new(Timer(), Unit.Get("s"));
-
-        private static RealValue GammaLn(in RealValue x)
-        {
-            CheckFunctionUnits("GammaLn", x.Units);
-            return new(RealSpecialFunctions.GammaLn(x.D));
-        }
-
-        private static RealValue Gamma(in RealValue x)
-        {
-            CheckFunctionUnits("Gamma", x.Units);
-            return new(RealSpecialFunctions.Gamma(x.D));
-        }
-
-        private static RealValue Erf(in RealValue x)
-        {
-            CheckFunctionUnits("Erf", x.Units);
-            return new(RealSpecialFunctions.Erf(x.D));
-        }
-
-        private static RealValue Erfc(in RealValue x)
-        {
-            CheckFunctionUnits("Erfc", x.Units);
-            return new(RealSpecialFunctions.Erfc(x.D));
-        }
-
-        private static RealValue FresnelC(in RealValue x)
-        {
-            CheckFunctionUnits("FresnelC", x.Units);
-            return new(RealSpecialFunctions.FresnelC(x.D));
-        }
-
-        private static RealValue FresnelS(in RealValue x)
-        {
-            CheckFunctionUnits("FresnelS", x.Units);
-            return new(RealSpecialFunctions.FresnelS(x.D));
-        }
-
-        private static RealValue Si(in RealValue x)
-        {
-            CheckFunctionUnits("Si", x.Units);
-            return new(RealSpecialFunctions.SinIntegral(x.D));
-        }
-
-        private static RealValue Ci(in RealValue x)
-        {
-            CheckFunctionUnits("Ci", x.Units);
-            return new(RealSpecialFunctions.CosIntegral(x.D));
-        }
-
-        private static RealValue Shi(in RealValue x)
-        {
-            CheckFunctionUnits("Shi", x.Units);
-            return new(RealSpecialFunctions.SinhIntegral(x.D));
-        }
-
-        private static RealValue Chi(in RealValue x)
-        {
-            CheckFunctionUnits("Chi", x.Units);
-            return new(RealSpecialFunctions.CoshIntegral(x.D));
-        }
-
-        private static RealValue Ei(in RealValue x)
-        {
-            CheckFunctionUnits("Ei", x.Units);
-            return new(RealSpecialFunctions.ExpIntegral(x.D));
-        }
-
-        private static RealValue Li(in RealValue x)
-        {
-            CheckFunctionUnits("Li", x.Units);
-            return new(RealSpecialFunctions.LogIntegral(x.D));
-        }
-
-        private static RealValue DawsonF(in RealValue x)
-        {
-            CheckFunctionUnits("DawsonF", x.Units);
-            return new(RealSpecialFunctions.DawsonF(x.D));
-        }
-
-        private static RealValue EllipticK(in RealValue m)
-        {
-            CheckFunctionUnits("EllipticK", m.Units);
-            return new(RealSpecialFunctions.EllipticK(m.D));
-        }
-
-        private static RealValue EllipticE(in RealValue m)
-        {
-            CheckFunctionUnits("EllipticE", m.Units);
-            return new(RealSpecialFunctions.EllipticE(m.D));
-        }
-
-        private static RealValue BesselJ0(in RealValue x)
-        {
-            CheckFunctionUnits("BesselJ0", x.Units);
-            return new(RealSpecialFunctions.BesselJ0(x.D));
-        }
-
-        private static RealValue BesselJ1(in RealValue x)
-        {
-            CheckFunctionUnits("BesselJ1", x.Units);
-            return new(RealSpecialFunctions.BesselJ1(x.D));
-        }
-
-        private static RealValue BesselY0(in RealValue x)
-        {
-            CheckFunctionUnits("BesselY0", x.Units);
-            return new(RealSpecialFunctions.BesselY0(x.D));
-        }
-
-        private static RealValue BesselY1(in RealValue x)
-        {
-            CheckFunctionUnits("BesselY1", x.Units);
-            return new(RealSpecialFunctions.BesselY1(x.D));
-        }
-
-        private static RealValue BesselI0(in RealValue x)
-        {
-            CheckFunctionUnits("BesselI0", x.Units);
-            return new(RealSpecialFunctions.BesselI0(x.D));
-        }
-
-        private static RealValue BesselI1(in RealValue x)
-        {
-            CheckFunctionUnits("BesselI1", x.Units);
-            return new(RealSpecialFunctions.BesselI1(x.D));
-        }
-
-        private static RealValue BesselK0(in RealValue x)
-        {
-            CheckFunctionUnits("BesselK0", x.Units);
-            return new(RealSpecialFunctions.BesselK0(x.D));
-        }
-
-        private static RealValue BesselK1(in RealValue x)
-        {
-            CheckFunctionUnits("BesselK1", x.Units);
-            return new(RealSpecialFunctions.BesselK1(x.D));
-        }
-
-        private static RealValue Ai(in RealValue x)
-        {
-            CheckFunctionUnits("Ai", x.Units);
-            RealSpecialFunctions.Airy(x.D, out var ai, out var _, out _, out _);
-            return new(ai);
-        }
-
-        private static RealValue Aip(in RealValue x)
-        {
-            CheckFunctionUnits("Ai′", x.Units);
-            RealSpecialFunctions.Airy(x.D, out _, out var aip, out _, out _);
-            return new(aip);
-        }
-
-        private static RealValue Bi(in RealValue x)
-        {
-            CheckFunctionUnits("Bi", x.Units);
-            RealSpecialFunctions.Airy(x.D, out var _, out var _, out var bi, out _);
-            return new(bi);
-        }
-
-        private static RealValue Bip(in RealValue x)
-        {
-            CheckFunctionUnits("Bi′", x.Units);
-            RealSpecialFunctions.Airy(x.D, out _, out _, out _, out var bip);
-            return new(bip);
-        }
-
-        private static RealValue GammaIncU(in RealValue s, in RealValue x)
-        {
-            CheckFunctionUnits("GammaInc‾", s.Units, x.Units);
-            return new(RealSpecialFunctions.IncompleteGammaUpper(s.D, x.D));
-        }
-
-        private static RealValue GammaIncL(in RealValue s, in RealValue x)
-        {
-            CheckFunctionUnits("GammaInc_", s.Units, x.Units);
-            return new(RealSpecialFunctions.IncompleteGammaLower(s.D, x.D));
-        }
-
-        private static RealValue Beta(in RealValue x, in RealValue y)
-        {
-            CheckFunctionUnits("Beta", x.Units, y.Units);
-            return new(RealSpecialFunctions.Beta(x.D, y.D));
-        }
-
-        private static RealValue EllipticF(in RealValue phi, in RealValue m)
-        {
-            CheckFunctionUnits("EllipticF", phi.Units, m.Units);
-            return new(RealSpecialFunctions.EllipticF(phi.D, m.D));
-        }
-
-        private static RealValue EllipticEi(in RealValue phi, in RealValue m)
-        {
-            CheckFunctionUnits("EllipticEi", phi.Units, m.Units);
-            return new(RealSpecialFunctions.EllipticE(phi.D, m.D));
-        }
-
-        private static RealValue EllipticP(in RealValue n, in RealValue m)
-        {
-            CheckFunctionUnits("EllipticP", n.Units, m.Units);
-            return new(RealSpecialFunctions.EllipticPi(n.D, m.D));
-        }
-
-        private static RealValue JacobiAM(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiAM", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiAm(u.D, m.D));
-        }
-
-        private static RealValue JacobiSN(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiSN", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiSn(u.D, m.D));
-        }
-
-        private static RealValue JacobiCN(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiCN", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiCn(u.D, m.D));
-        }
-
-        private static RealValue JacobiDN(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiDN", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiDn(u.D, m.D));
-        }
-        private static RealValue JacobiCS(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiCS", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiCs(u.D, m.D));
-        }
-
-        private static RealValue JacobiCD(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiCD", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiCd(u.D, m.D));
-        }
-
-        private static RealValue JacobiDC(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiDC", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiDc(u.D, m.D));
-        }
-
-        private static RealValue JacobiSC(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiSC", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiSc(u.D, m.D));
-        }
-
-        private static RealValue JacobiSD(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiSD", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiSd(u.D, m.D));
-        }
-
-        private static RealValue JacobiDS(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiDS", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiDs(u.D, m.D));
-        }
-
-        private static RealValue JacobiNS(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiNS", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiNs(u.D, m.D));
-        }
-
-        private static RealValue JacobiNC(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiNC", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiNc(u.D, m.D));
-        }
-
-        private static RealValue JacobiND(in RealValue u, in RealValue m)
-        {
-            CheckFunctionUnits("JacobiND", u.Units, m.Units);
-            return new(RealSpecialFunctions.JacobiNd(u.D, m.D));
-        }
-        private static RealValue BesselJn(in RealValue n, in RealValue x)
-        {
-            CheckFunctionUnits("BesselJn", n.Units, x.Units);
-            var i = IScalarValue.AsInt(n);
-            return new(RealSpecialFunctions.BesselJn(i, x.D));
-        }
-        private static RealValue BesselYn(in RealValue n, in RealValue x)
-        {
-            CheckFunctionUnits("BesselYn", n.Units, x.Units);
-            var i = IScalarValue.AsInt(n);
-            return new(RealSpecialFunctions.BesselYn(i, x.D));
-        }
-
-        private static RealValue BesselJv(in RealValue x, in RealValue nu)
-        {
-            CheckFunctionUnits("BesselJv", x.Units, nu.Units);
-            RealSpecialFunctions.BesselJY(x.D, nu.D, out double jv, out _, out _, out _);
-            return new(jv);
-        }
-
-        private static RealValue BesselYv(in RealValue x, in RealValue nu)
-        {
-            CheckFunctionUnits("BesselYv", x.Units, nu.Units);
-            RealSpecialFunctions.BesselJY(x.D, nu.D, out _, out double yv, out _, out _);
-            return new(yv);
-        }
-
-        private static RealValue BesselJvp(in RealValue x, in RealValue nu)
-        {
-            CheckFunctionUnits("BesselJvp", x.Units, nu.Units);
-            RealSpecialFunctions.BesselJY(x.D, nu.D, out _, out _, out double jvp, out _);
-            return new(jvp);
-        }
-
-        private static RealValue BesselYvp(in RealValue x, in RealValue nu)
-        {
-            CheckFunctionUnits("BesselYvp", x.Units, nu.Units);
-            RealSpecialFunctions.BesselJY(x.D, nu.D, out _, out _, out _, out double yvp);
-            return new(yvp);
-        }
-
-
-        private static RealValue BesselJs(in RealValue n, in RealValue x)
-        {
-            CheckFunctionUnits("BesselJs", n.Units, x.Units);
-            var i = IScalarValue.AsInt(n);
-            RealSpecialFunctions.BesselSpherical(i, x.D, out double js, out _, out _, out _);
-            return new(js);
-        }
-
-        private static RealValue BesselYs(in RealValue n, in RealValue x)
-        {
-            CheckFunctionUnits("BesselYs", n.Units, x.Units);
-            var i = IScalarValue.AsInt(n);
-            RealSpecialFunctions.BesselSpherical(i, x.D, out _, out double ys, out _, out _);
-            return new(ys);
-        }
-
-        private static RealValue BesselJsp(in RealValue n, in RealValue x)
-        {
-            CheckFunctionUnits("BesselJsp", n.Units, x.Units);
-            var i = IScalarValue.AsInt(n);
-            RealSpecialFunctions.BesselSpherical(i, x.D, out _, out _, out double jsp, out _);
-            return new(jsp);
-        }
-
-        private static RealValue BesselYsp(in RealValue n, in RealValue x)
-        {
-            CheckFunctionUnits("BesselYsp", n.Units, x.Units);
-            var i = IScalarValue.AsInt(n);
-            RealSpecialFunctions.BesselSpherical(i, x.D, out _, out _, out _, out double ysp);
-            return new(ysp);
-        }
-
-        private static RealValue BesselIn(in RealValue n, in RealValue x)
-        {
-            CheckFunctionUnits("BesselIn", n.Units, x.Units);
-            var i = IScalarValue.AsInt(n);
-            return new(RealSpecialFunctions.BesselIn(i, x.D));
-        }
-
-        private static RealValue BesselKn(in RealValue n, in RealValue x)
-        {
-            CheckFunctionUnits("BesselKn", n.Units, x.Units);
-            var i = IScalarValue.AsInt(n);
-            return new(RealSpecialFunctions.BesselKn(i, x.D));
-        }
-
-        private static RealValue BesselIv(in RealValue x, in RealValue nu)
-        {
-            CheckFunctionUnits("BesselIv", x.Units, nu.Units);
-            RealSpecialFunctions.BesselIK(x.D, nu.D, out double iv, out _, out _, out _);
-            return new(iv);
-        }
-        private static RealValue BesselKv(in RealValue x, in RealValue nu)
-        {
-            CheckFunctionUnits("BesselKv", x.Units, nu.Units);
-            RealSpecialFunctions.BesselIK(x.D, nu.D, out _, out double kv, out _, out _);
-            return new(kv);
-        }
-
-        private static RealValue BesselIvp(in RealValue x, in RealValue nu)
-        {
-            CheckFunctionUnits("BesselIvp", x.Units, nu.Units);
-            RealSpecialFunctions.BesselIK(x.D, nu.D, out _, out _, out double ivp, out _);
-            return new(ivp);
-        }
-
-        private static RealValue BesselKvp(in RealValue x, in RealValue nu)
-        {
-            CheckFunctionUnits("BesselKvp", x.Units, nu.Units);
-            RealSpecialFunctions.BesselIK(x.D, nu.D, out _, out _, out _, out double kvp);
-            return new(kvp);
-        }
-
-        private static RealValue LambertW(in RealValue x)
-        {
-            CheckFunctionUnits("LambertW", x.Units);
-            return new(RealSpecialFunctions.LambertW(x.D));
-        }
     }
 }
