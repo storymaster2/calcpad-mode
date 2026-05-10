@@ -8,8 +8,8 @@ You need to install mathjax and MkDocs, and build Calcpad.Cli:
 
 ```pwsh
 pip install mkdocs
-npm install mathjax@3 --prefix .
-Copy-Item -Recurse -Force node_modules/mathjax/es5 docs/javascripts/mathjax
+npm install mathjax@4 --prefix .
+cp -r node_modules/mathjax/* docs/javascripts/mathjax/
 dotnet build Calcpad.Cli
 ```
 

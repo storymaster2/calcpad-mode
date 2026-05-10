@@ -23,8 +23,9 @@ jobs:
 
       - name: Install MathJax
         run: |
-          npm install mathjax@3
-          cp -r node_modules/mathjax/es5 docs/javascripts/mathjax
+          npm install mathjax@4 --prefix .
+          mkdir -p docs/javascripts/mathjax/
+          cp -r node_modules/mathjax/* docs/javascripts/mathjax/
 
       - name: Install mkdocs-material
         run: pip install mkdocs-material mdx_truly_sane_lists
