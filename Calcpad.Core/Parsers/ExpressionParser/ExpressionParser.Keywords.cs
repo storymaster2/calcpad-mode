@@ -56,7 +56,7 @@ namespace Calcpad.Core
             Markdown,
             SkipLine
         }
-        private enum KeywordResult  
+        private enum KeywordResult
         {
             None,
             Continue,
@@ -323,7 +323,7 @@ namespace Calcpad.Core
 
         private void ParseKeywordRepeat(ReadOnlySpan<char> s)
         {
-            ReadOnlySpan<char> expression = s.Length > 7 ? // #repeat - 7    
+            ReadOnlySpan<char> expression = s.Length > 7 ? // #repeat - 7
                 s[7..].Trim() :
                 [];
 

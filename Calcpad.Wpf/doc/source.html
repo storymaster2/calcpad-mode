@@ -164,7 +164,7 @@
                 $("a").click(function () {
                     chrome.webview.postMessage('clicked');
                 });
-				
+
 				window.addEventListener('click', () => {
 					window.chrome.webview.postMessage('focused');
 				});

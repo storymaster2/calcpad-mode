@@ -36,7 +36,7 @@
         }
 
         .tight {
-            line-height:80%; 
+            line-height:80%;
             margin-top:3pt;
         }
 
@@ -466,7 +466,7 @@
                         <a href="#0" data-text="stack(A; B; C…)"><b>stack</b><span class="b">(</span><var>A</var><span class="o">;</span> <var>B</var><span class="o">;</span> <var>C</var>…<span class="b">)</span></a> - създава нова матрица чрез присъединяване на матриците <var>A</var><span class="o">,</span> <var>B</var><span class="o">,</span> <var>C</var>… една под друга;<br />
 						<u>Структурни:</u><br />
                         <a href="#0" data-text="n_rows(M)"><b>n_rows</b><span class="b">(</span><var>M</var><span class="b">)</span></a> - броя на редовете в матрицата <var>M</var>;<br />
-                        <a href="#0" data-text="n_cols(M)"><b>n_cols</b><span class="b">(</span><var>M</var><span class="b">)</span></a> - броя на стълбовете в матрицата <var>M</var>;<br />						
+                        <a href="#0" data-text="n_cols(M)"><b>n_cols</b><span class="b">(</span><var>M</var><span class="b">)</span></a> - броя на стълбовете в матрицата <var>M</var>;<br />
                         <a href="#0" data-text="mresize(M; m; n)"><b>mresize</b><span class="b">(</span><var>M</var><span class="o">;</span> <var>m</var><span class="o">;</span> <var>n</var><span class="b">)</span></a> - задава нови размери <var>m</var> и <var>n</var> на матрицата <var>M</var>;<br />
                         <a href="#0" data-text="mfill(M; x)"><b>mfill</b><span class="b">(</span><var>M</var><span class="o">;</span> <var>x</var><span class="b">)</span></a> - запълва матрицата <var>M</var> със стойност <var>x</var>;<br />
                         <a href="#0" data-text="fill_row(M; i; x)"><b>fill_row</b><span class="b">(</span><var>M</var><span class="o">;</span> <var>i</var><span class="o">;</span> <var>x</var><span class="b">)</span></a> - запълва <var>i</var>-тия ред на матрицата <var>M</var> със стойност <var>x</var>;<br />
@@ -570,7 +570,7 @@
                 <a href="#0" data-text="PlotAdaptive ="><var>PlotAdaptive</var></a> - използвай адаптивна мрежа за графики на функции;<br />
                 <a href="#0" data-text="PlotStep ="><var>PlotStep</var></a> - стъпка на мрежата за интерполиране;<br />
                 <a href="#0" data-text="PlotShadows ="><var>PlotShadows</var></a> - чертай повърхнините със светлосенки;<br />
-                <a href="#0" data-text="PlotLightDir ="><var>PlotLightDir</var></a> - посока към източника на светлина (0-7): 
+                <a href="#0" data-text="PlotLightDir ="><var>PlotLightDir</var></a> - посока към източника на светлина (0-7):
 				<select class="insert">
                     <option value="PlotLightDir = 0">0 - Север</option>
                     <option value="PlotLightDir = 1">1 - Североизток</option>
@@ -582,7 +582,7 @@
 					<option value="PlotLightDir = 7">7 – Северозапад</option>
 				</select><br />
                 <a href="#0" data-text="PlotSmooth ="><var>PlotSmooth</var></a> - плавно преливане на цветовете (= 1) или изохроми (= 0);<br />
-                <a href="#0" data-text="PlotPalette ="><var>PlotPalette</var></a> - номер на палитра (0-9): 
+                <a href="#0" data-text="PlotPalette ="><var>PlotPalette</var></a> - номер на палитра (0-9):
                 <select class="insert">
                     <option value="PlotPalette = 0">0 - Няма</option>
                     <option value="PlotPalette = 1">1 - Сиво</option>
@@ -1312,7 +1312,7 @@
                 $("select.insert").change(function () {
                     chrome.webview.postMessage('clicked');
                 });
-				
+
 				window.addEventListener('click', () => {
 					chrome.webview.postMessage('focused');
 				});
@@ -1320,4 +1320,4 @@
         }
     </script>
 </body>
-</html>	
+</html>

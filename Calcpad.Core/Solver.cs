@@ -104,23 +104,18 @@ namespace Calcpad.Core
             return result;
         }
 
-        internal double ModAB(double left, double right, double target, out double err)
+        internal static double ModAB(Func<double, double> f, double left, double right, double target, double precision, out double err)
         {
             err = 0;
-            var u = ((IScalarValue)Variable.ValueByRef()).Units;
-            double x1 = Math.Min(left, right), y1 = Fd(x1) - target;
-            if (Math.Abs(y1) <= Precision)
-            {
-                Units = u;
+            double x1 = Math.Min(left, right), y1 = f(x1) - target;
+            if (Math.Abs(y1) <= precision)
                 return x1;
-            }
-            double x2 = Math.Max(left, right), y2 = Fd(x2) - target;
-            if (Math.Abs(y2) <= Precision)
-            {
-                Units = u;
+
+            double x2 = Math.Max(left, right), y2 = f(x2) - target;
+            if (Math.Abs(y2) <= precision)
                 return x2;
-            }
-            double eps1 = Precision * 1e-3, eps2 = Precision * (x2 - x1);
+
+            double eps1 = precision * 1e-3, eps2 = precision * (x2 - x1);
             if (Math.Abs(target) >= 1)
                 eps1 *= Math.Abs(target);
             else
@@ -138,7 +133,7 @@ namespace Calcpad.Core
                 if (bisection)
                 {
                     x3 = (x1 + x2) / 2.0;
-                    y3 = Fd(x3) - target;
+                    y3 = f(x3) - target;
                     var ym = (y1 + y2) / 2.0;
                     var r = 1 - Math.Abs(ym / (y2 - y1));
                     var k = r * r;
@@ -162,16 +157,14 @@ namespace Calcpad.Core
                         y3 = y2;
                     }
                     else
-                        y3 = Fd(x3) - target;
+                        y3 = f(x3) - target;
 
                     threshold /= 2.0;
                 }
                 err = Math.Abs(y3);
                 if (err <= eps1 || x2 - x1 <= eps2)
-                {
-                    Units = u;
                     return x3;
-                }
+
                 x0 = x3;
                 if (Math.Sign(y1) == Math.Sign(y3))
                 {
@@ -206,13 +199,14 @@ namespace Calcpad.Core
                 if (x2 - x1 > threshold)
                     bisection = true;
             }
-            Units = u;
             return x0;
         }
 
         internal double Root(double left, double right, double target)
         {
-            var x = ModAB(left, right, target, out var err);
+            var u = ((IScalarValue)Variable.ValueByRef()).Units;
+            var x = ModAB(Fd, left, right, target, Precision, out var err);
+            Units = u;
             var eps = Math.Sqrt(Precision);
             if (target != 0)
                 eps *= Math.Abs(target);
@@ -223,8 +217,13 @@ namespace Calcpad.Core
             return x;
         }
 
-        internal double Find(double left, double right) => ModAB(left, right, 0.0, out _);
-
+        internal double Find(double left, double right)
+        {
+            var u = ((IScalarValue)Variable.ValueByRef()).Units;
+            var x = ModAB(Fd, left, right, 0.0, Precision, out _);
+            Units = u;
+            return x;
+        }
         internal double Sup(double left, double right) => Extremum(left, right, false);
 
         internal double Inf(double left, double right) => Extremum(left, right, true);
@@ -300,7 +299,7 @@ namespace Calcpad.Core
                 if (QuadratureMethod == QuadratureMethods.AdaptiveLobatto)
                     area = AdaptiveLobatto(left, right) * k;
                 else
-                    area = TanhSinh(left, right) * k;
+                    area = TanhSinh(Fd, left, right, Precision) * k;
             }
             else
             {
@@ -371,15 +370,15 @@ namespace Calcpad.Core
                    Lobatto(x7, x3, y7, y3, depth);
         }
 
-        private double TanhSinh(double left, double right)
+        internal static double TanhSinh(Func<double, double> f, double left, double right, double precision)
         {
             var c = (left + right) / 2d;
             var d = (right - left) / 2d;
-            var s = Fd(c);
+            var s = f(c);
             double err;
             var i = 0;
-            _eps = Math.Clamp(Precision * 0.1, 1e-15, 1e-8);
-            var tol = 10.0 * Precision;
+            var eps = Math.Clamp(precision * 0.1, 1e-15, 1e-8);
+            var tol = 10.0 * precision;
             do
             {
                 double q, p = 0d, fp = 0d, fm = 0d;
@@ -389,20 +388,20 @@ namespace Calcpad.Core
                     var x = _r[i][j] * d;
                     if (left + x > left)
                     {
-                        var y = Fd(left + x);
+                        var y = f(left + x);
                         if (double.IsFinite(y))
                             fp = y;
                     }
                     if (right - x < right)
                     {
-                        var y = Fd(right - x);
+                        var y = f(right - x);
                         if (double.IsFinite(y))
                             fm = y;
                     }
                     q = _w[i][j] * (fp + fm);
                     p += q;
                     ++j;
-                } while (Math.Abs(q) > _eps * Math.Abs(p) && j < _m[i]);
+                } while (Math.Abs(q) > eps * Math.Abs(p) && j < _m[i]);
                 err = 2d * s;
                 s += p;
                 err = Math.Abs(err - s);

@@ -23,7 +23,7 @@ namespace Calcpad.Core
             static Input()
             {
                 // This array is needed to quickly check the token type of a character during parsing
-                // Letters a-z are initially assumed to be variables unless the whole literal matches a function 
+                // Letters a-z are initially assumed to be variables unless the whole literal matches a function
 
                 for (int i = 0; i < 127; ++i)
                 {

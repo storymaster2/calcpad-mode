@@ -13,6 +13,10 @@ jobs:
         with:
           python-version: '3.x'
 
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
@@ -24,6 +28,12 @@ jobs:
 
       - name: Install mkdocs-material
         run: pip install mkdocs-material mdx_truly_sane_lists
+
+      - name: Publish Calcpad CLI for docs rendering
+        run: |
+          dotnet publish Calcpad.Cli/Calcpad.Cli.csproj \
+            -c Release -r linux-x64 --self-contained \
+            -o cli-build
 
       - name: Build docs
         run: mkdocs build
