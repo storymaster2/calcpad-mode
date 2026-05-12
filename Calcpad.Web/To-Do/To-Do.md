@@ -4,6 +4,7 @@
 
 -   Finish testing #UI for common cases
 -   Test PDF plotting with #UI and ensure this looks good.
+-   Add error logging that passes Calcpad errors to the frontend even if they aren't visible in the webview
 
 ### To Test/Review
 
@@ -31,6 +32,7 @@
 
 ### Enhancements
 
+-   Add desc metadata for variables
 -   Make a Vue panel that activates when the cursor is inside a JSON HTML comment. Where you can edit properties and then the line gets updated based on what you put into the UI. This could also work for editing #UI properties
 -   Add the ability to focus the preview to the line selected in the code. Add a toggle to automatically sync this in the Vue panel.
 -   Switch Vue tabs from text to icons now that they are getting longer.
@@ -104,18 +106,20 @@
 
 ## Calcpad.Core
 
+-   String variables in path names is a security concern, but static #def macros are less of an issue as this cannot be manipulated as easily if the user writes dangerous code.
 -   Add keyword arguments for builtin functions
--   Add UI mode for strings. Handle #UI as a possible alternative for #string because we can only have one keyword for expressions.
 -   Add Unit safety for angles by having arc functions return the unit based on the default setting (instead of a number with no unit)
 -   Add a way to throw custom errors in command block expressions
--   Handle this better so it allows undefined in inline loops. This is because undefined is the best way to work with jagged matrices. Have the graph either show a vertical asymtote or ignore undefined values:
+-   Allows undefined in inline loops. This is because undefined is the best way to work with jagged matrices. Have the graph either show a vertical asymtote or ignore undefined values.
 -   See if Kelvin unit conversion can be made safer.
 -   Add more imperial units for engineering (ksf, plf, etc.)
 -   Add #hideRegion {cond} and #endHideRegion {cond} to replace hideC/unhideC
+-   Add a way to throw errors that Calcpad.Core uses with a built-in function. Catch all errors including these in Calcpad.Core and pass them to the Vue panel with source code line references/external filepath.
+-   Add inline unit convsersion function on a variable (instead of per-line)
 
 ### Bugs
 
--   Route write for the .cpd directory, not the pwd.
+-   Fix #varsub to work when using v.i = x.i + y.i, this currently treats as #nosub
 
 ### Testing
 
@@ -124,12 +128,15 @@
 -   Add string$() function argument that gives the return mode for the expression in the string. It should allow with or without units
 -   Add typeOf$() function that returns the type of an expression as a string
 -   Add #HTML and #CPD keywords to switch if ' is needed before HTML. With string$ function, it is not needed to pass Calcpad code to HTML, so this greatly simplifies the architecture.
+-   Route write for the .cpd directory, not the pwd.
+-   Add UI mode for strings. Handle #UI as a possible alternative for #string because we can only have one keyword for expressions.
 
 ## Calcpad Modules
 
 -   DXF: Is there a way to get a CDN like import for JS libraries using #include in calcpad? This version has a text fix that is not in the CDN version
 -   DXF: Add lineweight by using an offset line in the rendered version and rounding the ends by adding the length equal to the offset.
 -   Geometry: Map RFEM nodes to polylines, map RFEM polylines to surfaces. Use order of lines to determine axis and match RFEM. Use this to get pressures.
+-   Geometry needs to be tabled beyond simple use cases until this can be written in C# and have results sent to Calcpad via API.
 
 ```
 f(x) = $Repeat{1/i @ i = x : 10}

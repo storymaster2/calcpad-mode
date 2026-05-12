@@ -47,6 +47,13 @@
     </Content>
     <!-- Embed template.html as resource for single-file publishing -->
     <EmbeddedResource Include="template.html" />
+    <!-- Bundled fonts inlined by PdfGeneratorService so the headless browser
+         doesn't have to fetch them from a CDN during PDF generation. Drop any
+         .woff/.woff2/.ttf/.otf file into Fonts/ and it gets picked up. -->
+    <Content Include="Fonts\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="Fonts\**\*.*" />
   </ItemGroup>
 
   <!-- Exclude non-.NET subdirectories from dotnet build/publish output -->

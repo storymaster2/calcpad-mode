@@ -240,36 +240,47 @@
             "windows": {
                 "command": "powershell",
                 "args": [
-                    "-NoProfile", "-Command",
-                    "dotnet build '${workspaceFolder}\\Calcpad.Web\\backend\\Calcpad.Server.csproj' -c Debug; Copy-Item '${workspaceFolder}\\Calcpad.Web\\backend\\bin\\Debug\\net10.0\\Calcpad.Core.dll','${workspaceFolder}\\Calcpad.Web\\backend\\bin\\Debug\\net10.0\\Calcpad.Server.dll','${workspaceFolder}\\Calcpad.Web\\backend\\bin\\Debug\\net10.0\\Calcpad.Highlighter.dll','${workspaceFolder}\\Calcpad.Web\\backend\\bin\\Debug\\net10.0\\Calcpad.OpenXml.dll' -Destination '${workspaceFolder}\\Calcpad.Web\\frontend\\vscode-calcpad\\bin\\' -Force"
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}\\Calcpad.Web\\backend\\scripts\\build-and-deploy-extension.ps1",
+                    "-RepoRoot", "${workspaceFolder}"
                 ]
             },
             "linux": {
                 "command": "bash",
                 "args": [
-                    "-c",
-                    "dotnet build '${workspaceFolder}/Calcpad.Web/backend/Calcpad.Server.csproj' -c Debug && cp -f '${workspaceFolder}/Calcpad.Web/backend/bin/Debug/net10.0/Calcpad.Core.dll' '${workspaceFolder}/Calcpad.Web/backend/bin/Debug/net10.0/Calcpad.Server.dll' '${workspaceFolder}/Calcpad.Web/backend/bin/Debug/net10.0/Calcpad.Highlighter.dll' '${workspaceFolder}/Calcpad.Web/backend/bin/Debug/net10.0/Calcpad.OpenXml.dll' '${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/bin/'"
+                    "${workspaceFolder}/Calcpad.Web/backend/scripts/build-and-deploy-extension.sh",
+                    "${workspaceFolder}"
+                ]
+            },
+            "osx": {
+                "command": "bash",
+                "args": [
+                    "${workspaceFolder}/Calcpad.Web/backend/scripts/build-and-deploy-extension.sh",
+                    "${workspaceFolder}"
                 ]
             },
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"
-            }
+            },
+            // Script runs dotnet build (msCompile errors) and npm run compile
+            // (tsc errors), both of which we want to surface in the Problems
+            // panel since Extension: Compile is now just a dependency wrapper.
+            "problemMatcher": ["$msCompile", "$tsc"]
         },
 
         // ── VS Code Extension ───────────────────────────────────────────
+        // Extension: Compile is now an alias — the actual `npm run compile`
+        // step lives inside the Server: Build & Deploy to Extension script,
+        // so both that task and this one produce a fully-built extension.
+        // Kept as a separate label because launch.json's "Extension: Run"
+        // configuration references it as a preLaunchTask.
         {
             "label": "Extension: Compile",
-            "type": "npm",
-            "script": "compile",
-            "path": "Calcpad.Web/frontend/vscode-calcpad",
             "dependsOn": ["Frontend: Install & Build", "Server: Build & Deploy to Extension"],
+            "dependsOrder": "parallel",
             "group": "build",
-            "presentation": {
-                "panel": "shared",
-                "reveal": "silent"
-            },
-            "problemMatcher": "$tsc"
+            "problemMatcher": []
         },
         {
             "label": "Extension: Watch",

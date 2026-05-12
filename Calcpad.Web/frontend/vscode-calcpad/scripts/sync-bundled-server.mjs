@@ -34,7 +34,7 @@
  */
 
 import { execSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { arch as nodeArch, platform as nodePlatform } from 'node:os';
@@ -107,16 +107,104 @@ function run(cmd, cwd) {
     execSync(cmd, { cwd, stdio: 'inherit' });
 }
 
+function sleepSync(ms) {
+    // Atomics.wait gives us a blocking sleep without busy-spinning. Falls
+    // back to a synchronous ping/sleep shell-out on platforms where
+    // SharedArrayBuffer is restricted (shouldn't happen in plain Node).
+    try {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+    } catch {
+        if (process.platform === 'win32') {
+            try { execSync(`ping 127.0.0.1 -n 1 -w ${ms} > nul`, { stdio: 'ignore' }); } catch { /* best-effort */ }
+        } else {
+            try { execSync(`sleep ${ms / 1000}`, { stdio: 'ignore' }); } catch { /* best-effort */ }
+        }
+    }
+}
+
+/**
+ * Kill any bundled Calcpad.Server process that's currently holding files in
+ * `targetBin`. VS Code's extension host can leave the server alive after a
+ * debug session ends, and on Windows that leaves every DLL in the bin folder
+ * locked, breaking the next sync. The server-manager writes a JSON lock file
+ * with the PID; we read that, force-kill the PID, wait briefly for handles to
+ * release, then continue.
+ */
+function stopRunningServer(targetBin) {
+    const lockPath = join(targetBin, '.calcpad-server.lock');
+    if (!existsSync(lockPath)) return;
+
+    let pid = null;
+    try {
+        const lock = JSON.parse(readFileSync(lockPath, 'utf-8'));
+        if (typeof lock.pid === 'number' && Number.isFinite(lock.pid)) pid = lock.pid;
+    } catch { /* malformed lock file — fall through to delete */ }
+
+    if (pid !== null) {
+        // Probe whether the PID is alive (signal 0 = no-op delivery check).
+        let alive = false;
+        try { process.kill(pid, 0); alive = true; } catch { /* dead or denied */ }
+
+        if (alive) {
+            console.log(`[sync-bundled-server] stopping existing server pid=${pid} (lock file ${lockPath})`);
+            try {
+                if (process.platform === 'win32') {
+                    execSync(`taskkill /F /T /PID ${pid}`, { stdio: 'ignore' });
+                } else {
+                    process.kill(pid, 'SIGTERM');
+                }
+            } catch { /* may have exited between probe and kill */ }
+
+            // Poll up to 5 s for the OS to release handles before we try rmSync.
+            const deadline = Date.now() + 5000;
+            while (Date.now() < deadline) {
+                try { process.kill(pid, 0); } catch { break; }
+                sleepSync(100);
+            }
+        }
+    }
+
+    try { rmSync(lockPath, { force: true }); } catch { /* ignore */ }
+}
+
 function cleanTarget(targetBin) {
     if (!existsSync(targetBin)) {
         mkdirSync(targetBin, { recursive: true });
         return;
     }
+
+    // Drop any server that's still holding files in this directory before we
+    // try to delete them. Without this, rmSync fails with EBUSY on Windows.
+    stopRunningServer(targetBin);
+
     for (const entry of readdirSync(targetBin)) {
         if (shouldPreserve(entry)) continue;
         const full = join(targetBin, entry);
-        rmSync(full, { recursive: true, force: true });
+        rmSyncWithRetry(full);
     }
+}
+
+/**
+ * rmSync with a small retry loop. Even after we kill the server PID, Windows
+ * can hold antivirus / search-indexer handles on freshly-released files for a
+ * few hundred ms. Retrying with backoff covers that window without surfacing
+ * a confusing EBUSY to the user.
+ */
+function rmSyncWithRetry(target) {
+    const maxAttempts = 6;
+    let lastErr = null;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            rmSync(target, { recursive: true, force: true });
+            return;
+        } catch (err) {
+            lastErr = err;
+            const code = err && err.code;
+            if (code !== 'EBUSY' && code !== 'EPERM' && code !== 'ENOTEMPTY') throw err;
+            sleepSync(150 * attempt);
+        }
+    }
+    throw lastErr;
 }
 
 function copyPublishedTree(src, targetBin, { keepSkiaNatives, rid }) {

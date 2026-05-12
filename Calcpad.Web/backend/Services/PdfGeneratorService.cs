@@ -78,9 +78,19 @@ namespace Calcpad.Server.Services
 
             try
             {
+                // PuppeteerSharp doesn't reliably switch to print media before
+                // PdfStreamAsync, so do it explicitly — otherwise @media print
+                // rules in the page CSS won't apply (e.g. the body max-width
+                // override that lets content fill the print area).
+                await page.EmulateMediaTypeAsync(MediaType.Print);
+
+                // Bumped from the 30 s default because large documents (multi-MB
+                // HTML with many script tags) can need more time to reach
+                // networkidle0.
                 await page.SetContentAsync(html, new NavigationOptions
                 {
-                    WaitUntil = [WaitUntilNavigation.Networkidle0]
+                    WaitUntil = [WaitUntilNavigation.Networkidle0],
+                    Timeout = 120_000
                 });
 
                 // Inject PDF-specific styles
@@ -145,6 +155,8 @@ namespace Calcpad.Server.Services
                     });
                 }");
 
+                await WaitForAsyncContentAsync(page);
+
                 var pdfOptions = new PuppeteerSharp.PdfOptions
                 {
                     Format = ParsePaperFormat(options.Format),
@@ -161,11 +173,61 @@ namespace Calcpad.Server.Services
                     DisplayHeaderFooter = false
                 };
 
-                return await page.PdfDataAsync(pdfOptions);
+                // Stream the PDF in chunks instead of returning the whole blob in
+                // one CDP message. The single-message path hits a buffer cap in the
+                // DevTools transport (see puppeteer/puppeteer#11720) which produces
+                // a silent blank PDF on large documents.
+                await using var pdfStream = await page.PdfStreamAsync(pdfOptions);
+                using var ms = new MemoryStream();
+                await pdfStream.CopyToAsync(ms);
+                return ms.ToArray();
             }
             finally
             {
                 await page.CloseAsync();
+            }
+        }
+
+        /// <summary>
+        /// Waits for all client-side rendered images (DXF plots, charts, anything
+        /// async that ends up as an <c>&lt;img&gt;</c>) to finish before capturing
+        /// the PDF. <c>Networkidle0</c> isn't enough on its own because the work
+        /// that fills <c>img.src</c> happens after the last network request returns
+        /// (canvas-to-dataURL, font parsing, WebGL rendering, etc.).
+        ///
+        /// Strategy: poll every <c>&lt;img&gt;</c> in the document — any that have
+        /// a <c>src</c> set must report <c>complete</c> with a non-zero
+        /// <c>naturalWidth</c>. Then do a double <c>requestAnimationFrame</c>
+        /// flush so layout/paint commit before serialization. A 30 s timeout
+        /// prevents one stuck render from blocking the whole PDF.
+        /// </summary>
+        private static async Task WaitForAsyncContentAsync(IPage page)
+        {
+            try
+            {
+                await page.WaitForFunctionAsync(@"() => {
+                    const imgs = document.querySelectorAll('img');
+                    return Array.from(imgs).every(img => {
+                        if (!img.src && !img.currentSrc) return false;
+                        return img.complete && img.naturalWidth > 0;
+                    });
+                }", new WaitForFunctionOptions { Timeout = 30000, PollingInterval = 100 });
+            }
+            catch (WaitTaskTimeoutException)
+            {
+                // One stuck render shouldn't block the whole PDF — log and proceed
+                // with whatever did finish.
+                FileLogger.LogWarning("PDF render-wait timed out; proceeding with partial result", null);
+            }
+
+            try
+            {
+                await page.EvaluateFunctionAsync(@"() => new Promise(resolve =>
+                    requestAnimationFrame(() => requestAnimationFrame(resolve)))");
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogWarning("PDF paint-frame flush failed before capture", ex.Message);
             }
         }
 
@@ -196,7 +258,7 @@ namespace Calcpad.Server.Services
                     {
                         Headless = true,
                         ExecutablePath = executablePath,
-                        Args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"]
+                        Args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage"]
                     });
                 }
                 catch (Exception ex)
@@ -207,7 +269,7 @@ namespace Calcpad.Server.Services
                     {
                         Headless = true,
                         ExecutablePath = fallbackPath,
-                        Args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"]
+                        Args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage"]
                     });
                 }
 

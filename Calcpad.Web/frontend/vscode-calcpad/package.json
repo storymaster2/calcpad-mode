@@ -416,11 +416,6 @@
       ],
       "webview/context": [
         {
-          "command": "vscode-calcpad.printToPdf",
-          "when": "webviewId == htmlPreview || webviewId == htmlPreviewUnwrapped",
-          "group": "navigation"
-        },
-        {
           "command": "vscode-calcpad.viewWebviewSource",
           "when": "webviewId == htmlPreview || webviewId == htmlPreviewUnwrapped || webviewId == htmlPreviewUi",
           "group": "navigation"

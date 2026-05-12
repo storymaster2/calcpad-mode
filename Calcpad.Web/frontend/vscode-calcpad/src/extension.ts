@@ -692,94 +692,134 @@ async function updateUiPreviewContent(panel: vscode.WebviewPanel, content: strin
     }
 }
 
-async function generatePdf(panel: vscode.WebviewPanel, content: string, sourceFileUri: vscode.Uri) {
-    const settingsManager = CalcpadSettingsManager.getInstance();
+/**
+ * Convert a Calcpad document to PDF on the server and write the bytes to
+ * <paramref name="saveUri"/>. Pure I/O — no UI prompts. Used by
+ * <see cref="runPdfExportCommand"/>, which handles the editor lookup, save
+ * dialog, progress notification, and "Open PDF" follow-up.
+ */
+async function generatePdfToFile(
+    documentContent: string,
+    sourceFileUri: vscode.Uri,
+    saveUri: vscode.Uri,
+    progress?: vscode.Progress<{ increment?: number; message?: string }>
+): Promise<void> {
+    const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
     const apiBaseUrl = settingsManager.getServerUrl();
-    if (!apiBaseUrl) {
-        vscode.window.showErrorMessage('Server URL not configured');
+    if (!apiBaseUrl) throw new Error('Server URL not configured');
+
+    if (!documentContent || documentContent.trim().length === 0) {
+        throw new Error('Document is empty. Please add some CalcPad content first.');
+    }
+
+    const settings = await settingsManager.getApiSettings();
+
+    progress?.report({ increment: 10, message: 'Loading referenced files...' });
+
+    // Build client file cache for referenced files
+    const vsFileSystem = new VSCodeFileSystem();
+    const vsLogger = new VSCodeLogger(outputChannel);
+    const sourceDir = path.dirname(sourceFileUri.fsPath);
+    const clientFileCache = await buildClientFileCacheFromContent(documentContent, sourceDir, vsFileSystem, vsLogger, '[PDF]');
+
+    progress?.report({ increment: 20, message: 'Converting to HTML...' });
+
+    // Step 1: Convert calcpad content to HTML
+    const htmlResponse = await fetch(`${apiBaseUrl}/api/calcpad/convert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            content: documentContent,
+            settings: settings,
+            clientFileCache: clientFileCache,
+            sourceFilePath: sourceFileUri.fsPath,
+            forPrint: true
+        }),
+        signal: AbortSignal.timeout(30000)
+    });
+    if (!htmlResponse.ok) {
+        throw new Error(`Server returned ${htmlResponse.status}`);
+    }
+    let html = await htmlResponse.text();
+
+    // Inline local images as base64 data URIs so the headless browser can
+    // render them (it has no access to the local filesystem).
+    const imageCache = await buildImageCache(html, sourceDir);
+    html = applyImageCache(html, imageCache);
+
+    progress?.report({ increment: 50, message: 'Generating PDF...' });
+
+    // Step 2: Generate PDF from HTML
+    const pdfResponse = await fetch(`${apiBaseUrl}/api/calcpad/pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            html: html,
+            options: getPdfSettings()
+        }),
+        signal: AbortSignal.timeout(60000)
+    });
+    if (!pdfResponse.ok) {
+        throw new Error(`PDF generation failed: ${pdfResponse.status}`);
+    }
+
+    progress?.report({ increment: 80, message: 'Saving PDF file...' });
+
+    const pdfBuffer = await pdfResponse.arrayBuffer();
+    await vscode.workspace.fs.writeFile(saveUri, new Uint8Array(pdfBuffer));
+
+    progress?.report({ increment: 100, message: 'PDF generation complete!' });
+}
+
+/**
+ * Editor → save dialog → generate → "Open PDF" prompt. Shared entry point for
+ * both <c>vscode-calcpad.exportToPdf</c> and <c>vscode-calcpad.printToPdf</c>;
+ * the two commands are functionally identical so they delegate here.
+ */
+async function runPdfExportCommand(): Promise<void> {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+        vscode.window.showErrorMessage('No active CalcPad document found');
         return;
     }
 
+    // Default save location: same dir as the .cpd, with .pdf extension.
+    const currentDir = path.dirname(activeEditor.document.fileName);
+    const baseFilename = path.basename(activeEditor.document.fileName, path.extname(activeEditor.document.fileName));
+    const defaultPath = path.join(currentDir, baseFilename + '.pdf');
+
+    const saveUri = await vscode.window.showSaveDialog({
+        defaultUri: vscode.Uri.file(defaultPath),
+        filters: { 'PDF Files': ['pdf'] }
+    });
+    if (!saveUri) return;
+
     try {
-        const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
-        const settings = await settingsManager.getApiSettings();
-
-        // Build client file cache for referenced files
-        const vsFileSystem = new VSCodeFileSystem();
-        const vsLogger = new VSCodeLogger(outputChannel);
-        const sourceDir = path.dirname(sourceFileUri.fsPath);
-        const clientFileCache = await buildClientFileCacheFromContent(content, sourceDir, vsFileSystem, vsLogger, '[PDF]');
-
-        // Step 1: Convert calcpad content to HTML
-        const htmlResponse = await fetch(`${apiBaseUrl}/api/calcpad/convert`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                content,
-                settings: settings,
-                clientFileCache: clientFileCache,
-                forPrint: true
-            }),
-            signal: AbortSignal.timeout(30000)
-        });
-        if (!htmlResponse.ok) {
-            throw new Error(`Server returned ${htmlResponse.status}`);
-        }
-        let html = await htmlResponse.text();
-
-        // Inline local images as base64 data URIs for the headless browser
-        const documentDir = path.dirname(sourceFileUri.fsPath);
-        const imageCache = await buildImageCache(html, documentDir);
-        html = applyImageCache(html, imageCache);
-
-        // Step 2: Generate PDF from HTML
-        const pdfResponse = await fetch(`${apiBaseUrl}/api/calcpad/pdf`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                html: html,
-                options: getPdfSettings()
-            }),
-            signal: AbortSignal.timeout(60000)
-        });
-        if (!pdfResponse.ok) {
-            throw new Error(`PDF generation failed: ${pdfResponse.status}`);
-        }
-
-        // Get the active editor to determine the filename
-        const activeEditor = vscode.window.activeTextEditor;
-        const baseFilename = activeEditor
-            ? activeEditor.document.fileName.split('/').pop()?.replace(/\.[^/.]+$/, '') || 'calcpad'
-            : 'calcpad';
-
-        // Show save dialog
-        const saveUri = await vscode.window.showSaveDialog({
-            defaultUri: vscode.Uri.file(`${baseFilename}.pdf`),
-            filters: {
-                'PDF Files': ['pdf']
-            }
-        });
-
-        if (saveUri) {
-            // Write the PDF file
-            const pdfBuffer = await pdfResponse.arrayBuffer();
-            await vscode.workspace.fs.writeFile(saveUri, new Uint8Array(pdfBuffer));
-
-            // Show success message with option to open
-            const openChoice = await vscode.window.showInformationMessage(
-                `PDF saved to ${saveUri.fsPath}`,
-                'Open PDF'
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: 'Generating PDF...',
+            cancellable: false
+        }, async progress => {
+            progress.report({ increment: 0, message: 'Starting PDF generation...' });
+            await generatePdfToFile(
+                activeEditor.document.getText(),
+                activeEditor.document.uri,
+                saveUri,
+                progress
             );
+        });
 
-            if (openChoice === 'Open PDF') {
-                vscode.env.openExternal(saveUri);
-            }
-        }
-
-    } catch (error) {
-        vscode.window.showErrorMessage(
-            `Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
+        const openChoice = await vscode.window.showInformationMessage(
+            `PDF saved to ${saveUri.fsPath}`,
+            'Open PDF'
         );
+        if (openChoice === 'Open PDF') {
+            vscode.env.openExternal(saveUri);
+        }
+    } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        outputChannel.appendLine(`[PDF] ${msg}`);
+        vscode.window.showErrorMessage(`Failed to generate PDF: ${msg}`);
     }
 }
 
@@ -925,137 +965,6 @@ async function saveDocx() {
         const msg = error instanceof Error ? error.message : 'Unknown error';
         outputChannel.appendLine(`ERROR in saveDocx: ${msg}`);
         vscode.window.showErrorMessage(`Failed to save Word document: ${msg}`);
-    }
-}
-
-async function printToPdf() {
-    const activeEditor = vscode.window.activeTextEditor;
-    if (!activeEditor) {
-        vscode.window.showErrorMessage('No active CalcPad document found');
-        return;
-    }
-
-    try {
-        // Get PDF settings
-        const pdfSettings = getPdfSettings();
-        
-        // Get the active editor to determine the filename and directory
-        const currentDir = path.dirname(activeEditor.document.fileName);
-        const baseFilename = path.basename(activeEditor.document.fileName, path.extname(activeEditor.document.fileName));
-        const defaultPath = path.join(currentDir, baseFilename + '.pdf');
-
-        // Show save dialog
-        const saveUri = await vscode.window.showSaveDialog({
-            defaultUri: vscode.Uri.file(defaultPath),
-            filters: {
-                'PDF Files': ['pdf']
-            }
-        });
-
-        if (!saveUri) {
-            return;
-        }
-
-        try {
-            // Show progress notification
-            await vscode.window.withProgress({
-                location: vscode.ProgressLocation.Notification,
-                title: "Generating PDF...",
-                cancellable: false
-            }, async (progress) => {
-                progress.report({ increment: 0, message: "Starting PDF generation..." });
-
-                const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
-                const apiBaseUrl = settingsManager.getServerUrl();
-                if (!apiBaseUrl) {
-                    throw new Error('Server URL not configured');
-                }
-                const settings = await settingsManager.getApiSettings();
-                const documentContent = activeEditor.document.getText();
-
-                if (!documentContent || documentContent.trim().length === 0) {
-                    throw new Error('Document is empty. Please add some CalcPad content first.');
-                }
-
-                progress.report({ increment: 10, message: "Loading referenced files..." });
-
-                // Build client file cache for referenced files
-                const vsFileSystem = new VSCodeFileSystem();
-                const vsLogger = new VSCodeLogger(outputChannel);
-                const sourceDir = path.dirname(activeEditor.document.uri.fsPath);
-                const clientFileCache = await buildClientFileCacheFromContent(documentContent, sourceDir, vsFileSystem, vsLogger, '[PDF]');
-
-                progress.report({ increment: 20, message: "Converting to HTML..." });
-
-                // Step 1: Convert calcpad content to HTML
-                const htmlResponse = await fetch(`${apiBaseUrl}/api/calcpad/convert`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        content: documentContent,
-                        settings: settings,
-                        clientFileCache: clientFileCache,
-                        forPrint: true
-                    }),
-                    signal: AbortSignal.timeout(30000)
-                });
-                if (!htmlResponse.ok) {
-                    throw new Error(`Server returned ${htmlResponse.status}`);
-                }
-                let html = await htmlResponse.text();
-
-                // Inline local images as base64 data URIs so the headless
-                // browser can render them (it has no access to the local filesystem)
-                const documentDir = path.dirname(activeEditor.document.uri.fsPath);
-                const imageCache = await buildImageCache(html, documentDir);
-                html = applyImageCache(html, imageCache);
-
-                progress.report({ increment: 50, message: "Generating PDF..." });
-
-                // Step 2: Generate PDF from HTML
-                const pdfResponse = await fetch(`${apiBaseUrl}/api/calcpad/pdf`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        html: html,
-                        options: pdfSettings
-                    }),
-                    signal: AbortSignal.timeout(60000)
-                });
-                if (!pdfResponse.ok) {
-                    throw new Error(`PDF generation failed: ${pdfResponse.status}`);
-                }
-
-                progress.report({ increment: 80, message: "Saving PDF file..." });
-
-                // Write the PDF file
-                const pdfBuffer = await pdfResponse.arrayBuffer();
-                await vscode.workspace.fs.writeFile(saveUri, new Uint8Array(pdfBuffer));
-
-                progress.report({ increment: 100, message: "PDF generation complete!" });
-            });
-
-            // Show success message with option to open
-            const openChoice = await vscode.window.showInformationMessage(
-                `PDF saved to ${saveUri.fsPath}`,
-                'Open PDF'
-            );
-
-            if (openChoice === 'Open PDF') {
-                vscode.env.openExternal(saveUri);
-            }
-        } catch (error) {
-            outputChannel.appendLine(`ERROR in printToPdf: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            vscode.window.showErrorMessage(
-                `Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
-            );
-        }
-
-    } catch (error) {
-        outputChannel.appendLine(`ERROR in printToPdf (outer): ${error instanceof Error ? error.message : 'Unknown error'}`);
-        vscode.window.showErrorMessage(
-            `Failed to generate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
     }
 }
 
@@ -1724,7 +1633,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 
     const printToPdfCommand = vscode.commands.registerCommand('vscode-calcpad.printToPdf', () => {
-        printToPdf();
+        runPdfExportCommand();
     });
 
     const saveSourceHtmlCommand = vscode.commands.registerCommand('vscode-calcpad.saveSourceHtml', () => {
@@ -1897,20 +1806,7 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     const exportToPdfCommand = vscode.commands.registerCommand('vscode-calcpad.exportToPdf', () => {
-        const activeEditor = vscode.window.activeTextEditor;
-        if (activeEditor && activePreviewPanel) {
-            generatePdf(activePreviewPanel as vscode.WebviewPanel, activeEditor.document.getText(), activeEditor.document.uri);
-        } else if (activeEditor) {
-            // Create a temporary panel just for PDF generation
-            const tempPanel = vscode.window.createWebviewPanel(
-                'tempPdfPanel',
-                'PDF Export',
-                vscode.ViewColumn.Active,
-                { enableScripts: false }
-            );
-            generatePdf(tempPanel, activeEditor.document.getText(), activeEditor.document.uri);
-            tempPanel.dispose();
-        }
+        runPdfExportCommand();
     });
 
 

@@ -877,6 +877,18 @@ tan_angle = tan(angle°)";
             // Use the comprehensive HTML template with theme support
             var themeClass = theme.ToLower() == "dark" ? " class=\"dark-theme\"" : "";
             var templateWithTheme = _htmlTemplate.Replace("<body>", $"<body{themeClass}>");
+
+            // Expose bundled fonts as window.__calcpadFonts so client scripts
+            // (e.g. the DXF render module) can use them instead of hitting a CDN.
+            // Injected before </head> so it runs before any module scripts in body.
+            var fontScript = BundledFonts.GetInjectionScript();
+            if (!string.IsNullOrEmpty(fontScript))
+            {
+                var headCloseIdx = templateWithTheme.IndexOf("</head>", StringComparison.OrdinalIgnoreCase);
+                if (headCloseIdx >= 0)
+                    templateWithTheme = templateWithTheme.Insert(headCloseIdx, fontScript);
+            }
+
             return templateWithTheme.Replace("{{CONTENT}}", htmlContent);
         }
 
