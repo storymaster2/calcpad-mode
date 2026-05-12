@@ -1,4 +1,4 @@
-﻿# Constants
+# Constants
 
 ## Real
 
@@ -20,7 +20,7 @@ In CalcpadCE, the imaginary unit can be entered either as "*i*" or as "1*i*" in 
 You can declare any variable or function as constant (readonly) by adding "#const" before its definition.
 For example:
 
-```matlab
+```calcpad
 #const γ = 0.57721566490153286
 
 #const f(x) = x^2

@@ -1,4 +1,4 @@
-﻿# Vectors
+# Vectors
 
 ## Internal implementation and types of vectors
 
@@ -30,7 +30,9 @@ Since we normally assign elements in a loop, in this way we avoid resizing the v
 
 Vectors can be defined by using the following syntax:
 
-`a = [ a_1; a_2; a_3; ... ; a_i; ... ; a_n ]`
+```calcpad
+a = [ a_1; a_2; a_3; ... ; a_i; ... ; a_n ]
+```
 
 The values of the separate elements can be specified by expressions that include variables, operators, functions, etc.
 For example:
@@ -73,7 +75,7 @@ If an index value is less than 1 or greater than the vector length **len**($\vec
 You can use indexing to initialize vectors inside loops (block or inline). For that purpose, you must include the loop counter into the index.
 For example:
 
-```matlab
+```calcpad
 a = vector(6)','b = vector(6)
 'Block loop
 #for k = 1 : len(a)

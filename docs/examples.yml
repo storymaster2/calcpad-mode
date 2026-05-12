@@ -1,0 +1,264 @@
+Engineering Examples:
+  Areas:
+    - Square
+    - Circle
+    - Rectangle
+    - Trapezoid
+    - Polygon
+    - Equilateral Triangle
+    - Right Triangle
+    - Triangle
+    - Triangle (height)
+    - Parabola
+    - Ellipse
+    - Sector (angle)
+    - Sector (chord)
+    - Segment (angle)
+    - Segment (chord)
+  Volumes:
+    - Cube
+    - Sphere
+    - Cone
+    - Ellipsoid
+    - Spherical Cap
+    - Spherical Segment
+    - Cylinder
+    - Rectangular Frustum
+    - Rectangular Pyramid
+    - Right Polygonal Prism
+    - Triangular Frustum
+    - Triangular Pyramid
+    - Triangular prism
+    - Tetrahedron
+    - Rectangular Prism
+  Geometrical:
+    - Solution of a triangle
+    - Tee Section
+    - Double Tee Section
+    - Polygon
+    - Angle Section
+    - Zed Section
+    - Channel Section
+    - Circle
+    - Sector
+    - Circlular Pipe
+    - Ellipse
+    - Elliptical Pipe
+    - Equilateral Triangle
+    - Half Circle
+    - Hexagon
+    - Quarter Circle
+    - Rectangle
+    - Rectangular Tube
+    - Rhombus
+    - Rhombus (square)
+    - Right Triangle
+    - Segment
+    - Square
+    - Trapezoid
+  Fractals:
+    - Mandelbrot Set
+    - Koch Snowflake
+    - Koch Snowflake Animated
+    - Kochwave Animated
+    - Kochwave Snowflake Animated
+    # - Julia Set # Currently not possible, because CLI does not support enabling complex numbers
+    - Sierpinski Christmas Tree
+  3D, Plotting, Drawing:
+    - Heart Function Animated
+    - Plot with Title, Legend and Labels
+    - Bolt 3D Model
+    - 3D Plot with Plotly
+    - Parametric 3D Drawing of RC Beam
+    - Plotting Easter Egg in 2D and 3D
+    - Parametric SVG Generation
+  Interpolation:
+    - Interpolation of Functions
+    - Interpolation
+    - Double Interpolation
+  Numerical:
+    - Monte Carlo Pi
+    - Newton's Method Animated
+    - Least Squares Fitting
+    - Numerical Differentiation
+    - Numerical Integration
+    - Rayleigh Quotient Iteration
+    - System of nonlinear equations
+  Pendulums:
+    - Simple undamped Animated
+    - Simple damped Animated
+    - Elastic damped Animated
+    - Double damped Animated
+    - Comparison of different methods for analysis of simple undamped pendulum
+  Waves:
+    - Waves 2D on Water Interference Animated
+    - Waves 2D on Water Interference
+    - Diffraction of Light on Single Slit - General View
+    - Diffraction of Light on Single Slit - Screen View
+    - Interference of Light - 2 Slits General View
+    - Interference of Light - 2 Slits Screen View
+    - Interference of Light - 4 Slits General View
+    - Interference of Light - 4 Slits Screen View
+    - Interference of Light - 6 Slits General View
+    - Interference of Light - 6 Slits Screen View
+  Parametric Curves:
+    - Common Spirals
+    - Cornu Spiral
+    - Epicycloid
+    - Hypocycloid
+    - Lissajous Curve
+    - Rose Curve
+  Elastic analysis:
+    - Deep Beam
+    - Rectangular Slab
+    - Saint-Venant Torsion
+  Finite Elements:
+    - Deep Beam FEA
+    - Flat Slab FEA
+    - Flat Slab FEA Optimized
+    - Rectangular Slab FEA
+  Fourier:
+    - FFT
+    - Fourier Series
+    - Fourier Series + FFT
+    - Strong Motion FFT
+  Special Math Functions:
+    - Special Math Functions
+  Vectors:
+    - Vector Initialization, indexing and operators
+    - Vector data functions
+    - Vector math functions
+    - Vector structural functions
+  Vectors - High Performance:
+    - Vector Initialization, indexing and operators
+    - Vector data functions
+    - Vector math functions
+    - Vector structural functions
+  Matrices:
+    - Matrix initialization and indexing
+    - Matrix creational functions
+    - Matrix data functions
+    - Matrix math functions
+    - Matrix structural functions
+    - Matrix operators
+  Matrices - High Performance:
+    - Matrix initialization and indexing
+    - Matrix creational functions
+    - Matrix data functions
+    - Matrix math functions
+    - Matrix structural functions
+    - Matrix operators
+  Multiline functions:
+    - Cubic roots function
+    - Fibonacci numbers
+    - Greatest common divisor - Euclid algorithm
+    - Quadratic roots function
+  Custom units:
+    - Currency units
+    - Information units
+  Formatting:
+    - CSS Classes
+    - Design Check
+    - Page header with logo
+    - Markdown
+    - Beam design with Markdown
+    - Rounding and formatting
+#    - toc # Broken when rendered with CLI and displayed in MkDocs
+  Others:
+    - Html UI
+    - Collatz Check
+    - Quadratic Equation
+    - Cubic Equation
+    - Bitwise operations
+    - Combinatorics
+    - Functions of Multiple Parameters
+    - Himmelblau function
+
+Structural Engineering Examples:
+  Cantilevers:
+    - Concentrated Force
+    - Concentrated Moment
+    - Linearly Distributed Load
+    - Partially Distributed Load
+    - Uniformly Distributed Load
+  Propped Cantilevers:
+    - Concentrated Force
+    - Concentrated Moment
+    - Linearly Distributed Load
+    - Partially Distributed Load
+    - Uniformly Distributed Load
+  Continuous beam:
+    - Continuous beam
+  Deflections:
+    - Cantilever with Concentrated Load
+    - Cantilever with Unifrom Load
+    - Simply Supported Beam with Concentrated Load
+    - Simply Supported Beam with Unifrom Load
+  Frames:
+    - Frame
+    - Frame-var
+    - Multi-Story Frame
+  Fully Restrained Beams:
+    - Concentrated Force
+    - Concentrated Moment
+    - Linearly Distributed Load
+    - Partially Distributed Load
+    - Uniformly Distributed Load
+  Loads:
+    - Optimization of foundation pad dimensions
+    - Snow Drift
+    - Snow Load
+    - Wind Load
+  Nonlinear:
+    - Material and geometric nonlinear analysis of prestressed asymmetric Biot truss
+    - Nonlinear analysis of a Von-Mises truss Animated
+    - Third order geometric nonlinearity analysis of a double-strut Biot system
+  Simply Supported Beams:
+    - Concentrated Force
+    - Concentrated Forces
+    - Concentrated Moment
+    - Linearly Distributed Load
+    - Partially Distributed Load
+    - Uniformly Distributed Load
+  Soil Mechanics:
+    - Soil stress and deformations
+  Steel:
+    - I section properties
+    - I section properties Excel
+    - I section properties and drawing
+  Structural Dynamics:
+    - Beam Impact Analysis Animated
+    - Free Vibrations of Steel Pole Animated
+    - Free Vibrations of Steel Pole Plotly Animated
+    - Free Vibrations of Steel Pole
+  Reinforced Concrete:
+    - Areas of Reinforcement Bars
+    - Bending Capacity of Tee Section
+    - Bending Design of Rectangular Section
+    - Bending Design of Tee Section
+    - Column Design for Bending and Axial Force
+    - Column Design for Biaxial Bending and Axial Force
+    - Column Design for Biaxial Bending and Axial Force (with units)
+    - Combined Bending, Shear and Torsion
+    - Interaction Diagram of RC section
+    - SLS Design of Beam with Rectangular Section
+    - SLS Design of Beam with Tee Section
+    - Shear Design of Rectangular Section
+  Reinforced Concrete - Punching:
+    - Corner Column
+    - Edge Column
+    - Internal Column
+  Reinforced Concrete - Plates:
+    - Fully Restrained Slab Panel
+    - Restrained Adjacent Edges
+    - Restrained Both Longer Edges
+    - Restrained Both Shorter Edges
+    - Restrained Longer Edge
+    - Restrained Panel with Unrestrained Longer Edge
+    - Restrained Panel with Unrestrained Shorter Edge
+    - Restrained Shorter Edge
+    - Simply Supported Slab Panel
+  Reinforced Concrete - Seismic Detailing:
+    - Beam Detailing for DCM
+    - Column Detailing for DCM
+    - Shear Wall Detailing for DCM

@@ -374,3 +374,16 @@ Calcpad.Web/frontend/calcpad-desktop/packaging/arch/pkg/
 Calcpad.Web/frontend/calcpad-desktop/packaging/arch/src/
 Calcpad.Web/frontend/calcpad-desktop/packaging/arch/*.pkg.tar.*
 Calcpad.Web/frontend/calcpad-desktop/packaging/arch/*.log
+
+# MathJax bundle (downloaded during CI build)
+docs/javascripts/mathjax/
+
+# MkDocs build output
+site/
+
+# npm artifacts from local MathJax setup
+package.json
+package-lock.json
+
+# Installer output
+Calcpad.Wpf/Installer/Output/

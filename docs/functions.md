@@ -1,4 +1,4 @@
-﻿# Functions
+# Functions
 
 CalcpadCE includes a library with common math functions, ready to use.
 
@@ -182,7 +182,7 @@ Custom functions can have unlimited number of parameters.
 They are specified after the function name, enclosed in brackets "(" … ")" and separated by semicolons ";". Each function is defined, using the following format: "**f** ( *x*; *y*; *z*; … ) = **expression**", where "**f**" is the function name and "**x**", "**y**" and "**z**" are function parameters.
 On the right side you can have any valid expression including constants, operators, variables and even other functions, e.g.:
 
-```matlab
+```calcpad
 f(x) = x^2 + 2*x*sin(x)  
 g(x; y) = f(x)/(y - 4)
 ```

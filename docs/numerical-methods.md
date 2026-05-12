@@ -1,4 +1,4 @@
-﻿# Numerical methods
+# Numerical methods
 
 CalcpadCE has a built in "**Solver**" module, which can solve more difficult problems using numerical methods.
 It can work only with real numbers but not complex.
@@ -6,7 +6,7 @@ It includes the following functions:
 
 ## Root finding
 
-```matlab
+```calcpad
 $Root{f(x) = const @ x = a : b}
 $Root{f(x) @ x = a : b}
 ```
@@ -30,7 +30,7 @@ In some cases, it is possible to develop an automated procedure for interval spl
 
 ## Minimum
 
-```matlab
+```calcpad
 $Inf{f(x) @ x = a : b}
 ```
 
@@ -43,7 +43,7 @@ If you use different name for the argument, instead of *x*, it will add "\_inf" 
 
 ## Maximum
 
-```matlab
+```calcpad
 $Sup{f(x) @ x = a : b}
 ```
 
@@ -52,13 +52,13 @@ The value of *x* where the maximum is located is stored in a variable named $x_{
 
 ## Numerical integration
 
-```matlab
+```calcpad
 $Area{f(x) @ x = a : b}
 ```
 
 It calculates the value of the definite integral of a function f(*x*) within the specified interval \[*a*, *b*\]. Adaptive Gauss-Lobbato quadrature with Kronrod extension is applied for that purpose ([Gander & Gautschi](https://www.researchgate.net/publication/226706221_Adaptive_Quadrature-Revisited), 2000).
 
-```matlab
+```calcpad
 $Integral{f(x) @ x = a : b}
 ```
 
@@ -89,7 +89,7 @@ Unlike the plotting command, you can include numerical methods in expressions.
 They return values which can be used for further calculations.
 For example, you can store the result into a variable:
 
-```matlab
+```calcpad
 y_min = $Inf{f(x) @ x = a : b}
 ```
 

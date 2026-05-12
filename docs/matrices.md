@@ -32,7 +32,9 @@ For example, you cannot assign a non-zero value to an element outside the main d
 
 Similar to vectors, you can define matrices by using the "square brackets" syntax, but the rows must be separated by vertical bars " \| ", as follows:
 
-`A_m⨯n = [a_11; a_12; …; a_1n|a_21; a_22; …;a_2n|…| a_m1; a_m2; …; a_mn]`
+```calcpad
+A_m⨯n = [a_11; a_12; …; a_1n|a_21; a_22; …;a_2n|…| a_m1; a_m2; …; a_mn]`
+```
 
 In this way, you can create only general (rectangular) types of matrices.
 For special types of matrices, you have to use the respective creational functions as described further in this manual.
@@ -93,7 +95,7 @@ In this way, you can iterate through matrix elements in a loop and include the l
 You can use both inline and block loops for that purpose.
 The code below creates a Vandermonde matrix from vector $\vec{x}$ with the specified number of columns (6):
 
-```matlab
+```calcpad
 x = [1; 2; 3; 4]
 A = matrix(len(x); 7)
 #hide
@@ -114,7 +116,9 @@ A = matrix(len(x); 7)
 
 The inline equivalent of the above loop is the following:
 
-`$Repeat{$Repeat{A.(i; j) = x.i^(j - 1) @ j = 1 : n_cols(A)} @ i = 1 : n_rows(A)}`
+```calcpad
+$Repeat{$Repeat{A.(i; j) = x.i^(j - 1) @ j = 1 : n_cols(A)} @ i = 1 : n_rows(A)}
+```
 
 ## Creational functions
 
@@ -2328,7 +2332,9 @@ In this case you must specify exactly three arguments: the first two must be sca
 
 You can use interpolation functions to plot matrix data, as in the example below:
 
-`$Map{spline(x; y; A) @ x = 1 : n_rows(A) & y = 1 : n_cols(A)}`
+```calcpad
+$Map{spline(x; y; A) @ x = 1 : n_rows(A) & y = 1 : n_cols(A)}
+```
 
 A full list of the available aggregate and interpolation functions is provided earlier in this manual (see "Expressions/Functions" above).
 

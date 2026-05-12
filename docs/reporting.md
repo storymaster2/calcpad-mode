@@ -1,4 +1,4 @@
-﻿# Reporting
+# Reporting
 
 All calculations are automatically collected into a professionally formatted calculation report.
 You can print it or open it with MS Word for editing.
@@ -53,7 +53,7 @@ Its value is 1, 100 and 1000 for m, mm and cm, respectively.
 You can use it for units conversion inside the calculations.
 For example, you can create a conditional block for displaying the selected units in the report:
 
-```text
+```calcpad
 #if *Units* ≡ 1  
   'The selected units are meters  
 #else if *Units* ≡ 100  
@@ -94,7 +94,9 @@ For example, if you want to make some text bold, you can use the following tags:
 You can put Html tags only in comments, but you can also make them affect expressions.
 For example:
 
-`'<span style="color:red;"> as simple as ' 2 + 2 '</span>'`
+```calcpad
+'<span style="color:red;"> as simple as ' 2 + 2 '</span>'
+```
 
 will give the following output:
 
@@ -119,26 +121,26 @@ Some formatting that is commonly used in engineering design worksheets is predef
 
 **err** - adds red color to text:
 
-`'<span class="err">The check is not satisfied ✖'</span>'`  
+`'<span class="err">The check is not satisfied ✖</span>`  
 <span class="err">The check is not satisfied ✖</span>
 
 **ok** - adds green color to text:
 
-`'<span class="ok">The check is satisfied ✔'</span>'`  
+`'<span class="ok">The check is satisfied ✔</span>`  
 <span class="ok">The check is satisfied ✔</span>
 
 **ref** - (right aligned) it is used for references to design codes and equation numbering:
 
-`'<span class="ref">[EN 1992-1-1, §9.2.2]'</span>'`  
+`'<span class="ref">[EN 1992-1-1, §9.2.2]</span>`  
 <span class="ref">[EN 1992-1-1, §9.2.2]</span>
 
 **bordered** - adds border to tables:
 
-`'<table class="bordered">'...</table>'`
+`'<table class="bordered">...</table>`
 
 **data** - makes the first column left aligned and the others - right aligned:
 
-`'<table class="data">'...</table>'`
+`'<table class="data">...</table>`
 
 ### Content folding
 
@@ -149,15 +151,16 @@ All you need to do is to enclose the folding section into a Html "**div**" eleme
 ```html
 '<div class="fold">
 '<b>Heading</b> (click to unfold)
-'Content to be folded
+'<p>Content to be folded</p>
 '</div>
 ```
 
 The result will look as follows:
 
-> **Heading** (click to unfold) … ▼
->
-> Content to be folded
+<div class="fold">
+<p><b>Heading</b> (click to unfold)</p>
+<p>Content to be folded</p>
+</div>
 
 ### Images
 
@@ -167,7 +170,9 @@ You can use some freeware programs like Paint, Gimp, InkScape, DraftSight or oth
 Then you can insert it using Html.
 All you need to do is to put the following text at the required place, inside a comment:
 
-`'<img style="float:right" src="c:/Users/Me/Pictures/Picture1.png" alt="Picture1.png">`
+```calcpad
+'<img style="float:right" src="c:/Users/Me/Pictures/Picture1.png" alt="Picture1.png">
+```
 
 Of course, instead of "**c:/Users/Me/Pictures/Picture1.png**" you must specify the actual path to your image.
 The file can be local, network or on the Internet.
@@ -188,7 +193,7 @@ Unlike Html, it uses individual symbols or short sequences of symbols for taggin
 In CalcpadCE, you can use Markdown in comments optionally, instead of Html.
 Since it requires an additional parsing step, you can switch it on and off by using the following keywords inside your worksheet:
 
-```text
+```calcpad
 #md on - switches Markdown mode on;  
 #md off - switches Markdown mode off.
 ```

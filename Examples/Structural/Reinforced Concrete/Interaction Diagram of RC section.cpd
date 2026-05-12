@@ -1,0 +1,90 @@
+"Interaction Diagram for Symmetrically Reinforced RC Section<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<div style="max-width:180mm">
+'<img class="side" style="width:150pt;" src="../../Images/structures/rc/design/column-design.png" alt="column-design.png">
+'<h4>Cross section dimensions</h4>
+'Width -'b = ?'mm, Height -'h = ?'mm
+#post
+'Cross section area -'A_c = b*h'mm²
+#show
+'<p><b>Reinforcement</b></p>
+'Left -'A_s1 = ?'mm², Right -'A_s2 = A_s1'mm²
+#post
+'Reinforcement ratio -'ρ = (A_s1 + A_s2)/A_c
+#show
+'<p><b>Concrete cover</b> (to the center of the reinforcement)</p>
+'Left -'d_1 = ?'mm, Right -'d_2 = d_1'mm
+#post
+'Effective cross section depth -'d = h - d_1'mm
+#show
+'<h4>Material properties</h4>
+'<!--'PlotWidth = 250','PlotHeight = 125'-->
+'<p><b>Concrete</b> [EN 1992-1-1, Table 3.1]</p>
+'Characteristic compressive cylinder strength -'f_ck = ?'MPa
+'Partial safety factors for concrete -'γ_c = 1.5','α_cc = ?
+#post
+'Mean value of cylinder compressive strength -'f_cm = f_ck + 8'MPa
+'Design compressive cylinder strength -'f_cd = α_cc*f_ck/γ_c'MPa
+'Ultimate compressive strain -'ε_cu2 = 0.0035'('ε_c2 = 0.002','n = 2')'
+'Secant modulus of elasticity -'E_cm = 22*(f_cm/10)^0.3'GPa
+#show
+'<p><b>Steel</b></p>
+'Characteristic yield strength -'f_yk = ?'MPa
+#post
+'Partial safety factor for steel -'γ_s = 1.15
+'Design yield strength -'f_yd = f_yk/γ_s'MPa
+'Modulus of elasticity -'E_s = 200'GPa
+'<p><b>Strain-stress diagrams</b>, MPa:</p>
+'<!--'PlotWidth = 250','PlotHeight = 125'-->
+'<table><tr><td>
+#hide
+σ_c(ε) = f_cd*((1 - (1 - ε/ε_c2)^n)*(ε < ε_c2) + (ε ≥ ε_c2))
+#post
+$Plot{σ_c(ε/1000) @ ε = 0 : ε_cu2*1000}
+'</td><td>
+#hide
+σ_s(ε) = max(-f_yd; min(ε*E_s*1000;f_yd))
+#post
+$Plot{σ_s(ε/1000) @ ε = -10 : 10}
+'</td></tr></table>
+'<h4>Interaction diagram</h4>
+#hide
+A_s_min = 0.00002*A_c
+#if A_s1 < A_s_min
+	A_s1 = A_s_min
+#end if
+#if A_s2 < A_s_min
+	A_s2 = A_s_min
+#end if
+ε_s1,a(x) = ε_cu2*(d - x)/x
+ε_s2,a(x) = ε_cu2*(d_2 - x)/x
+N_c,a(x) = 17/21*x*b*f_cd/1000
+N_s1,a(x) = σ_s(ε_s1,a(x))*A_s1/1000
+N_s2,a(x) = σ_s(ε_s2,a(x))*A_s2/1000
+N_Rd,a(x) = N_c,a(x) - N_s1,a(x) - N_s2,a(x)
+z_c,a(x) = h/2 - 99/238*x
+M_Rd,a(x) = (N_c,a(x)*z_c,a(x) + N_s1,a(x)*(h/2 - d_1) - N_s2,a(x)*(h/2 - d_2))/1000
+x(ε) = h*ε_cu2/(ε_cu2 + ε)
+h_c = h*ε_c2/ε_cu2
+ε_s1,b(ε) = ε + (ε_c2 - ε)*d_1/h_c
+ε_s2,b(ε) = ε + (ε_c2 - ε)*(h - d_2)/h_c
+N_c,b(ε) = (h_c/6*(σ_c(ε) + 4*σ_c((ε + ε_c2)/2) + σ_c(ε_c2)) + (h - h_c)*f_cd)*b/1000
+N_s1,b(ε) = σ_s(ε_s1,b(ε))*A_s1/1000
+N_s2,b(ε) = σ_s(ε_s2,b(ε))*A_s2/1000
+N_Rd,b(ε) = N_c,b(ε) + N_s1,b(ε) + N_s2,b(ε)
+M_c0(ε) = (h_c^2/6*(2*σ_c((ε + ε_c2)/2) + σ_c(ε_c2)) + (h^2 - h_c^2)/2*f_cd)*b/1000
+z_c,b(ε) = M_c0(ε)/N_c,b(ε) - h/2
+M_Rd,b(ε) = (N_c,b(ε)*z_c,b(ε) - N_s1,b(ε)*(h/2 - d_1) + N_s2,b(ε)*(h/2 - d_2))/1000
+N_Rd(ε) = N_Rd,a(x(ε))*(ε ≥ 0) + N_Rd,b(abs(ε))*(ε < 0)
+M_Rd(ε) = M_Rd,a(x(ε))*(ε ≥ 0) + M_Rd,b(abs(ε))*(ε < 0)
+ε_max = $Root{N_Rd(ε) - 1 @ ε = 0 : 2}
+#if ε_max > 0.1
+	ε_max = 0.1
+#end if
+PlotWidth = 600
+PlotHeight = 600
+#post
+'<p><i>N</i><sub>Rd</sub></p>
+$Plot{M_Rd(ε)|N_Rd(ε) @ ε = ε_max : -ε_c2}
+'<p style=float:right><i>M</i><sub>Rd</sub></p>
+#show
+'</div>300	700	800	80	20	0.85	500

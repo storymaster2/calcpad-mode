@@ -1,4 +1,4 @@
-﻿# Units
+# Units
 
 CalcpadCE provides comprehensive support for physical units of measurement.
 The current version supports metric (SI and compatible), US and Imperial units.
@@ -28,7 +28,9 @@ For example, the following expression will be evaluated as:
 The result is usually obtained into the first unit in the expression.
 If you want to use particular units, write a vertical bar "\|" followed by the target units at the end:
 
-`1.23 m + 35 cm + 12 mm | cm`
+```calcpad
+1.23 m + 35 cm + 12 mm | cm
+```
 
 The above expression will be evaluated to 159.2 *cm*. If you simply want to convert units, just write the source and the target units, separated by a vertical bar, like: mm \| cm or 10 m/s \| km/h.
 
@@ -130,7 +132,7 @@ If you put a dot before the literal, you will force it to be parsed as a unit, e
 You can define your own "custom" units and use them like any others in your code.
 Defining a unit is similar to defining a variable, but the name must be prefixed with a dot ".":
 
-```matlab
+```calcpad
 .*Name* = expression
 ```
 
@@ -138,7 +140,7 @@ Names can include some currency symbols like: €, £, ₤, ¥, ¢, ₽, ₹, �
 You can also define dimensionless units, like currency (USD, EUR, €, ₤) or information (bit, byte, KiB, etc), by specifying "= 1" for the first unit and setting the others as multiples.
 For example:
 
-```matlab
+```calcpad
 .bit = 1
 .byte = 8*bit
 .KiB = 1024*byte
