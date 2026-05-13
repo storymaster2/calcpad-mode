@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="CalcpadCE worksheets in this section cover the propped cantilever — a beam fixed at one end and simply supported at the other. The extra support makes the system one degree statically indeterminate, so the fixed-end moment and the two reactions depend on the geometry and load alone (the bending stiffness cancels for a prismatic beam), and equilibrium by itself is not enough to find them.">
+      
       
       
       
@@ -91,8 +93,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -272,7 +273,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="cantilevers.html" class="md-tabs__link">
+        <a href="simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -308,8 +309,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1114,7 +1114,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1481,7 +1481,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -1705,7 +1705,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -1733,7 +1733,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1866,6 +1866,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2039,7 +2067,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2180,34 +2208,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2522,12 +2522,19 @@
 
 
 
-<h1 id="propped-cantilevers">Propped Cantilevers</h1>
-<h2 id="concentrated-force">Concentrated Force</h2>
+<h1 id="propped-cantilevers">Propped Cantilevers<a class="headerlink" href="#propped-cantilevers" title="Permanent link">&para;</a></h1>
+<p><a href="https://calcpad-ce.org">CalcpadCE</a> worksheets in this section cover the <a href="https://en.wikipedia.org/wiki/Statically_indeterminate">propped cantilever</a> — a beam fixed at one end and simply supported at the other.
+The extra support makes the system one degree statically indeterminate, so the fixed-end moment and the two reactions depend on the geometry and load alone (the bending stiffness cancels for a prismatic beam), and equilibrium by itself is not enough to find them.</p>
+<p>Each sheet works through the force-method result for one load case and reports the fixed-end moment <span class="arithmatex">\(M_A\)</span>, the support reactions <span class="arithmatex">\(V_A\)</span> and <span class="arithmatex">\(V_B\)</span>, and the location and magnitude of the in-span peak.
+Concentrated actions are treated as a <a href="#concentrated-force">point force</a> at distance <span class="arithmatex">\(a\)</span> from the fixed end and a <a href="#concentrated-moment">point moment</a> at the same position, with both formulas written in terms of the dimensionless ratio <span class="arithmatex">\(k = b / l\)</span>.
+The distributed cases include a <a href="#uniformly-distributed-load">uniform load</a> over the full span, a <a href="#linearly-distributed-load">linearly varying load</a> between intensities <span class="arithmatex">\(q_1\)</span> and <span class="arithmatex">\(q_2\)</span>, and a <a href="#partially-distributed-load">partial uniform load</a> of length <span class="arithmatex">\(b\)</span> offset from the supports.</p>
+<p>Span, load magnitudes, distances and a probe coordinate <span class="arithmatex">\(x_1\)</span> are exposed as inputs, so <span class="arithmatex">\(M(x_1)\)</span> and <span class="arithmatex">\(V(x_1)\)</span> can be read off the bending and shear diagrams at any cross-section.</p>
+<h2 id="concentrated-force">Concentrated Force<a class="headerlink" href="#concentrated-force" title="Permanent link">&para;</a></h2>
+<p>Force-method solution for a propped cantilever carrying a point force <span class="arithmatex">\(F\)</span> at distance <span class="arithmatex">\(a\)</span> from the fixed support, with the in-span peak at the load position.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Propped Cantilever with Concentrated Force</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:210pt;&quot; alt=&quot;propped-cantilever-beam-concentrated-force.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/propped-cantilever-beam-concentrated-force.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
@@ -2563,10 +2570,11 @@
 <span class="c1">&#39;&lt;/div&gt;10   10  4   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Propped Cantilever with Concentrated Force </div>
-<hr /><div style="max-width:180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Force-method solution for a propped cantilever carrying a point force $F$ at distance $a$ from the fixed support, with the in-span peak at the load position. --> 
+<div style="max-width:180mm;"> 
 <img style="width:210pt;" alt="propped-cantilever-beam-concentrated-force.png" class="side" src="Images/mechanics/beams/propped-cantilever-beam-concentrated-force.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">10</u> </span> m </p>
@@ -2591,14 +2599,15 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="concentrated-moment">Concentrated Moment</h2>
+<h2 id="concentrated-moment">Concentrated Moment<a class="headerlink" href="#concentrated-moment" title="Permanent link">&para;</a></h2>
+<p>Propped cantilever loaded by a concentrated moment <span class="arithmatex">\(M\)</span> at distance <span class="arithmatex">\(a\)</span>, giving a constant shear and a bending diagram with a jump of <span class="arithmatex">\(M\)</span> across the load section.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Propped Cantilever with Concentrated Moment</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:210pt;&quot; alt=&quot;propped-cantilever-beam-concentrated-moment.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/propped-cantilever-beam-concentrated-moment.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
@@ -2635,10 +2644,11 @@
 <span class="c1">&#39;&lt;/div&gt;10   10  6   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Propped Cantilever with Concentrated Moment </div>
-<hr /><div style="max-width:180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Propped cantilever loaded by a concentrated moment $M$ at distance $a$, giving a constant shear and a bending diagram with a jump of $M$ across the load section. --> 
+<div style="max-width:180mm;"> 
 <img style="width:210pt;" alt="propped-cantilever-beam-concentrated-moment.png" class="side" src="Images/mechanics/beams/propped-cantilever-beam-concentrated-moment.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">10</u> </span> m </p>
@@ -2664,14 +2674,15 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="linearly-distributed-load">Linearly Distributed Load</h2>
+<h2 id="linearly-distributed-load">Linearly Distributed Load<a class="headerlink" href="#linearly-distributed-load" title="Permanent link">&para;</a></h2>
+<p>Propped cantilever under a trapezoidal load defined by end intensities <span class="arithmatex">\(q_1\)</span> and <span class="arithmatex">\(q_2\)</span>, locating the in-span peak from the zero of the shear <span class="arithmatex">\(V(x)\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Propped Cantilever with Linearly Distributed Load</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
 <span class="k">#pre</span>
 <span class="c1">&#39;&lt;img style=&quot;width:210pt;&quot; class=&quot;side&quot; alt=&quot;propped-cantilever-beam-distributed-load-linear-left.png&quot; src=&quot;../../Images/mechanics/beams/propped-cantilever-beam-distributed-load-linear-left.png&quot;&gt;</span>
 <span class="k">#show</span>
@@ -2730,10 +2741,11 @@
 <span class="c1">&#39;&lt;/div&gt;10   5   10  1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Propped Cantilever with Linearly Distributed Load </div>
-<hr /><div style="max-width:180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Propped cantilever under a trapezoidal load defined by end intensities $q_1$ and $q_2$, locating the in-span peak from the zero of the shear $V(x)$. --> 
+<div style="max-width:180mm;"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-7">10</u> </span> m </p>
 <p>Load - <span class="eq"><var>q</var><sub>1</sub> = <u class="input-8">5</u> </span> kN/m, <span class="eq"><var>q</var><sub>2</sub> = <u class="input-8">10</u> </span> kN/m </p>
@@ -2762,14 +2774,15 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="partially-distributed-load">Partially Distributed Load</h2>
+<h2 id="partially-distributed-load">Partially Distributed Load<a class="headerlink" href="#partially-distributed-load" title="Permanent link">&para;</a></h2>
+<p>Propped cantilever with a uniform load <span class="arithmatex">\(q\)</span> acting on a stretch of length <span class="arithmatex">\(b\)</span> between offsets <span class="arithmatex">\(a\)</span> and <span class="arithmatex">\(c = l - a - b\)</span> from the supports.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Propped Cantilever with Partially Distributed Load</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:210pt;&quot; alt=&quot;propped-cantilever-beam-distributed-load-p.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/propped-cantilever-beam-distributed-load-p.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
@@ -2808,10 +2821,11 @@
 <span class="c1">&#39;&lt;/div&gt;10   5   2   6   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Propped Cantilever with Partially Distributed Load </div>
-<hr /><div style="max-width:180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Propped cantilever with a uniform load $q$ acting on a stretch of length $b$ between offsets $a$ and $c = l - a - b$ from the supports. --> 
+<div style="max-width:180mm;"> 
 <img style="width:210pt;" alt="propped-cantilever-beam-distributed-load-p.png" class="side" src="Images/mechanics/beams/propped-cantilever-beam-distributed-load-p.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">10</u> </span> m </p>
@@ -2839,14 +2853,15 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="uniformly-distributed-load">Uniformly Distributed Load</h2>
+<h2 id="uniformly-distributed-load">Uniformly Distributed Load<a class="headerlink" href="#uniformly-distributed-load" title="Permanent link">&para;</a></h2>
+<p>Full-span uniform load <span class="arithmatex">\(q\)</span> on a propped cantilever, giving the textbook results <span class="arithmatex">\(M_A = q l^2 / 8\)</span>, <span class="arithmatex">\(V_A = 5 q l / 8\)</span> and <span class="arithmatex">\(M_{max} = 9 q l^2 / 128\)</span> at <span class="arithmatex">\(x = 5 l / 8\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Propped Cantilever with Uniformly Distributed Load</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:210pt;&quot; alt=&quot;propped-cantilever-beam-distributed-load.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/propped-cantilever-beam-distributed-load.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
@@ -2882,10 +2897,11 @@
 <span class="c1">&#39;&lt;/div&gt;10   5   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Propped Cantilever with Uniformly Distributed Load </div>
-<hr /><div style="max-width:180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Full-span uniform load $q$ on a propped cantilever, giving the textbook results $M_A = q l^2 / 8$, $V_A = 5 q l / 8$ and $M_{max} = 9 q l^2 / 128$ at $x = 5 l / 8$. --> 
+<div style="max-width:180mm;"> 
 <img style="width:210pt;" alt="propped-cantilever-beam-distributed-load.png" class="side" src="Images/mechanics/beams/propped-cantilever-beam-distributed-load.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">10</u> </span> m </p>
@@ -2909,7 +2925,7 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
 <p>Spotted an error? <a href="https://github.com/imartincei/CalcpadCE/tree/main/Examples/Structural/Propped%20Cantilevers">Edit these examples.</a></p>
@@ -2979,7 +2995,7 @@
       
         <script src="../javascripts/mathjax.js"></script>
       
-        <script src="../javascripts/mathjax/startup.js"></script>
+        <script src="../javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="../javascripts/example-layout.js"></script>
       

@@ -91,8 +91,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -272,7 +271,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="examples/cantilevers.html" class="md-tabs__link">
+        <a href="examples/simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -308,8 +307,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1009,7 +1007,7 @@
   <a href="#expression-blocks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Expression blocks
+        Expression Blocks
       
     </span>
   </a>
@@ -1210,7 +1208,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1577,7 +1575,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -1801,7 +1799,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -1829,7 +1827,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1965,6 +1963,34 @@
   
   
     <li class="md-nav__item">
+      <a href="examples/simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="examples/cantilevers.html" class="md-nav__link">
         
   
@@ -2028,7 +2054,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2169,34 +2195,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="examples/simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2476,7 +2474,7 @@
   <a href="#expression-blocks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Expression blocks
+        Expression Blocks
       
     </span>
   </a>
@@ -2500,10 +2498,10 @@
 
 
 
-<h1 id="iterative-procedures">Iterative procedures</h1>
+<h1 id="iterative-procedures">Iterative Procedures<a class="headerlink" href="#iterative-procedures" title="Permanent link">&para;</a></h1>
 <p>There are some other commands that allow you to calculate the result iteratively.
 Unlike numerical methods, they can work with complex numbers.</p>
-<h2 id="sum">Sum</h2>
+<h2 id="sum">Sum<a class="headerlink" href="#sum" title="Permanent link">&para;</a></h2>
 <div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Sum</span><span class="p">{</span><span class="nv">f</span><span class="p">(</span><span class="nv">k</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">b</span><span class="p">}</span>
 </code></pre></div>
 <p>It sums the values of f(<em>k</em>) for all integer <em>k</em> between <em>a</em> and <em>b</em>. The values of <em>k</em> can only grow, so it should be satisfied that <em>a</em> \&lt; <em>b</em>. Instead of f(<em>k</em>) you can put any valid expression that includes <em>k</em>. Otherwise, it will simply sum the same value <em>k</em> times.
@@ -2519,7 +2517,7 @@ The following pattern can be applied to approximate a function with Fourier seri
 </code></pre></div>
 <p>As an example, we can take a straight line within the interval (0; 2*<em>l</em>), withs equation: f(<em>x</em>) = <em>x</em>/(2*<em>l</em>). The integration constants are <em>a</em>(<em>k</em>) = 0 and <em>b</em>(<em>k</em>) = -1/(<em>k</em>*π). If we plot the Fourier approximation for <em>n</em> = 5, we will get the following result:</p>
 <p><img src="./media/image26.png" style="width:4.33057in;height:2.80665in" alt="Fourier" /></p>
-<h2 id="product">Product</h2>
+<h2 id="product">Product<a class="headerlink" href="#product" title="Permanent link">&para;</a></h2>
 <div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Product</span><span class="p">{</span><span class="nv">f</span><span class="p">(</span><span class="nv">k</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">b</span><span class="p">}</span>
 </code></pre></div>
 <p>It works like "<strong>Sum</strong>", but it multiplies the terms instead of adding them.
@@ -2530,7 +2528,7 @@ For example, you can define your own factorial function:</p>
 <div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Product</span><span class="p">{(</span><span class="nv">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">k</span><span class="p">)</span><span class="o">/</span><span class="nv">i</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">:</span><span class="nv">k</span><span class="p">}</span>
 </code></pre></div>
 <p>Also, the latter will not overflow together with the factorials for greater values of <em>n</em>.</p>
-<h2 id="repeat">Repeat</h2>
+<h2 id="repeat">Repeat<a class="headerlink" href="#repeat" title="Permanent link">&para;</a></h2>
 <div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Repeat</span><span class="p">{</span><span class="nv">f</span><span class="p">(</span><span class="nv">k</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">b</span><span class="p">}</span>
 </code></pre></div>
 <p>This is a general inline iterative procedure that repeatedly calculates <strong>f</strong>(<em>k</em>). It can be used for sums and products instead of the respective procedures, but it is not so efficient.
@@ -2547,7 +2545,7 @@ Then you can plot the result:</p>
 <div class="language-calcpad highlight"><pre><span></span><code><span class="nd">$Map</span><span class="p">{</span><span class="nb">abs</span><span class="p">(</span><span class="nv">f</span><span class="p">(</span><span class="m">0</span><span class="p">;</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="na">i</span><span class="o">*</span><span class="nv">y</span><span class="p">))</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="m">1.5</span><span class="p">:</span><span class="m">0.5</span><span class="w"> </span><span class="p">&amp;</span><span class="w"> </span><span class="nv">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="m">1</span><span class="p">:</span><span class="m">1</span><span class="p">}</span>
 </code></pre></div>
 <p><img src="./media/image27.png" style="width:4.81217in;height:4.37051in" alt="Mandelbrot" /></p>
-<h2 id="expression-blocks">Expression blocks</h2>
+<h2 id="expression-blocks">Expression Blocks<a class="headerlink" href="#expression-blocks" title="Permanent link">&para;</a></h2>
 <p>An expression block encloses a list of expressions, divided by semicolons.
 All expressions can assign to local variables.
 You can use expression blocks to embed short algorithmic procedures into function definitions, inline loops or any other expressions and expression blocks.
@@ -2668,7 +2666,7 @@ If the variable does not exist, an error is reported.</p>
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/startup.js"></script>
+        <script src="javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       

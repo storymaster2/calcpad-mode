@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="CalcpadCE worksheets in this section formulate structural dynamics problems as multi-degree-of-freedom systems with a flexibility-based mass-matrix formulation. The natural frequencies and mode shapes follow from the generalised eigenvalue problem $\mathbf D \mathbf M \boldsymbol\phi = \lambda \boldsymbol\phi$, where $\mathbf D$ is built by integrating bending and shear unit-load diagrams along the member and $\mathbf M$ is the lumped mass matrix at the discretisation nodes. Time-history responses are then obtained from the Duhamel integral over each modal coordinate, with Rayleigh damping calibrated on the first two modes.">
+      
       
       
       
@@ -91,8 +93,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -272,7 +273,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="cantilevers.html" class="md-tabs__link">
+        <a href="simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -308,8 +309,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1114,7 +1114,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1481,7 +1481,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -1705,7 +1705,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -1733,7 +1733,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1874,6 +1874,34 @@
   
   
     <li class="md-nav__item">
+      <a href="simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="cantilevers.html" class="md-nav__link">
         
   
@@ -1937,7 +1965,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2078,34 +2106,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2500,13 +2500,19 @@
 
 
 
-<h1 id="structural-dynamics">Structural Dynamics</h1>
-<h2 id="beam-impact-analysis">Beam Impact Analysis <span title="Animated" aria-label="Animated" style="cursor:default">🎬</span></h2>
+<h1 id="structural-dynamics">Structural Dynamics<a class="headerlink" href="#structural-dynamics" title="Permanent link">&para;</a></h1>
+<p><a href="https://calcpad-ce.org">CalcpadCE</a> worksheets in this section formulate <a href="https://en.wikipedia.org/wiki/Structural_dynamics">structural dynamics</a> problems as multi-degree-of-freedom systems with a flexibility-based mass-matrix formulation.
+The natural frequencies and mode shapes follow from the generalised eigenvalue problem <span class="arithmatex">\(\mathbf D \mathbf M \boldsymbol\phi = \lambda \boldsymbol\phi\)</span>, where <span class="arithmatex">\(\mathbf D\)</span> is built by integrating bending and shear unit-load diagrams along the member and <span class="arithmatex">\(\mathbf M\)</span> is the lumped mass matrix at the discretisation nodes.
+Time-history responses are then obtained from the <a href="https://en.wikipedia.org/wiki/Duhamel%27s_integral">Duhamel integral</a> over each modal coordinate, with <a href="https://en.wikipedia.org/wiki/Damping">Rayleigh damping</a> calibrated on the first two modes.</p>
+<p>The <a href="#free-vibrations-of-steel-pole_1">steel pole free-vibration sheet</a> treats a tapered cantilever of variable cross-section — rectangular, circular, elliptical, elliptical tube, trapezoidal, T or double-T — and integrates the area, second moment and shear area along the height before assembling the flexibility matrix and extracting the lowest natural frequencies, which are then compared with the empirical formula in ASCE/SEI 7-22.
+An <a href="#free-vibrations-of-steel-pole">animated SVG variant</a> and a <a href="#free-vibrations-of-steel-pole-plotly">Plotly variant</a> replay the mode shapes in the browser without re-running the numerical solution.</p>
+<p>The <a href="#beam-impact-analysis">beam impact sheet</a> couples a steel ball drop with a simply supported reinforced concrete beam: the perfectly inelastic collision sets the post-impact velocity from momentum conservation, the contact duration follows the <a href="https://en.wikipedia.org/wiki/Contact_mechanics#Hertzian_theory_of_non-adhesive_elastic_contact">Hertzian impact contact-duration formula</a>, and the time-history of the mid-span deflection is computed both as a single-degree-of-freedom approximation and as a full 11-node modal-superposition response with mass at every joint.</p>
+<h2 id="beam-impact-analysis">Beam Impact Analysis <span title="Animated" aria-label="Animated" style="cursor:default">🎬</span><a class="headerlink" href="#beam-impact-analysis" title="Permanent link">&para;</a></h2>
+<p>Drop-weight impact of a steel ball on a simply supported reinforced concrete beam: SDOF and 11-node MDOF modal superposition with Rayleigh damping, Hertzian impact contact duration and Duhamel integration of the impulse force.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Dynamic response of an RC beam to a drop weight impact (steel ball)</span>
-<span class="c1">&#39;&lt;hr/&gt;</span>
-<span class="c1">&#39;Ball mass -&#39;</span><span class="nv">M_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2.1045</span><span class="na">t</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;Ball mass -&#39;</span><span class="nv">M_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2.1045</span><span class="na">t</span>
 <span class="c1">&#39;Ball material - steel</span>
 <span class="c1">&#39;Modulus of elasticity -&#39;</span><span class="nv">E_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">206</span><span class="na">GPa</span>
 <span class="c1">&#39;Poisson′s ratio - &#39;</span><span class="nv">ν_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.3</span>
@@ -2763,10 +2769,10 @@
 <span class="c1">&#39;[4] Gugan, D. “Inelastic collision and the Hertz theory of impact.” American Journal of Physics 68 (2000): 920-924., &lt;a href=&quot;http://www.oxfordcroquet.com/tech/gugan/index.asp&quot;&gt;http://www.oxfordcroquet.com/tech/gugan/index.asp&lt;/a&gt;</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Dynamic response of an RC beam to a drop weight impact (steel ball) </div>
-<hr/> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Drop-weight impact of a steel ball on a simply supported reinforced concrete beam: SDOF and 11-node MDOF modal superposition with Rayleigh damping, Hertzian impact contact duration and Duhamel integration of the impulse force. --> 
 <p>Ball mass - <span class="eq"><var>M</var><sub>s</sub> = 2.1045 <i>t</i></span></p>
 <p>Ball material - steel </p>
 <p>Modulus of elasticity - <span class="eq"><var>E</var><sub>s</sub> = 206 <i>GPa</i></span></p>
@@ -17082,12 +17088,14 @@ circle.Series4 {fill:#f0d000;}
 <p>[4] Gugan, D. “Inelastic collision and the Hertz theory of impact.” American Journal of Physics 68 (2000): 920-924., <a href="http://www.oxfordcroquet.com/tech/gugan/index.asp">http://www.oxfordcroquet.com/tech/gugan/index.asp</a> </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="free-vibrations-of-steel-pole">Free Vibrations of Steel Pole <span title="Animated" aria-label="Animated" style="cursor:default">🎬</span></h2>
+<h2 id="free-vibrations-of-steel-pole">Free Vibrations of Steel Pole <span title="Animated" aria-label="Animated" style="cursor:default">🎬</span><a class="headerlink" href="#free-vibrations-of-steel-pole" title="Permanent link">&para;</a></h2>
+<p>Same tapered steel pole as the static variant, with the lower mode shapes animated in pure SVG by frame switching driven by a small inline jQuery script.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Free vibrations of steel pole with variable cross-section of arbitrary shape</span>
 <span class="c1">&#39;&lt;hr/&gt;</span>
 <span class="k">#rad</span>
@@ -17259,9 +17267,11 @@ circle.Series4 {fill:#f0d000;}
 <span class="c1">&#39;&lt;script&gt;var i=&#39;</span><span class="nv">n_T</span><span class="p">.</span><span class="nv">i</span><span class="c1">&#39;;f=$(&quot;#steelpole-fr-0&quot;);setInterval(function(){f.hide();if(++i&gt;&#39;</span><span class="nv">n_T</span><span class="p">.</span><span class="nv">i</span><span class="c1">&#39;)i=1;f=$(&quot;#steelpole-fr-&quot;+i);f.show();},&#39;</span><span class="m">1000</span><span class="o">/</span><span class="nv">n_T</span><span class="p">.</span><span class="nv">i</span><span class="o">*</span><span class="nv">T</span><span class="p">.</span><span class="nv">i</span><span class="c1">&#39;);&lt;/script&gt;</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Free vibrations of steel pole with variable cross-section of arbitrary shape </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Same tapered steel pole as the static variant, with the lower mode shapes animated in pure SVG by frame switching driven by a small inline jQuery script. --> 
+<div class="calcpad-h3">Free vibrations of steel pole with variable cross-section of arbitrary shape </div>
 <hr/> 
 <div class="calcpad-h3">Static scheme</div> 
 <p>Cantilever with length - <span class="eq"><var>L</var> = 110 <i>m</i></span></p>
@@ -21568,15 +21578,15 @@ circle.Series3 {fill:CornflowerBlue;}
 <circle cx="660" cy="1720" r="10" class="Series3" />
 </g></svg>
 </div><script>var i=60;f=$("#steelpole-fr-0");setInterval(function(){f.hide();if(++i>60)i=1;f=$("#steelpole-fr-"+i);f.show();},13.774252);</script></div>
-</div>
+</figure>
 </div>
 
-<h2 id="free-vibrations-of-steel-pole-plotly">Free Vibrations of Steel Pole Plotly <span title="Animated" aria-label="Animated" style="cursor:default">🎬</span></h2>
+<h2 id="free-vibrations-of-steel-pole-plotly">Free Vibrations of Steel Pole Plotly <span title="Animated" aria-label="Animated" style="cursor:default">🎬</span><a class="headerlink" href="#free-vibrations-of-steel-pole-plotly" title="Permanent link">&para;</a></h2>
+<p>Tapered steel pole free-vibration analysis with the mode shapes animated in the browser by Plotly, smoothly interpolating between the positive and negative amplitude of each mode.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Free vibrations of steel pole with variable cross-section of arbitrary shape</span>
-<span class="c1">&#39;&lt;hr/&gt;</span>
-<span class="k">#rad</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="k">#rad</span>
 <span class="c1">&#39;&lt;h3&gt;Static scheme&lt;/h3&gt;</span>
 <span class="c1">&#39;Cantilever with length -&#39;</span><span class="nv">L</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">110</span><span class="na">m</span>
 <span class="c1">&#39;&lt;h3&gt;Material&lt;/h3&gt;</span>
@@ -21767,10 +21777,10 @@ circle.Series3 {fill:CornflowerBlue;}
 <span class="nv">PlotlyAnimateMode</span>$<span class="p">(</span><span class="m">1</span><span class="p">)</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Free vibrations of steel pole with variable cross-section of arbitrary shape </div>
-<hr/> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Tapered steel pole free-vibration analysis with the mode shapes animated in the browser by Plotly, smoothly interpolating between the positive and negative amplitude of each mode. --> 
 <div class="calcpad-h3">Static scheme</div> 
 <p>Cantilever with length - <span class="eq"><var>L</var> = 110 <i>m</i></span></p>
 <div class="calcpad-h3">Material</div> 
@@ -21950,15 +21960,15 @@ circle.Series3 {fill:CornflowerBlue;}
 <script src="https://cdn.plot.ly/plotly-2.26.0.min.js" charset="utf-8"></script> 
 <div class="calcpad-h4">Animation of mode 1 - T = 2.772594s</div><div id="Mode1"></div><script>const y1 = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110];var x1 = [0, 0.002483, 0.010287, 0.02403, 0.044346, 0.071841, 0.107027, 0.150221, 0.201379, 0.25985, 0.324055, 0.391394];var t1 = 1386.297117;var layout = {autosize:false,width:300,height:600,xaxis:{range:[-0.4,0.4],tick0:-0.4,dtick: 0.1,ticklen:0.8},yaxis:{dtick:10},margin:{l:25,r:10,b:50,t:10,pad:2},};var data = [{x:x1,y:y1,line:{shape:"spline"},}];Plotly.newPlot("Mode1",data,layout);function animateMode1(){for (let i = 0; i < x1.length; i++) {x1[i] = -x1[i];}Plotly.animate("Mode1",{data:[{x:x1,y:y1,line:{shape:"spline"},}],traces:[0],layout:layout},{transition:{duration:t1,easing:"cos"},frame:{duration:t1, redraw: false},mode: "next"}).then(()=>requestAnimationFrame(animateMode1)).catch(()=>{});}requestAnimationFrame(animateMode1);</script><p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="free-vibrations-of-steel-pole_1">Free Vibrations of Steel Pole</h2>
+<h2 id="free-vibrations-of-steel-pole_1">Free Vibrations of Steel Pole<a class="headerlink" href="#free-vibrations-of-steel-pole_1" title="Permanent link">&para;</a></h2>
+<p>Tapered cantilever pole with selectable cross-section shape; flexibility matrix built by integration of bending and shear along the height, three lowest natural frequencies, with the fundamental period checked against ASCE SEI 7/22.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Free ibrations of steel pole with variable cross-section of arbitrary shape</span>
-<span class="c1">&#39;&lt;hr/&gt;</span>
-<span class="k">#rad</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="k">#rad</span>
 <span class="c1">&#39;&lt;h3&gt;Static scheme&lt;/h3&gt;</span>
 <span class="c1">&#39;Cantilever with length -&#39;</span><span class="nv">L</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">110</span><span class="na">m</span>
 <span class="c1">&#39;&lt;h3&gt;Material&lt;/h3&gt;</span>
@@ -22116,10 +22126,10 @@ circle.Series3 {fill:CornflowerBlue;}
 <span class="nv">T_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">/</span><span class="nv">n_1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Free ibrations of steel pole with variable cross-section of arbitrary shape </div>
-<hr/> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Tapered cantilever pole with selectable cross-section shape; flexibility matrix built by integration of bending and shear along the height, three lowest natural frequencies, with the fundamental period checked against ASCE SEI 7/22. --> 
 <div class="calcpad-h3">Static scheme</div> 
 <p>Cantilever with length - <span class="eq"><var>L</var> = 110 <i>m</i></span></p>
 <div class="calcpad-h3">Material</div> 
@@ -22297,7 +22307,7 @@ circle.Series3 {fill:CornflowerBlue;}
 <p><span class="eq"><var>T</var><sub>1</sub> = <span class="dvc">1<span class="dvl"></span><var>n</var><sub>1</sub></span> = <span class="dvc">1<span class="dvl"></span>0.3669926 <i>Hz</i></span> = 2.724851 <i>s</i></span></p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
 <p>Spotted an error? <a href="https://github.com/imartincei/CalcpadCE/tree/main/Examples/Structural/Structural%20Dynamics">Edit these examples.</a></p>
@@ -22367,7 +22377,7 @@ circle.Series3 {fill:CornflowerBlue;}
       
         <script src="../javascripts/mathjax.js"></script>
       
-        <script src="../javascripts/mathjax/startup.js"></script>
+        <script src="../javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="../javascripts/example-layout.js"></script>
       

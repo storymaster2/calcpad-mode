@@ -91,8 +91,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -272,7 +271,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="examples/cantilevers.html" class="md-tabs__link">
+        <a href="examples/simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -308,8 +307,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1199,7 +1197,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1566,7 +1564,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -1790,7 +1788,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -1818,7 +1816,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1954,6 +1952,34 @@
   
   
     <li class="md-nav__item">
+      <a href="examples/simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="examples/cantilevers.html" class="md-nav__link">
         
   
@@ -2017,7 +2043,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2158,34 +2184,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="examples/simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2478,18 +2476,18 @@
 
 
 
-<h1 id="constants">Constants</h1>
-<h2 id="real">Real</h2>
+<h1 id="constants">Constants<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h1>
+<h2 id="real">Real<a class="headerlink" href="#real" title="Permanent link">&para;</a></h2>
 <p>Real constants can be positive and negative integer and decimal numbers.
 They can include digits "<strong>0</strong>" - "<strong>9</strong>" and decimal point "<strong>.</strong>". You can also enter numbers as fractions like "<strong>3/4</strong>". However, the program will treat them as expressions (division of two numbers). You cannot define numbers in floating point format: "<strong>3.4e+6</strong>". You have to use an expression like "<strong>3.4*10^6</strong>" instead.</p>
 <p>All constants and variables are internally stored as "double-precision floating point" numbers.
 Their values are ranged from <strong>-1.7976931348623157E+308</strong> to <strong>1.7976931348623157E+308</strong>. If a result is out of the above interval, the program returns "-∞" or "+∞, respectively". Division by zero gives the same result, but "<strong>0/0</strong>" = "Undefined". The smallest positive number is <strong>4.94065645841247E-324</strong>. Smaller values are rounded exactly to 0.</p>
-<h2 id="complex">Complex</h2>
+<h2 id="complex">Complex<a class="headerlink" href="#complex" title="Permanent link">&para;</a></h2>
 <p>If you select "<strong>Complex</strong>" mode, you can use complex numbers in calculations.
 Otherwise, only real arithmetic is applied.
 Each complex number is represented by the ordered couple (<strong>a</strong>; <strong>b</strong>), where "<strong>a</strong>" is real number, and "<strong>b</strong> = |<strong>b</strong>|·<strong><em>i</em></strong>" is called "imaginary". It can be written in so called algebraic form: ±<strong>a</strong> ± <strong>b<em>i</em></strong> (e.g. "2 + 3<em>i</em>"). You can also use other forms, such as polar or exponential form, by entering the respective expressions.
 In CalcpadCE, the imaginary unit can be entered either as "<em>i</em>" or as "1<em>i</em>" in case you have a variable named "<em>i</em>". It is a special number that satisfies the expression <span class="arithmatex">\(i^2 = -1\)</span>.</p>
-<h2 id="custom">Custom</h2>
+<h2 id="custom">Custom<a class="headerlink" href="#custom" title="Permanent link">&para;</a></h2>
 <p>You can declare any variable or function as constant (readonly) by adding "#const" before its definition.
 For example:</p>
 <div class="language-calcpad highlight"><pre><span></span><code><span class="k">#const</span> <span class="nv">γ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.57721566490153286</span>
@@ -2560,7 +2558,7 @@ For example:</p>
       
         <script src="javascripts/mathjax.js"></script>
       
-        <script src="javascripts/mathjax/startup.js"></script>
+        <script src="javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="javascripts/example-layout.js"></script>
       

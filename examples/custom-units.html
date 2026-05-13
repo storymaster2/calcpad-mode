@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="CalcpadCE ships with the SI base and derived units built in, but the unit system itself is open: any new dimension can be declared with #def and used like a native unit in the rest of the worksheet.">
+      
       
       
       
@@ -23,7 +25,7 @@
     
     
       
-        <title>Custom units (2) - CalcpadCE Documentation</title>
+        <title>Custom Units (2) - CalcpadCE Documentation</title>
       
     
     
@@ -91,8 +93,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -109,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Custom units (2)
+              Custom Units (2)
             
           </span>
         </div>
@@ -272,7 +273,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="cantilevers.html" class="md-tabs__link">
+        <a href="simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -308,8 +309,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1114,7 +1114,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1486,7 +1486,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -1710,7 +1710,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -1747,7 +1747,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1765,7 +1765,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1794,7 +1794,7 @@
   <a href="#currency-units" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Currency units
+        Currency Units
       
     </span>
   </a>
@@ -1805,7 +1805,7 @@
   <a href="#information-units" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Information units
+        Information Units
       
     </span>
   </a>
@@ -1943,6 +1943,34 @@
   
   
     <li class="md-nav__item">
+      <a href="simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="cantilevers.html" class="md-nav__link">
         
   
@@ -2006,7 +2034,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2147,34 +2175,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2421,7 +2421,7 @@
   <a href="#currency-units" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Currency units
+        Currency Units
       
     </span>
   </a>
@@ -2432,7 +2432,7 @@
   <a href="#information-units" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Information units
+        Information Units
       
     </span>
   </a>
@@ -2456,13 +2456,17 @@
 
 
 
-<h1 id="custom-units">Custom units</h1>
-<h2 id="currency-units">Currency units</h2>
+<h1 id="custom-units">Custom Units<a class="headerlink" href="#custom-units" title="Permanent link">&para;</a></h1>
+<p><a href="https://calcpad-ce.org">CalcpadCE</a> ships with the <a href="https://en.wikipedia.org/wiki/International_System_of_Units">SI</a> base and derived units built in, but the unit system itself is open: any new dimension can be declared with <code>#def</code> and used like a native unit in the rest of the worksheet.</p>
+<p>The two pages in this group illustrate the pattern with everyday examples.
+<a href="#currency-units">Currency Units</a> defines USD, EUR and a handful of other currencies along with their cross-rates so that monetary expressions auto-convert and round correctly, while <a href="#information-units">Information Units</a> sets up bit, byte, KiB, MiB and friends with their binary prefixes, ready for bandwidth and storage calculations.</p>
+<p>Each page is self-contained and can be <code>#include</code>d into any worksheet that needs the same units, providing a starting template for your own custom unit families.</p>
+<h2 id="currency-units">Currency Units<a class="headerlink" href="#currency-units" title="Permanent link">&para;</a></h2>
+<p>Defines USD, EUR and other currencies as custom units with cross-rates, so monetary expressions auto-convert and round consistently across the worksheet.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Currency units</span>
-<span class="c1">&#39;&lt;hr/&gt;</span>
-<span class="c1">&#39;&lt;p&gt;&lt;b&gt;Definition&lt;/b&gt;&lt;/p&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Definition&lt;/b&gt;&lt;/p&gt;</span>
 <span class="p">.</span><span class="nv">EUR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
 <span class="p">.</span><span class="nv">USD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.92</span><span class="na">EUR</span>
 <span class="p">.</span><span class="nv">BGN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.511291881196218</span><span class="na">EUR</span>
@@ -2477,10 +2481,10 @@
 <span class="c1">&#39;Total price in EUR -&#39;</span><span class="nv">P</span><span class="p">|</span><span class="nv">EUR</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Currency units </div>
-<hr/> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Defines USD, EUR and other currencies as custom units with cross-rates, so monetary expressions auto-convert and round consistently across the worksheet. --> 
 <p><b>Definition</b></p> 
 <p><span class="eq"><i>EUR</i> = 1</span></p>
 <p><span class="eq"><i>USD</i> = 0.92 <i>EUR</i></span></p>
@@ -2494,16 +2498,17 @@
 <p>Order length - <span class="eq"><var>L</var> = 100 <i>m</i></span></p>
 <p>Total price in USD - <span class="eq"><var>P</var> = <var>p</var> · <var>L</var> = 15 <i>USD</i><i class="unit"> ∕ </i><i>m</i> · 100 <i>m</i> = 1500 <i>USD</i></span></p>
 <p>Total price in EUR - <span class="eq"><var>P</var> = 1380 <i>EUR</i></span></p>
+<p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="information-units">Information units</h2>
+<h2 id="information-units">Information Units<a class="headerlink" href="#information-units" title="Permanent link">&para;</a></h2>
+<p>Defines bit, byte and the <a href="https://en.wikipedia.org/wiki/Binary_prefix">binary prefixes</a> (KiB, MiB, GiB, TiB) as custom units, ready for bandwidth and storage calculations.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Information units</span>
-<span class="c1">&#39;&lt;hr/&gt;</span>
-<span class="c1">&#39;&lt;p&gt;&lt;b&gt;Definition&lt;/b&gt;&lt;/p&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Definition&lt;/b&gt;&lt;/p&gt;</span>
 <span class="p">.</span><span class="nv">bit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
 <span class="p">.</span><span class="nv">byte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="na">bit</span>
 <span class="p">.</span><span class="nv">KB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1000</span><span class="na">byte</span><span class="c1">&#39;,&#39;</span><span class="p">.</span><span class="nv">KiB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1024</span><span class="na">byte</span>
@@ -2521,10 +2526,10 @@
 <span class="nv">v</span><span class="p">|</span><span class="nv">TiB</span><span class="o">/</span><span class="nv">h</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Information units </div>
-<hr/> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Defines bit, byte and the [binary prefixes](https://en.wikipedia.org/wiki/Binary_prefix) (KiB, MiB, GiB, TiB) as custom units, ready for bandwidth and storage calculations. --> 
 <p><b>Definition</b></p> 
 <p><span class="eq"><i>bit</i> = 1</span></p>
 <p><span class="eq"><i>byte</i> = 8 <i>bit</i></span></p>
@@ -2541,11 +2546,12 @@
 <p><b>Usage</b></p> 
 <p><span class="eq"><var>v</var> = 10000000 <span class="dvc"><i>byte</i><span class="dvl"></span><i>s</i></span></span></p>
 <p><span class="eq"><var>v</var> = 33.527613 <i>TiB</i><i class="unit"> ∕ </i><i>h</i></span></p>
+<p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<p>Spotted an error? <a href="https://github.com/imartincei/CalcpadCE/tree/main/Examples/Engineering/Custom%20units">Edit these examples.</a></p>
+<p>Spotted an error? <a href="https://github.com/imartincei/CalcpadCE/tree/main/Examples/Engineering/Custom%20Units">Edit these examples.</a></p>
 
 
 
@@ -2612,7 +2618,7 @@
       
         <script src="../javascripts/mathjax.js"></script>
       
-        <script src="../javascripts/mathjax/startup.js"></script>
+        <script src="../javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="../javascripts/example-layout.js"></script>
       

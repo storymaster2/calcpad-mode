@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="CalcpadCE worksheets in this section treat the fully restrained beam — a single span clamped against rotation and translation at both ends. The two end fixities make the system twice statically indeterminate, so each load case produces a pair of fixed-end moments at the supports along with the shears and the in-span bending peak.">
+      
       
       
       
@@ -91,8 +93,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -272,7 +273,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="cantilevers.html" class="md-tabs__link">
+        <a href="simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -308,8 +309,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1114,7 +1114,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1481,7 +1481,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -1705,7 +1705,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -1733,7 +1733,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1874,6 +1874,34 @@
   
   
     <li class="md-nav__item">
+      <a href="simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="cantilevers.html" class="md-nav__link">
         
   
@@ -1937,7 +1965,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2180,34 +2208,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2522,13 +2522,19 @@
 
 
 
-<h1 id="fully-restrained-beams">Fully Restrained Beams</h1>
-<h2 id="concentrated-force">Concentrated Force</h2>
+<h1 id="fully-restrained-beams">Fully Restrained Beams<a class="headerlink" href="#fully-restrained-beams" title="Permanent link">&para;</a></h1>
+<p><a href="https://calcpad-ce.org">CalcpadCE</a> worksheets in this section treat the <a href="https://en.wikipedia.org/wiki/Fixed-end_moment">fully restrained beam</a> — a single span clamped against rotation and translation at both ends.
+The two end fixities make the system twice statically indeterminate, so each load case produces a pair of fixed-end moments at the supports along with the shears and the in-span bending peak.</p>
+<p>The <a href="#concentrated-force">point force</a> and <a href="#concentrated-moment">point moment</a> cases give the textbook fixed-end formulas <span class="arithmatex">\(M_A = F a b^2 / l^2\)</span> and <span class="arithmatex">\(M_B = F a^2 b / l^2\)</span> (and their moment-load counterparts), useful as inputs to slope-deflection and moment-distribution analyses.
+The distributed cases cover the <a href="#uniformly-distributed-load">uniform load</a> with <span class="arithmatex">\(M_A = M_B = q l^2 / 12\)</span>, the <a href="#linearly-distributed-load">linearly varying load</a> split between the two supports as <span class="arithmatex">\((3 q_1 + 2 q_2) l^2 / 60\)</span> and <span class="arithmatex">\((2 q_1 + 3 q_2) l^2 / 60\)</span>, and a <a href="#partially-distributed-load">partial uniform load</a> of length <span class="arithmatex">\(b\)</span> between offsets <span class="arithmatex">\(a\)</span> and <span class="arithmatex">\(c\)</span>.</p>
+<p>Span, load magnitudes, distances and a probe coordinate <span class="arithmatex">\(x_1\)</span> are exposed as inputs, so <span class="arithmatex">\(M(x_1)\)</span> and <span class="arithmatex">\(V(x_1)\)</span> can be read off the bending and shear diagrams at any cross-section.</p>
+<h2 id="concentrated-force">Concentrated Force<a class="headerlink" href="#concentrated-force" title="Permanent link">&para;</a></h2>
+<p>Fixed-end moments <span class="arithmatex">\(M_A = F a b^2 / l^2\)</span> and <span class="arithmatex">\(M_B = F a^2 b / l^2\)</span> for a clamped-clamped beam carrying a point force <span class="arithmatex">\(F\)</span> at distance <span class="arithmatex">\(a\)</span> from the left support.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Fully Restrained Beam with Concentrated Force</span>
-<span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;img style=&quot;width:210pt;&quot; alt=&quot;fixed-beam-concentrated-force.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/fixed-beam-concentrated-force.png&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
+<span class="c1">&#39;&lt;img style=&quot;width:210pt;&quot; alt=&quot;fixed-beam-concentrated-force.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/fixed-beam-concentrated-force.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="o">=</span><span class="nt">?</span><span class="c1">&#39;m</span>
 <span class="c1">&#39;Load -&#39;</span><span class="nv">F</span><span class="o">=</span><span class="nt">?</span><span class="c1">&#39;kN</span>
@@ -2565,11 +2571,12 @@
 <span class="c1">&#39;&lt;/div&gt;10   10  2   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Fully Restrained Beam with Concentrated Force </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Fixed-end moments $M_A = F a b^2 / l^2$ and $M_B = F a^2 b / l^2$ for a clamped-clamped beam carrying a point force $F$ at distance $a$ from the left support. --> 
 <div style="max-width:180mm"> 
-<hr /><img style="width:210pt;" alt="fixed-beam-concentrated-force.png" class="side" src="Images/mechanics/beams/fixed-beam-concentrated-force.png"> 
+<img style="width:210pt;" alt="fixed-beam-concentrated-force.png" class="side" src="Images/mechanics/beams/fixed-beam-concentrated-force.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">10</u> </span> m </p>
 <p>Load - <span class="eq"><var>F</var> = <u class="input-6">10</u> </span> kN </p>
@@ -2594,15 +2601,16 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="concentrated-moment">Concentrated Moment</h2>
+<h2 id="concentrated-moment">Concentrated Moment<a class="headerlink" href="#concentrated-moment" title="Permanent link">&para;</a></h2>
+<p>Fully restrained beam loaded by a concentrated moment <span class="arithmatex">\(M\)</span> at distance <span class="arithmatex">\(a\)</span>, with a constant shear <span class="arithmatex">\(V = 6 M a b / l^3\)</span> and a step in the bending diagram across the load.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Fully Restrained Beam with Concentrated Moment</span>
-<span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;img class=&quot;side&quot; style=&quot;width:210pt;&quot; alt=&quot;fixed-beam-concentrated-moment.png&quot; src=&quot;../../Images/mechanics/beams/fixed-beam-concentrated-moment.png&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
+<span class="c1">&#39;&lt;img class=&quot;side&quot; style=&quot;width:210pt;&quot; alt=&quot;fixed-beam-concentrated-moment.png&quot; src=&quot;../../Images/mechanics/beams/fixed-beam-concentrated-moment.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
 <span class="c1">&#39;Load -&#39;</span><span class="nv">M</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m</span>
@@ -2638,11 +2646,12 @@
 <span class="c1">&#39;&lt;/div&gt;10   10  4   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Fully Restrained Beam with Concentrated Moment </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Fully restrained beam loaded by a concentrated moment $M$ at distance $a$, with a constant shear $V = 6 M a b / l^3$ and a step in the bending diagram across the load. --> 
 <div style="max-width:180mm"> 
-<hr /><img class="side" style="width:210pt;" alt="fixed-beam-concentrated-moment.png" src="Images/mechanics/beams/fixed-beam-concentrated-moment.png"> 
+<img class="side" style="width:210pt;" alt="fixed-beam-concentrated-moment.png" src="Images/mechanics/beams/fixed-beam-concentrated-moment.png"> 
 <p><b>Input data</b></p> 
 <p>Beam length - <span class="eq"><var>l</var> = <u class="input-5">10</u> </span> m </p>
 <p>Load - <span class="eq"><var>M</var> = <u class="input-6">10</u> </span> kN·m </p>
@@ -2667,15 +2676,16 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="linearly-distributed-load">Linearly Distributed Load</h2>
+<h2 id="linearly-distributed-load">Linearly Distributed Load<a class="headerlink" href="#linearly-distributed-load" title="Permanent link">&para;</a></h2>
+<p>Trapezoidal load between intensities <span class="arithmatex">\(q_1\)</span> and <span class="arithmatex">\(q_2\)</span>, with the support moments split as <span class="arithmatex">\((3 q_1 + 2 q_2) l^2 / 60\)</span> and <span class="arithmatex">\((2 q_1 + 3 q_2) l^2 / 60\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Fully Restrained Beam with Linearly Distributed Load</span>
-<span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;img style=&quot;width:210pt;&quot; alt=&quot;fixed-beam-distributed-load-linear.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/fixed-beam-distributed-load-linear.png&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<span class="c1">&#39;&lt;img style=&quot;width:210pt;&quot; alt=&quot;fixed-beam-distributed-load-linear.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/fixed-beam-distributed-load-linear.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
 <span class="c1">&#39;Load -&#39;</span><span class="nv">q_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m,&#39;</span><span class="nv">q_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m</span>
@@ -2718,11 +2728,12 @@
 <span class="c1">&#39;&lt;/div&gt;10   5   10  1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Fully Restrained Beam with Linearly Distributed Load </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Trapezoidal load between intensities $q_1$ and $q_2$, with the support moments split as $(3 q_1 + 2 q_2) l^2 / 60$ and $(2 q_1 + 3 q_2) l^2 / 60$. --> 
 <div style="max-width:180mm;"> 
-<hr /><img style="width:210pt;" alt="fixed-beam-distributed-load-linear.png" class="side" src="Images/mechanics/beams/fixed-beam-distributed-load-linear.png"> 
+<img style="width:210pt;" alt="fixed-beam-distributed-load-linear.png" class="side" src="Images/mechanics/beams/fixed-beam-distributed-load-linear.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">10</u> </span> m </p>
 <p>Load - <span class="eq"><var>q</var><sub>1</sub> = <u class="input-6">5</u> </span> kN/m, <span class="eq"><var>q</var><sub>2</sub> = <u class="input-6">10</u> </span> kN/m </p>
@@ -2749,15 +2760,16 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="partially-distributed-load">Partially Distributed Load</h2>
+<h2 id="partially-distributed-load">Partially Distributed Load<a class="headerlink" href="#partially-distributed-load" title="Permanent link">&para;</a></h2>
+<p>Uniform load <span class="arithmatex">\(q\)</span> over a stretch of length <span class="arithmatex">\(b\)</span> between offsets <span class="arithmatex">\(a\)</span> and <span class="arithmatex">\(c = l - a - b\)</span>, with a guard against an invalid configuration when <span class="arithmatex">\(a + b &gt; l\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Fully Restrained Beam with Partially Distributed Load</span>
-<span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;img style=&quot;width:210pt;&quot; alt=&quot;fixed-beam-distributed-load-partial.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/fixed-beam-distributed-load-partial.png&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<span class="c1">&#39;&lt;img style=&quot;width:210pt;&quot; alt=&quot;fixed-beam-distributed-load-partial.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/fixed-beam-distributed-load-partial.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
 <span class="c1">&#39;Load -&#39;</span><span class="nv">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m</span>
@@ -2805,11 +2817,12 @@
 <span class="c1">&#39;&lt;/div&gt;10   5   1   6   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Fully Restrained Beam with Partially Distributed Load </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Uniform load $q$ over a stretch of length $b$ between offsets $a$ and $c = l - a - b$, with a guard against an invalid configuration when $a + b > l$. --> 
 <div style="max-width:180mm;"> 
-<hr /><img style="width:210pt;" alt="fixed-beam-distributed-load-partial.png" class="side" src="Images/mechanics/beams/fixed-beam-distributed-load-partial.png"> 
+<img style="width:210pt;" alt="fixed-beam-distributed-load-partial.png" class="side" src="Images/mechanics/beams/fixed-beam-distributed-load-partial.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">10</u> </span> m </p>
 <p>Load - <span class="eq"><var>q</var> = <u class="input-6">5</u> </span> kN/m </p>
@@ -2840,15 +2853,16 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="uniformly-distributed-load">Uniformly Distributed Load</h2>
+<h2 id="uniformly-distributed-load">Uniformly Distributed Load<a class="headerlink" href="#uniformly-distributed-load" title="Permanent link">&para;</a></h2>
+<p>Full-span uniform load <span class="arithmatex">\(q\)</span>, recovering <span class="arithmatex">\(M_A = M_B = q l^2 / 12\)</span>, <span class="arithmatex">\(V_A = V_B = q l / 2\)</span> and the mid-span <span class="arithmatex">\(M_{max} = q l^2 / 24\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Fully Restrained Beam with Uniformly Distributed Load</span>
-<span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;img style=&quot;width:210pt;&quot; alt=&quot;fixed-beam-distributed-load-uniform.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/fixed-beam-distributed-load-uniform.png&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
+<span class="c1">&#39;&lt;img style=&quot;width:210pt;&quot; alt=&quot;fixed-beam-distributed-load-uniform.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/fixed-beam-distributed-load-uniform.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="o">=</span><span class="nt">?</span><span class="c1">&#39;m</span>
 <span class="c1">&#39;Load -&#39;</span><span class="nv">q</span><span class="o">=</span><span class="nt">?</span><span class="c1">&#39;kN/m</span>
@@ -2884,11 +2898,12 @@
 <span class="c1">&#39;&lt;/div&gt;10   5   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Fully Restrained Beam with Uniformly Distributed Load </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Full-span uniform load $q$, recovering $M_A = M_B = q l^2 / 12$, $V_A = V_B = q l / 2$ and the mid-span $M_{max} = q l^2 / 24$. --> 
 <div style="max-width:180mm"> 
-<hr /><img style="width:210pt;" alt="fixed-beam-distributed-load-uniform.png" class="side" src="Images/mechanics/beams/fixed-beam-distributed-load-uniform.png"> 
+<img style="width:210pt;" alt="fixed-beam-distributed-load-uniform.png" class="side" src="Images/mechanics/beams/fixed-beam-distributed-load-uniform.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">10</u> </span> m </p>
 <p>Load - <span class="eq"><var>q</var> = <u class="input-6">5</u> </span> kN/m </p>
@@ -2910,7 +2925,7 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
 <p>Spotted an error? <a href="https://github.com/imartincei/CalcpadCE/tree/main/Examples/Structural/Fully%20Restrained%20Beams">Edit these examples.</a></p>
@@ -2980,7 +2995,7 @@
       
         <script src="../javascripts/mathjax.js"></script>
       
-        <script src="../javascripts/mathjax/startup.js"></script>
+        <script src="../javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="../javascripts/example-layout.js"></script>
       

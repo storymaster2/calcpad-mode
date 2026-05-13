@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="CalcpadCE worksheets in this section deal with beam deflection under classical Euler-Bernoulli theory, where the curvature $\kappa$ is proportional to the bending moment through the bending stiffness $EI$. Each sheet integrates the curvature twice along the span to give the rotation $\varphi(x)$ and deflection $d(x)$ closed forms for a single member and load case.">
+      
       
       
       
@@ -91,8 +93,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -272,7 +273,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="cantilevers.html" class="md-tabs__link">
+        <a href="simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -308,8 +309,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1114,7 +1114,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1481,7 +1481,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -1705,7 +1705,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -1733,7 +1733,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1874,6 +1874,34 @@
   
   
     <li class="md-nav__item">
+      <a href="simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="cantilevers.html" class="md-nav__link">
         
   
@@ -1937,7 +1965,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2169,34 +2197,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2500,12 +2500,18 @@
 
 
 
-<h1 id="deflections">Deflections</h1>
-<h2 id="cantilever-with-concentrated-load">Cantilever with Concentrated Load</h2>
+<h1 id="deflections">Deflections<a class="headerlink" href="#deflections" title="Permanent link">&para;</a></h1>
+<p><a href="https://calcpad-ce.org">CalcpadCE</a> worksheets in this section deal with <a href="https://en.wikipedia.org/wiki/Deflection">beam deflection</a> under classical Euler-Bernoulli theory, where the curvature <span class="arithmatex">\(\kappa\)</span> is proportional to the bending moment through the bending stiffness <span class="arithmatex">\(EI\)</span>.
+Each sheet integrates the curvature twice along the span to give the rotation <span class="arithmatex">\(\varphi(x)\)</span> and deflection <span class="arithmatex">\(d(x)\)</span> closed forms for a single member and load case.</p>
+<p>A <a href="#cantilever-with-concentrated-load">cantilever with a tip force</a> and a <a href="#cantilever-with-unifrom-load">cantilever under uniform load</a> cover the two basic clamped-free responses, recovering <span class="arithmatex">\(d_{max} = F l^3 / (3 E I)\)</span> and <span class="arithmatex">\(d_{max} = q l^4 / (8 E I)\)</span> at the free end respectively.
+A <a href="#simply-supported-beam-with-concentrated-load">simply supported beam with a mid-span point load</a> and a <a href="#simply-supported-beam-with-unifrom-load">simply supported beam under uniform load</a> provide the pinned-pinned counterparts, with the central <span class="arithmatex">\(5 q l^4 / (384 E I)\)</span> deflection used in serviceability checks.</p>
+<p>Span, load magnitude, second moment of area <span class="arithmatex">\(I\)</span>, modulus <span class="arithmatex">\(E\)</span> and a probe coordinate <span class="arithmatex">\(x\)</span> are exposed as inputs, so <span class="arithmatex">\(d(x)\)</span> and the maximum rotation <span class="arithmatex">\(\varphi_{max}\)</span> can be read for any geometry without editing the formulas.</p>
+<h2 id="cantilever-with-concentrated-load">Cantilever with Concentrated Load<a class="headerlink" href="#cantilever-with-concentrated-load" title="Permanent link">&para;</a></h2>
+<p>Rotation <span class="arithmatex">\(\varphi(x)\)</span> and deflection <span class="arithmatex">\(d(x)\)</span> along a cantilever loaded by a tip force <span class="arithmatex">\(F\)</span>, recovering the textbook tip values <span class="arithmatex">\(\varphi_{max} = F l^2 / (2 E I)\)</span> and <span class="arithmatex">\(d_{max} = F l^3 / (3 E I)\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Deflection and Rotation of Cantilever with Concentrated Load</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style = &quot;max-width: 180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style = &quot;max-width: 180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:165pt;&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/deflection-cantilever-force.png&quot; alt=&quot;deflection-cantilever-force.png&quot;&gt;</span>
 <span class="c1">&#39;Beam length - &#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
 <span class="c1">&#39;Load - &#39;</span><span class="nv">F</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN</span>
@@ -2529,10 +2535,11 @@
 <span class="c1">&#39;&lt;/div&gt;3    50  160000  30  3</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Deflection and Rotation of Cantilever with Concentrated Load </div>
-<hr /><div style = "max-width: 180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Rotation $\varphi(x)$ and deflection $d(x)$ along a cantilever loaded by a tip force $F$, recovering the textbook tip values $\varphi_{max} = F l^2 / (2 E I)$ and $d_{max} = F l^3 / (3 E I)$. --> 
+<div style = "max-width: 180mm;"> 
 <img style="width:165pt;" class="side" src="Images/mechanics/beams/deflection-cantilever-force.png" alt="deflection-cantilever-force.png"> 
 <p>Beam length -  <span class="eq"><var>l</var> = <u class="input-4">3</u> </span> m </p>
 <p>Load -  <span class="eq"><var>F</var> = <u class="input-5">50</u> </span> kN </p>
@@ -2551,14 +2558,15 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="cantilever-with-unifrom-load">Cantilever with Unifrom Load</h2>
+<h2 id="cantilever-with-unifrom-load">Cantilever with Unifrom Load<a class="headerlink" href="#cantilever-with-unifrom-load" title="Permanent link">&para;</a></h2>
+<p>Cantilever under a full-span uniform load <span class="arithmatex">\(q\)</span>, integrating the curvature to obtain <span class="arithmatex">\(\varphi(x)\)</span> and <span class="arithmatex">\(d(x)\)</span> with the tip deflection <span class="arithmatex">\(d_{max} = q l^4 / (8 E I)\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Deflection and Rotation of Cantilever with Uniformly Distributed Load</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style = &quot;max-width: 180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style = &quot;max-width: 180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:165pt;&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/deflection-cantilever-distributed-load.png&quot; alt=&quot;deflection-cantilever-distributed-load.png&quot;&gt;</span>
 <span class="c1">&#39;Beam length - &#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
 <span class="c1">&#39;Load - &#39;</span><span class="nv">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m</span>
@@ -2582,10 +2590,11 @@
 <span class="c1">&#39;&lt;/div&gt;3    30  160000  30  2</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Deflection and Rotation of Cantilever with Uniformly Distributed Load </div>
-<hr /><div style = "max-width: 180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Cantilever under a full-span uniform load $q$, integrating the curvature to obtain $\varphi(x)$ and $d(x)$ with the tip deflection $d_{max} = q l^4 / (8 E I)$. --> 
+<div style = "max-width: 180mm;"> 
 <img style="width:165pt;" class="side" src="Images/mechanics/beams/deflection-cantilever-distributed-load.png" alt="deflection-cantilever-distributed-load.png"> 
 <p>Beam length -  <span class="eq"><var>l</var> = <u class="input-4">3</u> </span> m </p>
 <p>Load -  <span class="eq"><var>q</var> = <u class="input-5">30</u> </span> kN/m </p>
@@ -2604,14 +2613,15 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="simply-supported-beam-with-concentrated-load">Simply Supported Beam with Concentrated Load</h2>
+<h2 id="simply-supported-beam-with-concentrated-load">Simply Supported Beam with Concentrated Load<a class="headerlink" href="#simply-supported-beam-with-concentrated-load" title="Permanent link">&para;</a></h2>
+<p>Simply supported beam with a mid-span point force <span class="arithmatex">\(F\)</span>, giving the maximum deflection <span class="arithmatex">\(d_{max} = F l^3 / (48 E I)\)</span> and the support rotation <span class="arithmatex">\(\varphi_{max} = F l^2 / (16 E I)\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Deflection and Rotation of Simply Supported Beam with Concentrated Load</span>
-<span class="c1">&#39;&lt;hr/&gt;&lt;div style = &quot;max-width: 180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style = &quot;max-width: 180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:165pt;&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/deflection-simply-supported-beam-force.png&quot; alt=&quot;deflection-simply-supported-beam-force.png&quot;&gt;</span>
 <span class="c1">&#39;Beam length - &#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
 <span class="c1">&#39;Load - &#39;</span><span class="nv">F</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN</span>
@@ -2635,10 +2645,11 @@
 <span class="c1">&#39;&lt;/div&gt;6    100 160000  30  3</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Deflection and Rotation of Simply Supported Beam with Concentrated Load </div>
-<hr/><div style = "max-width: 180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Simply supported beam with a mid-span point force $F$, giving the maximum deflection $d_{max} = F l^3 / (48 E I)$ and the support rotation $\varphi_{max} = F l^2 / (16 E I)$. --> 
+<div style = "max-width: 180mm;"> 
 <img style="width:165pt;" class="side" src="Images/mechanics/beams/deflection-simply-supported-beam-force.png" alt="deflection-simply-supported-beam-force.png"> 
 <p>Beam length -  <span class="eq"><var>l</var> = <u class="input-4">6</u> </span> m </p>
 <p>Load -  <span class="eq"><var>F</var> = <u class="input-5">100</u> </span> kN </p>
@@ -2657,14 +2668,15 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="simply-supported-beam-with-unifrom-load">Simply Supported Beam with Unifrom Load</h2>
+<h2 id="simply-supported-beam-with-unifrom-load">Simply Supported Beam with Unifrom Load<a class="headerlink" href="#simply-supported-beam-with-unifrom-load" title="Permanent link">&para;</a></h2>
+<p>Simply supported beam under a full-span uniform load <span class="arithmatex">\(q\)</span>, recovering the serviceability-relevant mid-span deflection <span class="arithmatex">\(d_{max} = 5 q l^4 / (384 E I)\)</span> and the support rotation <span class="arithmatex">\(\varphi_{max} = q l^3 / (24 E I)\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Deflection and Rotation of Simply Supported Beam with Uniformly Distributed Load</span>
-<span class="c1">&#39;&lt;hr/&gt;&lt;div style = &quot;max-width: 180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style = &quot;max-width: 180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:165pt;&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/deflection-simply-supported-beam-distributed-load.png&quot; alt=&quot;deflection-simply-supported-beam-distributed-load.png&quot;&gt;</span>
 <span class="c1">&#39;Beam length - &#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
 <span class="c1">&#39;Load - &#39;</span><span class="nv">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m</span>
@@ -2688,10 +2700,11 @@
 <span class="c1">&#39;&lt;/div&gt;6    30  160000  30  3</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Deflection and Rotation of Simply Supported Beam with Uniformly Distributed Load </div>
-<hr/><div style = "max-width: 180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Simply supported beam under a full-span uniform load $q$, recovering the serviceability-relevant mid-span deflection $d_{max} = 5 q l^4 / (384 E I)$ and the support rotation $\varphi_{max} = q l^3 / (24 E I)$. --> 
+<div style = "max-width: 180mm;"> 
 <img style="width:165pt;" class="side" src="Images/mechanics/beams/deflection-simply-supported-beam-distributed-load.png" alt="deflection-simply-supported-beam-distributed-load.png"> 
 <p>Beam length -  <span class="eq"><var>l</var> = <u class="input-4">6</u> </span> m </p>
 <p>Load -  <span class="eq"><var>q</var> = <u class="input-5">30</u> </span> kN/m </p>
@@ -2710,7 +2723,7 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
 <p>Spotted an error? <a href="https://github.com/imartincei/CalcpadCE/tree/main/Examples/Structural/Deflections">Edit these examples.</a></p>
@@ -2780,7 +2793,7 @@
       
         <script src="../javascripts/mathjax.js"></script>
       
-        <script src="../javascripts/mathjax/startup.js"></script>
+        <script src="../javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="../javascripts/example-layout.js"></script>
       

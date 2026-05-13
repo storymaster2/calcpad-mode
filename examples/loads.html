@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="CalcpadCE worksheets in this section determine the climatic and operational actions on structures that govern the design of buildings — wind pressure, snow accumulation and the contact stresses transferred to the ground. The calculations follow Eurocode parts 1991-1-3 and 1991-1-4 and translate the code provisions directly into branching logic over terrain category, roof pitch and reference area.">
+      
       
       
       
@@ -91,8 +93,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -272,7 +273,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="cantilevers.html" class="md-tabs__link">
+        <a href="simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -308,8 +309,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1114,7 +1114,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1481,7 +1481,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -1705,7 +1705,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -1733,7 +1733,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1874,6 +1874,34 @@
   
   
     <li class="md-nav__item">
+      <a href="simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="cantilevers.html" class="md-nav__link">
         
   
@@ -1937,7 +1965,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2105,7 +2133,7 @@
   <a href="#optimization-of-foundation-pad-dimensions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Optimization of foundation pad dimensions
+        Optimization of Foundation Pad Dimensions
       
     </span>
   </a>
@@ -2169,34 +2197,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2443,7 +2443,7 @@
   <a href="#optimization-of-foundation-pad-dimensions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Optimization of foundation pad dimensions
+        Optimization of Foundation Pad Dimensions
       
     </span>
   </a>
@@ -2500,12 +2500,19 @@
 
 
 
-<h1 id="loads">Loads</h1>
-<h2 id="optimization-of-foundation-pad-dimensions">Optimization of foundation pad dimensions</h2>
+<h1 id="loads">Loads<a class="headerlink" href="#loads" title="Permanent link">&para;</a></h1>
+<p><a href="https://calcpad-ce.org">CalcpadCE</a> worksheets in this section determine the climatic and operational <a href="https://en.wikipedia.org/wiki/Structural_load">actions on structures</a> that govern the design of buildings — wind pressure, snow accumulation and the contact stresses transferred to the ground.
+The calculations follow <a href="https://en.wikipedia.org/wiki/Eurocode">Eurocode</a> parts 1991-1-3 and 1991-1-4 and translate the code provisions directly into branching logic over terrain category, roof pitch and reference area.</p>
+<p>The <a href="#snow-load">snow load worksheet</a> returns <span class="arithmatex">\(s = \mu_1 \cdot C_e \cdot C_t \cdot s_k\)</span> for monopitch and duopitch roofs, with the shape coefficient <span class="arithmatex">\(\mu_1\)</span> chosen from the pitch angle.
+The <a href="#snow-drift">snow drift sheet</a> covers the more demanding case of a roof abutting a taller construction, where the drift length <span class="arithmatex">\(l_s\)</span> and the additional shape coefficients <span class="arithmatex">\(\mu_s\)</span> and <span class="arithmatex">\(\mu_w\)</span> describe the wind-driven and sliding contributions.
+The <a href="#wind-load">wind load sheet</a> builds the peak velocity pressure <span class="arithmatex">\(q_p\)</span> from the basic wind velocity, terrain roughness and turbulence, then resolves zone-by-zone external pressure coefficients on walls and roof slopes for the transverse and longitudinal directions, and reduces them to line loads on columns, beams and purlins.</p>
+<p>The <a href="#optimization-of-foundation-pad-dimensions">foundation pad optimisation</a> closes the load-take-down chain by sizing the rectangular base for the resulting axial force and biaxial bending so that the maximum contact pressure stays below the permissible value, no uplift occurs and the base area is a minimum — the optimum is found numerically with <code>Inf</code> over the side-ratio <span class="arithmatex">\(k = a/b\)</span>.</p>
+<h2 id="optimization-of-foundation-pad-dimensions">Optimization of Foundation Pad Dimensions<a class="headerlink" href="#optimization-of-foundation-pad-dimensions" title="Permanent link">&para;</a></h2>
+<p>Numerical sizing of a rectangular foundation pad under axial force and biaxial bending: the side-ratio <span class="arithmatex">\(k = a / b\)</span> that minimises the base area while keeping the maximum stress below the permissible value and avoiding uplift is found with the embedded <code>Inf</code> solver.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Optimization of foundation pad dimensions</span>
-<span class="cs">&quot;Single load case problem</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="cs">&quot;Single load case problem</span>
 <span class="c1">&#39;Loads:</span>
 <span class="c1">&#39;&amp;emsp;Compression -&#39;</span><span class="nv">N</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1000</span><span class="c1">&#39;kN</span>
 <span class="c1">&#39;&amp;emsp;Bending along x-axis -&#39;</span><span class="nv">M_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">200</span><span class="c1">&#39;kNm</span>
@@ -2626,9 +2633,10 @@
 <span class="c1">&#39;&lt;b style=&quot;color:MediumVioletRed&quot;&gt;━━&lt;/b&gt; max&lt;/p&gt;</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Optimization of foundation pad dimensions </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Numerical sizing of a rectangular foundation pad under axial force and biaxial bending: the side-ratio $k = a / b$ that minimises the base area while keeping the maximum stress below the permissible value and avoiding uplift is found with the embedded `Inf` solver. --> 
 <div class="calcpad-h3">Single load case problem </div>
 <p>Loads: </p>
 <p>&emsp;Compression - <span class="eq"><var>N</var> = 1000</span> kN </p>
@@ -2854,13 +2862,15 @@ circle.Series7 {fill:BlueViolet;}
 <b style="color:MediumVioletRed">━━</b> max</p> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="snow-drift">Snow Drift</h2>
+<h2 id="snow-drift">Snow Drift<a class="headerlink" href="#snow-drift" title="Permanent link">&para;</a></h2>
+<p>Eurocode EN 1991-1-3 snow drift on a roof abutting a taller construction: drift length <span class="arithmatex">\(l_s\)</span>, sliding coefficient <span class="arithmatex">\(\mu_s\)</span> and wind coefficient <span class="arithmatex">\(\mu_w\)</span> from the geometry of the higher and lower roofs.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Snow Drift on a Roof, Abutting a Taller Construction&lt;hr/&gt;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1991-1-3, § 5.3.6&lt;/small&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1991-1-3, § 5.3.6&lt;/small&gt;</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
 <span class="c1">&#39;&lt;img class=&quot;side&quot; style=&quot;width:210pt;&quot; src=&quot;../../Images/structures/loads/snow-drift.png&quot; alt=&quot;snow-drift.png&quot;&gt;</span>
 <span class="c1">&#39;Characteristic snow load on the ground -&#39;</span><span class="nv">s_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
@@ -2905,17 +2915,19 @@ circle.Series7 {fill:BlueViolet;}
 <span class="c1">&#39;&lt;/div&gt;1.5  18  9   36  6.2 3</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Snow Drift on a Roof, Abutting a Taller Construction<hr/><small>According to <strong>Eurocode</strong>: EN 1991-1-3, § 5.3.6</small> </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Eurocode EN 1991-1-3 snow drift on a roof abutting a taller construction: drift length $l_s$, sliding coefficient $\mu_s$ and wind coefficient $\mu_w$ from the geometry of the higher and lower roofs. --> 
+<small>According to <strong>Eurocode</strong>: EN 1991-1-3, § 5.3.6</small> 
 <div style="max-width:180mm"> 
 <img class="side" style="width:210pt;" src="Images/structures/loads/snow-drift.png" alt="snow-drift.png"> 
-<p>Characteristic snow load on the ground - <span class="eq"><var>s</var><sub>k</sub> = <u class="input-4">1.5</u> </span> kN/m<sup>2</sup> </p>
-<p>Higher roof width - <span class="eq"><var>b</var><sub>1</sub> = <u class="input-5">18</u> </span> m </p>
-<p>Sliding surface width - <span class="eq"><var>b</var><sub>s</sub> = <u class="input-6">9</u> </span> m </p>
-<p>Lower roof width - <span class="eq"><var>b</var><sub>2</sub> = <u class="input-7">36</u> </span> m </p>
-<p>height difference - <span class="eq"><var>h</var> = <u class="input-8">6.2</u> </span> m </p>
-<p>Pitch angle of the higher roof - <span class="eq"><var>α</var> = <u class="input-9">3</u> </span> <sup>o</sup> </p>
+<p>Characteristic snow load on the ground - <span class="eq"><var>s</var><sub>k</sub> = <u class="input-5">1.5</u> </span> kN/m<sup>2</sup> </p>
+<p>Higher roof width - <span class="eq"><var>b</var><sub>1</sub> = <u class="input-6">18</u> </span> m </p>
+<p>Sliding surface width - <span class="eq"><var>b</var><sub>s</sub> = <u class="input-7">9</u> </span> m </p>
+<p>Lower roof width - <span class="eq"><var>b</var><sub>2</sub> = <u class="input-8">36</u> </span> m </p>
+<p>height difference - <span class="eq"><var>h</var> = <u class="input-9">6.2</u> </span> m </p>
+<p>Pitch angle of the higher roof - <span class="eq"><var>α</var> = <u class="input-10">3</u> </span> <sup>o</sup> </p>
 <p>Shape coefficient for the higher roof </p>
 <p><span class="eq"><var>μ</var><sub>1h</sub> = 0</span> (α &le; 15 <sup>o</sup>) </p>
 <p>Drift length </p>
@@ -2936,13 +2948,15 @@ circle.Series7 {fill:BlueViolet;}
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="snow-load">Snow Load</h2>
+<h2 id="snow-load">Snow Load<a class="headerlink" href="#snow-load" title="Permanent link">&para;</a></h2>
+<p>Eurocode EN 1991-1-3 snow load on monopitch and duopitch roofs: shape coefficient <span class="arithmatex">\(\mu_1\)</span> selected from the pitch angle and combined with exposure and thermal factors.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Snow Load on Monopitch or Duopitch Roof&lt;hr/&gt;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1991-1-3&lt;/small&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1991-1-3&lt;/small&gt;</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:200pt;&quot; src=&quot;../../Images/structures/loads/snow.png&quot; alt=&quot;snow.png&quot;&gt;&lt;br /&gt;&lt;br /&gt;</span>
 <span class="c1">&#39;Characteristic snow load on the ground -&#39;</span><span class="nv">s_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
@@ -2966,29 +2980,33 @@ circle.Series7 {fill:BlueViolet;}
 <span class="c1">&#39;&lt;/div&gt;1    0   1   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Snow Load on Monopitch or Duopitch Roof<hr/><small>According to <strong>Eurocode</strong>: EN 1991-1-3</small> </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Eurocode EN 1991-1-3 snow load on monopitch and duopitch roofs: shape coefficient $\mu_1$ selected from the pitch angle and combined with exposure and thermal factors. --> 
+<small>According to <strong>Eurocode</strong>: EN 1991-1-3</small> 
 <div style="max-width:180mm"> 
 <img style="width:200pt;" src="Images/structures/loads/snow.png" alt="snow.png"><br /><br /> 
-<p>Characteristic snow load on the ground - <span class="eq"><var>s</var><sub>k</sub> = <u class="input-4">1</u> </span> kN/m<sup>2</sup> </p>
-<p>Roof pitch angle - <span class="eq"><var>α</var> = <u class="input-5">0</u> </span> <sup>o</sup> </p>
+<p>Characteristic snow load on the ground - <span class="eq"><var>s</var><sub>k</sub> = <u class="input-5">1</u> </span> kN/m<sup>2</sup> </p>
+<p>Roof pitch angle - <span class="eq"><var>α</var> = <u class="input-6">0</u> </span> <sup>o</sup> </p>
 <p>Snow shape coefficient - <span class="eq"><var>μ</var><sub>1</sub> = 0.8</span> (α &le; 30 <sup>o</sup>) </p>
-<p>Exposure factor - <span class="eq"><var>C</var><sub>e</sub> = <u class="input-15">1</u> </span></p>
-<p>Thermal factor - <span class="eq"><var>C</var><sub>t</sub> = <u class="input-16">1</u> </span></p>
+<p>Exposure factor - <span class="eq"><var>C</var><sub>e</sub> = <u class="input-16">1</u> </span></p>
+<p>Thermal factor - <span class="eq"><var>C</var><sub>t</sub> = <u class="input-17">1</u> </span></p>
 <p class="ref">[EN 1991-1-3, Clause 5.2 (3)a]</p> 
 <p>Snow load on roof </p>
 <p><span class="eq"><var>s</var> = <var>μ</var><sub>1</sub> · <var>C</var><sub>e</sub> · <var>C</var><sub>t</sub> · <var>s</var><sub>k</sub> = 0.8 · 1 · 1 · 1 = 0.8</span> kN/m<sup>2</sup> </p>
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="wind-load">Wind Load</h2>
+<h2 id="wind-load">Wind Load<a class="headerlink" href="#wind-load" title="Permanent link">&para;</a></h2>
+<p>Eurocode EN 1991-1-4 wind on a rectangular building with duopitch roof: peak velocity pressure, zone-by-zone external pressure coefficients and reduction to line loads on columns, beams and purlins.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Wind Load for Rectangular Building with Duopitch Roof&lt;hr/&gt;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1991-1-4&lt;/small&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1991-1-4&lt;/small&gt;</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:225pt;&quot; class=&quot;side&quot; src=&quot;../../Images/structures/loads/wind-3d.png&quot; alt=&quot;wind-3d.png&quot;&gt;&#39;</span>
 <span class="c1">&#39;</span>
@@ -3720,32 +3738,34 @@ circle.Series7 {fill:BlueViolet;}
 <span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Wind Load for Rectangular Building with Duopitch Roof<hr/><small>According to <strong>Eurocode</strong>: EN 1991-1-4</small> </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Eurocode EN 1991-1-4 wind on a rectangular building with duopitch roof: peak velocity pressure, zone-by-zone external pressure coefficients and reduction to line loads on columns, beams and purlins. --> 
+<small>According to <strong>Eurocode</strong>: EN 1991-1-4</small> 
 <div style="max-width:180mm"> 
 <img style="width:225pt;" class="side" src="Images/structures/loads/wind-3d.png" alt="wind-3d.png"> 
 <p></p>
 <p></p>
 <div class="calcpad-h4">Dimensions of the building</div> 
-<p>Width - <span class="eq"><var>B</var> = <u class="input-7">12</u> </span> m </p>
-<p>Length - <span class="eq"><var>L</var> = <u class="input-8">30</u> </span> m </p>
-<p>Height at roof ridge - <span class="eq"><var>h</var><sub>1</sub> = <u class="input-9">9</u> </span> m </p>
-<p>Height at roof eaves - <span class="eq"><var>h</var><sub>2</sub> = <u class="input-10">8</u> </span> m </p>
+<p>Width - <span class="eq"><var>B</var> = <u class="input-8">12</u> </span> m </p>
+<p>Length - <span class="eq"><var>L</var> = <u class="input-9">30</u> </span> m </p>
+<p>Height at roof ridge - <span class="eq"><var>h</var><sub>1</sub> = <u class="input-10">9</u> </span> m </p>
+<p>Height at roof eaves - <span class="eq"><var>h</var><sub>2</sub> = <u class="input-11">8</u> </span> m </p>
 <p>Pitch angle </p>
 <p><span class="eq"><var>α</var> = <b>atan</b><span class="b1">(</span><span class="dvc"> ( <var>h</var><sub>1</sub> − <var>h</var><sub>2</sub> )  · 2<span class="dvl"></span><var>B</var></span><span class="b1">)</span> = <b>atan</b><span class="b1">(</span><span class="dvc"> ( 9 − 8 )  · 2<span class="dvl"></span>12</span><span class="b1">)</span> = 9.462322</span> ° </p>
 <p>Spacing between: </p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp; - frames - <span class="eq"><var>a</var> = <u class="input-14">6</u> </span> m </p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp; - wind columns - <span class="eq"><var>b</var> = <u class="input-15">4</u> </span> m </p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp; - side beams - <span class="eq"><var>c</var><sub>s</sub> = <u class="input-16">2</u> </span> m </p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp; - purlins - <span class="eq"><var>c</var><sub>p</sub> = <u class="input-17">1</u> </span> m </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp; - frames - <span class="eq"><var>a</var> = <u class="input-15">6</u> </span> m </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp; - wind columns - <span class="eq"><var>b</var> = <u class="input-16">4</u> </span> m </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp; - side beams - <span class="eq"><var>c</var><sub>s</sub> = <u class="input-17">2</u> </span> m </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp; - purlins - <span class="eq"><var>c</var><sub>p</sub> = <u class="input-18">1</u> </span> m </p>
 <p>(If the above distances are &le; 0, the corresponding loads will not be calculated) </p>
 <p>Reference area for side beams - <span class="eq"><var>A</var><sub>sa</sub> = <var>c</var><sub>s</sub> · <var>a</var> = 2 · 6 = 12</span> m², <span class="eq"><var>A</var><sub>sb</sub> = <var>c</var><sub>s</sub> · <var>b</var> = 2 · 4 = 8</span> m² </p>
 <p>Reference area for purlins - <span class="eq"><var>A</var><sub>p</sub> = <var>c</var><sub>p</sub> · <var>a</var> = 1 · 6 = 6</span> m² </p>
 <p></p>
 <p></p>
 <div class="calcpad-h4">Basic velocity pressure</div> 
-<p>Fundamental value of the basic wind velocity - <span class="eq"><var>v</var><sub>b_0</sub> = <u class="input-30">26</u> </span> kN/m² </p>
+<p>Fundamental value of the basic wind velocity - <span class="eq"><var>v</var><sub>b_0</sub> = <u class="input-31">26</u> </span> kN/m² </p>
 <p>Directional factor - <span class="eq"><var>C</var><sub>dir</sub> = 1</span></p>
 <p>Seasonal factor - <span class="eq"><var>C</var><sub>season</sub> = 1</span></p>
 <p class="ref">[EN 1991-1-4 (4.1)]</p> 
@@ -3774,7 +3794,7 @@ circle.Series7 {fill:BlueViolet;}
 <p class="ref">[EN 1991-1-4, p. 6.2(1)]</p> 
 <p>Size factor -  <span class="eq"><var>C</var><sub>s</sub> = 1</span> , Dynamic factor -  <span class="eq"><var>C</var><sub>d</sub> = 1</span></p>
 <p>Structural factor -  <span class="eq"><var>C</var><sub>s</sub> · <var>C</var><sub>d</sub> = 1 · 1 = 1</span></p>
-<p>Internal pressure coefficient - <span class="eq"><var>C</var><sub>pi</sub> = <u class="input-97">-0.3</u> </span></p>
+<p>Internal pressure coefficient - <span class="eq"><var>C</var><sub>pi</sub> = <u class="input-98">-0.3</u> </span></p>
 <p class="ref">[EN 1991-1-4 Fig.7.13, Note 2]</p> 
 <p>(should be taken the relevant value of -0.3 and +0.2) </p>
 <!-- 
@@ -3990,7 +4010,7 @@ circle.Series7 {fill:BlueViolet;}
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
 <p>Spotted an error? <a href="https://github.com/imartincei/CalcpadCE/tree/main/Examples/Structural/Loads">Edit these examples.</a></p>
@@ -4060,7 +4080,7 @@ circle.Series7 {fill:BlueViolet;}
       
         <script src="../javascripts/mathjax.js"></script>
       
-        <script src="../javascripts/mathjax/startup.js"></script>
+        <script src="../javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="../javascripts/example-layout.js"></script>
       

@@ -1,17 +1,9 @@
 window.MathJax = {
   loader: {
-    load: [
-      "input/tex-base",
-      "output/chtml",
-      "[tex]/ams",
-      "[tex]/newcommand",
-      "[tex]/configmacros",
-      "[tex]/noerrors",
-      "[tex]/noundefined",
-    ],
+    load: ["[tex]/boldsymbol"],
   },
   tex: {
-    packages: { "[+]": ["ams", "newcommand", "configmacros", "noerrors", "noundefined"] },
+    packages: { "[+]": ["boldsymbol"] },
     inlineMath: [["\\(", "\\)"]],
     displayMath: [["\\[", "\\]"]],
     processEscapes: true,

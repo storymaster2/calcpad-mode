@@ -362,6 +362,85 @@ def _strip_headings(fragment: str) -> str:
     return fragment
 
 
+# Matches the start of a leading Calcpad text comment whose body is an HTML
+# comment, e.g. `'<!-- Some narrative markdown.` (single-line or opening line
+# of a multi-line block). Used to lift a description from the top of a `.cpd`
+# file into the rendered docs page above the example.
+_DESC_OPEN_RE = re.compile(r"^'<!--\s*(.*?)\s*$")
+# Matches a continuation line inside the description block (Calcpad text
+# comment marker `'` followed by content). The closing `-->` may appear on
+# any line.
+_DESC_CONT_RE = re.compile(r"^'\s?(.*?)\s*$")
+
+
+def _extract_first_line_desc(source: str) -> tuple[str, str]:
+    """Return (description_markdown, source_without_description_block) if the
+    source begins with a leading Calcpad text-comment HTML-comment block,
+    otherwise ("", source).
+
+    Supports both a single-line form and a multi-line form where each
+    subsequent line starts with `'` and the block is closed with `-->`:
+
+        '<!-- First sentence.
+        'Second sentence.
+        'Third sentence. -->
+    """
+    lines = source.splitlines(keepends=True)
+    if not lines:
+        return "", source
+    open_match = _DESC_OPEN_RE.match(lines[0].rstrip("\r\n"))
+    if not open_match:
+        return "", source
+
+    def _strip_close(text: str) -> tuple[str, bool]:
+        if text.endswith("-->"):
+            return text[:-3].rstrip(), True
+        return text, False
+
+    first_body, closed = _strip_close(open_match.group(1))
+    collected: list[str] = []
+    if first_body:
+        collected.append(first_body)
+    if closed:
+        return "\n".join(collected), "".join(lines[1:])
+
+    for i in range(1, len(lines)):
+        cont_match = _DESC_CONT_RE.match(lines[i].rstrip("\r\n"))
+        if not cont_match:
+            # Malformed block — bail out and leave source untouched.
+            return "", source
+        body, closed = _strip_close(cont_match.group(1))
+        if body:
+            collected.append(body)
+        if closed:
+            return "\n".join(collected), "".join(lines[i + 1 :])
+
+    # No closing `-->` found — treat as not a description block.
+    return "", source
+
+
+def _first_paragraph(text: str) -> str:
+    """Return the first non-empty paragraph of a markdown string as a single
+    line, with simple Markdown decorations removed. Suitable for use as an
+    HTML <meta name="description"> value.
+    """
+    paragraph: list[str] = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not paragraph:
+            if not line or line.startswith("#") or line.startswith("---"):
+                continue
+            paragraph.append(line)
+        else:
+            if not line:
+                break
+            paragraph.append(line)
+    joined = " ".join(paragraph)
+    joined = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", joined)
+    joined = re.sub(r"[*_`]+", "", joined)
+    return joined.strip()
+
+
 def _render_category_page(category: str, cpd_files: list[Path], fragments: dict[Path, str]) -> str:
     """Build the Markdown content for one category page from pre-rendered fragments.
 
@@ -370,8 +449,36 @@ def _render_category_page(category: str, cpd_files: list[Path], fragments: dict[
     the md_in_html preprocessor from HTML-escaping '>' characters inside <script>
     tag bodies (which would break inline JavaScript such as arrow functions).
     The source code is HTML-escaped in Python before being written into <pre><code>.
+
+    Optional narrative content for SEO / readability:
+      - `<category-dir>/_intro.md` → emitted between the H1 and the first example;
+        its first paragraph also becomes the page meta description.
+      - First line of each `.cpd` file matching `'<!-- ... -->` → stripped from the
+        highlighted source and emitted as Markdown between the H2 and the example
+        grid. The HTML comment in the rendered fragment is harmless (invisible
+        in browsers) and is left in place.
     """
-    lines = ["---\nsearch:\n  exclude: true\n---\n", f"# {_display_name(category)}\n"]
+    cat_dir = cpd_files[0].parent if cpd_files else None
+    intro_path = cat_dir / "_intro.md" if cat_dir else None
+    intro_text = (
+        intro_path.read_text(encoding="utf-8")
+        if intro_path is not None and intro_path.is_file()
+        else ""
+    )
+
+    front_matter = ["---", "search:", "  exclude: true"]
+    if intro_text:
+        description = (
+            _first_paragraph(intro_text).replace("\\", "\\\\").replace('"', "'")
+        )
+        if description:
+            front_matter.append(f'description: "{description}"')
+    front_matter.append("---\n")
+
+    lines = ["\n".join(front_matter), f"# {_display_name(category)}\n"]
+
+    if intro_text:
+        lines.append(intro_text.rstrip() + "\n")
 
     for cpd_file in cpd_files:
         name = re.sub(
@@ -382,6 +489,10 @@ def _render_category_page(category: str, cpd_files: list[Path], fragments: dict[
         lines.append(f"\n## {name}\n")
 
         source = cpd_file.read_text(encoding="utf-8", errors="replace")
+        desc_md, source = _extract_first_line_desc(source)
+        if desc_md:
+            lines.append(desc_md + "\n")
+
         fragment = _strip_headings(fragments[cpd_file])
         highlighted_source = _pyg_highlight(
             source.rstrip(), _CALCPAD_LEXER, _CALCPAD_FORMATTER
@@ -391,12 +502,14 @@ def _render_category_page(category: str, cpd_files: list[Path], fragments: dict[
         # has no markdown attribute so md_in_html passes the entire block through
         # unchanged (including blank lines and raw <script> content inside it).
         lines.append('<div class="example-grid">')
-        lines.append('<div class="example-source">')
+        lines.append('<figure>')
+        lines.append(f'<figcaption>CalcpadCE Code:</figcaption>')
         lines.append(highlighted_source)
-        lines.append('</div>')
-        lines.append('<div class="example-output">')
+        lines.append('</figure>')
+        lines.append('<figure class="example-output">')
+        lines.append(f'<figcaption>Rendered Output:</figcaption>')
         lines.append(fragment)
-        lines.append('</div>')
+        lines.append('</figure>')
         lines.append('</div>\n')
 
     # Footer: link to the category folder on GitHub

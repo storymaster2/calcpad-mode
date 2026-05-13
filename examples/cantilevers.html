@@ -6,10 +6,12 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="CalcpadCE worksheets in this section deal with cantilevers — beams fixed at one end and free at the other, where the support has to carry the full bending moment and shear from every load applied along the span. They evaluate the bending moment and shear directly from the load parameters, covering the loadings encountered most often in practice.">
       
       
       
-        <link rel="prev" href="others.html">
+      
+        <link rel="prev" href="simply-supported-beams.html">
       
       
         <link rel="next" href="propped-cantilevers.html">
@@ -91,8 +93,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -272,7 +273,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="cantilevers.html" class="md-tabs__link">
+        <a href="simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -308,8 +309,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1114,7 +1114,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1481,7 +1481,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -1705,7 +1705,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -1733,7 +1733,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1866,6 +1866,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2039,7 +2067,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2180,34 +2208,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2522,12 +2522,18 @@
 
 
 
-<h1 id="cantilevers">Cantilevers</h1>
-<h2 id="concentrated-force">Concentrated Force</h2>
+<h1 id="cantilevers">Cantilevers<a class="headerlink" href="#cantilevers" title="Permanent link">&para;</a></h1>
+<p><a href="https://calcpad-ce.org">CalcpadCE</a> worksheets in this section deal with <a href="https://en.wikipedia.org/wiki/Cantilever">cantilevers</a> — beams fixed at one end and free at the other, where the support has to carry the full bending moment and shear from every load applied along the span.
+They evaluate the bending moment and shear directly from the load parameters, covering the loadings encountered most often in practice.</p>
+<p>The simplest sheets isolate a single action at the tip — a <a href="#concentrated-force">point force</a> or a <a href="#concentrated-moment">point moment</a> — and recover the elementary <span class="arithmatex">\(M = F \, l\)</span> and <span class="arithmatex">\(M = M_0\)</span> results.
+The distributed-load variants cover a <a href="#uniformly-distributed-load">uniform load</a> over the full length, a <a href="#linearly-distributed-load">linearly varying load</a> defined by intensities <span class="arithmatex">\(q_1\)</span> and <span class="arithmatex">\(q_2\)</span> at the ends, and a <a href="#partially-distributed-load">partial uniform load</a> acting only on a stretch near the tip.</p>
+<p>Beam length, load intensities and a probe coordinate <span class="arithmatex">\(x_1\)</span> are exposed as inputs, so you can read <span class="arithmatex">\(M(x_1)\)</span> and <span class="arithmatex">\(V(x_1)\)</span> at any cross-section without touching the formulas.</p>
+<h2 id="concentrated-force">Concentrated Force<a class="headerlink" href="#concentrated-force" title="Permanent link">&para;</a></h2>
+<p>Concentrated force <span class="arithmatex">\(F\)</span> applied at the free end, giving the linear bending diagram <span class="arithmatex">\(M(x) = -F (l - x)\)</span> and constant shear <span class="arithmatex">\(V = F\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Cantilever with Concentrated Force at the End</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:165pt;&quot; alt=&quot;cantilever-beam-concentrated-force.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/cantilever-beam-concentrated-force.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
@@ -2558,10 +2564,11 @@
 <span class="c1">&#39;&lt;/div&gt;5    10  1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Cantilever with Concentrated Force at the End </div>
-<hr /><div style="max-width:180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Concentrated force $F$ applied at the free end, giving the linear bending diagram $M(x) = -F (l - x)$ and constant shear $V = F$. --> 
+<div style="max-width:180mm;"> 
 <img style="width:165pt;" alt="cantilever-beam-concentrated-force.png" class="side" src="Images/mechanics/beams/cantilever-beam-concentrated-force.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">5</u> </span> m </p>
@@ -2580,14 +2587,15 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="concentrated-moment">Concentrated Moment</h2>
+<h2 id="concentrated-moment">Concentrated Moment<a class="headerlink" href="#concentrated-moment" title="Permanent link">&para;</a></h2>
+<p>Concentrated moment <span class="arithmatex">\(M_0\)</span> applied at the free end, producing a constant bending moment along the beam and zero shear.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Cantilever with Concentrated Moment at the End</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:165pt;&quot; alt=&quot;cantilever-beam-concentrated-moment.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/cantilever-beam-concentrated-moment.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
@@ -2617,10 +2625,11 @@
 <span class="c1">&#39;&lt;/div&gt;5    10  1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Cantilever with Concentrated Moment at the End </div>
-<hr /><div style="max-width:180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Concentrated moment $M_0$ applied at the free end, producing a constant bending moment along the beam and zero shear. --> 
+<div style="max-width:180mm;"> 
 <img style="width:165pt;" alt="cantilever-beam-concentrated-moment.png" class="side" src="Images/mechanics/beams/cantilever-beam-concentrated-moment.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">5</u> </span> m </p>
@@ -2639,14 +2648,15 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="linearly-distributed-load">Linearly Distributed Load</h2>
+<h2 id="linearly-distributed-load">Linearly Distributed Load<a class="headerlink" href="#linearly-distributed-load" title="Permanent link">&para;</a></h2>
+<p>Distributed load varying linearly between intensities <span class="arithmatex">\(q_1\)</span> at the support and <span class="arithmatex">\(q_2\)</span> at the tip, giving a cubic bending diagram and quadratic shear.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Cantilever with Linearly Distributed Load</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:165pt;&quot; alt=&quot;cantilever-beam-distributed-load-linear.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/cantilever-beam-distributed-load-linear.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
@@ -2678,10 +2688,11 @@
 <span class="c1">&#39;&lt;/div&gt;5    10  5   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Cantilever with Linearly Distributed Load </div>
-<hr /><div style="max-width:180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Distributed load varying linearly between intensities $q_1$ at the support and $q_2$ at the tip, giving a cubic bending diagram and quadratic shear. --> 
+<div style="max-width:180mm;"> 
 <img style="width:165pt;" alt="cantilever-beam-distributed-load-linear.png" class="side" src="Images/mechanics/beams/cantilever-beam-distributed-load-linear.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">5</u> </span> m </p>
@@ -2701,14 +2712,15 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="partially-distributed-load">Partially Distributed Load</h2>
+<h2 id="partially-distributed-load">Partially Distributed Load<a class="headerlink" href="#partially-distributed-load" title="Permanent link">&para;</a></h2>
+<p>Uniform load <span class="arithmatex">\(q\)</span> acting on a stretch of length <span class="arithmatex">\(b\)</span> adjacent to the free end, with the unloaded portion <span class="arithmatex">\(a = l - b\)</span> kept clear.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Cantilever with Partially Distributed Load</span>
-<span class="c1">&#39;&lt;hr /&gt;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style=&quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:165pt;&quot; alt=&quot;cantilever-beam-distributed-load-partial.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/cantilever-beam-distributed-load-partial.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Beam Length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
@@ -2739,10 +2751,11 @@
 <span class="c1">&#39;&lt;/div&gt;5    5   3   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Cantilever with Partially Distributed Load </div>
-<hr /><div style="max-width:180mm;"> 
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Uniform load $q$ acting on a stretch of length $b$ adjacent to the free end, with the unloaded portion $a = l - b$ kept clear. --> 
+<div style="max-width:180mm;"> 
 <img style="width:165pt;" alt="cantilever-beam-distributed-load-partial.png" class="side" src="Images/mechanics/beams/cantilever-beam-distributed-load-partial.png"> 
 <p><b>Input data</b></p> 
 <p>Beam Length - <span class="eq"><var>l</var> = <u class="input-5">5</u> </span> m </p>
@@ -2762,37 +2775,35 @@
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="uniformly-distributed-load">Uniformly Distributed Load</h2>
+<h2 id="uniformly-distributed-load">Uniformly Distributed Load<a class="headerlink" href="#uniformly-distributed-load" title="Permanent link">&para;</a></h2>
+<p>Full-span uniform load <span class="arithmatex">\(q\)</span> giving the textbook support actions <span class="arithmatex">\(M = q l^2 / 2\)</span> and <span class="arithmatex">\(V = q l\)</span>.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Cantilever with uniformly distributed load</span>
-<span class="c1">&#39;&lt;div style = &quot;max-width:180mm;&quot;&gt;</span>
-<span class="c1">&#39;&lt;hr/&gt;&lt;img style=&quot;width:165pt;&quot; alt=&quot;cantilever-beam-distributed-load-uniform.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/cantilever-beam-distributed-load-uniform.png&quot;&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;img style=&quot;width:165pt;&quot; alt=&quot;cantilever-beam-distributed-load-uniform.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/beams/cantilever-beam-distributed-load-uniform.png&quot;&gt;</span>
 <span class="c1">&#39;Beam Length - &#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="c1">&#39;m</span>
 <span class="c1">&#39;Load- &#39;</span><span class="nv">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="c1">&#39;kN/m</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Internal forces&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Bending - &#39;</span><span class="nv">M</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">q</span><span class="o">*</span><span class="nv">l</span><span class="o">^</span><span class="m">2</span><span class="o">/</span><span class="m">2</span><span class="c1">&#39;kN·m</span>
 <span class="c1">&#39;Shear  - &#39;</span><span class="nv">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">q</span><span class="o">*</span><span class="nv">l</span><span class="c1">&#39;kN</span>
-<span class="c1">&#39;&lt;/div&gt;5    5</span>
+<span class="m">5</span><span class="w">   </span><span class="m">5</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Cantilever with uniformly distributed load </div>
-<div style = "max-width:180mm;"> 
-<hr/><img style="width:165pt;" alt="cantilever-beam-distributed-load-uniform.png" class="side" src="Images/mechanics/beams/cantilever-beam-distributed-load-uniform.png"> 
-<p>Beam Length -  <span class="eq"><var>l</var> = <u class="input-4">5</u> </span> m </p>
-<p>Load-  <span class="eq"><var>q</var> = <u class="input-5">5</u> </span> kN/m </p>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Full-span uniform load $q$ giving the textbook support actions $M = q l^2 / 2$ and $V = q l$. --> 
+<img style="width:165pt;" alt="cantilever-beam-distributed-load-uniform.png" class="side" src="Images/mechanics/beams/cantilever-beam-distributed-load-uniform.png"> 
+<p>Beam Length -  <span class="eq"><var>l</var> = <u class="input-3">5</u> </span> m </p>
+<p>Load-  <span class="eq"><var>q</var> = <u class="input-4">5</u> </span> kN/m </p>
 <p><b>Internal forces</b></p> 
 <p>Bending -  <span class="eq"><var>M</var> = <span class="dvc"><var>q</var> · <var>l</var><sup>2</sup><span class="dvl"></span>2</span> = <span class="dvc">5 · 5<sup>2</sup><span class="dvl"></span>2</span> = 62.5</span> kN·m </p>
 <p>Shear  -  <span class="eq"><var>V</var> = <var>q</var> · <var>l</var> = 5 · 5 = 25</span> kN </p>
-</div> 
-<p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
 <p>Spotted an error? <a href="https://github.com/imartincei/CalcpadCE/tree/main/Examples/Structural/Cantilevers">Edit these examples.</a></p>
@@ -2862,7 +2873,7 @@
       
         <script src="../javascripts/mathjax.js"></script>
       
-        <script src="../javascripts/mathjax/startup.js"></script>
+        <script src="../javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="../javascripts/example-layout.js"></script>
       

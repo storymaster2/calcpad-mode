@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="CalcpadCE worksheets in this section build the seismic detailing checks of reinforced concrete primary members of medium ductility class (DCM) according to Eurocode 8: the geometry of the critical regions, the minimum and maximum reinforcement ratios, the spacing of the transverse reinforcement and the confinement requirements at the plastic hinges.">
+      
       
       
       
@@ -89,8 +91,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -270,7 +271,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="cantilevers.html" class="md-tabs__link">
+        <a href="simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -306,8 +307,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1112,7 +1112,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1479,7 +1479,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -1703,7 +1703,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -1731,7 +1731,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -1872,6 +1872,34 @@
   
   
     <li class="md-nav__item">
+      <a href="simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="cantilevers.html" class="md-nav__link">
         
   
@@ -1935,7 +1963,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2076,34 +2104,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2476,11 +2476,17 @@
 
 
 
-<h1 id="reinforced-concrete-seismic-detailing">Reinforced Concrete: Seismic Detailing</h1>
-<h2 id="beam-detailing-for-dcm">Beam Detailing for DCM</h2>
+<h1 id="reinforced-concrete-seismic-detailing">Reinforced Concrete: Seismic Detailing<a class="headerlink" href="#reinforced-concrete-seismic-detailing" title="Permanent link">&para;</a></h1>
+<p><a href="https://calcpad-ce.org">CalcpadCE</a> worksheets in this section build the seismic detailing checks of <a href="https://en.wikipedia.org/wiki/Reinforced_concrete">reinforced concrete</a> primary members of medium ductility class (DCM) according to <a href="https://en.wikipedia.org/wiki/Eurocode_8">Eurocode 8</a>: the geometry of the critical regions, the minimum and maximum reinforcement ratios, the spacing of the transverse reinforcement and the confinement requirements at the plastic hinges.</p>
+<p>The <a href="#beam-detailing-for-dcm">beam detailing sheet</a> covers a rectangular beam with a slab flange and verifies the longitudinal ratio, the spacing of the closed stirrups inside the critical region of length <span class="arithmatex">\(l_{cr}\)</span> and the lap-splice requirements for the bottom and top bars.
+The <a href="#column-detailing-for-dcm">column detailing sheet</a> checks the dimensions of the cross-section, the longitudinal ratio, the confinement of the boundary regions for the maximum seismic axial load and the minimum mechanical volumetric ratio of the hoops.
+The <a href="#shear-wall-detailing-for-dcm">shear wall detailing sheet</a> addresses the confined boundary elements at the wall ends, the web horizontal and vertical reinforcement and the curvature ductility verification at the base of the wall.</p>
+<h2 id="beam-detailing-for-dcm">Beam Detailing for DCM<a class="headerlink" href="#beam-detailing-for-dcm" title="Permanent link">&para;</a></h2>
+<p>Eurocode 8 detailing of a primary seismic beam for medium ductility class: critical region length <span class="arithmatex">\(l_{cr}\)</span>, longitudinal ratio limits, spacing of closed stirrups and lap-splice requirements.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Beam Detailing for Ductility Class DCM&lt;hr/&gt;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1998-1&lt;/small&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1998-1&lt;/small&gt;</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:375pt;&quot; style=&quot;max-width:100%;&quot; src=&quot;../../Images/structures/rc/detailing/beam.png&quot; alt=&quot;beam.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Beam dimensions&lt;/b&gt;&lt;/p&gt;</span>
@@ -2691,22 +2697,24 @@
 <span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Beam Detailing for Ductility Class DCM<hr/><small>According to <strong>Eurocode</strong>: EN 1998-1</small> </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Eurocode 8 detailing of a primary seismic beam for medium ductility class: critical region length $l_{cr}$, longitudinal ratio limits, spacing of closed stirrups and lap-splice requirements. --> 
+<small>According to <strong>Eurocode</strong>: EN 1998-1</small> 
 <div style="max-width:180mm"> 
 <img style="width:375pt;" style="max-width:100%;" src="Images/structures/rc/detailing/beam.png" alt="beam.png"> 
 <p><b>Beam dimensions</b></p> 
-<p>Cross section -  <span class="eq"><var>b</var><sub>w</sub> = <u class="input-5">350</u> </span> mm,  <span class="eq"><var>h</var><sub>w</sub> = <u class="input-5">650</u> </span> mm </p>
-<p>Clear beam span - <span class="eq"><var>l</var><sub>cl</sub> = <u class="input-6">5000</u> </span> mm </p>
-<p>Slab depth - <span class="eq"><var>h</var><sub>f</sub> = <u class="input-7">130</u> </span> mm </p>
+<p>Cross section -  <span class="eq"><var>b</var><sub>w</sub> = <u class="input-6">350</u> </span> mm,  <span class="eq"><var>h</var><sub>w</sub> = <u class="input-6">650</u> </span> mm </p>
+<p>Clear beam span - <span class="eq"><var>l</var><sub>cl</sub> = <u class="input-7">5000</u> </span> mm </p>
+<p>Slab depth - <span class="eq"><var>h</var><sub>f</sub> = <u class="input-8">130</u> </span> mm </p>
 <p>Cross section area - <span class="eq"><var>A</var><sub>c</sub> = <var>b</var><sub>w</sub> · <var>h</var><sub>w</sub> = 350 · 650 = 227500</span> mm² </p>
-<p>Dimensions of columns - <span class="eq"><var>b</var><sub>c</sub> = <u class="input-11">500</u> </span> mm, <span class="eq"><var>h</var><sub>c</sub> = <u class="input-11">500</u> </span> mm </p>
-<p>Maximum seismic axial load in beam - <span class="eq"><var>N</var><sub>Ed</sub> = <u class="input-12">0</u> </span> kN </p>
+<p>Dimensions of columns - <span class="eq"><var>b</var><sub>c</sub> = <u class="input-12">500</u> </span> mm, <span class="eq"><var>h</var><sub>c</sub> = <u class="input-12">500</u> </span> mm </p>
+<p>Maximum seismic axial load in beam - <span class="eq"><var>N</var><sub>Ed</sub> = <u class="input-13">0</u> </span> kN </p>
 <p>&nbsp;</p>
 <p><b>Concrete</b></p> 
-<p>Characteristic compressive cylinder strength - <span class="eq"><var>f</var><sub>ck</sub> = <u class="input-15">25</u> </span> MPa </p>
-<p>Partial safety factor - <span class="eq"><var>γ</var><sub>c</sub> = 1.5</span> , <span class="eq"><var>α</var><sub>ct</sub> = 1</span> , <span class="eq"><var>α</var><sub>cc</sub> = <u class="input-16">1</u> </span></p>
+<p>Characteristic compressive cylinder strength - <span class="eq"><var>f</var><sub>ck</sub> = <u class="input-16">25</u> </span> MPa </p>
+<p>Partial safety factor - <span class="eq"><var>γ</var><sub>c</sub> = 1.5</span> , <span class="eq"><var>α</var><sub>ct</sub> = 1</span> , <span class="eq"><var>α</var><sub>cc</sub> = <u class="input-17">1</u> </span></p>
 <p>Design compressive cylinder strength - <span class="eq"><var>f</var><sub>cd</sub> = <span class="dvc"><var>α</var><sub>cc</sub> · <var>f</var><sub>ck</sub><span class="dvl"></span><var>γ</var><sub>c</sub></span> = <span class="dvc">1 · 25<span class="dvl"></span>1.5</span> = 16.666667</span> MPa </p>
 <p>Mean value of axial tensile strength - <span class="eq"><var>f</var><sub>ctm</sub> = 0.3 · <var>f</var><sub>ck</sub><sup><span class="dvc">2<span class="dvl"></span>3</span></sup> = 0.3 · 25<sup><span class="dvc">2<span class="dvl"></span>3</span></sup> = 2.564964</span> MPa </p>
 <p>Characteristic axial tensile strength - <span class="eq"><var>f</var><sub>ctk,005</sub> = 0.7 · <var>f</var><sub>ctm</sub> = 0.7 · 2.564964 = 1.795475</span> MPa </p>
@@ -2725,15 +2733,15 @@
 <tr><th>In the absence of transverse beam</th><td> <span class="eq"><var>b</var><sub>c</sub> = 500</span> mm</td><td> <span class="eq"><var>b</var><sub>c</sub> + 4 · <var>h</var><sub>f</sub> = 500 + 4 · 130 = 1020</span> mm</td></tr> 
 <tr><th>With transverse beam</th><td> <span class="eq"><var>b</var><sub>c</sub> + 4 · <var>h</var><sub>f</sub> = 500 + 4 · 130 = 1020</span> mm</td><td> <span class="eq"><var>b</var><sub>c</sub> + 8 · <var>h</var><sub>f</sub> = 500 + 8 · 130 = 1540</span> mm</td></tr></table> 
 <p><b>Longitudinal reinforcement</b></p> 
-<p id="C" style="display:none;"> <span class="eq"><var>C</var> = <u class="input-45">0</u> </span> </p> 
-<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>yk</sub> = <u class="input-46">500</u> </span> MPa </p>
+<p id="C" style="display:none;"> <span class="eq"><var>C</var> = <u class="input-46">0</u> </span> </p> 
+<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>yk</sub> = <u class="input-47">500</u> </span> MPa </p>
 Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span class="eq"><var>γ</var><sub>s</sub> = 1.15</span></p>
 <p>Design yield strength - <span class="eq"><var>f</var><sub>yd</sub> = <span class="dvc"><var>f</var><sub>yk</sub><span class="dvl"></span><var>γ</var><sub>s</sub></span> = <span class="dvc">500<span class="dvl"></span>1.15</span> = 434.782609</span> MPa </p>
 <p>Modulus of elasticity - <span class="eq"><var>E</var><sub>s</sub> = 200000</span> MPa </p>
 <p><b>Bottom reinforcement in critical regions</b></p> 
-<p>Bar diameter - <span class="eq"><var>d</var><sub>bL1</sub> = <u class="input-67">16</u> </span> mm </p>
-<p>Effective cross section depth - <span class="eq"><var>d</var><sub>1</sub> = <u class="input-68">590</u> </span> mm </p>
-<p>Reinforcement area - <span class="eq"><var>A</var><sub>s1</sub> = <u class="input-69">1005</u> </span> mm² </p>
+<p>Bar diameter - <span class="eq"><var>d</var><sub>bL1</sub> = <u class="input-68">16</u> </span> mm </p>
+<p>Effective cross section depth - <span class="eq"><var>d</var><sub>1</sub> = <u class="input-69">590</u> </span> mm </p>
+<p>Reinforcement area - <span class="eq"><var>A</var><sub>s1</sub> = <u class="input-70">1005</u> </span> mm² </p>
 <p>Reinforcement ratio - <span class="eq"><var>ρ</var><sub>1</sub> = <span class="dvc"><var>A</var><sub>s1</sub><span class="dvl"></span><var>b</var><sub>w</sub> · <var>d</var><sub>1</sub></span> = <span class="dvc">1005<span class="dvl"></span>350 · 590</span> = 0.004866828</span></p>
 <p class="ref">[§ 5.4.3.1.2 (5)]</p> 
 <p>Minimum reinforcement ratio </p>
@@ -2756,13 +2764,13 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 <p><span class="eq"><var>l</var><sub>b,min</sub> = <b>max</b> ( 0.6 · <var>l</var><sub>b,rqd</sub>; 10 · <var>d</var><sub>bL1</sub>; 100 )  = <b>max</b> ( 0.6 · 645.745808; 10 · 16; 100 )  = 387.447485</span> mm </p>
 <p><span class="eq"><var>l</var><sub>bd</sub> = <b>round</b> ( <b>max</b> ( <var>l</var><sub>bd_</sub>; <var>l</var><sub>b,min</sub> )  )  = <b>round</b> ( <b>max</b> ( 645.745808; 387.447485 )  )  = 646</span> mm </p>
 <p><b>Top reinforcement at supports</b></p> 
-<p>Bar diameter - <span class="eq"><var>d</var><sub>bL2</sub> = <u class="input-104">20</u> </span> mm </p>
-<p>Effective cross section depth - <span class="eq"><var>d</var><sub>2</sub> = <u class="input-105">590</u> </span> mm </p>
-<p>Reinforcement area - <span class="eq"><var>A</var><sub>s2</sub> = <u class="input-106">1571</u> </span> mm² </p>
+<p>Bar diameter - <span class="eq"><var>d</var><sub>bL2</sub> = <u class="input-105">20</u> </span> mm </p>
+<p>Effective cross section depth - <span class="eq"><var>d</var><sub>2</sub> = <u class="input-106">590</u> </span> mm </p>
+<p>Reinforcement area - <span class="eq"><var>A</var><sub>s2</sub> = <u class="input-107">1571</u> </span> mm² </p>
 <p>Reinforcement ratio - <span class="eq"><var>ρ</var><sub>2</sub> = <span class="dvc"><var>A</var><sub>s2</sub><span class="dvl"></span><var>b</var><sub>w</sub> · <var>d</var><sub>2</sub></span> = <span class="dvc">1571<span class="dvl"></span>350 · 590</span> = 0.007607748</span></p>
-<p>Fundamental period of first vibration mode - <span class="eq"><var>T</var><sub>1</sub> = <u class="input-110">0.55</u> </span> s </p>
-<p>Upper limit period of constant spectral acceleration - <span class="eq"><var>T</var><sub>C</sub> = <u class="input-111">0.60</u> </span> s </p>
-<p>Basic behavior factor value - <span class="eq"><var>q</var><sub>0</sub> = <u class="input-112">3.9</u> </span></p>
+<p>Fundamental period of first vibration mode - <span class="eq"><var>T</var><sub>1</sub> = <u class="input-111">0.55</u> </span> s </p>
+<p>Upper limit period of constant spectral acceleration - <span class="eq"><var>T</var><sub>C</sub> = <u class="input-112">0.60</u> </span> s </p>
+<p>Basic behavior factor value - <span class="eq"><var>q</var><sub>0</sub> = <u class="input-113">3.9</u> </span></p>
 <p>Curvature ductility factor </p>
 <p class="ref">[§ 5.2.3.4 (3)]</p> 
 <p><span class="eq"><var>μ</var><sub>Φ</sub> = 1 · <span class="b1">(</span>1 + 2 ·  ( <var>q</var><sub>0</sub> − 1 )  · <span class="dvc"><var>T</var><sub>C</sub><span class="dvl"></span><var>T</var><sub>1</sub></span><span class="b1">)</span> = 1 · <span class="b1">(</span>1 + 2 ·  ( 3.9 − 1 )  · <span class="dvc">0.6<span class="dvl"></span>0.55</span><span class="b1">)</span> = 7.327273</span> - for T<sub>1</sub> &lt; T<sub>C</sub> </p>
@@ -2781,19 +2789,19 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 <p>Maximum diameter of longitudinal reinforcement  <span class="eq"><var>d</var><sub>bL</sub> = <b>max</b> ( <var>d</var><sub>bL1</sub>; <var>d</var><sub>bL2</sub> )  = <b>max</b> ( 16; 20 )  = 20</span> mm </p>
 <p class="ref">[§ 5.6.2.2 (2), a)]</p> 
 <p><b>For interior beam-column joints</b></p> 
-<p>Minimal normalized design axial force at column - <span class="eq"><var>ν</var><sub>d</sub> = <u class="input-156">0.14</u> </span> (<var>ν</var><sub>d</sub> = <var>N</var><sub>Еd</sub> / <var>f</var><sub>cd</sub><var>A</var><sub>c</sub>) </p>
+<p>Minimal normalized design axial force at column - <span class="eq"><var>ν</var><sub>d</sub> = <u class="input-157">0.14</u> </span> (<var>ν</var><sub>d</sub> = <var>N</var><sub>Еd</sub> / <var>f</var><sub>cd</sub><var>A</var><sub>c</sub>) </p>
 <p><span class="eq"><var>d</var><sub>bL,max</sub> = <span class="dvc"><span class="dvc"><var>h</var><sub>c</sub> · 7.5 · <var>f</var><sub>ctm</sub><span class="dvl"></span><var>γ</var><sub>Rd</sub> · <var>f</var><sub>yd</sub></span> ·  ( 1 + 0.8 · <var>ν</var><sub>d</sub> ) <span class="dvl"></span>1 + <span class="dvc">0.75 · <var>k</var><sub>D</sub> · <var>ρ</var><sub>1</sub><span class="dvl"></span><var>ρ</var><sub>max</sub></span></span> = <span class="dvc"><span class="dvc">500 · 7.5 · 2.564964<span class="dvl"></span>1 · 434.782609</span> ·  ( 1 + 0.8 · 0.14 ) <span class="dvl"></span>1 + <span class="dvc">0.75 · 0.6666667 · 0.004866828<span class="dvl"></span>0.007754669</span></span> = 18.724746</span> mm </p>
 <p class="err"> <span class="eq"><var>d</var><sub>bL</sub> = 20</span> mm &gt; <span class="eq"><var>d</var><sub>bL,max</sub> = 18.724746</span> mm. The check is NOT satisfied! ❌ 
 <p class="ref">[§ 5.6.2.2 (2), b)]</p> 
 <p><b>For exterior beam-column joints</b></p> 
-<p>Minimal normalized design axial force at column - <span class="eq"><var>ν</var><sub>d</sub> = <u class="input-167">0.07</u> </span></p>
+<p>Minimal normalized design axial force at column - <span class="eq"><var>ν</var><sub>d</sub> = <u class="input-168">0.07</u> </span></p>
 <p><span class="eq"><var>d</var><sub>bL,max</sub> = <span class="dvc"><var>h</var><sub>c</sub> · 7.5 · <var>f</var><sub>ctm</sub><span class="dvl"></span><var>γ</var><sub>Rd</sub> · <var>f</var><sub>yd</sub></span> ·  ( 1 + 0.8 · <var>ν</var><sub>d</sub> )  = <span class="dvc">500 · 7.5 · 2.564964<span class="dvl"></span>1 · 434.782609</span> ·  ( 1 + 0.8 · 0.07 )  = 23.361691</span> mm </p>
 <p>Design check: <span class="eq"><var>d</var><sub>bL</sub> = 20</span> mm &le; <span class="eq"><var>d</var><sub>bL,max</sub> = 23.361691</span> mm. The check is satisfied! ✓ </p>
 <p>According to § 5.6.2.2 (4), Top or bottom bars passing through interior joints, shall terminate in the members framing into the joint at a distance not less than <var>l</var><sub>cr</sub>. </p>
 <p>&nbsp;</p>
 <p><b>Transverse reinforcement</b></p> 
-<p>Hoop diameter - <span class="eq"><var>d</var><sub>bw</sub> = <u class="input-179">6</u> </span> mm </p>
-<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>ywk</sub> = <u class="input-180">500</u> </span> MPa </p>
+<p>Hoop diameter - <span class="eq"><var>d</var><sub>bw</sub> = <u class="input-180">6</u> </span> mm </p>
+<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>ywk</sub> = <u class="input-181">500</u> </span> MPa </p>
 <p>Design yield strength - <span class="eq"><var>f</var><sub>ywd</sub> = <span class="dvc"><var>f</var><sub>ywk</sub><span class="dvl"></span><var>γ</var><sub>s</sub></span> = <span class="dvc">500<span class="dvl"></span>1.15</span> = 434.782609</span> MPa </p>
 <p class="ref">[§ 5.4.3.1.2 (6), a)]</p> 
 <p>Minimum diameter - <span class="eq"><var>d</var><sub>bw,min</sub> = 6</span> mm </p>
@@ -2818,13 +2826,15 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="column-detailing-for-dcm">Column Detailing for DCM</h2>
+<h2 id="column-detailing-for-dcm">Column Detailing for DCM<a class="headerlink" href="#column-detailing-for-dcm" title="Permanent link">&para;</a></h2>
+<p>Eurocode 8 detailing of a primary seismic column for medium ductility class: cross-section dimensions, longitudinal ratio, confinement of the boundary regions and minimum mechanical volumetric ratio of the hoops.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Column Detailing for Ductility Class DCM&lt;hr/&gt;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1998-1&lt;/small&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1998-1&lt;/small&gt;</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
 <span class="c1">&#39;&lt;img class=&quot;side&quot; style=&quot;width:220pt;&quot; src=&quot;../../Images/structures/rc/detailing/column-section.png&quot; alt=&quot;column-section.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Column dimensions&lt;/b&gt;&lt;/p&gt;</span>
@@ -3089,21 +3099,23 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 <span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Column Detailing for Ductility Class DCM<hr/><small>According to <strong>Eurocode</strong>: EN 1998-1</small> </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Eurocode 8 detailing of a primary seismic column for medium ductility class: cross-section dimensions, longitudinal ratio, confinement of the boundary regions and minimum mechanical volumetric ratio of the hoops. --> 
+<small>According to <strong>Eurocode</strong>: EN 1998-1</small> 
 <div style="max-width:180mm"> 
 <img class="side" style="width:220pt;" src="Images/structures/rc/detailing/column-section.png" alt="column-section.png"> 
 <p><b>Column dimensions</b></p> 
-<p>Cross section - <span class="eq"><var>b</var><sub>c</sub> = <u class="input-5">500</u> </span> mm, <span class="eq"><var>h</var><sub>c</sub> = <u class="input-5">500</u> </span> mm </p>
-<p>Clear storey height - <span class="eq"><var>l</var><sub>cl</sub> = <u class="input-6">2850</u> </span> mm </p>
+<p>Cross section - <span class="eq"><var>b</var><sub>c</sub> = <u class="input-6">500</u> </span> mm, <span class="eq"><var>h</var><sub>c</sub> = <u class="input-6">500</u> </span> mm </p>
+<p>Clear storey height - <span class="eq"><var>l</var><sub>cl</sub> = <u class="input-7">2850</u> </span> mm </p>
 <p>Cross section area - <span class="eq"><var>A</var><sub>c</sub> = <var>b</var><sub>c</sub> · <var>h</var><sub>c</sub> = 500 · 500 = 250000</span> mm² </p>
-<p>Maximum seismic axial load - <span class="eq"><var>N</var><sub>Ed</sub> = <u class="input-8">983.8</u> </span> kN </p>
+<p>Maximum seismic axial load - <span class="eq"><var>N</var><sub>Ed</sub> = <u class="input-9">983.8</u> </span> kN </p>
 <p>&nbsp;</p>
 <p class="ref">[EN 1992-1-1, Table 3.1]</p> 
 <p><b>Concrete</b></p> 
-<p>Characteristic compressive cylinder strength - <span class="eq"><var>f</var><sub>ck</sub> = <u class="input-12">25</u> </span> MPa </p>
-<p>Partial safety factor - <span class="eq"><var>γ</var><sub>c</sub> = 1.5</span> , <span class="eq"><var>α</var><sub>ct</sub> = 1</span> , <span class="eq"><var>α</var><sub>cc</sub> = <u class="input-13">1</u> </span></p>
+<p>Characteristic compressive cylinder strength - <span class="eq"><var>f</var><sub>ck</sub> = <u class="input-13">25</u> </span> MPa </p>
+<p>Partial safety factor - <span class="eq"><var>γ</var><sub>c</sub> = 1.5</span> , <span class="eq"><var>α</var><sub>ct</sub> = 1</span> , <span class="eq"><var>α</var><sub>cc</sub> = <u class="input-14">1</u> </span></p>
 <img class="side" style="width:130pt;" src="Images/structures/rc/detailing/column-view.png" alt="column-view.png"> 
 <p>Mean value of axial tensile strength </p>
 <p><span class="eq"><var>f</var><sub>ctm</sub> = 0.3 · <var>f</var><sub>ck</sub><sup><span class="dvc">2<span class="dvl"></span>3</span></sup> = 0.3 · 25<sup><span class="dvc">2<span class="dvl"></span>3</span></sup> = 2.564964</span> MPa </p>
@@ -3113,16 +3125,16 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 <p><span class="eq"><var>f</var><sub>cd</sub> = <span class="dvc"><var>α</var><sub>cc</sub> · <var>f</var><sub>ck</sub><span class="dvl"></span><var>γ</var><sub>c</sub></span> = <span class="dvc">1 · 25<span class="dvl"></span>1.5</span> = 16.666667</span> MPa </p>
 <p>&nbsp;</p>
 <p><b>Longitudinal reinforcement</b></p> 
-<p id="C" style="display:none;"> <span class="eq"><var>C</var> = <u class="input-25">0</u> </span> </p> 
-<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>yk</sub> = <u class="input-26">500</u> </span> MPa </p>
+<p id="C" style="display:none;"> <span class="eq"><var>C</var> = <u class="input-26">0</u> </span> </p> 
+<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>yk</sub> = <u class="input-27">500</u> </span> MPa </p>
 Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span class="eq"><var>γ</var><sub>s</sub> = 1.15</span></p>
 <p>Design yield strength - <span class="eq"><var>f</var><sub>yd</sub> = <span class="dvc"><var>f</var><sub>yk</sub><span class="dvl"></span><var>γ</var><sub>s</sub></span> = <span class="dvc">500<span class="dvl"></span>1.15</span> = 434.782609</span> MPa </p>
 <p>Modulus of elasticity - <span class="eq"><var>E</var><sub>s</sub> = 200000</span> MPa </p>
-<p>Bar diameter - <span class="eq"><var>d</var><sub>bL</sub> = <u class="input-46">28</u> </span> mm </p>
+<p>Bar diameter - <span class="eq"><var>d</var><sub>bL</sub> = <u class="input-47">28</u> </span> mm </p>
 <p class="ref">[BS EN 1992-1-1, § 9.5.2 (1)/NA.1]</p> 
 <p>Minimum bar diameter - <span class="eq"><var>d</var><sub>bL,min</sub> = 12</span> mm </p>
-<p>Bar count - <span class="eq"><var>n</var><sub>b</sub> = <u class="input-54">12</u> </span></p>
-<p>Bar count along "<var>h</var><sub>c</sub>" - <span class="eq"><var>n</var><sub>b1</sub> = <u class="input-55">4</u> </span></p>
+<p>Bar count - <span class="eq"><var>n</var><sub>b</sub> = <u class="input-55">12</u> </span></p>
+<p>Bar count along "<var>h</var><sub>c</sub>" - <span class="eq"><var>n</var><sub>b1</sub> = <u class="input-56">4</u> </span></p>
 <p>Bar count along "<var>b</var><sub>c</sub>" - <span class="eq"><var>n</var><sub>b2</sub> = <span class="dvc"><var>n</var><sub>b</sub><span class="dvl"></span>2</span> − <var>n</var><sub>b1</sub> + 2 = <span class="dvc">12<span class="dvl"></span>2</span> − 4 + 2 = 4</span></p>
 <p>Reinforcement area </p>
 <p><span class="eq"><var>A</var><sub>s1</sub> = <span class="dvc"><var>π</var> · <var>d</var><sub>bL</sub><sup>2</sup><span class="dvl"></span>4</span> = <span class="dvc">3.141593 · 28<sup>2</sup><span class="dvl"></span>4</span> = 615.75216</span> mm² </p>
@@ -3162,8 +3174,8 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 <p><span class="eq"><var>l</var><sub>1</sub> = <b>max</b> ( 0; <var>l</var><sub>cl</sub> − <var>l</var><sub>cr</sub> − <var>l</var><sub>0</sub> )  = <b>max</b> ( 0; 2850 − 500 − 1695 )  = 655</span> mm </p>
 <p>&nbsp;</p>
 <p><b>Transverse reinforcement</b></p> 
-<p>Hoop diameter - <span class="eq"><var>d</var><sub>bw</sub> = <u class="input-127">10</u> </span> mm </p>
-<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>ywk</sub> = <u class="input-128">500</u> </span> MPa </p>
+<p>Hoop diameter - <span class="eq"><var>d</var><sub>bw</sub> = <u class="input-128">10</u> </span> mm </p>
+<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>ywk</sub> = <u class="input-129">500</u> </span> MPa </p>
 <p>Design yield strength - <span class="eq"><var>f</var><sub>ywd</sub> = <span class="dvc"><var>f</var><sub>ywk</sub><span class="dvl"></span><var>γ</var><sub>s</sub></span> = <span class="dvc">500<span class="dvl"></span>1.15</span> = 434.782609</span> MPa </p>
 <p>Concrete cover to hoops - <span class="eq"><var>c</var> = 40</span> mm </p>
 <p class="ref">[EN 1992-1-1, § 9.5.3 (1)]</p> 
@@ -3239,9 +3251,9 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 <p><span class="eq"><var>α</var><sub>s</sub> = <span class="b1">(</span>1 − <span class="dvc"><var>s</var><sub>cr</sub><span class="dvl"></span>2 · <var>b</var><sub>0</sub></span><span class="b1">)</span> · <span class="b1">(</span>1 − <span class="dvc"><var>s</var><sub>cr</sub><span class="dvl"></span>2 · <var>h</var><sub>0</sub></span><span class="b1">)</span> = <span class="b1">(</span>1 − <span class="dvc">175<span class="dvl"></span>2 · 410</span><span class="b1">)</span> · <span class="b1">(</span>1 − <span class="dvc">175<span class="dvl"></span>2 · 410</span><span class="b1">)</span> = 0.6187165</span></p>
 <p><span class="eq"><var>α</var> = <var>α</var><sub>n</sub> · <var>α</var><sub>s</sub> = 0.8170613 · 0.6187165 = 0.5055293</span></p>
 <p><b>Analysis results</b></p> 
-<p>Fundamental period of first vibration mode - <span class="eq"><var>T</var><sub>1</sub> = <u class="input-235">0.55</u> </span> s </p>
-<p>Upper limit period of constant spectral acceleration - <span class="eq"><var>T</var><sub>C</sub> = <u class="input-236">0.6</u> </span> s </p>
-<p>Basic behavior factor value - <span class="eq"><var>q</var><sub>0</sub> = <u class="input-237">3.9</u> </span></p>
+<p>Fundamental period of first vibration mode - <span class="eq"><var>T</var><sub>1</sub> = <u class="input-236">0.55</u> </span> s </p>
+<p>Upper limit period of constant spectral acceleration - <span class="eq"><var>T</var><sub>C</sub> = <u class="input-237">0.6</u> </span> s </p>
+<p>Basic behavior factor value - <span class="eq"><var>q</var><sub>0</sub> = <u class="input-238">3.9</u> </span></p>
 <p><b>Curvature ductility factor</b></p> 
 <p class="ref">[§ 5.2.3.4 (3)]</p> 
 <p><span class="eq"><var>μ</var><sub>Φ</sub> = 1 + 2 ·  ( <var>q</var><sub>0</sub> − 1 )  · <span class="dvc"><var>T</var><sub>C</sub><span class="dvl"></span><var>T</var><sub>1</sub></span> = 1 + 2 ·  ( 3.9 − 1 )  · <span class="dvc">0.6<span class="dvl"></span>0.55</span> = 7.327273</span> - for T<sub>1</sub> &lt; T<sub>C</sub> </p>
@@ -3258,13 +3270,15 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="shear-wall-detailing-for-dcm">Shear Wall Detailing for DCM</h2>
+<h2 id="shear-wall-detailing-for-dcm">Shear Wall Detailing for DCM<a class="headerlink" href="#shear-wall-detailing-for-dcm" title="Permanent link">&para;</a></h2>
+<p>Eurocode 8 detailing of a primary seismic shear wall for medium ductility class: confined boundary elements at the wall ends, web horizontal and vertical reinforcement and curvature ductility check at the wall base.</p>
 <div class="example-grid">
-<div class="example-source">
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Shear Wall Detailing for Ductility Class DCM&lt;hr/&gt;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1998-1&lt;/small&gt;</span>
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
+<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1998-1&lt;/small&gt;</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
 <span class="c1">&#39;&lt;img class=&quot;side&quot; src=&quot;../../Images/structures/rc/detailing/shear-wall-section.png&quot; alt=&quot;shear-wall-section.png&quot; style=&quot;width:260pt;&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Shear wall dimensions&lt;/b&gt;&lt;/p&gt;</span>
@@ -3620,19 +3634,21 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 <span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Shear Wall Detailing for Ductility Class DCM<hr/><small>According to <strong>Eurocode</strong>: EN 1998-1</small> </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Eurocode 8 detailing of a primary seismic shear wall for medium ductility class: confined boundary elements at the wall ends, web horizontal and vertical reinforcement and curvature ductility check at the wall base. --> 
+<small>According to <strong>Eurocode</strong>: EN 1998-1</small> 
 <div style="max-width:180mm"> 
 <img class="side" src="Images/structures/rc/detailing/shear-wall-section.png" alt="shear-wall-section.png" style="width:260pt;"> 
 <p><b>Shear wall dimensions</b></p> 
-<p>Length - <span class="eq"><var>l</var><sub>w</sub> = <u class="input-5">4000</u> </span> mm </p>
-<p>Web thickness - <span class="eq"><var>b</var><sub>wo</sub> = <u class="input-6">300</u> </span> mm </p>
-<p>Total height - <span class="eq"><var>h</var><sub>w</sub> = <u class="input-7">19000</u> </span> mm </p>
-<p>Clear storey height - <span class="eq"><var>h</var><sub>s</sub> = <u class="input-8">3820</u> </span> mm </p>
-<p>Number of storeys - <span class="eq"><var>n</var><sub>s</sub> = <u class="input-9">6</u> </span></p>
+<p>Length - <span class="eq"><var>l</var><sub>w</sub> = <u class="input-6">4000</u> </span> mm </p>
+<p>Web thickness - <span class="eq"><var>b</var><sub>wo</sub> = <u class="input-7">300</u> </span> mm </p>
+<p>Total height - <span class="eq"><var>h</var><sub>w</sub> = <u class="input-8">19000</u> </span> mm </p>
+<p>Clear storey height - <span class="eq"><var>h</var><sub>s</sub> = <u class="input-9">3820</u> </span> mm </p>
+<p>Number of storeys - <span class="eq"><var>n</var><sub>s</sub> = <u class="input-10">6</u> </span></p>
 <p>Confined zone dimensions </p>
-<p><span class="eq"><var>b</var><sub>c</sub> = <u class="input-11">300</u> </span> mm, <span class="eq"><var>h</var><sub>c</sub> = <u class="input-11">875</u> </span> mm </p>
+<p><span class="eq"><var>b</var><sub>c</sub> = <u class="input-12">300</u> </span> mm, <span class="eq"><var>h</var><sub>c</sub> = <u class="input-12">875</u> </span> mm </p>
 <p>Cross section area </p>
 <p>Area of confined boundary element </p>
 <p><span class="eq"><var>A</var><sub>f</sub> = <var>b</var><sub>c</sub> · <var>h</var><sub>c</sub> = 300 · 875 = 262500</span> mm² </p>
@@ -3640,12 +3656,12 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 <p><span class="eq"><var>A</var><sub>w</sub> =  ( <var>l</var><sub>w</sub> − 2 · <var>h</var><sub>c</sub> )  · <var>b</var><sub>wo</sub> =  ( 4000 − 2 · 875 )  · 300 = 675000</span> mm² </p>
 <p>Total area </p>
 <p><span class="eq"><var>A</var><sub>c</sub> = <var>A</var><sub>w</sub> + 2 · <var>A</var><sub>f</sub> = 675000 + 2 · 262500 = 1200000</span> mm² </p>
-<p>Maximum seismic axial load - <span class="eq"><var>N</var><sub>Ed</sub> = <u class="input-21">2254</u> </span> kN </p>
+<p>Maximum seismic axial load - <span class="eq"><var>N</var><sub>Ed</sub> = <u class="input-22">2254</u> </span> kN </p>
 <p>&nbsp;</p>
 <p><b>Concrete</b> &nbsp;&nbsp;[EN 1992-1-1, Table 3.1]</p> 
 <p>Characteristic compressive cylinder strength </p>
-<p><span class="eq"><var>f</var><sub>ck</sub> = <u class="input-25">25</u> </span> MPa </p>
-<p>Partial safety factor - <span class="eq"><var>γ</var><sub>c</sub> = 1.5</span> , <span class="eq"><var>α</var><sub>ct</sub> = 1</span> , <span class="eq"><var>α</var><sub>cc</sub> = <u class="input-26">1</u> </span></p>
+<p><span class="eq"><var>f</var><sub>ck</sub> = <u class="input-26">25</u> </span> MPa </p>
+<p>Partial safety factor - <span class="eq"><var>γ</var><sub>c</sub> = 1.5</span> , <span class="eq"><var>α</var><sub>ct</sub> = 1</span> , <span class="eq"><var>α</var><sub>cc</sub> = <u class="input-27">1</u> </span></p>
 <p>Mean value of axial tensile strength </p>
 <p><span class="eq"><var>f</var><sub>ctm</sub> = 0.3 · <var>f</var><sub>ck</sub><sup><span class="dvc">2<span class="dvl"></span>3</span></sup> = 0.3 · 25<sup><span class="dvc">2<span class="dvl"></span>3</span></sup> = 2.564964</span> MPa </p>
 <img class="side" src="Images/structures/rc/detailing/shear-wall-view.png" alt="shear-wall-view.png" style="width:100pt;"> 
@@ -3658,17 +3674,17 @@ Selected steel class <b>B500B</b><p>Partial safety factor for steel - <span clas
 <p>Ultimate compressive strain - <span class="eq"><var>ε</var><sub>c2</sub> = 0.002</span></p>
 <p>&nbsp;</p>
 <p><b>Longitudinal reinforcement</b></p> 
-<p id="C" style="display:none;"> <span class="eq"><var>C</var> = <u class="input-41">0</u> </span> </p> 
-<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>yk</sub> = <u class="input-42">500</u> </span> MPa </p>
+<p id="C" style="display:none;"> <span class="eq"><var>C</var> = <u class="input-42">0</u> </span> </p> 
+<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>yk</sub> = <u class="input-43">500</u> </span> MPa </p>
 Selected steel class <b>B500B</b><p>Partial safety factor - <span class="eq"><var>γ</var><sub>s</sub> = 1.15</span></p>
 <p>Design yield strength - <span class="eq"><var>f</var><sub>yd</sub> = <span class="dvc"><var>f</var><sub>yk</sub><span class="dvl"></span><var>γ</var><sub>s</sub></span> = <span class="dvc">500<span class="dvl"></span>1.15</span> = 434.782609</span> MPa </p>
 <p>Modulus of elasticity - <span class="eq"><var>E</var><sub>s</sub> = 200000</span> MPa </p>
 <p><b>Reinforcement for each confined boundary element</b></p> 
-<p>Bar diameter - <span class="eq"><var>d</var><sub>bL</sub> = <u class="input-63">25</u> </span> mm </p>
+<p>Bar diameter - <span class="eq"><var>d</var><sub>bL</sub> = <u class="input-64">25</u> </span> mm </p>
 <p class="ref">[BS EN 1992-1-1, § 9.5.2 (1)/NA.1]</p> 
 <p>Minimum bar diameter - <span class="eq"><var>d</var><sub>bL,min</sub> = 12</span> mm </p>
-<p>Bar count - <span class="eq"><var>n</var><sub>b</sub> = <u class="input-71">13</u> </span></p>
-<p>Bar count along "<var>h</var><sub>0</sub>" - <span class="eq"><var>n</var><sub>b1</sub> = <u class="input-72">6</u> </span></p>
+<p>Bar count - <span class="eq"><var>n</var><sub>b</sub> = <u class="input-72">13</u> </span></p>
+<p>Bar count along "<var>h</var><sub>0</sub>" - <span class="eq"><var>n</var><sub>b1</sub> = <u class="input-73">6</u> </span></p>
 <p>Bar count along "<var>b</var><sub>0</sub>" - <span class="eq"><var>n</var><sub>b2</sub> = <b>ceiling</b><span class="b1">(</span><span class="dvc"><var>n</var><sub>b</sub><span class="dvl"></span>2</span> − <var>n</var><sub>b1</sub> + 2<span class="b1">)</span> = <b>ceiling</b><span class="b1">(</span><span class="dvc">13<span class="dvl"></span>2</span> − 6 + 2<span class="b1">)</span> = 3</span></p>
 <p>Reinforcement area </p>
 <p><span class="eq"><var>A</var><sub>s1</sub> = <span class="dvc"><var>π</var> · <var>d</var><sub>bL</sub><sup>2</sup><span class="dvl"></span>4</span> = <span class="dvc">3.141593 · 25<sup>2</sup><span class="dvl"></span>4</span> = 490.873852</span> mm² </p>
@@ -3678,8 +3694,8 @@ Selected steel class <b>B500B</b><p>Partial safety factor - <span class="eq"><va
 <p class="ref">[§ 5.4.3.4.2 (8)]</p> 
 <p>Design check: 0.005 ≤ <span class="eq"><var>ρ</var><sub>L</sub> = 0.02430994</span> ≤ 0.04. The check is satisfied! ✓ </p>
 <p><b>Vertical web reinforcement</b></p> 
-<p>Bar diameter - <span class="eq"><var>d</var><sub>bv</sub> = <u class="input-93">10</u> </span> mm </p>
-<p>Bar spacing - <span class="eq"><var>s</var><sub>v</sub> = <u class="input-94">250</u> </span> mm </p>
+<p>Bar diameter - <span class="eq"><var>d</var><sub>bv</sub> = <u class="input-94">10</u> </span> mm </p>
+<p>Bar spacing - <span class="eq"><var>s</var><sub>v</sub> = <u class="input-95">250</u> </span> mm </p>
 <p class="ref">[EN 1992-1-1, § 9.6.2 (3)]</p> 
 <p>Maximum bar spacing </p>
 <p><span class="eq"><var>s</var><sub>v,max</sub> = <b>min</b> ( 3 · <var>b</var><sub>wo</sub>; 400 )  = <b>min</b> ( 3 · 300; 400 )  = 400</span> mm </p>
@@ -3691,8 +3707,8 @@ Selected steel class <b>B500B</b><p>Partial safety factor - <span class="eq"><va
 <p>Minimum reinforcement ratio for zones with compressive strain > 0.002 </p>
 <p><span class="eq"><var>ρ</var><sub>v,min</sub> = 0.005</span></p>
 <p><b>Horizontal web reinforcement</b></p> 
-<p>Bar diameter - <span class="eq"><var>d</var><sub>bh</sub> = <u class="input-114">12</u> </span> mm </p>
-<p>Bar spacing - <span class="eq"><var>s</var><sub>h</sub> = <u class="input-115">150</u> </span> mm </p>
+<p>Bar diameter - <span class="eq"><var>d</var><sub>bh</sub> = <u class="input-115">12</u> </span> mm </p>
+<p>Bar spacing - <span class="eq"><var>s</var><sub>h</sub> = <u class="input-116">150</u> </span> mm </p>
 <p class="ref">[EN 1992-1-1, § 9.6.3 (2)]</p> 
 <p>Maximum bar spacing - <span class="eq"><var>s</var><sub>h,max</sub> = 400</span> mm </p>
 <p>Single bar area - <span class="eq"><var>A</var><sub>sh1</sub> = <span class="dvc"><var>π</var> · <var>d</var><sub>bh</sub><sup>2</sup><span class="dvl"></span>4</span> = <span class="dvc">3.141593 · 12<sup>2</sup><span class="dvl"></span>4</span> = 113.097336</span> mm² </p>
@@ -3702,10 +3718,10 @@ Selected steel class <b>B500B</b><p>Partial safety factor - <span class="eq"><va
 <p><span class="eq"><var>ρ</var><sub>h,min</sub> = <b>max</b> ( 0.25 · <var>ρ</var><sub>v</sub>; 0.001 )  = <b>max</b> ( 0.25 · 0.002094395; 0.001 )  = 0.001</span></p>
 <p>&nbsp;</p>
 <p><b>Transverse reinforcement in confined boundary elements</b></p> 
-<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>ywk</sub> = <u class="input-133">500</u> </span> MPa </p>
+<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>ywk</sub> = <u class="input-134">500</u> </span> MPa </p>
 <p>Design yield strength - <span class="eq"><var>f</var><sub>ywd</sub> = <span class="dvc"><var>f</var><sub>ywk</sub><span class="dvl"></span><var>γ</var><sub>s</sub></span> = <span class="dvc">500<span class="dvl"></span>1.15</span> = 434.782609</span> MPa </p>
-<p>Concrete cover to hoops - <span class="eq"><var>c</var> = <u class="input-135">42</u> </span> mm </p>
-<p>Hoop diameter - <span class="eq"><var>d</var><sub>bw</sub> = <u class="input-136">8</u> </span> mm </p>
+<p>Concrete cover to hoops - <span class="eq"><var>c</var> = <u class="input-136">42</u> </span> mm </p>
+<p>Hoop diameter - <span class="eq"><var>d</var><sub>bw</sub> = <u class="input-137">8</u> </span> mm </p>
 <p class="ref">[EN 1992-1-1, § 9.5.3 (1)]</p> 
 <p>Minimum diameter </p>
 <p><span class="eq"><var>d</var><sub>bw,min</sub> = <b>max</b> ( 6; 0.25 · <var>d</var><sub>bL</sub> )  = <b>max</b> ( 6; 0.25 · 25 )  = 6.25</span> mm </p>
@@ -3820,11 +3836,11 @@ Selected steel class <b>B500B</b><p>Partial safety factor - <span class="eq"><va
 <p><span class="eq"><var>α</var><sub>s</sub> = <span class="b1">(</span>1 − <span class="dvc"><var>s</var><sub>cr</sub><span class="dvl"></span>2 · <var>b</var><sub>0</sub></span><span class="b1">)</span> · <span class="b1">(</span>1 − <span class="dvc"><var>s</var><sub>cr</sub><span class="dvl"></span>2 · <var>h</var><sub>0</sub></span><span class="b1">)</span> = <span class="b1">(</span>1 − <span class="dvc">104<span class="dvl"></span>2 · 208</span><span class="b1">)</span> · <span class="b1">(</span>1 − <span class="dvc">104<span class="dvl"></span>2 · 783</span><span class="b1">)</span> = 0.7001916</span></p>
 <p><span class="eq"><var>α</var> = <var>α</var><sub>n</sub> · <var>α</var><sub>s</sub> = 0.7070664 · 0.7001916 = 0.495082</span></p>
 <p><b>Analysis results</b></p> 
-<p>Fundamental period of first vibration mode - <span class="eq"><var>T</var><sub>1</sub> = <u class="input-310">0.6795</u> </span> s </p>
-<p>Upper limit period of constant spectral acceleration - <span class="eq"><var>T</var><sub>C</sub> = <u class="input-311">0.4</u> </span> s </p>
-<p>Basic behavior factor value - <span class="eq"><var>q</var><sub>0</sub> = <u class="input-312">3</u> </span></p>
-<p>Design bending moment - <span class="eq"><var>M</var><sub>Ed</sub> = <u class="input-313">9591</u> </span> kNm </p>
-<p>Bending moment capacity - <span class="eq"><var>M</var><sub>Rd</sub> = <u class="input-314">13268</u> </span> kNm </p>
+<p>Fundamental period of first vibration mode - <span class="eq"><var>T</var><sub>1</sub> = <u class="input-311">0.6795</u> </span> s </p>
+<p>Upper limit period of constant spectral acceleration - <span class="eq"><var>T</var><sub>C</sub> = <u class="input-312">0.4</u> </span> s </p>
+<p>Basic behavior factor value - <span class="eq"><var>q</var><sub>0</sub> = <u class="input-313">3</u> </span></p>
+<p>Design bending moment - <span class="eq"><var>M</var><sub>Ed</sub> = <u class="input-314">9591</u> </span> kNm </p>
+<p>Bending moment capacity - <span class="eq"><var>M</var><sub>Rd</sub> = <u class="input-315">13268</u> </span> kNm </p>
 <p>(The above values refer to the section above the base) </p>
 <p><b>Curvature ductility factor</b></p> 
 <p class="ref">[§ 5.2.3.4 (3)]</p> 
@@ -3851,7 +3867,7 @@ Selected steel class <b>B500B</b><p>Partial safety factor - <span class="eq"><va
 </div> 
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
 <p>Spotted an error? <a href="https://github.com/imartincei/CalcpadCE/tree/main/Examples/Structural/Reinforced%20Concrete%20-%20Seismic%20Detailing">Edit these examples.</a></p>
@@ -3921,7 +3937,7 @@ Selected steel class <b>B500B</b><p>Partial safety factor - <span class="eq"><va
       
         <script src="../javascripts/mathjax.js"></script>
       
-        <script src="../javascripts/mathjax/startup.js"></script>
+        <script src="../javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="../javascripts/example-layout.js"></script>
       

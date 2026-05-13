@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="CalcpadCE bundles a worksheet for every cross-section that turns up in structural analysis — from primitive shapes to the full catalogue of rolled and built-up steel profiles.">
+      
       
       
       
@@ -91,8 +93,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="CalcpadCE Documentation" class="md-header__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -272,7 +273,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="cantilevers.html" class="md-tabs__link">
+        <a href="simply-supported-beams.html" class="md-tabs__link">
           
   
   
@@ -308,8 +309,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="CalcpadCE Documentation" class="md-nav__button md-logo" aria-label="CalcpadCE Documentation" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <img src="../media/logo.svg" alt="logo">
 
     </a>
     CalcpadCE Documentation
@@ -1114,7 +1114,7 @@
   <span class="md-ellipsis">
     
   
-    How it works
+    How It Works
   
 
     
@@ -1318,7 +1318,7 @@
   <a href="#solution-of-a-triangle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Solution of a triangle
+        Solution of a Triangle
       
     </span>
   </a>
@@ -1527,7 +1527,7 @@
   <a href="#rhombus-square" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rhombus (square)
+        Rhombus (Square)
       
     </span>
   </a>
@@ -1797,7 +1797,7 @@
   <span class="md-ellipsis">
     
   
-    Elastic analysis (3)
+    Elastic Analysis (3)
   
 
     
@@ -2021,7 +2021,7 @@
   <span class="md-ellipsis">
     
   
-    Multiline functions (4)
+    Multiline Functions (4)
   
 
     
@@ -2049,7 +2049,7 @@
   <span class="md-ellipsis">
     
   
-    Custom units (2)
+    Custom Units (2)
   
 
     
@@ -2185,6 +2185,34 @@
   
   
     <li class="md-nav__item">
+      <a href="simply-supported-beams.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simply Supported Beams (6)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="cantilevers.html" class="md-nav__link">
         
   
@@ -2248,7 +2276,7 @@
   <span class="md-ellipsis">
     
   
-    Continuous beam (1)
+    Continuous Beam (1)
   
 
     
@@ -2389,34 +2417,6 @@
     
   
     Nonlinear (3)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="simply-supported-beams.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Simply Supported Beams (6)
   
 
     
@@ -2663,7 +2663,7 @@
   <a href="#solution-of-a-triangle" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Solution of a triangle
+        Solution of a Triangle
       
     </span>
   </a>
@@ -2872,7 +2872,7 @@
   <a href="#rhombus-square" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rhombus (square)
+        Rhombus (Square)
       
     </span>
   </a>
@@ -2940,10 +2940,16 @@
 
 
 
-<h1 id="geometrical">Geometrical</h1>
-<h2 id="solution-of-a-triangle">Solution of a triangle</h2>
+<h1 id="geometrical">Geometrical<a class="headerlink" href="#geometrical" title="Permanent link">&para;</a></h1>
+<p><a href="https://calcpad-ce.org">CalcpadCE</a> bundles a worksheet for every cross-section that turns up in <a href="https://en.wikipedia.org/wiki/Structural_analysis">structural analysis</a> — from primitive shapes to the full catalogue of rolled and built-up steel profiles.</p>
+<p>Each page returns the same set of section properties: area, centroid, second moments of area, section moduli and radii of gyration, all expressed symbolically so the formulas remain readable.
+The collection covers the basics (<a href="#rectangle">rectangle</a>, <a href="#circle">circle</a>, <a href="#trapezoid">trapezoid</a>, <a href="#equilateral-triangle">equilateral</a> and <a href="#right-triangle">right triangles</a>, <a href="#hexagon">hexagon</a>), the rolled steel family (<a href="#tee-section">Tee</a>, <a href="#double-tee-section">Double Tee</a>, <a href="#angle-section">angle</a>, <a href="#channel-section">channel</a>, <a href="#zed-section">Zed</a>), thin-walled pipes (<a href="#circlular-pipe">circular</a>, <a href="#elliptical-pipe">elliptical</a>, <a href="#rectangular-tube">rectangular tube</a>), and partial-circle shapes (<a href="#half-circle">half</a>, <a href="#quarter-circle">quarter</a>, <a href="#sector">sector</a>, <a href="#segment">segment</a>).
+For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet integrates the same properties from a list of vertex coordinates, while the <a href="#solution-of-a-triangle">solution of a triangle</a> page provides the trigonometric companion that recovers all six elements from three given ones.</p>
+<h2 id="solution-of-a-triangle">Solution of a Triangle<a class="headerlink" href="#solution-of-a-triangle" title="Permanent link">&para;</a></h2>
+<p>Recovers all six elements of a triangle from three given side lengths via the law of cosines, plus area and the three heights.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Solution of triangle, defined by three sides</span>
 <span class="k">#deg</span>
 <span class="c1">&#39;Lengths of sides:</span>
@@ -3201,11 +3207,13 @@
 <span class="k">#end if</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Solution of triangle, defined by three sides </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Recovers all six elements of a triangle from three given side lengths via the law of cosines, plus area and the three heights. --> 
+<div class="calcpad-h3">Solution of triangle, defined by three sides </div>
 <p>Lengths of sides: </p>
-<p><span class="eq"><var>a</var> = <u class="input-4">5</u> </span> ,  <span class="eq"><var>b</var> = <u class="input-4">4</u> </span> ,  <span class="eq"><var>c</var> = <u class="input-4">6</u> </span></p>
+<p><span class="eq"><var>a</var> = <u class="input-5">5</u> </span> ,  <span class="eq"><var>b</var> = <u class="input-5">4</u> </span> ,  <span class="eq"><var>c</var> = <u class="input-5">6</u> </span></p>
 <p>Perimeter </p>
 <p><span class="eq"><var>P</var> = <var>a</var> + <var>b</var> + <var>c</var> = 5 + 4 + 6 = 15</span></p>
 <p>Half-perimeter - <span class="eq"><var>p</var> = 0.5 · <var>P</var> = 0.5 · 15 = 7.5</span></p>
@@ -3235,12 +3243,14 @@
 <p><span class="eq"><var>h</var><sub>c</sub> = <var>a</var> · <b>sin</b> ( <var>β</var> )  = 5 · <b>sin</b> ( 41.409622 )  = 3.307189</span></p>
 <svg viewbox="-20 -20 440 258.75" xmlns="http://www.w3.org/2000/svg" version="1.1" style="font-size: 18px; width: 220pt; height: 129.375pt"><line x1="148.823511" y1="50" x2="173.62743" y2="21.875" style="stroke:red; stroke-width:1; stroke-dasharray: 5,5; stroke-opacity:0.4"/><line x1="148.823511" y1="50" x2="125.569838" y2="34.179688" style="stroke:red; stroke-width:1; stroke-dasharray: 5,5; stroke-opacity:0.4"/><line x1="148.823511" y1="50" x2="148.823511" y2="218.75" style="stroke:red; stroke-width:1; stroke-dasharray: 5,5; stroke-opacity:0.4"/><line x1="0" y1="218.75" x2="173.62743" y2="21.875" style="stroke:red; stroke-width:1"/><line x1="396.862697" y1="218.75" x2="125.569838" y2="34.179688" style="stroke:red; stroke-width:1"/><line x1="148.823511" y1="218.75" x2="148.823511" y2="0" style="stroke:red; stroke-width:1"/><line x1="396.862697" y1="218.75" x2="173.62743" y2="21.875" style="stroke:black; stroke-width:1; stroke-dasharray: 5,5; stroke-opacity:0.2"/><line x1="148.823511" y1="0" x2="173.62743" y2="21.875" style="stroke:black; stroke-width:1; stroke-dasharray: 5,5; stroke-opacity:0.2"/><line x1="0" y1="218.75" x2="125.569838" y2="34.179688" style="stroke:black; stroke-width:1; stroke-dasharray: 5,5; stroke-opacity:0.2"/><line x1="148.823511" y1="0" x2="125.569838" y2="34.179688" style="stroke:black; stroke-width:1; stroke-dasharray: 5,5; stroke-opacity:0.2"/><line x1="0" y1="218.75" x2="148.823511" y2="218.75" style="stroke:black; stroke-width:1; stroke-dasharray: 5,5; stroke-opacity:0.2"/><line x1="396.862697" y1="218.75" x2="148.823511" y2="218.75" style="stroke:black; stroke-width:1; stroke-dasharray: 5,5; stroke-opacity:0.2"/><polyline points="0,218.75 396.862697,218.75 148.823511,0 0,218.75" style="stroke:black; stroke-width:2; fill:yellow; fill-opacity:0.2"/><circle cx="0" cy="218.75" r="4" style="fill:red"/><circle cx="396.862697" cy="218.75" r="4" style="fill:red"/><circle cx="148.823511" cy="0" r="4" style="fill:red"/><circle cx="148.823511" cy="50" r="4" style="fill:red"/><text x="0" y="238.75" text-anchor="end">A</text><text x="396.862697" y="238.75">B</text><text x="148.823511" y="-5">C</text><text x="66.813715" y="110.3125" font-style="italic">h</text><text x="266.216267" y="121.464844" font-style="italic">h</text><text x="153.823511" y="99.375" font-style="italic">h</text><text x="78.813715" y="116.3125">a</text><text x="278.216267" y="127.464844">b</text><text x="165.823511" y="105.375">c</text></svg><p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="tee-section">Tee Section</h2>
+<h2 id="tee-section">Tee Section<a class="headerlink" href="#tee-section" title="Permanent link">&para;</a></h2>
+<p>Section properties of a Tee profile: area, centroid, second moments of area <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, section moduli and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Tee Section</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;tee.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/tee.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -3269,13 +3279,15 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20  2   10  5</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Tee Section </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a Tee profile: area, centroid, second moments of area $I_x$, $I_y$, section moduli and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Tee Section </div>
 <div style="max-width:120mm"><img style="height:150pt;" alt="tee.png" class="side" src="Images/mechanics/sections/tee.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>h</var> = <u class="input-4">20</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-4">2</u> </span> m </p>
-<p><span class="eq"><var>b</var><sub>f</sub> = <u class="input-5">10</u> </span> m, <span class="eq"><var>t</var><sub>f</sub> = <u class="input-5">5</u> </span> m </p>
+<p><span class="eq"><var>h</var> = <u class="input-5">20</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-5">2</u> </span> m </p>
+<p><span class="eq"><var>b</var><sub>f</sub> = <u class="input-6">10</u> </span> m, <span class="eq"><var>t</var><sub>f</sub> = <u class="input-6">5</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var><sub>w</sub> = <var>h</var> · <var>t</var><sub>w</sub> = 20 · 2 = 40</span> m<sup>2</sup> </p>
 <p><span class="eq"><var>A</var><sub>f</sub> =  ( <var>b</var><sub>f</sub> − <var>t</var><sub>w</sub> )  · <var>t</var><sub>f</sub> =  ( 10 − 2 )  · 5 = 40</span> m<sup>2</sup> </p>
@@ -3299,12 +3311,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">2968.333333<span class="dvl"></span>80</span></span> = 6.091319</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="double-tee-section">Double Tee Section</h2>
+<h2 id="double-tee-section">Double Tee Section<a class="headerlink" href="#double-tee-section" title="Permanent link">&para;</a></h2>
+<p>Section properties of a Double Tee (I-beam) profile: area, centroid, <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, section moduli and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Double Tee Section</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:150mm&quot;&gt;&lt;img style=&quot;height:165pt;&quot; alt=&quot;double-tee.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/double-tee.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -3336,14 +3350,16 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20  1   10  2   15  3</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Double Tee Section </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a Double Tee (I-beam) profile: area, centroid, $I_x$, $I_y$, section moduli and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Double Tee Section </div>
 <div style="max-width:150mm"><img style="height:165pt;" alt="double-tee.png" class="side" src="Images/mechanics/sections/double-tee.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>h</var> = <u class="input-4">20</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-4">1</u> </span> m </p>
-<p><span class="eq"><var>b</var><sub>f1</sub> = <u class="input-5">10</u> </span> m, <span class="eq"><var>t</var><sub>f1</sub> = <u class="input-5">2</u> </span> m </p>
-<p><span class="eq"><var>b</var><sub>f2</sub> = <u class="input-6">15</u> </span> m, <span class="eq"><var>t</var><sub>f2</sub> = <u class="input-6">3</u> </span> m </p>
+<p><span class="eq"><var>h</var> = <u class="input-5">20</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-5">1</u> </span> m </p>
+<p><span class="eq"><var>b</var><sub>f1</sub> = <u class="input-6">10</u> </span> m, <span class="eq"><var>t</var><sub>f1</sub> = <u class="input-6">2</u> </span> m </p>
+<p><span class="eq"><var>b</var><sub>f2</sub> = <u class="input-7">15</u> </span> m, <span class="eq"><var>t</var><sub>f2</sub> = <u class="input-7">3</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var><sub>w</sub> = <var>h</var> · <var>t</var><sub>w</sub> = 20 · 1 = 20</span> m<sup>2</sup> </p>
 <p><span class="eq"><var>A</var><sub>f1</sub> =  ( <var>b</var><sub>f1</sub> − <var>t</var><sub>w</sub> )  · <var>t</var><sub>f1</sub> =  ( 10 − 1 )  · 2 = 18</span> m<sup>2</sup> </p>
@@ -3369,12 +3385,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">5733.020833<span class="dvl"></span>80</span></span> = 8.465386</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="polygon">Polygon</h2>
+<h2 id="polygon">Polygon<a class="headerlink" href="#polygon" title="Permanent link">&para;</a></h2>
+<p>Section properties of an arbitrary polygon from a list of vertex coordinates: signed area, centroid and second moments of area via the shoelace formulas.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical properties of arbitrary polygon</span>
 <span class="c1">&#39;&lt;h4&gt;Point coordinates&lt;/h4&gt;</span>
 <span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="m">0</span><span class="p">;</span><span class="w"> </span><span class="m">6.3</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">;</span><span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">0.4</span><span class="p">;</span><span class="w"> </span><span class="m">0</span><span class="p">]</span>
@@ -3476,9 +3494,11 @@
 <span class="k">#equ</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical properties of arbitrary polygon </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of an arbitrary polygon from a list of vertex coordinates: signed area, centroid and second moments of area via the shoelace formulas. --> 
+<div class="calcpad-h3">Geometrical properties of arbitrary polygon </div>
 <div class="calcpad-h4">Point coordinates</div> 
 <p><span class="eq"><var><span class="vec">⃗</span>x</var> = <span class="b0">[</span>0; 6.3; 6; 1; 0.4; 0<span class="b0">]</span> = <b class="b0">[</b>0 6.3 6 1 0.4 0<b class="b0">]</b></span></p>
 <p><span class="eq"><var><span class="vec">⃗</span>y</var> = <span class="b0">[</span>0; 0; 0.6; 1; 4; 4.2<span class="b0">]</span> = <b class="b0">[</b>0 0 0.6 1 4 4.2<b class="b0">]</b></span></p>
@@ -3488,13 +3508,16 @@
 <p>Principal moments - <span class="eq"><var>I</var><sub>1</sub> = 27.416653</span> ,  <span class="eq"><var>I</var><sub>2</sub> = 4.405755</span> ,  <span class="eq"><var>I</var><sub>o</sub> = 31.822407</span></p>
 <p>Angle of first principal axis - <span class="eq"><var>α</var> = 3954.229855°</span></p>
 <div class="calcpad-h4">Drawing</div> 
-<svg viewbox="-1 -4.216044 7.3 5.2" xmlns="http://www.w3.org/2000/svg" version="1.1" style="font-size:0.12pt; width:664px; height:496px;"><line x1="0" y1="0.983956" x2="6.3" y2="0.983956" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="0" cy="0.983956" fill="red" /><text x="0.1" y="0.883956">1 (0,0)</text><line x1="6.3" y1="0.983956" x2="6" y2="0.383956" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="6.3" cy="0.983956" fill="red" /><text x="6.4" y="0.883956">2 (6.3,0)</text><line x1="6" y1="0.383956" x2="1" y2="-0.016044" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="6" cy="0.383956" fill="red" /><text x="6.1" y="0.283956">3 (6,0.6)</text><line x1="1" y1="-0.016044" x2="0.4" y2="-3.016044" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="1" cy="-0.016044" fill="red" /><text x="1.1" y="-0.116044">4 (1,1)</text><line x1="0.4" y1="-3.016044" x2="0" y2="-3.216044" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="0.4" cy="-3.016044" fill="red" /><text x="0.5" y="-3.116044">5 (0.4,4)</text><line x1="0" y1="-3.216044" x2="0" y2="0.983956" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="0" cy="-3.216044" fill="red" /><text x="0.1" y="-3.316044">6 (0,4.2)</text><line x1="-1.69182" y1="-0.380619" x2="5.841474" y2="0.380619" style="stroke:green; stroke-width:0.02; stroke-opacity:0.5; stroke-dasharray:0.2,0.1,0.05,0.1"/><text x="-1.59182" y="-0.480619">1</text><text x="5.941474" y="0.280619">1</text><line x1="1.694208" y1="3.766647" x2="2.455446" y2="-3.766647" style="stroke:green; stroke-width:0.02; stroke-opacity:0.5; stroke-dasharray:0.2,0.1,0.05,0.1"/><text x="1.794208" y="3.666647">2</text><text x="2.555446" y="-3.866647">2</text><circle r="0.05" cx="2.074827" cy="0" fill="red"  /><text x="2.174827" y="-0.1">C (2.074827,0.983956)</text></svg></div>
+<svg viewbox="-1 -4.216044 7.3 5.2" xmlns="http://www.w3.org/2000/svg" version="1.1" style="font-size:0.12pt; width:664px; height:496px;"><line x1="0" y1="0.983956" x2="6.3" y2="0.983956" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="0" cy="0.983956" fill="red" /><text x="0.1" y="0.883956">1 (0,0)</text><line x1="6.3" y1="0.983956" x2="6" y2="0.383956" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="6.3" cy="0.983956" fill="red" /><text x="6.4" y="0.883956">2 (6.3,0)</text><line x1="6" y1="0.383956" x2="1" y2="-0.016044" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="6" cy="0.383956" fill="red" /><text x="6.1" y="0.283956">3 (6,0.6)</text><line x1="1" y1="-0.016044" x2="0.4" y2="-3.016044" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="1" cy="-0.016044" fill="red" /><text x="1.1" y="-0.116044">4 (1,1)</text><line x1="0.4" y1="-3.016044" x2="0" y2="-3.216044" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="0.4" cy="-3.016044" fill="red" /><text x="0.5" y="-3.116044">5 (0.4,4)</text><line x1="0" y1="-3.216044" x2="0" y2="0.983956" style="stroke:black; stroke-width:0.025;"/><circle r="0.05" cx="0" cy="-3.216044" fill="red" /><text x="0.1" y="-3.316044">6 (0,4.2)</text><line x1="-1.69182" y1="-0.380619" x2="5.841474" y2="0.380619" style="stroke:green; stroke-width:0.02; stroke-opacity:0.5; stroke-dasharray:0.2,0.1,0.05,0.1"/><text x="-1.59182" y="-0.480619">1</text><text x="5.941474" y="0.280619">1</text><line x1="1.694208" y1="3.766647" x2="2.455446" y2="-3.766647" style="stroke:green; stroke-width:0.02; stroke-opacity:0.5; stroke-dasharray:0.2,0.1,0.05,0.1"/><text x="1.794208" y="3.666647">2</text><text x="2.555446" y="-3.866647">2</text><circle r="0.05" cx="2.074827" cy="0" fill="red"  /><text x="2.174827" y="-0.1">C (2.074827,0.983956)</text></svg><p>&nbsp;</p>
 </div>
+</figure>
 </div>
 
-<h2 id="angle-section">Angle Section</h2>
+<h2 id="angle-section">Angle Section<a class="headerlink" href="#angle-section" title="Permanent link">&para;</a></h2>
+<p>Section properties of an angle (L) profile: area, centroid, <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, principal axes and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Angle Section</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;angle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/angle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -3534,13 +3557,15 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20  2   10  5</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Angle Section </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of an angle (L) profile: area, centroid, $I_x$, $I_y$, principal axes and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Angle Section </div>
 <div style="max-width:120mm"><img style="height:150pt;" alt="angle.png" class="side" src="Images/mechanics/sections/angle.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>h</var> = <u class="input-4">20</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-4">2</u> </span> m </p>
-<p><span class="eq"><var>b</var><sub>f</sub> = <u class="input-5">10</u> </span> m, <span class="eq"><var>t</var><sub>f</sub> = <u class="input-5">5</u> </span> m </p>
+<p><span class="eq"><var>h</var> = <u class="input-5">20</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-5">2</u> </span> m </p>
+<p><span class="eq"><var>b</var><sub>f</sub> = <u class="input-6">10</u> </span> m, <span class="eq"><var>t</var><sub>f</sub> = <u class="input-6">5</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var><sub>w</sub> = <var>h</var> · <var>t</var><sub>w</sub> = 20 · 2 = 40</span> m<sup>2</sup> </p>
 <p><span class="eq"><var>A</var><sub>f</sub> =  ( <var>b</var><sub>f</sub> − <var>t</var><sub>w</sub> )  · <var>t</var><sub>f</sub> =  ( 10 − 2 )  · 5 = 40</span> m<sup>2</sup> </p>
@@ -3575,12 +3600,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">3268.333333<span class="dvl"></span>80</span></span> = 6.391726</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="zed-section">Zed Section</h2>
+<h2 id="zed-section">Zed Section<a class="headerlink" href="#zed-section" title="Permanent link">&para;</a></h2>
+<p>Section properties of a Zed (Z) profile: area, centroid, <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, principal axes and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Zed Section</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;zed.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/zed.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -3612,13 +3639,15 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20   2   10  5</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Zed Section </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a Zed (Z) profile: area, centroid, $I_x$, $I_y$, principal axes and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Zed Section </div>
 <div style="max-width:120mm"><img style="height:150pt;" alt="zed.png" class="side" src="Images/mechanics/sections/zed.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>h</var> = <u class="input-4">20</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-4">2</u> </span> m </p>
-<p><span class="eq"><var>b</var><sub>f</sub> = <u class="input-5">10</u> </span> m, <span class="eq"><var>t</var><sub>f</sub> = <u class="input-5">5</u> </span> m </p>
+<p><span class="eq"><var>h</var> = <u class="input-5">20</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-5">2</u> </span> m </p>
+<p><span class="eq"><var>b</var><sub>f</sub> = <u class="input-6">10</u> </span> m, <span class="eq"><var>t</var><sub>f</sub> = <u class="input-6">5</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var><sub>w</sub> = <var>h</var> · <var>t</var><sub>w</sub> = 20 · 2 = 40</span> m<sup>2</sup> </p>
 <p><span class="eq"><var>A</var><sub>f</sub> =  ( <var>b</var><sub>f</sub> − <var>t</var><sub>w</sub> )  · <var>t</var><sub>f</sub> =  ( 10 − 2 )  · 5 = 40</span> m<sup>2</sup> </p>
@@ -3645,12 +3674,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">8440<span class="dvl"></span>120</span></span> = 8.386497</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="channel-section">Channel Section</h2>
+<h2 id="channel-section">Channel Section<a class="headerlink" href="#channel-section" title="Permanent link">&para;</a></h2>
+<p>Section properties of a channel (U) profile: area, centroid, <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, section moduli and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Channel Section</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;channel.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/channel.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -3679,13 +3710,15 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20  1   10  2</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Channel Section </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a channel (U) profile: area, centroid, $I_x$, $I_y$, section moduli and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Channel Section </div>
 <div style="max-width:120mm"><img style="height:150pt;" alt="channel.png" class="side" src="Images/mechanics/sections/channel.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>h</var> = <u class="input-4">20</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-4">1</u> </span> m </p>
-<p><span class="eq"><var>b</var><sub>f</sub> = <u class="input-5">10</u> </span> m, <span class="eq"><var>t</var><sub>f</sub> = <u class="input-5">2</u> </span> m </p>
+<p><span class="eq"><var>h</var> = <u class="input-5">20</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-5">1</u> </span> m </p>
+<p><span class="eq"><var>b</var><sub>f</sub> = <u class="input-6">10</u> </span> m, <span class="eq"><var>t</var><sub>f</sub> = <u class="input-6">2</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var><sub>w</sub> = <var>h</var> · <var>t</var><sub>w</sub> = 20 · 1 = 20</span> m<sup>2</sup> </p>
 <p><span class="eq"><var>A</var><sub>f</sub> =  ( <var>b</var><sub>f</sub> − <var>t</var><sub>w</sub> )  · <var>t</var><sub>f</sub> =  ( 10 − 1 )  · 2 = 18</span> m<sup>2</sup> </p>
@@ -3709,12 +3742,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">4160.761905<span class="dvl"></span>56</span></span> = 8.619705</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="circle">Circle</h2>
+<h2 id="circle">Circle<a class="headerlink" href="#circle" title="Permanent link">&para;</a></h2>
+<p>Section properties of a solid circle: area, <span class="arithmatex">\(I_x = I_y = \pi d^4 / 64\)</span>, section modulus and radius of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Circle</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;circle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/circle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Diameter</span>
@@ -3738,12 +3773,14 @@
 <span class="nv">W_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="nv">I_t</span><span class="o">/</span><span class="nv">d</span><span class="c1">&#39;%u&lt;sup&gt;3&lt;/sup&gt;1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Circle </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a solid circle: area, $I_x = I_y = \pi d^4 / 64$, section modulus and radius of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Circle </div>
 <div style="max-width:120mm"><img style="height:135pt;" alt="circle.png" class="side" src="Images/mechanics/sections/circle.png"></div> 
 <p>Diameter </p>
-<p><span class="eq"><var>d</var> = <u class="input-4">1</u> </span> m </p>
+<p><span class="eq"><var>d</var> = <u class="input-5">1</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var> = <span class="dvc"><var>π</var> · <var>d</var><sup>2</sup><span class="dvl"></span>4</span> = <span class="dvc">3.141593 · 1<sup>2</sup><span class="dvl"></span>4</span> = 0.7853982</span> m<sup>2</sup> </p>
 <p>Centroid </p>
@@ -3763,12 +3800,14 @@
 <p><span class="eq"><var>W</var><sub>t</sub> = <span class="dvc">2 · <var>I</var><sub>t</sub><span class="dvl"></span><var>d</var></span> = <span class="dvc">2 · 0.09817477<span class="dvl"></span>1</span> = 0.1963495</span> m<sup>3</sup> </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="sector">Sector</h2>
+<h2 id="sector">Sector<a class="headerlink" href="#sector" title="Permanent link">&para;</a></h2>
+<p>Section properties of a circular sector: area, centroid, second moments of area and radii of gyration as functions of radius and central angle.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Circular Sector</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:150mm&quot;&gt;&lt;img style=&quot;height:120pt;&quot; alt=&quot;sector.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/sector.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Radius -&#39;</span><span class="nv">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
@@ -3793,12 +3832,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1   90</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Circular Sector </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a circular sector: area, centroid, second moments of area and radii of gyration as functions of radius and central angle. --> 
+<div class="calcpad-h3">Geometrical Properties of Circular Sector </div>
 <div style="max-width:150mm"><img style="height:120pt;" alt="sector.png" class="side" src="Images/mechanics/sections/sector.png"></div> 
-<p>Radius - <span class="eq"><var>r</var> = <u class="input-3">1</u> </span> m </p>
-<p>Angle - <span class="eq"><var>α</var> = <u class="input-4">90</u> </span> &deg; </p>
+<p>Radius - <span class="eq"><var>r</var> = <u class="input-4">1</u> </span> m </p>
+<p>Angle - <span class="eq"><var>α</var> = <u class="input-5">90</u> </span> &deg; </p>
 <p><span class="eq"><var>k</var> = <span class="dvc"><var>π</var><span class="dvl"></span>180</span> = <span class="dvc">3.141593<span class="dvl"></span>180</span> = 0.01745329</span></p>
 <p><span class="eq"><var>a</var> = &ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;2 · <var>r</var><sup>2</sup> ·  ( 1 − <b>cos</b> ( <var>α</var> )  ) </span> = &ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;2 · 1<sup>2</sup> ·  ( 1 − <b>cos</b> ( 90 )  ) </span> = 1.414214</span> m </p>
 <p>Area </p>
@@ -3819,12 +3860,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.109757<span class="dvl"></span>0.7853982</span></span> = 0.3738274</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="circlular-pipe">Circlular Pipe</h2>
+<h2 id="circlular-pipe">Circlular Pipe<a class="headerlink" href="#circlular-pipe" title="Permanent link">&para;</a></h2>
+<p>Section properties of a circular pipe: area, <span class="arithmatex">\(I_x = I_y = \pi (D^4 - d^4)/64\)</span>, section modulus and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Circular Pipe</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:150mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;circular-pipe.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/circular-pipe.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -3849,12 +3892,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1    0.1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Circular Pipe </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a circular pipe: area, $I_x = I_y = \pi (D^4 - d^4)/64$, section modulus and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Circular Pipe </div>
 <div style="max-width:150mm"><img style="height:135pt;" alt="circular-pipe.png" class="side" src="Images/mechanics/sections/circular-pipe.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>d</var> = <u class="input-4">1</u> </span> m, <span class="eq"><var>t</var> = <u class="input-4">0.1</u> </span> m </p>
+<p><span class="eq"><var>d</var> = <u class="input-5">1</u> </span> m, <span class="eq"><var>t</var> = <u class="input-5">0.1</u> </span> m </p>
 <p><span class="eq"><var>d</var><sub>1</sub> = <var>d</var> − 2 · <var>t</var> = 1 − 2 · 0.1 = 0.8</span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var> = <span class="dvc"><var>π</var> ·  ( <var>d</var><sup>2</sup> − <var>d</var><sub>1</sub><sup>2</sup> ) <span class="dvl"></span>4</span> = <span class="dvc">3.141593 ·  ( 1<sup>2</sup> − 0.8<sup>2</sup> ) <span class="dvl"></span>4</span> = 0.2827433</span> m<sup>2</sup> </p>
@@ -3875,12 +3920,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.05796238<span class="dvl"></span>0.2827433</span></span> = 0.4527693</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="ellipse">Ellipse</h2>
+<h2 id="ellipse">Ellipse<a class="headerlink" href="#ellipse" title="Permanent link">&para;</a></h2>
+<p>Section properties of a solid ellipse: area, <span class="arithmatex">\(I_x = \tfrac{\pi}{4} a b^3\)</span>, <span class="arithmatex">\(I_y = \tfrac{\pi}{4} a^3 b\)</span>, section moduli and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Ellipse</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:112pt;&quot; alt=&quot;ellipse.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/ellipse.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -3912,12 +3959,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u2   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Ellipse </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a solid ellipse: area, $I_x = \tfrac{\pi}{4} a b^3$, $I_y = \tfrac{\pi}{4} a^3 b$, section moduli and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Ellipse </div>
 <div style="max-width:120mm"><img style="height:112pt;" alt="ellipse.png" class="side" src="Images/mechanics/sections/ellipse.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>a</var> = <u class="input-4">2</u> </span> m, <span class="eq"><var>b</var> = <u class="input-4">1</u> </span> m </p>
+<p><span class="eq"><var>a</var> = <u class="input-5">2</u> </span> m, <span class="eq"><var>b</var> = <u class="input-5">1</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var> = <var>π</var> · <var>a</var> · <var>b</var> = 3.141593 · 2 · 1 = 6.283185</span> m<sup>2</sup> </p>
 <p>Centroid </p>
@@ -3940,12 +3989,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">7.853982<span class="dvl"></span>6.283185</span></span> = 1.118034</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="elliptical-pipe">Elliptical Pipe</h2>
+<h2 id="elliptical-pipe">Elliptical Pipe<a class="headerlink" href="#elliptical-pipe" title="Permanent link">&para;</a></h2>
+<p>Section properties of a hollow elliptical pipe: area, <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, section moduli and radii of gyration from the four semi-axes.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Elliptical Pipe</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:112pt;&quot; alt=&quot;elliptical-pipe.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/elliptical-pipe.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;(ellipse with elliptical hole)</span>
@@ -3984,14 +4035,16 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20  10  2</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Elliptical Pipe </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a hollow elliptical pipe: area, $I_x$, $I_y$, section moduli and radii of gyration from the four semi-axes. --> 
+<div class="calcpad-h3">Geometrical Properties of Elliptical Pipe </div>
 <div style="max-width:120mm"><img style="height:112pt;" alt="elliptical-pipe.png" class="side" src="Images/mechanics/sections/elliptical-pipe.png"></div> 
 <p>(ellipse with elliptical hole) </p>
 <p>Dimensions </p>
-<p><span class="eq"><var>a</var> = <u class="input-5">20</u> </span> m, <span class="eq"><var>b</var> = <u class="input-5">10</u> </span> m </p>
-<p><span class="eq"><var>t</var> = <u class="input-6">2</u> </span> m </p>
+<p><span class="eq"><var>a</var> = <u class="input-6">20</u> </span> m, <span class="eq"><var>b</var> = <u class="input-6">10</u> </span> m </p>
+<p><span class="eq"><var>t</var> = <u class="input-7">2</u> </span> m </p>
 <p><span class="eq"><var>a</var><sub>1</sub> = <var>a</var> − <var>t</var> = 20 − 2 = 18</span> m </p>
 <p><span class="eq"><var>b</var><sub>1</sub> = <var>b</var> − <var>t</var> = 10 − 2 = 8</span> m </p>
 <p>Area </p>
@@ -4016,12 +4069,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">34658.05015<span class="dvl"></span>175.929189</span></span> = 14.035669</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="equilateral-triangle">Equilateral Triangle</h2>
+<h2 id="equilateral-triangle">Equilateral Triangle<a class="headerlink" href="#equilateral-triangle" title="Permanent link">&para;</a></h2>
+<p>Section properties of an equilateral triangle: area, centroid, <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, section moduli and radii of gyration in closed form.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Equilateral Triangle</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;equilateral-triangle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/equilateral-triangle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Side length</span>
@@ -4050,12 +4105,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Equilateral Triangle </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of an equilateral triangle: area, centroid, $I_x$, $I_y$, section moduli and radii of gyration in closed form. --> 
+<div class="calcpad-h3">Geometrical Properties of Equilateral Triangle </div>
 <div style="max-width:120mm"><img style="height:135pt;" alt="equilateral-triangle.png" class="side" src="Images/mechanics/sections/equilateral-triangle.png"></div> 
 <p>Side length </p>
-<p><span class="eq"><var>a</var> = <u class="input-4">1</u> </span> m </p>
+<p><span class="eq"><var>a</var> = <u class="input-5">1</u> </span> m </p>
 <p>Height </p>
 <p><span class="eq"><var>h</var> = <span class="dvc">&ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;3</span><span class="dvl"></span>2</span> · <var>a</var> = <span class="dvc">&ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;3</span><span class="dvl"></span>2</span> · 1 = 0.8660254</span> m </p>
 <p>Area </p>
@@ -4080,12 +4137,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.03608439<span class="dvl"></span>0.4330127</span></span> = 0.2886751</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="half-circle">Half Circle</h2>
+<h2 id="half-circle">Half Circle<a class="headerlink" href="#half-circle" title="Permanent link">&para;</a></h2>
+<p>Section properties of a half circle: area, centroid offset, second moments of area and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Half Circle</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:112pt;&quot; alt=&quot;half-circle.png&quot; class=&quot;side&quot;  src=&quot;../../Images/mechanics/sections/half-circle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Diameter</span>
@@ -4108,12 +4167,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Half Circle </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a half circle: area, centroid offset, second moments of area and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Half Circle </div>
 <div style="max-width:120mm"><img style="height:112pt;" alt="half-circle.png" class="side"  src="Images/mechanics/sections/half-circle.png"></div> 
 <p>Diameter </p>
-<p><span class="eq"><var>d</var> = <u class="input-4">1</u> </span> m </p>
+<p><span class="eq"><var>d</var> = <u class="input-5">1</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var> = <span class="dvc"><var>π</var> · <var>d</var><sup>2</sup><span class="dvl"></span>8</span> = <span class="dvc">3.141593 · 1<sup>2</sup><span class="dvl"></span>8</span> = 0.3926991</span> m<sup>2</sup> </p>
 <p>Perimeter </p>
@@ -4132,12 +4193,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.0314035<span class="dvl"></span>0.3926991</span></span> = 0.2827868</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="hexagon">Hexagon</h2>
+<h2 id="hexagon">Hexagon<a class="headerlink" href="#hexagon" title="Permanent link">&para;</a></h2>
+<p>Section properties of a regular hexagon: area, <span class="arithmatex">\(I_x = I_y\)</span>, section moduli and radii of gyration in closed form.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Regular Hexagon</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;hexagon.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/hexagon.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -4159,12 +4222,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Regular Hexagon </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a regular hexagon: area, $I_x = I_y$, section moduli and radii of gyration in closed form. --> 
+<div class="calcpad-h3">Geometrical Properties of Regular Hexagon </div>
 <div style="max-width:120mm"><img style="height:135pt;" alt="hexagon.png" class="side" src="Images/mechanics/sections/hexagon.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>a</var> = <u class="input-4">1</u> </span> m </p>
+<p><span class="eq"><var>a</var> = <u class="input-5">1</u> </span> m </p>
 <p><span class="eq"><var>h</var> = &ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;3</span> · <var>a</var> = &ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;3</span> · 1 = 1.732051</span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var> = 1.5 · <var>a</var> · <var>h</var> = 1.5 · 1 · 1.732051 = 2.598076</span> m<sup>2</sup> </p>
@@ -4182,12 +4247,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">1.082532<span class="dvl"></span>2.598076</span></span> = 0.6454972</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="quarter-circle">Quarter Circle</h2>
+<h2 id="quarter-circle">Quarter Circle<a class="headerlink" href="#quarter-circle" title="Permanent link">&para;</a></h2>
+<p>Section properties of a quarter circle: area, centroid offsets, second moments of area and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Quarter Circle</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:120pt;&quot; alt=&quot;quarter-circle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/quarter-circle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Radius -&#39;</span><span class="nv">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
@@ -4214,11 +4281,13 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Quarter Circle </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a quarter circle: area, centroid offsets, second moments of area and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Quarter Circle </div>
 <div style="max-width:120mm"><img style="height:120pt;" alt="quarter-circle.png" class="side" src="Images/mechanics/sections/quarter-circle.png"></div> 
-<p>Radius - <span class="eq"><var>r</var> = <u class="input-3">1</u> </span> m </p>
+<p>Radius - <span class="eq"><var>r</var> = <u class="input-4">1</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var> = <span class="dvc"><var>π</var> · <var>r</var><sup>2</sup><span class="dvl"></span>4</span> = <span class="dvc">3.141593 · 1<sup>2</sup><span class="dvl"></span>4</span> = 0.7853982</span> m<sup>2</sup> </p>
 <p>Centroid </p>
@@ -4242,12 +4311,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.109757<span class="dvl"></span>0.7853982</span></span> = 0.3738274</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="rectangle">Rectangle</h2>
+<h2 id="rectangle">Rectangle<a class="headerlink" href="#rectangle" title="Permanent link">&para;</a></h2>
+<p>Section properties of a rectangle: area, <span class="arithmatex">\(I_x = b h^3 / 12\)</span>, <span class="arithmatex">\(I_y = h b^3 / 12\)</span>, section moduli and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Rectangle</span>
 <span class="c1">&#39;&lt;div style = &quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;rectangle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/rectangle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -4288,12 +4359,14 @@
 <span class="k">#end if</span><span class="m">2</span><span class="w"> </span><span class="m">1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Rectangle </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a rectangle: area, $I_x = b h^3 / 12$, $I_y = h b^3 / 12$, section moduli and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Rectangle </div>
 <div style = "max-width:120mm"><img style="height:150pt;" alt="rectangle.png" class="side" src="Images/mechanics/sections/rectangle.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>h</var> = <u class="input-4">2</u> </span> m, <span class="eq"><var>b</var> = <u class="input-4">1</u> </span> m </p>
+<p><span class="eq"><var>h</var> = <u class="input-5">2</u> </span> m, <span class="eq"><var>b</var> = <u class="input-5">1</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var> = <var>h</var> · <var>b</var> = 2 · 1 = 2</span> m<sup>2</sup> </p>
 <p>Centroid </p>
@@ -4316,12 +4389,14 @@
 <p><span class="eq"><var>W</var><sub>t</sub> = <span class="dvc up"><var>h</var> · <var>b</var><sup>2</sup> · <span class="b1">(</span>1 − <span class="dvc">0.63 · <var>b</var><span class="dvl"></span><var>h</var></span> + 0.25 · <span class="b1">(</span><span class="dvc"><var>b</var><span class="dvl"></span><var>h</var></span><span class="b1">)</span><sup class="raised">2</sup><span class="b1">)</span><span class="dvl"></span>3</span> = <span class="dvc up">2 · 1<sup>2</sup> · <span class="b1">(</span>1 − <span class="dvc">0.63 · 1<span class="dvl"></span>2</span> + 0.25 · <span class="b1">(</span><span class="dvc">1<span class="dvl"></span>2</span><span class="b1">)</span><sup class="raised">2</sup><span class="b1">)</span><span class="dvl"></span>3</span> = 0.4983333</span> m<sup>3</sup> </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="rectangular-tube">Rectangular Tube</h2>
+<h2 id="rectangular-tube">Rectangular Tube<a class="headerlink" href="#rectangular-tube" title="Permanent link">&para;</a></h2>
+<p>Section properties of a rectangular hollow section (RHS): area, <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, section moduli and radii of gyration from outer and inner dimensions.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Rectangular Tube</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:150mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;rectangular-tube.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/rectangular-tube.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -4348,13 +4423,15 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u300 20  200 30</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Rectangular Tube </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a rectangular hollow section (RHS): area, $I_x$, $I_y$, section moduli and radii of gyration from outer and inner dimensions. --> 
+<div class="calcpad-h3">Geometrical Properties of Rectangular Tube </div>
 <div style="max-width:150mm"><img style="height:150pt;" alt="rectangular-tube.png" class="side" src="Images/mechanics/sections/rectangular-tube.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>h</var> = <u class="input-4">300</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-4">20</u> </span> m </p>
-<p><span class="eq"><var>b</var> = <u class="input-5">200</u> </span> m, <span class="eq"><var>t</var><sub>f</sub> = <u class="input-5">30</u> </span> m </p>
+<p><span class="eq"><var>h</var> = <u class="input-5">300</u> </span> m, <span class="eq"><var>t</var><sub>w</sub> = <u class="input-5">20</u> </span> m </p>
+<p><span class="eq"><var>b</var> = <u class="input-6">200</u> </span> m, <span class="eq"><var>t</var><sub>f</sub> = <u class="input-6">30</u> </span> m </p>
 <p><span class="eq"><var>b</var><sub>1</sub> = <var>b</var> − 2 · <var>t</var><sub>w</sub> = 200 − 2 · 20 = 160</span> m </p>
 <p><span class="eq"><var>h</var><sub>1</sub> = <var>h</var> − 2 · <var>t</var><sub>f</sub> = 300 − 2 · 30 = 240</span> m </p>
 <p>Area </p>
@@ -4376,12 +4453,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">383760000<span class="dvl"></span>21600</span></span> = 133.29166</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="rhombus">Rhombus</h2>
+<h2 id="rhombus">Rhombus<a class="headerlink" href="#rhombus" title="Permanent link">&para;</a></h2>
+<p>Section properties of a rhombus from its two diagonals: area, <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, section moduli and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Rhombus</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:130mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;rombus.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/rhombus.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Diagonals length</span>
@@ -4406,12 +4485,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39; m</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Rhombus </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a rhombus from its two diagonals: area, $I_x$, $I_y$, section moduli and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Rhombus </div>
 <div style="max-width:130mm"><img style="height:135pt;" alt="rombus.png" class="side" src="Images/mechanics/sections/rhombus.png"></div> 
 <p>Diagonals length </p>
-<p><span class="eq"><var>b</var> = <u class="input-4">1.414</u> </span> m ,  <span class="eq"><var>d</var> = <u class="input-4">1.414</u> </span> m </p>
+<p><span class="eq"><var>b</var> = <u class="input-5">1.414</u> </span> m ,  <span class="eq"><var>d</var> = <u class="input-5">1.414</u> </span> m </p>
 <p>Side length </p>
 <p><span class="eq"><var>a</var> = <span class="dvc">&ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;<var>b</var><sup>2</sup> + <var>d</var><sup>2</sup></span><span class="dvl"></span>2</span> = <span class="dvc">&ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;1.414<sup>2</sup> + 1.414<sup>2</sup></span><span class="dvl"></span>2</span> = 0.999849</span> m </p>
 <p>Area </p>
@@ -4432,12 +4513,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.166566<span class="dvl"></span>0.999698</span></span> = 0.4081866</span>  m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="rhombus-square">Rhombus (square)</h2>
+<h2 id="rhombus-square">Rhombus (Square)<a class="headerlink" href="#rhombus-square" title="Permanent link">&para;</a></h2>
+<p>Section properties of a square rhombus (rotated square): area, <span class="arithmatex">\(I_x = I_y\)</span>, section moduli and radii of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Square Rhombus</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;rombus-square.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/rhombus.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Side length</span>
@@ -4459,12 +4542,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Square Rhombus </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a square rhombus (rotated square): area, $I_x = I_y$, section moduli and radii of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Square Rhombus </div>
 <div style="max-width:120mm"><img style="height:135pt;" alt="rombus-square.png" class="side" src="Images/mechanics/sections/rhombus.png"></div> 
 <p>Side length </p>
-<p><span class="eq"><var>a</var> = <u class="input-4">1</u> </span> m </p>
+<p><span class="eq"><var>a</var> = <u class="input-5">1</u> </span> m </p>
 <p>Diagonal length </p>
 <p><span class="eq"><var>d</var> = &ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;2 · <var>a</var><sup>2</sup></span> = &ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;2 · 1<sup>2</sup></span> = 1.414214</span> m </p>
 <p>Area </p>
@@ -4482,12 +4567,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.1666667<span class="dvl"></span>1</span></span> = 0.4082483</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="right-triangle">Right Triangle</h2>
+<h2 id="right-triangle">Right Triangle<a class="headerlink" href="#right-triangle" title="Permanent link">&para;</a></h2>
+<p>Section properties of a right triangle: area, centroid offsets, <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, section moduli and radii of gyration in closed form.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Right Triangle</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:127pt;&quot; alt=&quot;right-triangle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/right-triangle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Side lengths</span>
@@ -4518,12 +4605,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u2   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Right Triangle </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a right triangle: area, centroid offsets, $I_x$, $I_y$, section moduli and radii of gyration in closed form. --> 
+<div class="calcpad-h3">Geometrical Properties of Right Triangle </div>
 <div style="max-width:120mm"><img style="height:127pt;" alt="right-triangle.png" class="side" src="Images/mechanics/sections/right-triangle.png"></div> 
 <p>Side lengths </p>
-<p><span class="eq"><var>a</var> = <u class="input-4">2</u> </span> m, <span class="eq"><var>b</var> = <u class="input-4">1</u> </span> m </p>
+<p><span class="eq"><var>a</var> = <u class="input-5">2</u> </span> m, <span class="eq"><var>b</var> = <u class="input-5">1</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var> = <span class="dvc"><var>a</var> · <var>b</var><span class="dvl"></span>2</span> = <span class="dvc">2 · 1<span class="dvl"></span>2</span> = 1</span> m<sup>2</sup> </p>
 <p>Perimeter </p>
@@ -4550,12 +4639,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.2777778<span class="dvl"></span>1</span></span> = 0.5270463</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="segment">Segment</h2>
+<h2 id="segment">Segment<a class="headerlink" href="#segment" title="Permanent link">&para;</a></h2>
+<p>Section properties of a circular segment: area, centroid, second moments of area and radii of gyration from radius and central angle.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Circular Segment</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:150mm&quot;&gt;&lt;img style=&quot;height:120pt;&quot; alt=&quot;segment.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/segment.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Radius -&#39;</span><span class="nv">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
@@ -4581,12 +4672,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1   90</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Circular Segment </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a circular segment: area, centroid, second moments of area and radii of gyration from radius and central angle. --> 
+<div class="calcpad-h3">Geometrical Properties of Circular Segment </div>
 <div style="max-width:150mm"><img style="height:120pt;" alt="segment.png" class="side" src="Images/mechanics/sections/segment.png"></div> 
-<p>Radius - <span class="eq"><var>r</var> = <u class="input-3">1</u> </span> m </p>
-<p>Angle - <span class="eq"><var>α</var> = <u class="input-4">90</u> </span> &deg; </p>
+<p>Radius - <span class="eq"><var>r</var> = <u class="input-4">1</u> </span> m </p>
+<p>Angle - <span class="eq"><var>α</var> = <u class="input-5">90</u> </span> &deg; </p>
 <p><span class="eq"><var>k</var> = <span class="dvc"><var>π</var><span class="dvl"></span>180</span> = <span class="dvc">3.141593<span class="dvl"></span>180</span> = 0.01745329</span></p>
 <p><span class="eq"><var>a</var> = &ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;2 · <var>r</var><sup>2</sup> ·  ( 1 − <b>cos</b> ( <var>α</var> )  ) </span> = &ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp;2 · 1<sup>2</sup> ·  ( 1 − <b>cos</b> ( 90 )  ) </span> = 1.414214</span> m </p>
 <p><span class="eq"><var>h</var> = &ensp;&ensp;<span class="o1"><span class="r1"></span><var>r</var><sup>2</sup> − <span class="dvc"><var>a</var><sup>2</sup><span class="dvl"></span>4</span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span>1<sup>2</sup> − <span class="dvc">1.414214<sup>2</sup><span class="dvl"></span>4</span></span> = 0.7071068</span> m </p>
@@ -4608,12 +4701,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.03137259<span class="dvl"></span>0.2853982</span></span> = 0.3315505</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="square">Square</h2>
+<h2 id="square">Square<a class="headerlink" href="#square" title="Permanent link">&para;</a></h2>
+<p>Section properties of a square: area <span class="arithmatex">\(A = a^2\)</span>, <span class="arithmatex">\(I_x = I_y = a^4/12\)</span>, section modulus and radius of gyration.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Square</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:100mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;square.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/square.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Side length</span>
@@ -4633,12 +4728,14 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Square </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a square: area $A = a^2$, $I_x = I_y = a^4/12$, section modulus and radius of gyration. --> 
+<div class="calcpad-h3">Geometrical Properties of Square </div>
 <div style="max-width:100mm"><img style="height:135pt;" alt="square.png" class="side" src="Images/mechanics/sections/square.png"></div> 
 <p>Side length </p>
-<p><span class="eq"><var>a</var> = <u class="input-4">1</u> </span> m </p>
+<p><span class="eq"><var>a</var> = <u class="input-5">1</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var> = <var>a</var><sup>2</sup> = 1<sup>2</sup> = 1</span> m<sup>2</sup> </p>
 <p>Centroid </p>
@@ -4654,12 +4751,14 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.1666667<span class="dvl"></span>1</span></span> = 0.4082483</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
-<h2 id="trapezoid">Trapezoid</h2>
+<h2 id="trapezoid">Trapezoid<a class="headerlink" href="#trapezoid" title="Permanent link">&para;</a></h2>
+<p>Section properties of a trapezoid: area, centroid offsets, <span class="arithmatex">\(I_x\)</span>, <span class="arithmatex">\(I_y\)</span>, section moduli and radii of gyration from the two parallel sides and height.</p>
 <div class="example-grid">
-<div class="example-source">
+<figure>
+<figcaption>CalcpadCE Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Trapezoid</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:130mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;Trapezoid.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/trapezoid.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
@@ -4684,14 +4783,16 @@
 <span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u2   1   1</span>
 </code></pre></div>
 
-</div>
-<div class="example-output">
-<div class="calcpad-output"><div class="calcpad-h3">Geometrical Properties of Trapezoid </div>
+</figure>
+<figure class="example-output">
+<figcaption>Rendered Output:</figcaption>
+<div class="calcpad-output"><!-- Section properties of a trapezoid: area, centroid offsets, $I_x$, $I_y$, section moduli and radii of gyration from the two parallel sides and height. --> 
+<div class="calcpad-h3">Geometrical Properties of Trapezoid </div>
 <div style="max-width:130mm"><img style="height:135pt;" alt="Trapezoid.png" class="side" src="Images/mechanics/sections/trapezoid.png"></div> 
 <p>Dimensions </p>
-<p><span class="eq"><var>a</var> = <u class="input-4">2</u> </span> m, <span class="eq"><var>b</var> = <u class="input-4">1</u> </span> m </p>
+<p><span class="eq"><var>a</var> = <u class="input-5">2</u> </span> m, <span class="eq"><var>b</var> = <u class="input-5">1</u> </span> m </p>
 <p>Height </p>
-<p><span class="eq"><var>h</var> = <u class="input-6">1</u> </span> m </p>
+<p><span class="eq"><var>h</var> = <u class="input-7">1</u> </span> m </p>
 <p>Area </p>
 <p><span class="eq"><var>A</var> = <span class="dvc"><var>h</var> ·  ( <var>a</var> + <var>b</var> ) <span class="dvl"></span>2</span> = <span class="dvc">1 ·  ( 2 + 1 ) <span class="dvl"></span>2</span> = 1.5</span> m<sup>2</sup> </p>
 <p>Centroid </p>
@@ -4710,7 +4811,7 @@
 <p><span class="eq"><var>r</var><sub>x</sub> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc"><var>I</var><sub>x</sub><span class="dvl"></span><var>A</var></span></span> = &ensp;&ensp;<span class="o1"><span class="r1"></span><span class="dvc">0.4328704<span class="dvl"></span>1.5</span></span> = 0.5371967</span> m </p>
 <p>&nbsp;</p>
 </div>
-</div>
+</figure>
 </div>
 
 <p>Spotted an error? <a href="https://github.com/imartincei/CalcpadCE/tree/main/Examples/Engineering/Geometrical">Edit these examples.</a></p>
@@ -4780,7 +4881,7 @@
       
         <script src="../javascripts/mathjax.js"></script>
       
-        <script src="../javascripts/mathjax/startup.js"></script>
+        <script src="../javascripts/mathjax/tex-chtml.js"></script>
       
         <script src="../javascripts/example-layout.js"></script>
       

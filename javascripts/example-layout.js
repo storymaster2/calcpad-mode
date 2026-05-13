@@ -14,7 +14,7 @@
  */
 function syncExampleHeights() {
     document.querySelectorAll('.example-grid').forEach(function (grid) {
-        var source = grid.querySelector('.example-source');
+        var source = grid.querySelector('.highlight');
         var output = grid.querySelector('.example-output');
         if (!source || !output) return;
         var code = source.querySelector('pre > code');
