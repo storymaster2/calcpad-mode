@@ -379,13 +379,9 @@
         },
         {
             "label": "Extension: Build VSIX",
-            "type": "shell",
-            "command": "npx",
-            "args": ["vsce", "package", "--no-dependencies"],
-            "options": {
-                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
-            },
-            "dependsOn": "Extension: Compile + Deploy Bundle",
+            "type": "npm",
+            "script": "package:vsix",
+            "path": "Calcpad.Web/frontend/vscode-calcpad",
             "group": "build",
             "presentation": {
                 "reveal": "always",

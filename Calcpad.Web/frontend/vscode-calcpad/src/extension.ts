@@ -1313,17 +1313,16 @@ export async function activate(context: vscode.ExtensionContext) {
                 const dotnetManager = new DotnetRuntimeManager(outputChannel);
                 const globalStorage = context.globalStorageUri.fsPath;
 
-                // When the self-contained apphost binary is bundled, the
-                // server starts via `Calcpad.Server[.exe]` and brings its
-                // own .NET runtime — there's no need to resolve / install a
-                // system `dotnet`. Skipping the resolver fixes the Linux
-                // case where users without a system .NET 10 install were
-                // silently falling back to the remote URL (default
-                // http://localhost:9420), making VS Code talk to whatever
-                // server happened to be on that port (e.g. Calcpad-Desktop).
-                const dotnetPromise: Promise<string | null> = appHostExists
-                    ? Promise.resolve('dotnet') // unused — apphost path takes over in start()
-                    : dotnetManager.resolveDotnetPath(globalStorage, configuredDotnetPath, serverMode);
+                // The VSIX now ships framework-dependent: the apphost is
+                // present but requires a .NET 10 runtime to be installed
+                // somewhere on the user's machine. Always run the resolver
+                // so we either find the system install, prompt the user to
+                // install one locally, or fall back to the remote API.
+                // (Calcpad-desktop's self-contained flow is unaffected — this
+                // path only runs in vscode-calcpad.) When the resolver returns
+                // a path under the extension's globalStorage, the server-manager
+                // sets DOTNET_ROOT so the apphost can find that runtime.
+                const dotnetPromise = dotnetManager.resolveDotnetPath(globalStorage, configuredDotnetPath, serverMode);
 
                 dotnetPromise.then((resolvedDotnetPath) => {
                     if (!resolvedDotnetPath) {

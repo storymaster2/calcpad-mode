@@ -28,6 +28,12 @@
  *                          others) instead of expecting the consumer to
  *                          download SkiaSharp natives at runtime. Required
  *                          for calcpad-desktop (no runtime download path).
+ *   --strip-external-deps  After mirroring, delete the managed NuGet DLLs that
+ *                          the VS Code extension downloads at first activation
+ *                          (DocumentFormat.OpenXml, PuppeteerSharp, EF Core,
+ *                          AWSSDK, PDFsharp). Trims ~20 MB from the VSIX.
+ *                          Pair with --framework-dependent for vscode-calcpad;
+ *                          do NOT pass for calcpad-desktop.
  *
  * Files matching PRESERVE_PATTERNS in the target are kept across syncs so
  * runtime-downloaded SkiaSharp natives, lock files, and logs aren't wiped.
@@ -44,6 +50,33 @@ const VSCODE_DIR = resolve(__dirname, '..');
 const BACKEND_DIR = resolve(VSCODE_DIR, '..', '..', 'backend');
 const CSPROJ = join(BACKEND_DIR, 'Calcpad.Server.csproj');
 const DEFAULT_TARGET_BIN = join(VSCODE_DIR, 'bin');
+
+// Managed NuGet DLLs that the VS Code extension fetches from nuget.org on
+// first activation (see EXTERNAL_MANAGED_DEPS in calcpadServerManager.ts).
+// When --strip-external-deps is passed we delete these from the synced bin/
+// so they don't ride along inside the VSIX. Keep this list aligned with the
+// extension's EXTERNAL_MANAGED_DEPS — drift means the extension will either
+// ship duplicate DLLs (still works, just bloated) or fail to redownload them
+// (the existence check in ensureExternalManagedDeps short-circuits).
+const EXTERNAL_DEP_DLLS = [
+    'DocumentFormat.OpenXml.dll',
+    'DocumentFormat.OpenXml.Framework.dll',
+    'PuppeteerSharp.dll',
+    'WebDriverBiDi.dll',
+    'Microsoft.EntityFrameworkCore.dll',
+    'Microsoft.EntityFrameworkCore.Relational.dll',
+    'AWSSDK.Core.dll',
+    'AWSSDK.S3.dll',
+    'PdfSharp.dll',
+    'PdfSharp.BarCodes.dll',
+    'PdfSharp.Charting.dll',
+    'PdfSharp.Cryptography.dll',
+    'PdfSharp.Quality.dll',
+    'PdfSharp.Shared.dll',
+    'PdfSharp.Snippets.dll',
+    'PdfSharp.System.dll',
+    'PdfSharp.WPFonts.dll',
+];
 
 // Filenames that the extension generates at runtime (downloaded native libs,
 // log files, lock files, …). We never want to wipe these on resync.
@@ -68,11 +101,13 @@ function parseArgs(argv) {
         rid: null,
         target: DEFAULT_TARGET_BIN,
         keepSkiaNatives: false,
+        stripExternalDeps: false,
     };
     for (const arg of argv.slice(2)) {
         if (arg === '--skip-build') out.skipBuild = true;
         else if (arg === '--framework-dependent') out.frameworkDependent = true;
         else if (arg === '--keep-skia-natives') out.keepSkiaNatives = true;
+        else if (arg === '--strip-external-deps') out.stripExternalDeps = true;
         else if (arg.startsWith('--configuration=')) out.configuration = arg.split('=')[1];
         else if (arg.startsWith('--rid=')) out.rid = arg.split('=')[1];
         else if (arg.startsWith('--target=')) out.target = resolve(arg.split('=')[1]);
@@ -250,6 +285,23 @@ function pruneForeignPlaywright(playwrightDir, rid) {
     }
 }
 
+function stripExternalDeps(targetBin) {
+    let stripped = 0;
+    let bytes = 0;
+    for (const dll of EXTERNAL_DEP_DLLS) {
+        const p = join(targetBin, dll);
+        if (!existsSync(p)) continue;
+        try {
+            bytes += statSync(p).size;
+            rmSync(p, { force: true });
+            stripped++;
+        } catch (err) {
+            console.log(`[sync-bundled-server] could not strip ${dll}: ${err.message}`);
+        }
+    }
+    console.log(`[sync-bundled-server] stripped ${stripped} external NuGet DLLs (${(bytes / 1024 / 1024).toFixed(1)} MB) — extension will redownload on first activation`);
+}
+
 function bundleSizeMb(dir) {
     let total = 0;
     function walk(p) {
@@ -286,6 +338,10 @@ function main() {
 
     cleanTarget(targetBin);
     copyPublishedTree(src, targetBin, { keepSkiaNatives: args.keepSkiaNatives, rid });
+
+    if (args.stripExternalDeps) {
+        stripExternalDeps(targetBin);
+    }
 
     // Quick sanity check — the server DLL and its deps manifest must be present,
     // and the apphost needs +x on POSIX.

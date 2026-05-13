@@ -120,6 +120,7 @@
 ### Bugs
 
 -   Fix #varsub to work when using v.i = x.i + y.i, this currently treats as #nosub
+-   Calcpad's parser doesn't handle .iζ indexing on inline-substituted expressions like first(row(...)) (it parses .iζ as a unit suffix).
 
 ### Testing
 

@@ -236,6 +236,20 @@ export class CalcpadServerManager {
             // other VS Code windows are still using it.
             CALCPAD_DETACHED: '1',
         };
+
+        // When the user installs the .NET runtime via the extension's local
+        // download path (DotnetRuntimeManager), `this.dotnetPath` is an
+        // absolute path inside globalStorage. The apphost (Calcpad.Server.exe)
+        // can't find that runtime on its own — it probes the standard install
+        // locations and PATH. Setting DOTNET_ROOT to the runtime's directory
+        // lets the apphost spawn succeed with a locally-installed runtime.
+        // A relative path (e.g. plain "dotnet") means "use PATH", in which
+        // case we leave DOTNET_ROOT alone so the apphost falls back to the
+        // standard probing chain — which is correct for self-contained
+        // bundles (Calcpad-Desktop) and for users with a system .NET install.
+        if (path.isAbsolute(this.dotnetPath)) {
+            childEnv.DOTNET_ROOT = path.dirname(this.dotnetPath);
+        }
         const spawnOpts = {
             stdio: ['pipe', 'pipe', 'pipe'] as ['pipe', 'pipe', 'pipe'],
             detached: true,

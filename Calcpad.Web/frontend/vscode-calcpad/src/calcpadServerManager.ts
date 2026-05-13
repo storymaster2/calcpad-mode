@@ -13,6 +13,71 @@ interface PlatformNativeInfo {
     nativeFileName: string;
 }
 
+/**
+ * NuGet dependencies stripped from the bundled bin/ and downloaded on first
+ * activation. Same shape and lifecycle as SkiaSharp's native libs — fetch the
+ * .nupkg from nuget.org, extract the DLLs we need into bin/, never re-download
+ * if the files are already present.
+ *
+ * Pulling these out shaves ~20 MB off the VSIX; the rest of the savings comes
+ * from the framework-dependent publish (no bundled .NET runtime) handled by
+ * DotnetRuntimeManager.
+ *
+ * Versions must stay in lock-step with Calcpad.Server.deps.json. The sync
+ * script (sync-bundled-server.mjs) strips these same DLLs from the bundled
+ * bin/ before packaging — keep both lists in sync when bumping a package.
+ */
+interface ExternalManagedDep {
+    /** NuGet package id, used to build the v2 download URL. */
+    nugetPackage: string;
+    /** Exact version pinned in Calcpad.Server.deps.json. */
+    version: string;
+    /**
+     * DLL filenames (without folder) that must end up in bin/. Resolved by
+     * scanning lib/<tfm>/ inside the .nupkg in TFM-preference order.
+     */
+    dlls: string[];
+}
+
+// Mapping derived from Calcpad.Server.deps.json — that's the authoritative
+// source for which package each DLL ships in (DocumentFormat.OpenXml splits
+// across two packages, EntityFrameworkCore.Abstractions/Sqlite stay bundled
+// because they're small, etc.). Re-derive after any backend csproj change:
+//
+//   node -e "const d=require('./Calcpad.Server.deps.json').targets;
+//            for (const t of Object.values(d)) for (const [id,info] of Object.entries(t))
+//                if (info.runtime) console.log(id, Object.keys(info.runtime));"
+const EXTERNAL_MANAGED_DEPS: ExternalManagedDep[] = [
+    { nugetPackage: 'DocumentFormat.OpenXml', version: '3.3.0', dlls: ['DocumentFormat.OpenXml.dll'] },
+    { nugetPackage: 'DocumentFormat.OpenXml.Framework', version: '3.3.0', dlls: ['DocumentFormat.OpenXml.Framework.dll'] },
+    { nugetPackage: 'PuppeteerSharp', version: '21.1.1', dlls: ['PuppeteerSharp.dll'] },
+    { nugetPackage: 'WebDriverBiDi', version: '0.0.43', dlls: ['WebDriverBiDi.dll'] },
+    { nugetPackage: 'Microsoft.EntityFrameworkCore', version: '10.0.0', dlls: ['Microsoft.EntityFrameworkCore.dll'] },
+    { nugetPackage: 'Microsoft.EntityFrameworkCore.Relational', version: '10.0.0', dlls: ['Microsoft.EntityFrameworkCore.Relational.dll'] },
+    { nugetPackage: 'AWSSDK.Core', version: '3.7.401', dlls: ['AWSSDK.Core.dll'] },
+    { nugetPackage: 'AWSSDK.S3', version: '3.7.412', dlls: ['AWSSDK.S3.dll'] },
+    {
+        // PDFsharp meta-package ships all 9 PdfSharp.* DLLs under one nupkg —
+        // single download fans out into every PdfSharp file we strip.
+        nugetPackage: 'PDFsharp',
+        version: '6.2.0',
+        dlls: [
+            'PdfSharp.dll',
+            'PdfSharp.BarCodes.dll',
+            'PdfSharp.Charting.dll',
+            'PdfSharp.Cryptography.dll',
+            'PdfSharp.Quality.dll',
+            'PdfSharp.Shared.dll',
+            'PdfSharp.Snippets.dll',
+            'PdfSharp.System.dll',
+            'PdfSharp.WPFonts.dll',
+        ],
+    },
+];
+
+/** TFM fallback chain. Highest-version-first; first folder containing a DLL wins. */
+const TFM_PREFERENCE = ['net10.0', 'net9.0', 'net8.0', 'net7.0', 'net6.0', 'netstandard2.1', 'netstandard2.0'];
+
 function getPlatformNativeInfo(): PlatformNativeInfo | null {
     const platform = process.platform;
     const arch = process.arch;
@@ -81,8 +146,180 @@ export class CalcpadServerManager extends BaseServerManager implements vscode.Di
     }
 
     public override async start(): Promise<void> {
+        await this.ensureExternalManagedDeps();
         await this.ensureNativeLibs();
         return super.start();
+    }
+
+    /**
+     * Ensure the chunky managed NuGet DLLs (DocumentFormat.OpenXml, PuppeteerSharp,
+     * EF Core, AWSSDK, PDFsharp …) that we strip from the VSIX before packaging
+     * are present in bin/. Same pattern as ensureNativeLibs — download once,
+     * cache permanently in bin/, never re-fetch.
+     */
+    private async ensureExternalManagedDeps(): Promise<void> {
+        const binDir = path.join(this.extensionPath, 'bin');
+        const missing = EXTERNAL_MANAGED_DEPS.filter(dep =>
+            dep.dlls.some(dll => !fs.existsSync(path.join(binDir, dll)))
+        );
+        if (missing.length === 0) {
+            this.outputChannel.appendLine('[ServerManager] All external managed deps already present');
+            return;
+        }
+
+        this.outputChannel.appendLine(
+            `[ServerManager] Missing managed deps: ${missing.map(d => `${d.nugetPackage}/${d.version}`).join(', ')}`
+        );
+
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: 'CalcPad: Downloading server libraries...',
+            cancellable: false
+        }, async (progress) => {
+            for (let i = 0; i < missing.length; i++) {
+                const dep = missing[i];
+                progress.report({
+                    message: `${dep.nugetPackage} (${i + 1}/${missing.length})`,
+                    increment: 100 / missing.length
+                });
+                await this.downloadManagedDep(dep, binDir);
+            }
+        });
+    }
+
+    private async downloadManagedDep(dep: ExternalManagedDep, binDir: string): Promise<void> {
+        const tmpDir = path.join(binDir, '.tmp-nupkg');
+        try {
+            const extractDir = await this.fetchAndUnzipNupkg(dep.nugetPackage, dep.version, tmpDir);
+
+            for (const dll of dep.dlls) {
+                const source = this.findDllInLibFolders(extractDir, dll);
+                if (!source) {
+                    throw new Error(
+                        `${dll} not found in ${dep.nugetPackage}/${dep.version} ` +
+                        `(searched lib/${TFM_PREFERENCE.join(',')}/)`
+                    );
+                }
+                const target = path.join(binDir, dll);
+                fs.copyFileSync(source, target);
+                this.outputChannel.appendLine(`[ServerManager] Installed ${dll} from ${dep.nugetPackage}/${dep.version}`);
+            }
+        } finally {
+            try { fs.rmSync(tmpDir, { recursive: true, force: true }); }
+            catch { /* best-effort */ }
+        }
+    }
+
+    /**
+     * Walk lib/{tfm}/ folders in TFM-preference order and return the first
+     * filesystem path that contains `dllName`. Returns null if nothing matches —
+     * callers turn that into a fatal "package layout changed" error.
+     */
+    private findDllInLibFolders(extractDir: string, dllName: string): string | null {
+        const libDir = path.join(extractDir, 'lib');
+        if (!fs.existsSync(libDir)) return null;
+        for (const tfm of TFM_PREFERENCE) {
+            const candidate = path.join(libDir, tfm, dllName);
+            if (fs.existsSync(candidate)) return candidate;
+        }
+        return null;
+    }
+
+    /**
+     * Download a NuGet package's .nupkg and extract it into a fresh subdir
+     * under `tmpDir`. Returns the extracted directory. Caller is responsible
+     * for cleaning up tmpDir.
+     */
+    private async fetchAndUnzipNupkg(packageId: string, version: string, tmpDir: string): Promise<string> {
+        const url = `https://www.nuget.org/api/v2/package/${packageId}/${version}`;
+        this.outputChannel.appendLine(`[ServerManager] Fetching ${packageId} v${version}`);
+
+        const response = await fetch(url, { redirect: 'follow' });
+        if (!response.ok) {
+            throw new Error(`Failed to download ${packageId} v${version}: HTTP ${response.status}`);
+        }
+        const buffer = Buffer.from(await response.arrayBuffer());
+
+        // Use a unique subdir per call so concurrent extractions don't clash.
+        const slot = path.join(tmpDir, `${packageId}-${version}`);
+        fs.mkdirSync(slot, { recursive: true });
+        const nupkgPath = path.join(slot, 'package.nupkg');
+        fs.writeFileSync(nupkgPath, buffer);
+
+        const extractDir = path.join(slot, 'extracted');
+        // Clean slate — a partial extract from a prior failed run can poison
+        // both extraction back-ends (Expand-Archive silently no-ops on a
+        // populated dir; ZipFile.ExtractToDirectory throws on conflicts).
+        fs.rmSync(extractDir, { recursive: true, force: true });
+        fs.mkdirSync(extractDir, { recursive: true });
+
+        this.extractZipToDir(nupkgPath, extractDir);
+
+        // Signed .nupkg files have made Expand-Archive return success with an
+        // empty output directory more than once; this check turns that silent
+        // failure into a clear error message instead of "DLL not found".
+        const libDir = path.join(extractDir, 'lib');
+        if (!fs.existsSync(libDir)) {
+            throw new Error(
+                `Extraction of ${packageId}/${version} produced no lib/ directory at ${libDir}. ` +
+                `The .nupkg downloaded successfully but the unzip step appears to have silently failed.`
+            );
+        }
+        return extractDir;
+    }
+
+    /**
+     * Cross-platform .nupkg / .zip extractor.
+     *
+     * On Windows we call `[System.IO.Compression.ZipFile]::ExtractToDirectory`
+     * directly via PowerShell — `Expand-Archive` has a long-standing habit of
+     * silently no-op'ing on signed `.nupkg` files (the `.signature.p7s` member
+     * trips up its file iteration), which manifested here as
+     * "DocumentFormat.OpenXml.dll not found in lib/…" even though the DLL was
+     * sitting in the .nupkg at lib/net8.0/. The underlying .NET API works fine.
+     *
+     * On Linux/macOS we shell out to `unzip`, which is preinstalled in macOS
+     * and present on essentially every Linux distro. We surface stderr so a
+     * missing `unzip` doesn't degenerate into the same "lib/ not found"
+     * mystery — the user sees "unzip: command not found" instead.
+     *
+     * Paths are passed via env vars on Windows so backslashes / apostrophes /
+     * spaces in the user's extension path can't break shell quoting.
+     */
+    private extractZipToDir(zipPath: string, destDir: string): void {
+        if (process.platform === 'win32') {
+            try {
+                execSync(
+                    'powershell -NoProfile -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; ' +
+                    '[System.IO.Compression.ZipFile]::ExtractToDirectory($env:NUPKG_ZIP, $env:NUPKG_DST)"',
+                    {
+                        timeout: 120000,
+                        env: { ...process.env, NUPKG_ZIP: zipPath, NUPKG_DST: destDir },
+                        stdio: ['ignore', 'ignore', 'pipe'],
+                    }
+                );
+            } catch (err) {
+                const stderr = (err as { stderr?: Buffer }).stderr?.toString().trim() || '';
+                throw new Error(`Windows ZIP extract failed: ${stderr || (err as Error).message}`);
+            }
+        } else {
+            try {
+                execSync(`unzip -o "${zipPath}" -d "${destDir}"`, {
+                    timeout: 120000,
+                    stdio: ['ignore', 'ignore', 'pipe'],
+                });
+            } catch (err) {
+                const stderr = (err as { stderr?: Buffer }).stderr?.toString().trim() || '';
+                // ENOENT from execSync's spawn = `unzip` isn't on PATH at all.
+                if ((err as { code?: string }).code === 'ENOENT' || /command not found|not recognized/i.test(stderr)) {
+                    throw new Error(
+                        `\`unzip\` not found on PATH. Install it (e.g. \`apt install unzip\` / ` +
+                        `\`brew install unzip\`) and reload the window to retry the bundle download.`
+                    );
+                }
+                throw new Error(`unzip failed: ${stderr || (err as Error).message}`);
+            }
+        }
     }
 
     private async ensureNativeLibs(): Promise<void> {
@@ -139,23 +376,10 @@ export class CalcpadServerManager extends BaseServerManager implements vscode.Di
         progress.report({ message: 'Extracting native library...' });
 
         const extractDir = path.join(tmpDir, 'extracted');
+        fs.rmSync(extractDir, { recursive: true, force: true });
         fs.mkdirSync(extractDir, { recursive: true });
 
-        try {
-            if (process.platform === 'win32') {
-                // Expand-Archive only accepts .zip extension, so rename the .nupkg first
-                const zipPath = path.join(tmpDir, 'package.zip');
-                fs.renameSync(nupkgPath, zipPath);
-                execSync(
-                    `powershell -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${extractDir}' -Force"`,
-                    { timeout: 60000 }
-                );
-            } else {
-                execSync(`unzip -o "${nupkgPath}" -d "${extractDir}"`, { timeout: 60000 });
-            }
-        } catch (err) {
-            throw new Error(`Failed to extract nupkg: ${err instanceof Error ? err.message : String(err)}`);
-        }
+        this.extractZipToDir(nupkgPath, extractDir);
 
         const ridSearchOrder = [info.rid];
         if (info.rid.startsWith('osx-')) {
