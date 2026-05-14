@@ -383,7 +383,7 @@
   <span class="md-ellipsis">
     
   
-    About CalcpadCE (Community Edition)
+    About CalcpadCE
   
 
     
@@ -1027,7 +1027,7 @@
   <span class="md-ellipsis">
     
   
-    High Performance Vectors and Matrices
+    High Performance Functions
   
 
     
@@ -2509,7 +2509,7 @@ The semantics match the plain mode one-to-one, so you can drop <code>hp(...)</co
 <p>HP foundations: literal vectors wrapped with <span class="arithmatex">\(hp(...)\)</span>, the corresponding creational helpers, indexing and the broadcast operators on packed storage.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;Direct:</span>
 <span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">hp</span><span class="p">([</span><span class="nb">cos</span><span class="p">(</span><span class="m">0</span><span class="p">);</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">])</span>
 <span class="c1">&#39;Direct with another vector:</span>
@@ -2724,7 +2724,7 @@ The semantics match the plain mode one-to-one, so you can drop <code>hp(...)</co
 <p>HP variant of the data-oriented toolkit: <span class="arithmatex">\(sort\)</span>, <span class="arithmatex">\(rsort\)</span>, <span class="arithmatex">\(order\)</span>, <span class="arithmatex">\(find\)</span>, <span class="arithmatex">\(count\)</span> and the standard reductions, all running on packed numerical storage.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Sort&lt;/b&gt;(&lt;em&gt;vector&lt;/em&gt;) and &lt;b&gt;Rsort&lt;/b&gt;(&lt;em&gt;vector&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">hp</span><span class="p">([</span><span class="m">4</span><span class="p">;</span><span class="w"> </span><span class="m">0</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="o">-</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">1</span><span class="p">])</span>
@@ -2822,7 +2822,7 @@ The semantics match the plain mode one-to-one, so you can drop <code>hp(...)</co
 <p>HP variant of the vector math toolkit: <span class="arithmatex">\(L_p\)</span> norms, dot and cross products, element-wise transcendentals and statistical primitives, evaluated on packed storage.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Norm_p&lt;/b&gt;(&lt;em&gt;vector&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nb">norm_p</span><span class="p">(</span><span class="nb">hp</span><span class="p">([</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">]);</span><span class="w"> </span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;- the Lp norm of the vector for &#39;</span><span class="nv">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span>
@@ -3045,7 +3045,7 @@ The semantics match the plain mode one-to-one, so you can drop <code>hp(...)</co
 <p>HP variant of the structural toolkit: <span class="arithmatex">\(len\)</span>, <span class="arithmatex">\(size\)</span>, <span class="arithmatex">\(resize\)</span>, <span class="arithmatex">\(slice\)</span>, <span class="arithmatex">\(join\)</span> and <span class="arithmatex">\(reverse\)</span>, operating in-place on packed storage where possible.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Len&lt;/b&gt;(&lt;em&gt;vector&lt;/em&gt;) and &lt;b&gt;Size&lt;/b&gt;(&lt;em&gt;vector&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="c1">&#39;Explicitly initialized short vectors:</span>

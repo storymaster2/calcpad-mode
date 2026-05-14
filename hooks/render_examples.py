@@ -324,7 +324,7 @@ def _render_fragment(cpd_file: Path, cli_path: Path, label: str = "") -> str:
         result = subprocess.run(
             [str(cli_path), str(cpd_file), out_path, "-b", "-s"],
             capture_output=True,
-            timeout=30,
+            timeout=60,
         )
         if result.returncode != 0:
             stderr = result.stderr.decode(errors="replace").strip()
@@ -503,7 +503,7 @@ def _render_category_page(category: str, cpd_files: list[Path], fragments: dict[
         # unchanged (including blank lines and raw <script> content inside it).
         lines.append('<div class="example-grid">')
         lines.append('<figure>')
-        lines.append(f'<figcaption>CalcpadCE Code:</figcaption>')
+        lines.append(f'<figcaption>Code:</figcaption>')
         lines.append(highlighted_source)
         lines.append('</figure>')
         lines.append('<figure class="example-output">')

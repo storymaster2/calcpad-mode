@@ -383,7 +383,7 @@
   <span class="md-ellipsis">
     
   
-    About CalcpadCE (Community Edition)
+    About CalcpadCE
   
 
     
@@ -1027,7 +1027,7 @@
   <span class="md-ellipsis">
     
   
-    High Performance Vectors and Matrices
+    High Performance Functions
   
 
     
@@ -2489,7 +2489,7 @@ The <a href="#double-interpolation">bilinear-style table lookup</a> chains 1D sp
 A side-by-side accuracy comparison that quickly reveals overshoot, kinks and where the smooth spline pays off.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;h4&gt;Exponential function&lt;/h4&gt;</span>
 <span class="nv">f</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">e</span><span class="o">^</span><span class="nv">x</span>
 <span class="c1">&#39;Values</span>
@@ -2572,7 +2572,7 @@ A side-by-side accuracy comparison that quickly reveals overshoot, kinks and whe
 A compact reference for picking the right scheme when working with discrete engineering tables.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;h4&gt;Data functions in CalcpadCE&lt;/h4&gt;</span>
 <span class="nv">f_1</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">take</span><span class="p">(</span><span class="nv">x</span><span class="p">;</span><span class="w"> </span><span class="m">9</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="o">-</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">4.5</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">;</span><span class="w"> </span><span class="o">-</span><span class="m">4</span><span class="p">)</span><span class="c1">&#39; - discrete values (vector) &lt;span style=&quot;color:CornflowerBlue;&quot;&gt;━━━&lt;/span&gt;</span>
 <span class="nv">f_2</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">line</span><span class="p">(</span><span class="nv">x</span><span class="p">;</span><span class="w"> </span><span class="m">9</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="o">-</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">4.5</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">;</span><span class="w"> </span><span class="o">-</span><span class="m">4</span><span class="p">)</span><span class="c1">&#39; - linear interpolation &lt;span style=&quot;color:YellowGreen;&quot;&gt;━━━&lt;/span&gt;</span>
@@ -2624,7 +2624,7 @@ A compact reference for picking the right scheme when working with discrete engi
 The canonical pattern for evaluating two-input design tables on intermediate values.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;Input parameters</span>
 <span class="nv">x</span><span class="p">(</span><span class="nv">j</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">spline</span><span class="p">(</span><span class="nv">j</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">4</span><span class="p">;</span><span class="w"> </span><span class="m">8</span><span class="p">)</span><span class="c1">&#39;- x values</span>
 <span class="nv">y</span><span class="p">(</span><span class="nv">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">spline</span><span class="p">(</span><span class="nv">i</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">9</span><span class="p">;</span><span class="w"> </span><span class="m">27</span><span class="p">)</span><span class="c1">&#39;- y values</span>

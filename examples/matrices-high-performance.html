@@ -383,7 +383,7 @@
   <span class="md-ellipsis">
     
   
-    About CalcpadCE (Community Edition)
+    About CalcpadCE
   
 
     
@@ -1027,7 +1027,7 @@
   <span class="md-ellipsis">
     
   
-    High Performance Vectors and Matrices
+    High Performance Functions
   
 
     
@@ -2553,7 +2553,7 @@ The semantics match the plain mode one-to-one, so you can drop <code>hp(...)</co
 <p>HP foundations: literal matrices wrapped with <span class="arithmatex">\(hp(...)\)</span>, <span class="arithmatex">\(isHp\)</span> checks, indexing, slicing and submatrix assignment on packed numerical storage.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;Direct:</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">hp</span><span class="p">([</span><span class="m">1</span><span class="p">|</span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">|</span><span class="m">4</span><span class="p">;</span><span class="w"> </span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">|</span><span class="m">7</span><span class="p">;</span><span class="w"> </span><span class="m">8</span><span class="p">])</span><span class="c1">&#39;,&#39;</span><span class="nb">isHp</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span>
 <span class="c1">&#39;Direct with vectors:</span>
@@ -2671,7 +2671,7 @@ The semantics match the plain mode one-to-one, so you can drop <code>hp(...)</co
 <p>HP variant of the creational helpers: <span class="arithmatex">\(matrix\)</span>, <span class="arithmatex">\(identity\)</span>, <span class="arithmatex">\(diagonal\)</span>, banded, random and Vandermonde constructors emitting packed storage.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Matrix&lt;/b&gt;(&lt;em&gt;m&lt;/em&gt;; &lt;em&gt;n&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nb">matrix_hp</span><span class="p">(</span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">4</span><span class="p">)</span><span class="c1">&#39;- creates a 3x4 full (rectangular) matrix</span>
@@ -2926,7 +2926,7 @@ The semantics match the plain mode one-to-one, so you can drop <code>hp(...)</co
 <p>HP variant of the data toolkit: row- and column-wise sorting, ordering, search and reductions, all on packed numerical storage.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Sort_Cols&lt;/b&gt;(&lt;em&gt;matrix&lt;/em&gt;; &lt;em&gt;row index&lt;/em&gt;) and &lt;b&gt;Rsort_Cols&lt;/b&gt;(&lt;em&gt;matrix&lt;/em&gt;; &lt;em&gt;row index&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">hp</span><span class="p">([</span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">|</span><span class="m">4</span><span class="p">;</span><span class="w"> </span><span class="m">9</span><span class="p">;</span><span class="w"> </span><span class="m">1</span><span class="p">|</span><span class="m">6</span><span class="p">;</span><span class="w"> </span><span class="m">8</span><span class="p">;</span><span class="w"> </span><span class="m">7</span><span class="p">])</span>
@@ -3235,7 +3235,7 @@ The semantics match the plain mode one-to-one, so you can drop <code>hp(...)</co
 <p>HP variant of the linear-algebra toolkit: Hadamard product, determinant, inverse, transpose, norms and decomposition helpers on packed numerical storage.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Hprod&lt;/b&gt;(&lt;em&gt;first matrix&lt;/em&gt;; &lt;em&gt;second matrix&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">hp</span><span class="p">([</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">|</span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">4</span><span class="p">|</span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">])</span><span class="c1">&#39;- first matrix</span>
@@ -4269,7 +4269,7 @@ The semantics match the plain mode one-to-one, so you can drop <code>hp(...)</co
 <p>HP variant of the structural toolkit: <span class="arithmatex">\(n_{rows}\)</span>, <span class="arithmatex">\(n_{cols}\)</span>, resize, join, reshape and submatrix helpers on packed storage, with in-place semantics where possible.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;N_Rows&lt;/b&gt;(&lt;em&gt;matrix&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">hp</span><span class="p">([</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">|</span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">4</span><span class="p">|</span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">])</span>
@@ -4636,7 +4636,7 @@ The semantics match the plain mode one-to-one, so you can drop <code>hp(...)</co
 <p>HP variant of the matrix operators: element-wise vs. algebraic multiplication, comparison and logical operators broadcasting across packed storage.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;h4&gt;Matrix-matrix&lt;/h4&gt;</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">hp</span><span class="p">([</span><span class="m">0</span><span class="p">;</span><span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">|</span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">4</span><span class="p">;</span><span class="w"> </span><span class="m">5</span><span class="p">])</span><span class="c1">&#39;, &#39;</span><span class="nv">B</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">hp</span><span class="p">([</span><span class="m">11</span><span class="p">;</span><span class="w"> </span><span class="m">10</span><span class="p">;</span><span class="w"> </span><span class="m">9</span><span class="p">|</span><span class="m">8</span><span class="p">;</span><span class="w"> </span><span class="m">7</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">])</span>
 <span class="c1">&#39;Arithmetic:</span>

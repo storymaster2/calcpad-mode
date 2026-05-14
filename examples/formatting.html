@@ -383,7 +383,7 @@
   <span class="md-ellipsis">
     
   
-    About CalcpadCE (Community Edition)
+    About CalcpadCE
   
 
     
@@ -1027,7 +1027,7 @@
   <span class="md-ellipsis">
     
   
-    High Performance Vectors and Matrices
+    High Performance Functions
   
 
     
@@ -2554,7 +2554,7 @@
 <p>Reference for the built-in CSS classes (<span class="arithmatex">\(ref\)</span>, <span class="arithmatex">\(ok\)</span>, <span class="arithmatex">\(err\)</span>, <span class="arithmatex">\(warn\)</span>, <span class="arithmatex">\(note\)</span>) and how to define custom classes for highlighting design-check results inline.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;CSS Classes in CalcpadCE</span>
 <span class="c1">&#39;&lt;p class=&quot;ref&quot;&gt;[ref (No)]&lt;/p&gt;</span>
 <span class="c1">&#39;&lt;p&gt;Design checks: &lt;span class=&quot;ok&quot;&gt;ok&lt;/span&gt; / &lt;span class=&quot;err&quot;&gt;fail&lt;/span&gt;.</span>
@@ -2627,7 +2627,7 @@
 <p>Reusable check function that flips between <code>ok</code> and <code>err</code> CSS classes based on a utilisation ratio, the canonical pattern for engineering design checks.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Design check example</span>
 <span class="k">#def</span><span class="w"> </span><span class="nv">check</span>$<span class="p">(</span><span class="nv">s</span>$<span class="p">;</span><span class="w"> </span><span class="nv">f</span>$<span class="p">)</span>
 <span class="w">    </span><span class="k">#if</span><span class="w"> </span><span class="nv">s</span>$<span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nv">f</span>$
@@ -2666,7 +2666,7 @@
 <p>Builds a print-ready page header from a logo SVG and a small HTML table, the standard recipe for branded engineering reports.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;.header{width: 100%; max-width:170mm;} .header th{border: solid 1pt lightgray; text-align:left; font-size:90%;} .header th p{line-height:1em; } .logo{width:80pt; height:17.6pt; float:right; margin-top:3pt;} .addr{margin-bottom:8pt;} .pr{font-size:130%;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;table class=&quot;header&quot;&gt;&lt;thead&gt;</span>
 <span class="c1">&#39;&lt;tr&gt;&lt;th rowspan=3&gt;&lt;img class=&quot;logo&quot; src=&quot;https://raw.githubusercontent.com/imartincei/CalcpadCE/refs/heads/main/docs/media/logo.svg&quot; alt=&quot;logo&quot;&gt;</span>
@@ -2729,7 +2729,7 @@
 <p>Mixes Markdown headings, lists and tables with Calcpad math by toggling <code>#md on</code>, the building block for Markdown-driven reports.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="k">#md on</span>
 <span class="cs">&quot;Markdown in CalcpadCE</span>
 <span class="c1">&#39;---</span>
@@ -2793,7 +2793,7 @@
 <p>Full RC beam design check to <a href="https://en.wikipedia.org/wiki/Eurocode_2">Eurocode 2</a>, authored entirely in Markdown mode with page breaks for a print-ready report.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="k">#def</span><span class="w"> </span><span class="nv">page_break$</span><span class="w"> </span><span class="o">=</span> &#39;&lt;p style=&quot;break-after:page;&quot;&gt;&lt;/p&gt;
 <span class="k">#md on</span>
 <span class="c1">&#39;## RC Beam Design to Eurocode 2</span>
@@ -2981,7 +2981,7 @@
 <p>Reference for the <span class="arithmatex">\(round\)</span>, <span class="arithmatex">\(format\)</span> and <span class="arithmatex">\(scale\)</span> directives, covering decimal rounding, significant figures, scientific notation and unit-aware display.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Rounding and formatting numbers in CalcpadCE</span>
 <span class="k">#round</span><span class="w"> </span><span class="m">6</span>
 <span class="c1">&#39;Custom rounding -&#39;</span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">100</span><span class="o">*</span><span class="nb">sqr</span><span class="p">(</span><span class="m">2</span><span class="p">)</span><span class="c1">&#39; (to 6 digits)</span>

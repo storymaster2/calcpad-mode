@@ -383,7 +383,7 @@
   <span class="md-ellipsis">
     
   
-    About CalcpadCE (Community Edition)
+    About CalcpadCE
   
 
     
@@ -1027,7 +1027,7 @@
   <span class="md-ellipsis">
     
   
-    High Performance Vectors and Matrices
+    High Performance Functions
   
 
     
@@ -2554,7 +2554,7 @@ The tour closes with <a href="#matrix-operators">matrix and matrix–vector oper
 <p>Foundations of matrices in CalcpadCE: literal construction with <span class="arithmatex">\(|\)</span> row separators, single- and double-index access, slicing, submatrix extraction and assignment by index.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;Direct:</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="m">1</span><span class="p">|</span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">|</span><span class="m">4</span><span class="p">;</span><span class="w"> </span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">|</span><span class="m">7</span><span class="p">;</span><span class="w"> </span><span class="m">8</span><span class="p">]</span>
 <span class="c1">&#39;Direct with vectors:</span>
@@ -2672,7 +2672,7 @@ The tour closes with <a href="#matrix-operators">matrix and matrix–vector oper
 <p>Creational helpers for matrices: <span class="arithmatex">\(matrix\)</span>, <span class="arithmatex">\(identity\)</span>, <span class="arithmatex">\(diagonal\)</span>, <span class="arithmatex">\(utriang\)</span>, <span class="arithmatex">\(ltriang\)</span>, <span class="arithmatex">\(symmetric\)</span>, banded, random and Vandermonde constructors.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Matrix&lt;/b&gt;(&lt;em&gt;m&lt;/em&gt;; &lt;em&gt;n&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nb">matrix</span><span class="p">(</span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">4</span><span class="p">)</span><span class="c1">&#39;- creates a 3x4 full (rectangular) matrix</span>
@@ -2894,7 +2894,7 @@ The tour closes with <a href="#matrix-operators">matrix and matrix–vector oper
 <p>Data-oriented matrix toolkit: row- and column-wise sorting, ordering, search, plus the standard reductions (<span class="arithmatex">\(sum\)</span>, <span class="arithmatex">\(product\)</span>, <span class="arithmatex">\(min\)</span>, <span class="arithmatex">\(max\)</span>, <span class="arithmatex">\(mean\)</span>).</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Sort_Cols&lt;/b&gt;(&lt;em&gt;matrix&lt;/em&gt;; &lt;em&gt;row index&lt;/em&gt;) and &lt;b&gt;Rsort_Cols&lt;/b&gt;(&lt;em&gt;matrix&lt;/em&gt;; &lt;em&gt;row index&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">|</span><span class="m">4</span><span class="p">;</span><span class="w"> </span><span class="m">9</span><span class="p">;</span><span class="w"> </span><span class="m">1</span><span class="p">|</span><span class="m">6</span><span class="p">;</span><span class="w"> </span><span class="m">8</span><span class="p">;</span><span class="w"> </span><span class="m">7</span><span class="p">]</span>
@@ -3143,7 +3143,7 @@ The tour closes with <a href="#matrix-operators">matrix and matrix–vector oper
 <p>Linear-algebra primitives: Hadamard product, determinant, inverse, transpose, trace, rank, <span class="arithmatex">\(L_p\)</span> and Frobenius norms, plus solver and decomposition helpers.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Hprod&lt;/b&gt;(&lt;em&gt;first matrix&lt;/em&gt;; &lt;em&gt;second matrix&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">|</span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">4</span><span class="p">|</span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">]</span><span class="c1">&#39;- first matrix</span>
@@ -4144,7 +4144,7 @@ The tour closes with <a href="#matrix-operators">matrix and matrix–vector oper
 <p>Structural plumbing for matrices: <span class="arithmatex">\(n_{rows}\)</span>, <span class="arithmatex">\(n_{cols}\)</span>, resize, join, reshape, submatrix and the slicing helpers that feed the rest of the toolkit.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;N_Rows&lt;/b&gt;(&lt;em&gt;matrix&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">|</span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">4</span><span class="p">|</span><span class="m">5</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">]</span>
@@ -4511,7 +4511,7 @@ The tour closes with <a href="#matrix-operators">matrix and matrix–vector oper
 <p>Reference for matrix and matrix-vector operators: element-wise vs. algebraic multiplication, comparison and logical operators broadcast across whole grids.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;h4&gt;Matrix-matrix&lt;/h4&gt;</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="m">0</span><span class="p">;</span><span class="w"> </span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">|</span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">4</span><span class="p">;</span><span class="w"> </span><span class="m">5</span><span class="p">]</span><span class="c1">&#39;, &#39;</span><span class="nv">B</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="m">11</span><span class="p">;</span><span class="w"> </span><span class="m">10</span><span class="p">;</span><span class="w"> </span><span class="m">9</span><span class="p">|</span><span class="m">8</span><span class="p">;</span><span class="w"> </span><span class="m">7</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="p">]</span>
 <span class="c1">&#39;Arithmetic:</span>

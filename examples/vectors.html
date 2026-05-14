@@ -383,7 +383,7 @@
   <span class="md-ellipsis">
     
   
-    About CalcpadCE (Community Edition)
+    About CalcpadCE
   
 
     
@@ -1027,7 +1027,7 @@
   <span class="md-ellipsis">
     
   
-    High Performance Vectors and Matrices
+    High Performance Functions
   
 
     
@@ -2510,7 +2510,7 @@ From there, <a href="#vector-math-functions">norms, dot and cross products, and 
 <p>Foundations of vectors in CalcpadCE: literal lists with <span class="arithmatex">\([\, \ldots\, ]\)</span>, splicing existing vectors, custom-function generators and creational helpers like <span class="arithmatex">\(vector\)</span>, <span class="arithmatex">\(range\)</span> and <span class="arithmatex">\(fill\)</span>. Covers indexing, slicing and the element-wise operators that broadcast scalars across whole arrays.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;Direct:</span>
 <span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="nb">cos</span><span class="p">(</span><span class="m">0</span><span class="p">);</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">6</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">]</span>
 <span class="c1">&#39;Direct with another vector:</span>
@@ -2725,7 +2725,7 @@ From there, <a href="#vector-math-functions">norms, dot and cross products, and 
 <p>Reference for the data-oriented vector toolkit: <span class="arithmatex">\(sort\)</span>, <span class="arithmatex">\(rsort\)</span>, <span class="arithmatex">\(order\)</span> and <span class="arithmatex">\(revorder\)</span> for ranking, <span class="arithmatex">\(find\)</span>, <span class="arithmatex">\(count\)</span> and <span class="arithmatex">\(search\)</span> for lookup, plus the standard reductions (<span class="arithmatex">\(sum\)</span>, <span class="arithmatex">\(product\)</span>, <span class="arithmatex">\(min\)</span>, <span class="arithmatex">\(max\)</span>, <span class="arithmatex">\(mean\)</span> and friends) used to condense a series into a single number.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Sort&lt;/b&gt;(&lt;em&gt;vector&lt;/em&gt;) and &lt;b&gt;Rsort&lt;/b&gt;(&lt;em&gt;vector&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="m">4</span><span class="p">;</span><span class="w"> </span><span class="m">0</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">;</span><span class="w"> </span><span class="o">-</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">1</span><span class="p">]</span>
@@ -2823,7 +2823,7 @@ From there, <a href="#vector-math-functions">norms, dot and cross products, and 
 <p>Mathematical operations on vectors: <span class="arithmatex">\(L_p\)</span>, <span class="arithmatex">\(L_1\)</span>, <span class="arithmatex">\(L_2\)</span> and <span class="arithmatex">\(L_\infty\)</span> norms, dot and cross products, element-wise transcendental functions, plus the statistical primitives (<span class="arithmatex">\(mean\)</span>, <span class="arithmatex">\(median\)</span>, <span class="arithmatex">\(variance\)</span>, standard deviation) used to characterise a sample.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Norm_p&lt;/b&gt;(&lt;em&gt;vector&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="nb">norm_p</span><span class="p">([</span><span class="m">1</span><span class="p">;</span><span class="w"> </span><span class="m">2</span><span class="p">;</span><span class="w"> </span><span class="m">3</span><span class="p">];</span><span class="w"> </span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;- the Lp norm of the vector for &#39;</span><span class="nv">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span>
@@ -3046,7 +3046,7 @@ From there, <a href="#vector-math-functions">norms, dot and cross products, and 
 <p>Structural plumbing for vectors: <span class="arithmatex">\(len\)</span> and <span class="arithmatex">\(size\)</span>, <span class="arithmatex">\(resize\)</span> to grow or shrink, <span class="arithmatex">\(slice\)</span> and <span class="arithmatex">\(first/last\)</span> to extract ranges, plus <span class="arithmatex">\(join\)</span> and <span class="arithmatex">\(reverse\)</span> to assemble new vectors out of existing ones — the glue between the data and math toolkits.</p>
 <div class="example-grid">
 <figure>
-<figcaption>CalcpadCE Code:</figcaption>
+<figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;em {font-family:&quot;Times New Roman&quot;;}&lt;/style&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Len&lt;/b&gt;(&lt;em&gt;vector&lt;/em&gt;) and &lt;b&gt;Size&lt;/b&gt;(&lt;em&gt;vector&lt;/em&gt;)&lt;/p&gt;&lt;hr/&gt;</span>
 <span class="c1">&#39;Explicitly initialized short vectors:</span>
