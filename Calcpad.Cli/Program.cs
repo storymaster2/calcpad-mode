@@ -16,6 +16,7 @@ namespace Calcpad.Cli
     {
         private static readonly string _currentCultureName = GetCurrentCultureName();
         private static readonly char _dirSeparator = Path.DirectorySeparatorChar;
+        private const string DefaultLinuxSettingsFilePath = "/usr/share/CalcpadCE/Settings.xml";
         const string Prompt = " |> ";
         private static int _width;
 
@@ -180,10 +181,23 @@ namespace Calcpad.Cli
                             }
                             else
                             {
-                                var settingsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) +
-                                                   $"{_dirSeparator}.config{_dirSeparator}calcpad{_dirSeparator}Settings.xml";
-                                File.SetUnixFileMode(settingsPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-                                Execute("/bin/bash", $"-c \"nano {settingsPath}\"");
+                                try
+                                {
+                                    Directory.CreateDirectory(GetSettingsDirectoryPath());
+
+                                    // Copy the default settings if it does not exist
+                                    if (OperatingSystem.IsLinux() && !File.Exists(GetSettingsFilePath()))
+                                        File.Copy(DefaultLinuxSettingsFilePath, GetSettingsFilePath());
+
+                                    File.SetUnixFileMode(GetSettingsFilePath(), UnixFileMode.UserRead | UnixFileMode.UserWrite);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Error: {ex}");
+                                    Console.Write(Messages.Press_Any_Key_When_Ready);
+                                    Console.ReadKey();
+                                }
+                                Execute("/bin/bash", $"-c \"nano {GetSettingsFilePath()}\"");
                                 Console.Write(Messages.Press_Any_Key_When_Ready);
                                 Console.ReadKey();
                                 settings = GetSettings();
@@ -216,27 +230,28 @@ namespace Calcpad.Cli
                 $".{ext}" :
                 $".{_currentCultureName}.{ext}";
 
+        private static string GetSettingsDirectoryPath() => OperatingSystem.IsWindows() ?
+            AppPath :
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), ".config", "calcpad");
+
+        private static string GetSettingsFilePath() => Path.Combine(GetSettingsDirectoryPath(), "Settings.xml");
+
         static Settings GetSettings()
         {
             Settings settings = new();
             settings.Math.Decimals = 6;
             XmlSerializer writer = new(settings.GetType());
-            var path = OperatingSystem.IsWindows() ?
-                AppPath :
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + $"{_dirSeparator}.config{_dirSeparator}calcpad{_dirSeparator}";
-
-            var fileName = path + "Settings.xml";
             FileStream fileStream = null;
             try
             {
-                if (Path.Exists(fileName))
+                if (Path.Exists(GetSettingsFilePath()))
                 {
-                    fileStream = File.OpenRead(fileName);
+                    fileStream = File.OpenRead(GetSettingsFilePath());
                     settings = (Settings)writer.Deserialize(fileStream);
                 }
-                else if (Path.Exists(path))
+                else if (Path.Exists(GetSettingsDirectoryPath()))
                 {
-                    fileStream = File.Create(fileName);
+                    fileStream = File.Create(GetSettingsFilePath());
                     writer.Serialize(fileStream, settings);
                 }
             }
@@ -245,7 +260,7 @@ namespace Calcpad.Cli
                 fileStream?.Close();
                 var key = WriteErrorAndWait(ex.Message, Messages.WouldYouLikeToRestoreThePreviousSettingsYN);
                 if (key.Key == ConsoleKey.Y)
-                    TryRestoreSettings(settings, writer, path);
+                    TryRestoreSettings(settings, writer, GetSettingsFilePath());
             }
             finally
             {
