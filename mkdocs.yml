@@ -55,7 +55,7 @@ nav:
     - Units: units.md
     - Vectors: vectors.md
     - Matrices: matrices.md
-    - High Performance Vectors and Matrices: high-performance-vectors-and-matrices.md
+    - High Performance Functions: high-performance-vectors-and-matrices.md
   - Quick Reference:
     - quick-reference.md
 

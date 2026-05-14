@@ -136,7 +136,7 @@ Arguments of trigonometric functions can be in **degrees**, **radians** or **gra
 
 1. By the radio buttons above the output window (🔘**D**, 🔘**R**, 🔘**G**).
 2. By compiler switches inside the code.
-  You have to insert a separate line containing: #deg for degrees, #rad for radians or #gra for grades.
+  You have to insert a separate line containing: `#deg` for degrees, `#rad` for radians or `#gra` for grades.
   This will affect all expressions after the current line to the end or until an alternative directive is found.
 3. By attaching native units to the value itself: *deg*, *°*, ′, ″, *rad*, *grad*, *rev* (see the “Units” section, further in this manual).
 

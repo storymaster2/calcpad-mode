@@ -1,6 +1,12 @@
 window.MathJax = {
   loader: {
-    load: ["[tex]/boldsymbol"],
+    paths: {
+      "mathjax-newcm": "[mathjax]/output/fonts/mathjax-newcm",
+    },
+    load: ["[mathjax-newcm]/chtml", "[tex]/boldsymbol"],
+  },
+  output: {
+    font: "[mathjax-newcm]",
   },
   tex: {
     packages: { "[+]": ["boldsymbol"] },

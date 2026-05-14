@@ -8,8 +8,10 @@ You need to install mathjax and MkDocs, and build Calcpad.Cli:
 
 ```pwsh
 pip install mkdocs
-npm install mathjax@4 --prefix .
+npm install --no-save --package-lock=false --prefix . mathjax@4 @mathjax/mathjax-newcm-font@4
 cp -r node_modules/mathjax/* docs/javascripts/mathjax/
+New-Item -ItemType Directory -Force -Path docs/javascripts/mathjax/output/fonts/mathjax-newcm | Out-Null
+cp -r node_modules/@mathjax/mathjax-newcm-font/* docs/javascripts/mathjax/output/fonts/mathjax-newcm/
 dotnet build Calcpad.Cli
 ```
 

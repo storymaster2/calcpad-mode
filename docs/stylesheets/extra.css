@@ -11,9 +11,15 @@
     height: 2em;
     padding: 1.2em;
 }
+
 .md-header__button.md-logo img {
     object-fit: contain;
 }
+
+[dir="ltr"] .md-header__title {
+    margin-left: 0.5rem;
+}
+
 /* Inline icons are exported at 2x (HiDPI). Scale them down to
    match the surrounding text and keep line spacing consistent. */
 img[height="20"] {
@@ -84,9 +90,10 @@ body:has(.calcpad-output) .md-content {
     font-size: 0.8em;
     font-style: normal;
     font-weight: bold;
+    color: hsl(0, 0%, 40%);
     margin: 0;
     text-align: start;
-    letter-spacing: -1px;
+    letter-spacing: -0.04em;
 }
 
 /* Vertical scroll applied by example-layout.js to <code>; horizontal scroll
