@@ -58,12 +58,14 @@ When the total number of digits becomes greater than 2*n*, the factional part is
 In this way, the output becomes easier to read, still providing at least 2*n* significant digits.
 You can see several examples below, obtained for *n* = 3.
 
-- `0.000001 * π` $= 3.14 \times 10^{-6}$
-- `0.001 * π` $= 0.00314$
-- `0.1 * π` $= 0.314$
-- `1 * π` $= 3.142$
-- `1000 * π` $= 3141.59$
-- `1000000 * π` $= 3141593$
+| Code | Output |
+| ---- | ------ |
+| `0.000001 * π` | $3.14{×}10^{-6}$ |
+| `0.001 * π` | $0.00314$ |
+| `0.1 * π` | $0.314$ |
+| `1 * π` | $3.142$ |
+| `1000 * π` | $3141.59$ |
+| `1000000 * π` | $3141593$ |
 
 Rounding affects only the way in which numbers are displayed in the output.
 Internally, all numbers are stored with the maximum possible precision.
@@ -97,7 +99,7 @@ The following formatting rules apply:
 
 Several examples of formatting in different cases are provided in the table below:
 
-| Text         | Html                               |
+| Code         | Output                             |
 |--------------|------------------------------------|
 | `x + 3`      | *x* + 3                            |
 | `x - 3`      | *x* – 3                            |
@@ -144,111 +146,96 @@ x = 12.345cm:format string
 
 There are several types of format strings that you can use:
 
-<table style="width:96%;">
-<colgroup>
-<col style="width: 11%" />
-<col style="width: 51%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th style="text-align: center;"><strong>Code</strong></th>
-<th style="text-align: center;"><strong>Description</strong></th>
-<th style="text-align: center;"><strong>Examples</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">E <em>n</em><br />
-or<br />
-e <em>n</em></td>
-<td style="text-align: left;"><strong>Exponential</strong> (i.e. engineering or scientific).<br />
-<em>n</em> - number of decimal digits (0-17)<br />
-The default value is <em>n</em> = 6 if omitted.
-When capital E is used, the result is displayed as ×10<sup>⁺∕₋000</sup></td>
-<td style="text-align: left;">123456.789:e = 1.234568e+005<br />
-0.00123456:e2 = 1.23e-003<br />
-123456789:E3 = 1.235×10+008</td>
-</tr>
-<tr>
-<td style="text-align: left;">F <em>n</em><br />
-or<br />
-f <em>n</em></td>
-<td style="text-align: left;"><strong>Fixed-point</strong>.<br />
-<em>n</em> - number of decimal digits (0-17)<br />
-The default value is <em>n</em> = 2 if omitted.</td>
-<td style="text-align: left;">123.456789:f = 123.46<br />
-0.00123456:F5 = 0.00123<br />
-123:F2 = 123.00</td>
-</tr>
-<tr>
-<td style="text-align: left;">G <em>n</em><br />
-or<br />
-g <em>n</em></td>
-<td style="text-align: left;"><strong>General</strong>.<br />
-<em>n</em> - number of significant digits (0-17)<br />
-The default value is <em>n</em> = 15 if omitted.<br />
-Displays either fixed point or scientific.</td>
-<td style="text-align: left;">123.456789:g = 123.456789<br />
-0.0012345678:g3 = 0.00123<br />
-123456m:G3 = 1.23×10<sup>5</sup> m</td>
-</tr>
-<tr>
-<td style="text-align: left;">N <em>n</em><br />
-or<br />
-n <em>n</em></td>
-<td style="text-align: left;"><strong>Number</strong> (fixed point with digit grouping).<br />
-<em>n</em> - number of decimal digits (0-17)<br />
-The default value is <em>n</em> = 2 if omitted.
-The<br />
-symbols defined in Windows' Regional Settings are used for thousands and decimal separators.</td>
-<td style="text-align: left;">123.456789:n = 123.46<br />
-0.0012345678:N3 = 0.001<br />
-123456:N3 = 123,456.000</td>
-</tr>
-<tr>
-<td style="text-align: left;">C <em>n</em><br />
-or<br />
-e <em>n</em></td>
-<td style="text-align: left;"><strong>Currency</strong> (fixed point with currency symbol and digit grouping).<br />
-<em>n</em> - number of decimal digits (0-17)<br />
-The default value is <em>n</em> = 2 if omitted.<br />
-The currency symbol defined in Windows' Regional Settings is used.</td>
-<td style="text-align: left;">123.456789:C = 123.46 €<br />
-0.0012345678:C3 = 0.001 €<br />
-123456:C = 123,456.00 €</td>
-</tr>
-<tr>
-<td style="text-align: left;">0<br />
-#<br />
-00#<br />
-0.000<br />
-#.###<br />
-0,000.0##<br />
-0.0E+00<br />
-0.#e-00<br />
-etc.</td>
-<td style="text-align: left;"><strong>Custom</strong>.<br />
-It is composed of the following characters:<br />
-<strong>0</strong> - zero placeholder.
-Displays either a digit or zero if a digit is not available.<br />
-<strong>#</strong> - optional digit placeholder.
-Displays a digit if available or nothing.<br />
-<strong>.</strong> - decimal separator.<br />
-<strong>,</strong> - group separator.<br />
-<strong>E</strong>, <strong>e</strong>, <strong>E+</strong>, <strong>e+</strong>, <strong>E-</strong>, <strong>e-</strong> - exponential notation.</td>
-<td style="text-align: left;">123.456789:000000 = 000123<br />
-123.45:0.0000 = 123.4500<br />
-123.45:0.#### = 123.45<br />
-0.00123456:#.##### = .00123<br />
-1234567:#,#.0 = 1,234,567.0<br />
-1234567:0.00e+00 = 1.23e+06<br />
-1234567:0.00e-0 = 1.23e6<br />
-0.01234:#.##e-000 = 1.23e-002<br />
-0.12:0.000e-00 = 1.200e-01</td>
-</tr>
-</tbody>
-</table>
+### Exponential
+
+Engineering or scientific: `En` or `en`.
+
+`n` range: 0-17  
+`n` default value: 6
+
+| Code | Output |
+| ---- | ------ |
+| `123456.789:e` | $1.234568\mathrm{e}{+}005$ |
+| `0.00123456:e2` | $1.23\mathrm{e}{-}003$ |
+| `123456789:E3` | $1.235{×}10^{+008}$ |
+
+### Fixed-point
+
+Displays always fixed-point: `Fn` or `fn`.
+
+`n` range: 0-17  
+`n` default value: 2
+
+| Code | Output |
+| ---- | ------ |
+| `123.456789:f` | $123.46$ |
+| `0.00123456:F5` | $0.00123$ |
+| `123:F2` | $123.00$ |
+
+### General
+
+Displays either fixed point or scientific: `Gn` or `gn`
+
+`n` range: 0-17  
+`n` default value: 15
+
+| Code | Output |
+| ---- | ------ |
+| `123.456789:g` | $123.456789$ |
+| `0.0012345678:g3` | $0.00123$ |
+| `123456m:G3` | $1.23×10^5 \mathrm{m}$<br>(with unit "Meters") |
+
+### Number
+
+Fixed point with digit grouping: `Nn` or `nn`
+
+`n` range: 0-17  
+`n` default value: 2
+
+The symbols defined in Windows' Regional Settings are used for thousands and decimal separators.
+
+| Code | Output |
+| ---- | ------ |
+| `123.456789:n` | $123.46$ |
+| `0.0012345678:N3` | $0.001$ |
+| `123456:N3` | $123\mathrm{,}456.000$ |
+
+### Currency
+
+Fixed point with currency symbol and digit grouping: `Cn` or `en`
+
+`n` range: 0-17  
+`n` default value: 2
+
+The currency symbol defined in Windows' Regional Settings is used.
+
+| Code | Output |
+| ---- | ------ |
+| `123.456789:C` | $123.46 €$ |
+| `0.0012345678:C3` | $0.001 €$ |
+| `123456:C` | $123\mathrm{,}456.00 €$ |
+
+### Custom
+
+The following characters can be used to compose a custom formatting:
+
+- `0` - zero placeholder. Displays either a digit or zero if a digit is not available.
+- `#` - optional digit placeholder. Displays a digit if available or nothing.
+- `.` - decimal separator
+- `,` - group separator
+- `E`, `e`, `E+`, `e+`, `E-`, `e-` - exponential notation
+
+| Code | Output |
+| ---- | ------ |
+| `123.456789:000000` | $000123$ |
+| `123.45:0.0000` | $123.4500$ |
+| `123.45:0.####` | $123.45$ |
+| `0.00123456:#.#####` | $.00123$ |
+| `1234567:#,#.0` | $1\mathrm{,}234\mathrm{,}567.0$ |
+| `1234567:0.00e+00` | $1.23\mathrm{e}{+}06$ |
+| `1234567:0.00e-0` | $1.23\mathrm{e}6$ |
+| `0.01234:#.##e-000` | $1.23\mathrm{e}{-}002$ |
+| `0.12:0.000e-00` | $1.200\mathrm{e}{-}0$ |
 
 ## Scaling
 
