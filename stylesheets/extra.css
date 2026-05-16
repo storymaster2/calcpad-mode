@@ -20,6 +20,10 @@
     margin-left: 0.5rem;
 }
 
+.md-typeset code {
+    font-size: inherit;
+}
+
 /* Inline icons are exported at 2x (HiDPI). Scale them down to
    match the surrounding text and keep line spacing consistent. */
 img[height="20"] {

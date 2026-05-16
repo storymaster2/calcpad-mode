@@ -732,6 +732,78 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Custom Format Strings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exponential" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exponential
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed-point
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#number" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Number
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#currency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Currency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2545,6 +2617,78 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Custom Format Strings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exponential" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exponential
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed-point
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#number" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Number
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#currency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Currency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2677,14 +2821,40 @@ So, in such cases, the output is converted to floating point format with <em>n</
 When the total number of digits becomes greater than 2<em>n</em>, the factional part is being truncated.
 In this way, the output becomes easier to read, still providing at least 2<em>n</em> significant digits.
 You can see several examples below, obtained for <em>n</em> = 3.</p>
-<ul>
-<li><code>0.000001 * π</code> <span class="arithmatex">\(= 3.14 \times 10^{-6}\)</span></li>
-<li><code>0.001 * π</code> <span class="arithmatex">\(= 0.00314\)</span></li>
-<li><code>0.1 * π</code> <span class="arithmatex">\(= 0.314\)</span></li>
-<li><code>1 * π</code> <span class="arithmatex">\(= 3.142\)</span></li>
-<li><code>1000 * π</code> <span class="arithmatex">\(= 3141.59\)</span></li>
-<li><code>1000000 * π</code> <span class="arithmatex">\(= 3141593\)</span></li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0.000001 * π</code></td>
+<td><span class="arithmatex">\(3.14{×}10^{-6}\)</span></td>
+</tr>
+<tr>
+<td><code>0.001 * π</code></td>
+<td><span class="arithmatex">\(0.00314\)</span></td>
+</tr>
+<tr>
+<td><code>0.1 * π</code></td>
+<td><span class="arithmatex">\(0.314\)</span></td>
+</tr>
+<tr>
+<td><code>1 * π</code></td>
+<td><span class="arithmatex">\(3.142\)</span></td>
+</tr>
+<tr>
+<td><code>1000 * π</code></td>
+<td><span class="arithmatex">\(3141.59\)</span></td>
+</tr>
+<tr>
+<td><code>1000000 * π</code></td>
+<td><span class="arithmatex">\(3141593\)</span></td>
+</tr>
+</tbody>
+</table>
 <p>Rounding affects only the way in which numbers are displayed in the output.
 Internally, all numbers are stored with the maximum possible precision.
 That is why, if you print the output and try to repeat the calculations with the numbers from the report, you probably will get some little differences.
@@ -2721,8 +2891,8 @@ The following formatting rules apply:</p>
 <table>
 <thead>
 <tr>
-<th>Text</th>
-<th>Html</th>
+<th>Code</th>
+<th>Output</th>
 </tr>
 </thead>
 <tbody>
@@ -2780,112 +2950,193 @@ At worksheet level you can do that by following command:</p>
 <div class="language-calcpad highlight"><pre><span></span><code><span class="nv">x</span> <span class="o">=</span><span class="w"> </span><span class="m">12.345</span><span class="na">cm</span><span class="p">:</span><span class="nv">format</span><span class="w"> </span><span class="nv">string</span>
 </code></pre></div>
 <p>There are several types of format strings that you can use:</p>
-<table style="width:96%;">
-<colgroup>
-<col style="width: 11%" />
-<col style="width: 51%" />
-<col style="width: 33%" />
-</colgroup>
+<h3 id="exponential">Exponential<a class="headerlink" href="#exponential" title="Permanent link">&para;</a></h3>
+<p>Engineering or scientific: <code>En</code> or <code>en</code>.</p>
+<p><code>n</code> range: 0-17<br />
+<code>n</code> default value: 6</p>
+<table>
 <thead>
 <tr>
-<th style="text-align: center;"><strong>Code</strong></th>
-<th style="text-align: center;"><strong>Description</strong></th>
-<th style="text-align: center;"><strong>Examples</strong></th>
+<th>Code</th>
+<th>Output</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">E <em>n</em><br />
-or<br />
-e <em>n</em></td>
-<td style="text-align: left;"><strong>Exponential</strong> (i.e. engineering or scientific).<br />
-<em>n</em> - number of decimal digits (0-17)<br />
-The default value is <em>n</em> = 6 if omitted.
-When capital E is used, the result is displayed as ×10<sup>⁺∕₋000</sup></td>
-<td style="text-align: left;">123456.789:e = 1.234568e+005<br />
-0.00123456:e2 = 1.23e-003<br />
-123456789:E3 = 1.235×10+008</td>
+<td><code>123456.789:e</code></td>
+<td><span class="arithmatex">\(1.234568\mathrm{e}{+}005\)</span></td>
 </tr>
 <tr>
-<td style="text-align: left;">F <em>n</em><br />
-or<br />
-f <em>n</em></td>
-<td style="text-align: left;"><strong>Fixed-point</strong>.<br />
-<em>n</em> - number of decimal digits (0-17)<br />
-The default value is <em>n</em> = 2 if omitted.</td>
-<td style="text-align: left;">123.456789:f = 123.46<br />
-0.00123456:F5 = 0.00123<br />
-123:F2 = 123.00</td>
+<td><code>0.00123456:e2</code></td>
+<td><span class="arithmatex">\(1.23\mathrm{e}{-}003\)</span></td>
 </tr>
 <tr>
-<td style="text-align: left;">G <em>n</em><br />
-or<br />
-g <em>n</em></td>
-<td style="text-align: left;"><strong>General</strong>.<br />
-<em>n</em> - number of significant digits (0-17)<br />
-The default value is <em>n</em> = 15 if omitted.<br />
-Displays either fixed point or scientific.</td>
-<td style="text-align: left;">123.456789:g = 123.456789<br />
-0.0012345678:g3 = 0.00123<br />
-123456m:G3 = 1.23×10<sup>5</sup> m</td>
-</tr>
-<tr>
-<td style="text-align: left;">N <em>n</em><br />
-or<br />
-n <em>n</em></td>
-<td style="text-align: left;"><strong>Number</strong> (fixed point with digit grouping).<br />
-<em>n</em> - number of decimal digits (0-17)<br />
-The default value is <em>n</em> = 2 if omitted.
-The<br />
-symbols defined in Windows' Regional Settings are used for thousands and decimal separators.</td>
-<td style="text-align: left;">123.456789:n = 123.46<br />
-0.0012345678:N3 = 0.001<br />
-123456:N3 = 123,456.000</td>
-</tr>
-<tr>
-<td style="text-align: left;">C <em>n</em><br />
-or<br />
-e <em>n</em></td>
-<td style="text-align: left;"><strong>Currency</strong> (fixed point with currency symbol and digit grouping).<br />
-<em>n</em> - number of decimal digits (0-17)<br />
-The default value is <em>n</em> = 2 if omitted.<br />
-The currency symbol defined in Windows' Regional Settings is used.</td>
-<td style="text-align: left;">123.456789:C = 123.46 €<br />
-0.0012345678:C3 = 0.001 €<br />
-123456:C = 123,456.00 €</td>
-</tr>
-<tr>
-<td style="text-align: left;">0<br />
-#<br />
-00#<br />
-0.000<br />
-#.###<br />
-0,000.0##<br />
-0.0E+00<br />
-0.#e-00<br />
-etc.</td>
-<td style="text-align: left;"><strong>Custom</strong>.<br />
-It is composed of the following characters:<br />
-<strong>0</strong> - zero placeholder.
-Displays either a digit or zero if a digit is not available.<br />
-<strong>#</strong> - optional digit placeholder.
-Displays a digit if available or nothing.<br />
-<strong>.</strong> - decimal separator.<br />
-<strong>,</strong> - group separator.<br />
-<strong>E</strong>, <strong>e</strong>, <strong>E+</strong>, <strong>e+</strong>, <strong>E-</strong>, <strong>e-</strong> - exponential notation.</td>
-<td style="text-align: left;">123.456789:000000 = 000123<br />
-123.45:0.0000 = 123.4500<br />
-123.45:0.#### = 123.45<br />
-0.00123456:#.##### = .00123<br />
-1234567:#,#.0 = 1,234,567.0<br />
-1234567:0.00e+00 = 1.23e+06<br />
-1234567:0.00e-0 = 1.23e6<br />
-0.01234:#.##e-000 = 1.23e-002<br />
-0.12:0.000e-00 = 1.200e-01</td>
+<td><code>123456789:E3</code></td>
+<td><span class="arithmatex">\(1.235{×}10^{+008}\)</span></td>
 </tr>
 </tbody>
 </table>
-
+<h3 id="fixed-point">Fixed-point<a class="headerlink" href="#fixed-point" title="Permanent link">&para;</a></h3>
+<p>Displays always fixed-point: <code>Fn</code> or <code>fn</code>.</p>
+<p><code>n</code> range: 0-17<br />
+<code>n</code> default value: 2</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>123.456789:f</code></td>
+<td><span class="arithmatex">\(123.46\)</span></td>
+</tr>
+<tr>
+<td><code>0.00123456:F5</code></td>
+<td><span class="arithmatex">\(0.00123\)</span></td>
+</tr>
+<tr>
+<td><code>123:F2</code></td>
+<td><span class="arithmatex">\(123.00\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="general">General<a class="headerlink" href="#general" title="Permanent link">&para;</a></h3>
+<p>Displays either fixed point or scientific: <code>Gn</code> or <code>gn</code></p>
+<p><code>n</code> range: 0-17<br />
+<code>n</code> default value: 15</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>123.456789:g</code></td>
+<td><span class="arithmatex">\(123.456789\)</span></td>
+</tr>
+<tr>
+<td><code>0.0012345678:g3</code></td>
+<td><span class="arithmatex">\(0.00123\)</span></td>
+</tr>
+<tr>
+<td><code>123456m:G3</code></td>
+<td><span class="arithmatex">\(1.23×10^5 \mathrm{m}\)</span><br>(with unit "Meters")</td>
+</tr>
+</tbody>
+</table>
+<h3 id="number">Number<a class="headerlink" href="#number" title="Permanent link">&para;</a></h3>
+<p>Fixed point with digit grouping: <code>Nn</code> or <code>nn</code></p>
+<p><code>n</code> range: 0-17<br />
+<code>n</code> default value: 2</p>
+<p>The symbols defined in Windows' Regional Settings are used for thousands and decimal separators.</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>123.456789:n</code></td>
+<td><span class="arithmatex">\(123.46\)</span></td>
+</tr>
+<tr>
+<td><code>0.0012345678:N3</code></td>
+<td><span class="arithmatex">\(0.001\)</span></td>
+</tr>
+<tr>
+<td><code>123456:N3</code></td>
+<td><span class="arithmatex">\(123\mathrm{,}456.000\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="currency">Currency<a class="headerlink" href="#currency" title="Permanent link">&para;</a></h3>
+<p>Fixed point with currency symbol and digit grouping: <code>Cn</code> or <code>en</code></p>
+<p><code>n</code> range: 0-17<br />
+<code>n</code> default value: 2</p>
+<p>The currency symbol defined in Windows' Regional Settings is used.</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>123.456789:C</code></td>
+<td><span class="arithmatex">\(123.46 €\)</span></td>
+</tr>
+<tr>
+<td><code>0.0012345678:C3</code></td>
+<td><span class="arithmatex">\(0.001 €\)</span></td>
+</tr>
+<tr>
+<td><code>123456:C</code></td>
+<td><span class="arithmatex">\(123\mathrm{,}456.00 €\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="custom">Custom<a class="headerlink" href="#custom" title="Permanent link">&para;</a></h3>
+<p>The following characters can be used to compose a custom formatting:</p>
+<ul>
+<li><code>0</code> - zero placeholder. Displays either a digit or zero if a digit is not available.</li>
+<li><code>#</code> - optional digit placeholder. Displays a digit if available or nothing.</li>
+<li><code>.</code> - decimal separator</li>
+<li><code>,</code> - group separator</li>
+<li><code>E</code>, <code>e</code>, <code>E+</code>, <code>e+</code>, <code>E-</code>, <code>e-</code> - exponential notation</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>123.456789:000000</code></td>
+<td><span class="arithmatex">\(000123\)</span></td>
+</tr>
+<tr>
+<td><code>123.45:0.0000</code></td>
+<td><span class="arithmatex">\(123.4500\)</span></td>
+</tr>
+<tr>
+<td><code>123.45:0.####</code></td>
+<td><span class="arithmatex">\(123.45\)</span></td>
+</tr>
+<tr>
+<td><code>0.00123456:#.#####</code></td>
+<td><span class="arithmatex">\(.00123\)</span></td>
+</tr>
+<tr>
+<td><code>1234567:#,#.0</code></td>
+<td><span class="arithmatex">\(1\mathrm{,}234\mathrm{,}567.0\)</span></td>
+</tr>
+<tr>
+<td><code>1234567:0.00e+00</code></td>
+<td><span class="arithmatex">\(1.23\mathrm{e}{+}06\)</span></td>
+</tr>
+<tr>
+<td><code>1234567:0.00e-0</code></td>
+<td><span class="arithmatex">\(1.23\mathrm{e}6\)</span></td>
+</tr>
+<tr>
+<td><code>0.01234:#.##e-000</code></td>
+<td><span class="arithmatex">\(1.23\mathrm{e}{-}002\)</span></td>
+</tr>
+<tr>
+<td><code>0.12:0.000e-00</code></td>
+<td><span class="arithmatex">\(1.200\mathrm{e}{-}0\)</span></td>
+</tr>
+</tbody>
+</table>
 <h2 id="scaling">Scaling<a class="headerlink" href="#scaling" title="Permanent link">&para;</a></h2>
 <p>You can scale up and down the text size in the output window.
 Hold the "<strong>Ctrl</strong>" button and rotate the mouse wheel.
