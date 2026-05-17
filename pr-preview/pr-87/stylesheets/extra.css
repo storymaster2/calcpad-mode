@@ -24,6 +24,10 @@
     font-size: inherit;
 }
 
+.md-typeset .example-grid code {
+    font-size: 0.9em;
+}
+
 /* Inline icons are exported at 2x (HiDPI). Scale them down to
    match the surrounding text and keep line spacing consistent. */
 img[height="20"] {
