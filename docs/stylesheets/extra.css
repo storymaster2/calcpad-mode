@@ -20,10 +20,6 @@
     margin-left: 0.5rem;
 }
 
-.md-typeset code {
-    font-size: inherit;
-}
-
 /* Inline icons are exported at 2x (HiDPI). Scale them down to
    match the surrounding text and keep line spacing consistent. */
 img[height="20"] {
@@ -57,6 +53,8 @@ body {
     margin-bottom: 0;
 }
 
+/* Examples page */
+
 /* Full-width layout for Examples pages (override Material's max-width container) */
 body:has(.calcpad-output) .md-grid {
     max-width: 100rem;
@@ -66,28 +64,30 @@ body:has(.calcpad-output) .md-content {
     max-width: 100rem;
 }
 
-/* Side-by-side layout for Examples pages.
-   `minmax(0, 1fr)` (instead of plain `1fr`) keeps the two columns at a
-   strict 50/50 split even when one side has very wide content (e.g. large
-   matrices in the output). Wide content scrolls horizontally inside its
-   column rather than pushing the other column to a tiny width. */
-.example-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 1rem;
-    align-items: start;
-    margin: 1rem 0;
-}
-
-.example-output {
+.calcpad-output {
     overflow-x: auto;
     overflow-y: hidden;
 }
 
-.md-typeset figure {
-    margin: 0;
+.example-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.example-grid figure {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
     text-align: start;
-    width: 100%;
+    margin: 0;
+    width: initial;
+    min-width: 0;
+}
+
+.example-grid figure img {
+    margin: initial;
 }
 
 .example-grid figcaption {
@@ -100,14 +100,30 @@ body:has(.calcpad-output) .md-content {
     letter-spacing: -0.04em;
 }
 
-/* Vertical scroll applied by example-layout.js to <code>; horizontal scroll
-   is left to Material's default (also on <code>). Keeping both axes on
-   <code> preserves Material's sticky copy-button placement inside <pre> and
-   keeps the code-block background extending across horizontally-scrolled
-   content. */
+.example-grid .highlight {
+    position: relative;
+    display: flex;
+    flex: 1;
+}
+
+/* If the rendered output is taller than the code block, make the code block the same height */
+/* Otherwise, cut the code block at the end of the output and make it scrollable */
 .example-grid pre {
-    white-space: pre;
+    position: absolute;
+    display: flex;
+    flex: 1;
+    inset: 0;
     margin: 0;
+}
+
+.example-grid code {
+    flex: 1;
+    font-size: 0.9em;
+    border-radius: 0.25rem;
+}
+
+span[title="Animated"] {
+    cursor: default;
 }
 
 /* Headings inside calcpad output (replaced from <hN> to avoid polluting MkDocs TOC) */
@@ -127,9 +143,14 @@ body:has(.calcpad-output) .md-content {
     margin: 0.5em 0 0.2em;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 750px) {
     .example-grid {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .example-grid pre {
+        position: relative;
+        width: 100%;
     }
 }
 
