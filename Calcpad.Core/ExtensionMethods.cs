@@ -46,8 +46,16 @@ namespace Calcpad.Core
             if (string.IsNullOrEmpty(s))
                 return new SpanLineEnumerator();
 
-            if (s.Length > 1 && s[^2] == '\r')
-                return s.AsSpan(..^2).EnumerateLines();
+            if (s[^1] == '\n')
+            {
+                if (s.Length > 1 && s[^2] == '\r')
+                    return s.AsSpan(..^2).EnumerateLines();
+
+                return s.AsSpan(..^1).EnumerateLines();
+            }
+
+            if (s[^1] == '\r')
+                return s.AsSpan(..^1).EnumerateLines();
 
             return s.AsSpan().EnumerateLines();
         }
