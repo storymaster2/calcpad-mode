@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths-ignore:
+      - 'Examples/**/*.html.stub'
       - 'docs/**'
       - '**/*.md'
       - 'mkdocs.yml'

@@ -3,6 +3,11 @@ name: Deploy docs to GitHub Pages
 on:
   push:
     branches: [main]
+    paths:
+      - '.github/**'
+      - 'Examples/**'
+      - 'docs/**'
+      - 'mkdocs.yml'
   workflow_dispatch:
 
 permissions:

@@ -198,5 +198,5 @@ isHp(vec8)
 '<h2>Other functions</h2>
 sign(vec7)','f(vec7) = sign(vec7)
 c = f(vec7)
-random(vec7)','f(vec7) = random(vec7)
+'random(vec7),f(vec7) = random(vec7) commented out to procude stable CI builds
 c = f(vec7)

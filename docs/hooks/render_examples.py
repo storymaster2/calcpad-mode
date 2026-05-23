@@ -11,10 +11,8 @@ import logging
 import os
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import urllib.parse
@@ -23,7 +21,16 @@ import mkdocs.structure.files as mkdocs_files
 from pygments import highlight as _pyg_highlight
 from pygments.formatters import HtmlFormatter
 
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_SCRIPTS_DIR = _REPO_ROOT / ".github" / "scripts"
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+
+from render_cpd import find_cli, render_many
+
 log = logging.getLogger("mkdocs")
+render_log = logging.getLogger("render_cpd")
 
 _temp_dir: str | None = None
 
@@ -71,12 +78,24 @@ def on_files(files, config, **kwargs):
     """Generate category pages and inject them as virtual MkDocs files."""
     global _temp_dir
 
+    render_log.handlers.clear()
+    render_log.setLevel(log.getEffectiveLevel())
+    if log.handlers:
+        for handler in log.handlers:
+            render_log.addHandler(handler)
+        render_log.propagate = False
+    else:
+        render_log.propagate = True
+
     repo_root = Path(config["config_file_path"]).parent
     examples_root = repo_root / "Examples"
     examples = _load_examples(repo_root)
     group_folders = _group_folders(repo_root)
 
-    cli_path = _find_cli(repo_root)
+    try:
+        cli_path = find_cli(repo_root)
+    except FileNotFoundError as exc:
+        raise SystemExit(f"render_examples: {exc}") from exc
 
     # Resolve every listed entry to a concrete .cpd path (fail fast on missing files)
     all_cpd: list[tuple[str, Path]] = []
@@ -94,16 +113,18 @@ def on_files(files, config, **kwargs):
                 all_cpd.append((category, cpd_file))
 
     # Render all fragments in parallel
-    fragments: dict[Path, str] = {}
-    workers = min(os.cpu_count() or 1, len(all_cpd))
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        future_to_cpd = {
-            pool.submit(_render_fragment, cpd_file, cli_path, f"{cat}/{cpd_file.stem}"): cpd_file
-            for cat, cpd_file in all_cpd
+    labels = {cpd_file: f"{cat}/{cpd_file.stem}" for cat, cpd_file in all_cpd}
+    try:
+        fragments = {
+            cpd_file: fragment.decode("utf-8")
+            for cpd_file, fragment in render_many(
+                cli_path,
+                [cpd_file for _, cpd_file in all_cpd],
+                label_for=labels.__getitem__,
+            ).items()
         }
-        for future in as_completed(future_to_cpd):
-            cpd_file = future_to_cpd[future]
-            fragments[cpd_file] = future.result()
+    except RuntimeError as exc:
+        raise SystemExit(f"render_examples: {exc}") from exc
 
     # Write generated .md files to a temp directory so MkDocs can read them
     _temp_dir = tempfile.mkdtemp(prefix="calcpad-examples-")
@@ -271,88 +292,6 @@ def _group_folders(repo_root: Path) -> dict[str, str]:
                 )
             result[group_name] = match
     return result
-
-
-def _find_cli(repo_root: Path) -> Path:
-    """Return the path to an existing Cli executable.
-
-    Searches (in order):
-      1. cli-build/     — output of the explicit CI publish step
-      2. Release publish — dotnet publish -c Release
-      3. Debug publish   — dotnet publish -c Debug
-      4. Debug build     — dotnet build -c Debug (default local build)
-      5. Release build   — dotnet build -c Release
-
-    Raises SystemExit with a clear message when the binary is not found.
-    """
-    is_win = os.name == "nt"
-    exe_name = "Cli.exe" if is_win else "Cli"
-    rid = "win-x64" if is_win else "linux-x64"
-    tfm = "net10.0"
-
-    candidates = [
-        repo_root / "cli-build" / exe_name,
-        repo_root / "Calcpad.Cli" / "bin" / "Release" / tfm / rid / "publish" / exe_name,
-        repo_root / "Calcpad.Cli" / "bin" / "Debug" / tfm / rid / "publish" / exe_name,
-        repo_root / "Calcpad.Cli" / "bin" / "Debug" / tfm / exe_name,
-        repo_root / "Calcpad.Cli" / "bin" / "Release" / tfm / exe_name,
-    ]
-
-    for candidate in candidates:
-        if candidate.exists():
-            log.info(f"Using CLI at {candidate}")
-            return candidate
-
-    searched = "\n  ".join(str(c) for c in candidates)
-    raise SystemExit(
-        f"render_examples: Cli executable not found.\n"
-        f"Searched:\n  {searched}\n"
-        f"Build it first with:\n"
-        f"  dotnet build Calcpad.Cli/"
-    )
-
-
-def _render_fragment(cpd_file: Path, cli_path: Path, label: str = "") -> str:
-    """Run the CLI in body-only silent mode and return the HTML fragment.
-
-    Raises SystemExit on any CLI error, timeout, or empty output.
-    """
-    name = label or cpd_file.name
-    tmp_fd, out_path = tempfile.mkstemp(suffix=".html")
-    os.close(tmp_fd)
-    try:
-        result = subprocess.run(
-            [str(cli_path), str(cpd_file), out_path, "-b", "-s"],
-            capture_output=True,
-            timeout=60,
-        )
-        if result.returncode != 0:
-            stderr = result.stderr.decode(errors="replace").strip()
-            stdout = result.stdout.decode(errors="replace").strip()
-            raise SystemExit(
-                f"render_examples: CLI failed (exit {result.returncode}) for {cpd_file.name}"
-                + (f"\n  stderr: {stderr}" if stderr else "")
-                + (f"\n  stdout: {stdout}" if stdout else "")
-            )
-        if not (os.path.exists(out_path) and os.path.getsize(out_path) > 0):
-            raise SystemExit(
-                f"render_examples: CLI produced no output for {cpd_file.name}"
-            )
-        html = Path(out_path).read_text(encoding="utf-8")
-        # Strip ../../ from src/href attributes: .cpd files use paths like
-        # ../../Images/... which work locally but not in the docs site where
-        # pages live at examples/<slug>.html.
-        # Handles both src="../../..." and src = "../../..." (spaces around =).
-        html = re.sub(r'(src|href)\s*=\s*"\.\./\.\./\s*', r'\1="', html)
-        log.info(f"Rendered  {name}")
-        return html
-    except subprocess.TimeoutExpired:
-        raise SystemExit(f"render_examples: CLI timed out rendering {cpd_file.name}")
-    except OSError as exc:
-        raise SystemExit(f"render_examples: Failed to run CLI for {cpd_file.name}: {exc}")
-    finally:
-        if os.path.exists(out_path):
-            os.unlink(out_path)
 
 
 def _strip_headings(fragment: str) -> str:

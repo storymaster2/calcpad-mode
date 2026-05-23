@@ -199,7 +199,7 @@ $Plot{t(i)|θ(t(i))/deg & t(i)|θ_e(t(i))*r2d & t(i)|if(abs(θ_fwE.i*r2d) < 150;
 '</td></tr></table>
 'Energy <var>E</var> [J] versus time <var>t</var> [s] plot
 $Plot{0s|0J & t(i)|E_0 & t(i)|E_fwE.i & t(i)|E_bwE.i & t(i)|E_CN.i @ i = 1 : n}
-'<h4>Comparision of Crank–Nicolson and Runge-Kutta 4 methods</h4>
+'<h4>Comparison of Crank–Nicolson and Runge-Kutta 4 methods</h4>
 '<style>.Series2{stroke-dasharray: 30, 10;}</style>
 '<table><tr><td>
 'Rotation <var>θ</var> [deg] versus time <var>t</var> [s] plot

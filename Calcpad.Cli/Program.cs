@@ -325,6 +325,13 @@ namespace Calcpad.Cli
                 else break;
             }
 
+            // Force decimal separator to "." for body-only in CI build
+            if (isBodyOnly)
+            {
+                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+                Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            }
+
             fileName = fileName[..i].Trim();
             if (!File.Exists(fileName))
             {
