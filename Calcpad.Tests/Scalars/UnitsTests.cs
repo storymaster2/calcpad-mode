@@ -944,6 +944,38 @@
         [Trait("Category", "Energy")]
         public void Test_TWh() => Test("TWh|J", 3.6e+15);
 
+        [Fact]
+        [Trait("Category", "Energy Apparent")]
+        public void Test_VAh() => Test("VAh|J", 3600d);
+
+        [Fact]
+        [Trait("Category", "Energy Apparent")]
+        public void Test_kVAh() => Test("kVAh|J", 3600000d);
+
+        [Fact]
+        [Trait("Category", "Energy Apparent")]
+        public void Test_MVAh() => Test("MVAh|J", 3600000000d);
+
+        [Fact]
+        [Trait("Category", "Energy Apparent")]
+        public void Test_GVAh() => Test("GVAh|J", 3600000000000d);
+
+        [Fact]
+        [Trait("Category", "Energy Reactive")]
+        public void Test_VARh() => Test("VARh|J", 3600d);
+
+        [Fact]
+        [Trait("Category", "Energy Reactive")]
+        public void Test_kVARh() => Test("kVARh|J", 3600000d);
+
+        [Fact]
+        [Trait("Category", "Energy Reactive")]
+        public void Test_MVARh() => Test("MVARh|J", 3600000000d);
+
+        [Fact]
+        [Trait("Category", "Energy Reactive")]
+        public void Test_GVARh() => Test("GVARh|J", 3600000000000d);
+
 
         [Fact]
         [Trait("Category", "Energy")]
