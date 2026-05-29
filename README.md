@@ -22,6 +22,8 @@ This is a fork of the now [closed-source](#️-project-status--history) Calcpad 
 
 🡒 **[View the Documentation](https://imartincei.github.io/CalcpadCE/)**
 
+🡒 **[Browse the 200+ Examples](https://imartincei.github.io/CalcpadCE/examples/getting-started.html)**
+
 **Core Features:**
 
 * **Advanced Mathematics:** Native support for real and complex numbers, vectors, matrices, and a comprehensive library of numerical methods (integration, differentiation, root finding, FFT).
