@@ -89,8 +89,8 @@ namespace Calcpad.Core
                                     if (eqLen < 0)
                                         eqLen = equation.LastIndexOf(globalAssignment);
 
-                                    eqLen = equation.Length - eqLen - assignment.Length;
-                                    if (subst.Length != eqLen)
+                                    eqLen += assignment.Length;
+                                    if (!equation.AsSpan(eqLen).SequenceEqual(subst))
                                     {
                                         if (_parser.VariableSubstitution != VariableSubstitutionOptions.SubstitutionsOnly)
                                         {
