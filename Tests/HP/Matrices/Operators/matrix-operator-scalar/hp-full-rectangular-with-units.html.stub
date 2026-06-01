@@ -70,6 +70,12 @@
    +
    <var>m2</var>
    =
+   <b>
+    <var>m1</var>
+   </b>
+   + 2.71
+   <i>s</i>
+   =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -132,6 +138,14 @@
    ;
    <var>m2</var>
    )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
+   )  =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -182,6 +196,12 @@
    </b>
    −
    <var>m2</var>
+   =
+   <b>
+    <var>m1</var>
+   </b>
+   − 2.71
+   <i>s</i>
    =
    <span class="matrix">
     <span class="tr">
@@ -245,6 +265,14 @@
    ;
    <var>m2</var>
    )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
+   )  =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -301,6 +329,12 @@
    </b>
    ·
    <var>m2</var>
+   =
+   <b>
+    <var>m1</var>
+   </b>
+   · 2.71
+   <i>s</i>
    =
    <span class="matrix">
     <span class="tr">
@@ -364,6 +398,14 @@
    </b>
    ;
    <var>m2</var>
+   )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
    )  =
    <span class="matrix">
     <span class="tr">
@@ -416,6 +458,16 @@
     <span class="dvl">
     </span>
     <var>m2</var>
+   </span>
+   =
+   <span class="dvc">
+    <b>
+     <var>m1</var>
+    </b>
+    <span class="dvl">
+    </span>
+    2.71
+    <i>s</i>
    </span>
    =
    <span class="matrix">
@@ -481,6 +533,14 @@
    </b>
    ;
    <var>m2</var>
+   )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
    )  =
    <span class="matrix">
     <span class="tr">
@@ -739,6 +799,12 @@
    \
    <var>m2</var>
    =
+   <b>
+    <var>m1</var>
+   </b>
+   \2.71
+   <i>s</i>
+   =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -800,6 +866,14 @@
    ;
    <var>m2</var>
    )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
+   )  =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -847,6 +921,13 @@
    </b>
    <em>/</em>
    <var>m2</var>
+   =
+   <b>
+    <var>m1</var>
+   </b>
+   <em>/</em>
+   2.71
+   <i>s</i>
    =
    <span class="matrix">
     <span class="tr">
@@ -908,6 +989,14 @@
    </b>
    ;
    <var>m2</var>
+   )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
    )  =
    <span class="matrix">
     <span class="tr">
@@ -1168,6 +1257,12 @@
    ≡
    <var>m2</var>
    =
+   <b>
+    <var>m1</var>
+   </b>
+   ≡ 2.71
+   <i>s</i>
+   =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -1229,6 +1324,14 @@
    ;
    <var>m2</var>
    )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
+   )  =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -1276,6 +1379,12 @@
    </b>
    ≠
    <var>m2</var>
+   =
+   <b>
+    <var>m1</var>
+   </b>
+   ≠ 2.71
+   <i>s</i>
    =
    <span class="matrix">
     <span class="tr">
@@ -1337,6 +1446,14 @@
    </b>
    ;
    <var>m2</var>
+   )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
    )  =
    <span class="matrix">
     <span class="tr">
@@ -1386,6 +1503,12 @@
    &lt;
    <var>m2</var>
    =
+   <b>
+    <var>m1</var>
+   </b>
+   &lt; 2.71
+   <i>s</i>
+   =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -1447,6 +1570,14 @@
    ;
    <var>m2</var>
    )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
+   )  =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -1494,6 +1625,12 @@
    </b>
    &gt;
    <var>m2</var>
+   =
+   <b>
+    <var>m1</var>
+   </b>
+   &gt; 2.71
+   <i>s</i>
    =
    <span class="matrix">
     <span class="tr">
@@ -1555,6 +1692,14 @@
    </b>
    ;
    <var>m2</var>
+   )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
    )  =
    <span class="matrix">
     <span class="tr">
@@ -1604,6 +1749,12 @@
    ≥
    <var>m2</var>
    =
+   <b>
+    <var>m1</var>
+   </b>
+   ≥ 2.71
+   <i>s</i>
+   =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -1665,6 +1816,14 @@
    ;
    <var>m2</var>
    )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
+   )  =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -1712,6 +1871,12 @@
    </b>
    ≤
    <var>m2</var>
+   =
+   <b>
+    <var>m1</var>
+   </b>
+   ≤ 2.71
+   <i>s</i>
    =
    <span class="matrix">
     <span class="tr">
@@ -1773,6 +1938,14 @@
    </b>
    ;
    <var>m2</var>
+   )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
    )  =
    <span class="matrix">
     <span class="tr">
@@ -1825,6 +1998,12 @@
    and
    <var>m2</var>
    =
+   <b>
+    <var>m1</var>
+   </b>
+   and 2.71
+   <i>s</i>
+   =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -1886,6 +2065,14 @@
    ;
    <var>m2</var>
    )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
+   )  =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -1933,6 +2120,12 @@
    </b>
    or
    <var>m2</var>
+   =
+   <b>
+    <var>m1</var>
+   </b>
+   or 2.71
+   <i>s</i>
    =
    <span class="matrix">
     <span class="tr">
@@ -1995,6 +2188,14 @@
    ;
    <var>m2</var>
    )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
+   )  =
    <span class="matrix">
     <span class="tr">
      <span class="td">
@@ -2042,6 +2243,12 @@
    </b>
    xor
    <var>m2</var>
+   =
+   <b>
+    <var>m1</var>
+   </b>
+   xor 2.71
+   <i>s</i>
    =
    <span class="matrix">
     <span class="tr">
@@ -2103,6 +2310,14 @@
    </b>
    ;
    <var>m2</var>
+   )  =
+   <var>f</var>
+   (
+   <b>
+    <var>m1</var>
+   </b>
+   ; 2.71
+   <i>s</i>
    )  =
    <span class="matrix">
     <span class="tr">
