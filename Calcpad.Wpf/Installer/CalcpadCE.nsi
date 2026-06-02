@@ -15,6 +15,7 @@
 !define DOTNET_MAJOR "10"
 !define DOTNET_URL "https://aka.ms/dotnet/${DOTNET_MAJOR}.0/windowsdesktop-runtime-win-x64.exe"
 !define DOTNET_INSTALLER "$TEMP\dotnet-windowsdesktop-runtime.exe"
+!define FONTS_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Fonts"
 
 Name "${APP_NAME} ${APP_VERSION}"
 OutFile "Output\CalcpadCE-setup-${APP_VERSION}.exe"
@@ -24,6 +25,42 @@ RequestExecutionLevel user
 SetCompressor /SOLID lzma
 Unicode True
 ManifestDPIAware System
+
+;--------------------------------
+; Font installation macros
+;
+; Fonts ship in the app's "Fonts" subfolder (copied verbatim from the publish
+; output by the "File /r" in the install section). The installer runs per-user
+; (RequestExecutionLevel user), so they are registered in the per-user font
+; store — no admin required, supported since Windows 10 1809: register each
+; file under HKCU with its full path as the value.
+;
+; Register (ACTION=install) or unregister every font matching PATTERN in
+; $INSTDIR\Fonts. UID makes the loop labels unique per macro insertion.
+!macro ProcessFontPattern ACTION PATTERN UID
+  FindFirst $0 $1 "$INSTDIR\Fonts\${PATTERN}"
+  font_loop_${UID}:
+    StrCmp $1 "" font_done_${UID}
+    !if "${ACTION}" == "install"
+      System::Call 'gdi32::AddFontResourceW(w "$INSTDIR\Fonts\$1")i.r2'
+      WriteRegStr HKCU "${FONTS_REG_KEY}" "$1" "$INSTDIR\Fonts\$1"
+    !else
+      System::Call 'gdi32::RemoveFontResourceW(w "$INSTDIR\Fonts\$1")i.r2'
+      DeleteRegValue HKCU "${FONTS_REG_KEY}" "$1"
+    !endif
+    FindNext $0 $1
+    Goto font_loop_${UID}
+  font_done_${UID}:
+  FindClose $0
+!macroend
+
+; Process all bundled fonts, then notify running apps of the change.
+; ACTION is "install" or "uninstall"; UID_PREFIX keeps labels unique.
+!macro ProcessFonts ACTION UID_PREFIX
+  !insertmacro ProcessFontPattern "${ACTION}" "*.ttf" "${UID_PREFIX}ttf"
+  !insertmacro ProcessFontPattern "${ACTION}" "*.otf" "${UID_PREFIX}otf"
+  System::Call 'user32::SendMessageTimeoutW(p 0xFFFF, i ${WM_FONTCHANGE}, p 0, p 0, i 2, i 1000, *p .r2)'
+!macroend
 
 ;--------------------------------
 ; Interface Settings
@@ -119,7 +156,18 @@ FunctionEnd
 
 Section "Install"
   SetOutPath "$INSTDIR"
+
+  ; Release any fonts registered by a previous install so File /r can overwrite
+  ; them. AddFontResource keeps the files locked session-wide until a matching
+  ; RemoveFontResource (or reboot), so re-running over an existing install would
+  ; otherwise fail to overwrite $INSTDIR\Fonts. No-op on a first-time install.
+  !insertmacro ProcessFonts "uninstall" "fp_"
+
   File /r "${PUBLISH_DIR}\*.*"
+
+  ; Register the bundled fonts
+  DetailPrint "Installing fonts..."
+  !insertmacro ProcessFonts "install" "fi_"
 
   ; Create Start Menu shortcuts
   CreateDirectory "$SMPROGRAMS\${APP_NAME}"
@@ -187,6 +235,9 @@ FunctionEnd
 ; Uninstall Section
 
 Section "Uninstall"
+  ; Unregister the per-user fonts (must run before the files are deleted)
+  !insertmacro ProcessFonts "uninstall" "fu_"
+
   ; Remove files and directories
   RMDir /r "$INSTDIR"
 
