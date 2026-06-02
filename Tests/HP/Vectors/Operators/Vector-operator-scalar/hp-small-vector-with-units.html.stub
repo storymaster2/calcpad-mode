@@ -91,6 +91,15 @@
    ;
    <var>b</var>
    )  =
+   <var>f</var>
+   (
+   <var>
+    <span class="vec">⃗</span>
+    a
+   </var>
+   ; -5
+   <i>dm</i>
+   )  =
    <b class="b0">[</b>
    4.5 11.8 -44.5 12.5 20.9
    <b class="b0">]</b>
@@ -978,6 +987,17 @@
     <var>b</var>
    </span>
    =
+   <span class="dvc">
+    <var>
+     <span class="vec">⃗</span>
+     a
+    </var>
+    <span class="dvl">
+    </span>
+    -10
+    <i>s</i>
+   </span>
+   =
    <b class="b0">[</b>
    -0.01 0.02 -0.03 0.04 -0.05
    <b class="b0">]</b>
@@ -1016,6 +1036,15 @@
    </var>
    ;
    <var>b</var>
+   )  =
+   <var>f</var>
+   (
+   <var>
+    <span class="vec">⃗</span>
+    a
+   </var>
+   ; -10
+   <i>s</i>
    )  =
    <b class="b0">[</b>
    -0.01 0.02 -0.03 0.04 -0.05
@@ -2539,6 +2568,13 @@
    ≡
    <var>b</var>
    =
+   <var>
+    <span class="vec">⃗</span>
+    a
+   </var>
+   ≡ 8.2
+   <i>V</i>
+   =
    <b class="b0">[</b>
    1 0 0 0 0 1 0 0
    <b class="b0">]</b>
@@ -2571,6 +2607,15 @@
    </var>
    ;
    <var>b</var>
+   )  =
+   <var>f</var>
+   (
+   <var>
+    <span class="vec">⃗</span>
+    a
+   </var>
+   ; 8.2
+   <i>V</i>
    )  =
    <b class="b0">[</b>
    1 0 0 0 0 1 0 0
@@ -4254,6 +4299,13 @@
    ≥
    <var>b1</var>
    =
+   <var>
+    <span class="vec">⃗</span>
+    a
+   </var>
+   ≥ 25.8
+   <i>C</i>
+   =
    <b class="b0">[</b>
    1 1 0
    <b class="b0">]</b>
@@ -4274,6 +4326,15 @@
    </var>
    ;
    <var>b1</var>
+   )  =
+   <var>f</var>
+   (
+   <var>
+    <span class="vec">⃗</span>
+    a
+   </var>
+   ; 25.8
+   <i>C</i>
    )  =
    <b class="b0">[</b>
    1 1 0
@@ -5517,6 +5578,15 @@
    · 2 ≤ 0
    <i>S</i>
    =
+   <var>
+    <span class="vec">⃗</span>
+    x
+   </var>
+   + 2.7
+   <i>S</i>
+   · 2 ≤ 0
+   <i>S</i>
+   =
    <b class="b0">[</b>
    0 0 0 0 1 0 0 0 0
    <b class="b0">]</b>
@@ -5551,6 +5621,15 @@
    ;
    <var>y</var>
    )  =
+   <var>f</var>
+   (
+   <var>
+    <span class="vec">⃗</span>
+    x
+   </var>
+   ; 2.7
+   <i>S</i>
+   )  =
    <b class="b0">[</b>
    11.4 2.9 5.4 9.7 -2.7 14 5.4 0.2 7.3
    <b class="b0">]</b>
@@ -5578,6 +5657,25 @@
     <span class="dvl">
     </span>
     <var>y</var>
+   </span>
+   + 1
+   <i>S</i>
+   ≥ 0
+   <i>S</i>
+   =
+   <span class="dvc">
+    <var>
+     <span class="vec">⃗</span>
+     x
+    </var>
+    <sup>
+     <small class="nth">⊙</small>
+     2
+    </sup>
+    <span class="dvl">
+    </span>
+    2.7
+    <i>S</i>
    </span>
    + 1
    <i>S</i>
@@ -5622,6 +5720,15 @@
    </var>
    ;
    <var>y</var>
+   )  =
+   <var>f</var>
+   (
+   <var>
+    <span class="vec">⃗</span>
+    x
+   </var>
+   ; 2.7
+   <i>S</i>
    )  =
    <b class="b0">[</b>
    14.33 3.31 1 7.85 25.3 28.39 1 11.01 2.34
@@ -5680,6 +5787,15 @@
    ;
    <var>y</var>
    )  =
+   <var>f</var>
+   (
+   <var>
+    <span class="vec">⃗</span>
+    x
+   </var>
+   ; 2.7
+   <i>S</i>
+   )  =
    <b class="b0">[</b>
    29 -5 5 22.2 -27.4 39.4 5 -15.8 12.6
    <b class="b0">]</b>
@@ -5705,6 +5821,17 @@
    <i>S</i>
    −
    <var>y</var>
+   =  (
+   <var>
+    <span class="vec">⃗</span>
+    x
+   </var>
+   &gt; 0
+   <i>S</i>
+   )  ·
+   <i>S</i>
+   − 2.7
+   <i>S</i>
    =
    <b class="b0">[</b>
    -1.7 -2.7 -2.7 -1.7 -2.7 -1.7 -2.7 -2.7 -1.7
@@ -5744,6 +5871,15 @@
    </var>
    ;
    <var>y</var>
+   )  =
+   <var>f</var>
+   (
+   <var>
+    <span class="vec">⃗</span>
+    x
+   </var>
+   ; 2.7
+   <i>S</i>
    )  =
    <b class="b0">[</b>
    0.3 -3.95 -2.7 -0.55 -6.75 1.6 -2.7 -5.3 -1.75

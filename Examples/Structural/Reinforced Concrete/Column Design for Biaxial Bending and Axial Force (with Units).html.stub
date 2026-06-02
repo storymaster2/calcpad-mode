@@ -1116,6 +1116,38 @@ circle.Series1 {fill:Tomato;}
      <sub>2</sub>
      <span class="b1">)</span>
      <sup class="raised">2</sup>
+     = 8
+     <i>cm</i>
+     <sup class="unit">2</sup>
+     ·
+     <span class="b1">(</span>
+     <span class="dvc">
+      700
+      <i>mm</i>
+      <span class="dvl">
+      </span>
+      2
+     </span>
+     − 50
+     <i>mm</i>
+     <span class="b1">)</span>
+     <sup class="raised">2</sup>
+     + 8
+     <i>cm</i>
+     <sup class="unit">2</sup>
+     ·
+     <span class="b1">(</span>
+     <span class="dvc">
+      700
+      <i>mm</i>
+      <span class="dvl">
+      </span>
+      2
+     </span>
+     − 50
+     <i>mm</i>
+     <span class="b1">)</span>
+     <sup class="raised">2</sup>
      = 14400
      <i>cm</i>
      <sup class="unit">4</sup>

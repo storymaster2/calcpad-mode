@@ -1468,6 +1468,13 @@
    \
    <var>b</var>
    =
+   <var>
+    <span class="vec">⃗</span>
+    x
+   </var>
+   \3.7
+   <i>m</i>
+   =
    <b class="b0">[</b>
    0 0 0 0 0 0 0 0 0 0
    <i>m</i>
@@ -1536,6 +1543,15 @@
    </var>
    ;
    <var>b</var>
+   )  =
+   <var>f</var>
+   (
+   <var>
+    <span class="vec">⃗</span>
+    x
+   </var>
+   ; 3.7
+   <i>m</i>
    )  =
    <b class="b0">[</b>
    0 0 0 0 0 0 0 0 0 0

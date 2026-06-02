@@ -1382,6 +1382,18 @@
     </span>
     2
    </span>
+   = 0
+   <i>s</i>
+   <sup class="unit">-1</sup>
+   +
+   <span class="dvc">
+    0.00654
+    <i>s</i>
+    <sup class="unit">-1</sup>
+    <span class="dvl">
+    </span>
+    2
+   </span>
    = 0.00327
    <i>s</i>
    <sup class="unit">-1</sup>
@@ -1609,6 +1621,18 @@
     </span>
     2
    </span>
+   = 0
+   <i>s</i>
+   <sup class="unit">-1</sup>
+   +
+   <span class="dvc">
+    0.00654
+    <i>s</i>
+    <sup class="unit">-1</sup>
+    <span class="dvl">
+    </span>
+    2
+   </span>
    = 0.00327
    <i>s</i>
    <sup class="unit">-1</sup>
@@ -1821,6 +1845,12 @@
    +
    <var>k</var>
    <sub>3ω1</sub>
+   = 0
+   <i>s</i>
+   <sup class="unit">-1</sup>
+   + 0.00654
+   <i>s</i>
+   <sup class="unit">-1</sup>
    = 0.00654
    <i>s</i>
    <sup class="unit">-1</sup>

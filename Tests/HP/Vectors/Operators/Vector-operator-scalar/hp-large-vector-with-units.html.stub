@@ -683,6 +683,13 @@
    \
    <var>b</var>
    =
+   <var>
+    <span class="vec">⃗</span>
+    x
+   </var>
+   \3.7
+   <i>m</i>
+   =
    <b class="b0">[</b>
    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
    <span title="129 elements skipped.">...</span>
@@ -717,6 +724,15 @@
    </var>
    ;
    <var>b</var>
+   )  =
+   <var>f</var>
+   (
+   <var>
+    <span class="vec">⃗</span>
+    x
+   </var>
+   ; 3.7
+   <i>m</i>
    )  =
    <b class="b0">[</b>
    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
