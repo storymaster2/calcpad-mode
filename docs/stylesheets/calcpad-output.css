@@ -4,6 +4,15 @@
    clashing with MkDocs Material's own heading and table styles. */
 
 @scope (.calcpad-output) {
+    @font-face {
+        font-family: 'Jost* Hairline';
+        src: url('../media/Jost-100-Hairline.otf') format('opentype');
+    }
+
+    @font-face {
+        font-family: 'Jost* Thin';
+        src: url('../media/Jost-200-Thin.otf') format('opentype');
+    }
 
     :scope {
         background-color: white;
