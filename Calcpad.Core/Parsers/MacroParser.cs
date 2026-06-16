@@ -84,6 +84,8 @@ namespace Calcpad.Core
         private readonly List<int> _lineNumbers = [];
         private static readonly Dictionary<string, Macro> Macros = new(StringComparer.Ordinal);
         public Func<string, Queue<string>, string> Include;
+        public ClientFileCache ClientFileCache { get; set; }
+        public string SourceFilePath { get; set; }
 
         private static Keywords GetKeyword(ReadOnlySpan<char> s)
         {

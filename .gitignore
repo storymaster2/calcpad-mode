@@ -9,7 +9,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-Calcpad.Web
+Crashes
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -93,9 +93,6 @@ StyleCopReport.xml
 *.pidb
 *.svclog
 *.scc
-
-# Files built by Visual Studio Code
-*.csproj.lscache
 
 # Chutzpah Test files
 _Chutzpah*
@@ -279,16 +276,6 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
-# MathJax bundle (downloaded during CI build)
-docs/javascripts/mathjax/
-
-# MkDocs build output
-site/
-
-# npm artifacts from local MathJax setup
-package.json
-package-lock.json
-
 # Visual Studio 6 build log
 *.plg
 
@@ -362,6 +349,41 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Node.js build output
+dist/
+**/out/
+
+# VS Code extension
+*.vsix
+**/.vscode-test/
+
+# Test coverage
+**/.nyc_output/
+**/coverage/
+
+# Neutralino desktop build artifacts
+Calcpad.Web/frontend/calcpad-desktop/extensions/server/*
+!Calcpad.Web/frontend/calcpad-desktop/extensions/server/.gitkeep
+Calcpad.Web/frontend/calcpad-desktop/resources/
+Calcpad.Web/frontend/calcpad-desktop/.tmp/
+Calcpad.Web/frontend/calcpad-desktop/bin/
+
+# Arch / pacman packaging build artifacts (keep PKGBUILD + helpers)
+Calcpad.Web/frontend/calcpad-desktop/packaging/arch/pkg/
+Calcpad.Web/frontend/calcpad-desktop/packaging/arch/src/
+Calcpad.Web/frontend/calcpad-desktop/packaging/arch/*.pkg.tar.*
+Calcpad.Web/frontend/calcpad-desktop/packaging/arch/*.log
+
+# MathJax bundle (downloaded during CI build)
+docs/javascripts/mathjax/
+
+# MkDocs build output
+site/
+
+# npm artifacts from local MathJax setup
+package.json
+package-lock.json
 
 # Installer output
 Calcpad.Wpf/Installer/Output/

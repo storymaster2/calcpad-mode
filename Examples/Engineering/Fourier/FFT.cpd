@@ -1,5 +1,4 @@
-'<!-- Discrete-Fourier analysis of a synthetic two-tone signal that switches frequency mid-record, using the built-in `fft()` function.
-'Returns the power and amplitude spectral densities so the basic vibration-analysis workflow stays fully visible on the worksheet. -->
+"FFT Analysis
 #rad
 'Sampling frequency -'Fs = 1024Hz
 'Number of sampling points - 'N = 1024

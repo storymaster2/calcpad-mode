@@ -1,5 +1,4 @@
-'<!-- Compares the `$Slope` operator (Richardson extrapolation) against `$Derivative` (complex-step method) on $e^x$ and $\sin(x^2)$ at large arguments.
-'Exposes the round-off blow-up of finite differences and the machine-precision accuracy of the complex-step trick. -->
+"Numerical Differentiation
 #md on
 #rad
 'Function -'f(x) = e^x', Point - 'a = 100

@@ -1,4 +1,4 @@
-'<!-- Polar [rose curve](https://en.wikipedia.org/wiki/Rose_(mathematics)) $r = a\, \cos(k\theta)$ with petal count controlled by integer or rational $k$. -->
+"Rose Curve
 'General equation:
 r(θ) = cos(a/b*θ)
 x(θ) = r(θ)*cos(θ)

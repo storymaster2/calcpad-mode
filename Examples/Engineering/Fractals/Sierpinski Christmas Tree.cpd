@@ -1,5 +1,4 @@
-'<!-- [Chaos-game](https://en.wikipedia.org/wiki/Chaos_game) construction of a Sierpinski-style triangle, dressed up as a Christmas tree.
-'A point is repeatedly moved halfway toward a randomly chosen vertex; after 100 000 iterations the attractor emerges as a green ellipse cloud. -->
+"Sierpinski Christmas Tree
 #val
 #hide
 w = 300','h = 800

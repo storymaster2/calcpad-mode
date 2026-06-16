@@ -1,4 +1,3 @@
-'<!-- Mixes Markdown headings, lists and tables with Calcpad math by toggling `#md on`, the building block for Markdown-driven reports. -->
 #md on
 "Markdown in CalcpadCE
 '---

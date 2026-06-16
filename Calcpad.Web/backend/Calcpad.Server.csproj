@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>Exe</OutputType>
+    <Version>7.6.1</Version>
+    <AssemblyName>Calcpad.Server</AssemblyName>
+    <RootNamespace>Calcpad.Server</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Workaround for NETSDK1226 on Linux with .NET 10 preview -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+  </PropertyGroup>
+
+  <!-- Self-contained properties for publishing only -->
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishReadyToRun>false</PublishReadyToRun>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
+    <!-- PDF generation -->
+    <PackageReference Include="PuppeteerSharp" Version="21.1.1" />
+    <PackageReference Include="PDFsharp" Version="6.2.0" />
+    <!-- Authentication -->
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+    <!-- S3-compatible object storage (Garage / AWS S3 / MinIO / RustFS) -->
+    <PackageReference Include="AWSSDK.S3" Version="3.7.412" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Calcpad.Core\Calcpad.Core.csproj" />
+    <ProjectReference Include="..\..\Calcpad.Highlighter\Calcpad.Highlighter.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="template.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <!-- Embed template.html as resource for single-file publishing -->
+    <EmbeddedResource Include="template.html" />
+    <!-- Bundled fonts inlined by PdfGeneratorService so the headless browser
+         doesn't have to fetch them from a CDN during PDF generation. Drop any
+         .woff/.woff2/.ttf/.otf file into Fonts/ and it gets picked up. -->
+    <Content Include="Fonts\**\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="Fonts\**\*.*" />
+  </ItemGroup>
+
+  <!-- Exclude non-.NET subdirectories from dotnet build/publish output -->
+  <ItemGroup>
+    <Content Remove="scripts\**" />
+    <Content Remove="testing\**" />
+    <None Remove="scripts\**" />
+    <None Remove="testing\**" />
+  </ItemGroup>
+
+</Project>

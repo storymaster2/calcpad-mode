@@ -1,0 +1,93 @@
+services:
+  garage:
+    image: dxflrs/garage:v2.1.0
+    restart: unless-stopped
+    environment:
+      - GARAGE_RPC_SECRET=${GARAGE_RPC_SECRET:?set GARAGE_RPC_SECRET in .env}
+      - GARAGE_ADMIN_TOKEN=${GARAGE_ADMIN_TOKEN:?set GARAGE_ADMIN_TOKEN in .env}
+    volumes:
+      - garage-meta:/var/lib/garage/meta
+      - garage-data:/var/lib/garage/data
+      - ./garage.toml:/etc/garage.toml:ro
+    networks:
+      - calcpad-internal
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  garage-init:
+    image: dxflrs/garage:v2.1.0
+    depends_on:
+      garage:
+        condition: service_healthy
+    environment:
+      - GARAGE_RPC_SECRET=${GARAGE_RPC_SECRET}
+      - GARAGE_RPC_HOST=garage:3901
+      - CALCPAD_BUCKET=${CALCPAD_BUCKET:-calcpad}
+      - CALCPAD_KEY_NAME=${CALCPAD_KEY_NAME:-calcpad-server}
+      - CALCPAD_CREDS_FILE=/shared/garage-creds.env
+    volumes:
+      - ./garage-init.sh:/init.sh:ro
+      - garage-creds:/shared
+    entrypoint: ["/bin/sh", "/init.sh"]
+    restart: "no"
+    networks:
+      - calcpad-internal
+
+  calcpad-server:
+    build:
+      context: ../..
+      dockerfile: Calcpad.Web/backend/Dockerfile
+    env_file:
+      - .env.development
+    ports:
+      - "${CALCPAD_PORT:-9420}:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - CALCPAD_HOST=${CALCPAD_HOST:-*}
+      - ASPNETCORE_URLS=http://+:8080
+      - BROWSER_PATH=${BROWSER_PATH:-/usr/bin/chromium}
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+      - Auth__Enabled=${AUTH_ENABLED:-true}
+    depends_on:
+      garage-init:
+        condition: service_completed_successfully
+    volumes:
+      - calcpad-data:/app/data
+      - garage-creds:/garage-creds:ro
+    # Source the storage credentials produced by garage-init before starting.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ -f /garage-creds/garage-creds.env ]; then
+          set -a; . /garage-creds/garage-creds.env; set +a
+        fi
+        exec dotnet Calcpad.Server.dll
+    restart: unless-stopped
+    networks:
+      - calcpad-internal
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    tmpfs:
+      - /tmp:noexec,nosuid,size=200m
+    deploy:
+      resources:
+        limits:
+          memory: ${CALCPAD_SERVER_MEMORY:-1g}
+          cpus: '1.0'
+
+networks:
+  calcpad-internal:
+
+volumes:
+  calcpad-data:
+  garage-meta:
+  garage-data:
+  garage-creds:

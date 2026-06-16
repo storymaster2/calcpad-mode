@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Calcpad.Core
 {
@@ -8,6 +11,144 @@ namespace Calcpad.Core
         public MathSettings Math { get; set; } = new();
         public PlotSettings Plot { get; set; } = new();
         public string Units { get; set; } = "m";
+
+        public ClientFileCache ClientFileCache { get; set; }
+
+        public string SourceFilePath { get; set; }
+    }
+
+    [Serializable()]
+    public class ClientFileCache
+    {
+        private const int DiskThresholdBytes = 51_200;
+        private const string CacheFileExtension = ".cache";
+
+        public string[] Filenames { get; set; } = Array.Empty<string>();
+        public byte[][] Contents { get; set; } = Array.Empty<byte[]>();
+        public string[] Errors { get; set; } = Array.Empty<string>();
+        public string[] DiskGuids { get; set; } = Array.Empty<string>();
+
+        public string DiskCacheFolder { get; set; }
+
+        [field: NonSerialized]
+        public Func<string, byte[]> RefetchDelegate { get; set; }
+
+        private int IndexOf(string filename) =>
+            Array.FindIndex(Filenames, f => string.Equals(f, filename, StringComparison.OrdinalIgnoreCase));
+
+        public bool TryGetContent(string filename, out string content)
+        {
+            content = null;
+            if (!TryGetBytes(filename, out var bytes))
+                return false;
+            content = Encoding.UTF8.GetString(bytes);
+            return true;
+        }
+
+        public bool TryGetContentMultiKey(string primaryKey, string fallbackKey, out string content) =>
+            TryGetContent(primaryKey, out content) ||
+            (fallbackKey != null && TryGetContent(fallbackKey, out content));
+
+        public bool TryGetBytes(string filename, out byte[] bytes)
+        {
+            bytes = null;
+            var idx = IndexOf(filename);
+            if (idx < 0)
+                return false;
+
+            if (Contents[idx] != null)
+            {
+                bytes = Contents[idx];
+                return true;
+            }
+
+            if (DiskGuids[idx] != null && DiskCacheFolder != null)
+            {
+                var path = Path.Combine(DiskCacheFolder, DiskGuids[idx] + CacheFileExtension);
+                if (File.Exists(path))
+                {
+                    bytes = File.ReadAllBytes(path);
+                    try { File.SetLastWriteTimeUtc(path, DateTime.UtcNow); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+                    return true;
+                }
+
+                if (RefetchDelegate != null)
+                {
+                    try
+                    {
+                        bytes = RefetchDelegate(filename);
+                        if (bytes != null)
+                        {
+                            WriteToDisk(idx, bytes);
+                            return true;
+                        }
+                    }
+                    catch { }
+                }
+            }
+
+            return false;
+        }
+
+        public bool TryGetError(string filename, out string error)
+        {
+            error = null;
+            var idx = IndexOf(filename);
+            if (idx < 0)
+                return false;
+            error = Errors[idx];
+            return error != null;
+        }
+
+        public bool TryGetErrorMultiKey(string primaryKey, string fallbackKey, out string error) =>
+            TryGetError(primaryKey, out error) ||
+            (fallbackKey != null && TryGetError(fallbackKey, out error));
+
+        public void AddEntry(string filename, byte[] content, string error)
+        {
+            byte[] contentEntry;
+            string guidEntry;
+
+            if (content != null && content.Length > DiskThresholdBytes && DiskCacheFolder != null)
+            {
+                guidEntry = WriteToDisk(filename, content);
+                contentEntry = null;
+            }
+            else
+            {
+                guidEntry = null;
+                contentEntry = content;
+            }
+
+            Filenames = [.. Filenames, filename];
+            Contents = [.. Contents, contentEntry];
+            Errors = [.. Errors, error];
+            DiskGuids = [.. DiskGuids, guidEntry];
+        }
+
+        private static string GetDiskCacheKey(string filename) =>
+            Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(filename)))[..32];
+
+        private string WriteToDisk(string filename, byte[] bytes)
+        {
+            var cacheKey = GetDiskCacheKey(filename);
+            var path = Path.Combine(DiskCacheFolder, cacheKey + CacheFileExtension);
+            if (File.Exists(path))
+            {
+                try { File.SetLastWriteTimeUtc(path, DateTime.UtcNow); } catch { }
+            }
+            else
+            {
+                Directory.CreateDirectory(DiskCacheFolder);
+                File.WriteAllBytes(path, bytes);
+            }
+            return cacheKey;
+        }
+
+        private void WriteToDisk(int index, byte[] bytes)
+        {
+            DiskGuids[index] = WriteToDisk(Filenames[index], bytes);
+        }
     }
 
     [Serializable()]

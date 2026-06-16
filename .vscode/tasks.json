@@ -1,0 +1,393 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        // ── Backend (Calcpad.Server) ────────────────────────────────────
+        {
+            "label": "Server: Start Dev",
+            "type": "shell",
+            "command": "bash",
+            "args": ["${workspaceFolder}/Calcpad.Web/backend/scripts/restart-dev-server.sh"],
+            "group": "build",
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": { "regexp": "^$" },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^Building Calcpad.Server",
+                    "endsPattern": "^Server started"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "server"
+            }
+        },
+        {
+            "label": "Server: Build Linux",
+            "type": "shell",
+            "command": "bash",
+            "args": ["${workspaceFolder}/Calcpad.Web/backend/scripts/build-linux.sh"],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Server: Build Slim Bundle",
+            "type": "shell",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "linux": {
+                "command": "bash",
+                "args": ["${workspaceFolder}/Calcpad.Web/backend/scripts/build-slim-bundle.sh"]
+            },
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}\\Calcpad.Web\\backend\\scripts\\build-slim-bundle.ps1"
+                ]
+            }
+        },
+        {
+            "label": "Server: Deploy Slim Bundle to Extension",
+            "type": "shell",
+            "group": "build",
+            "dependsOn": "Server: Build Slim Bundle",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "linux": {
+                "command": "bash",
+                "args": [
+                    "-c",
+                    "rm -rf ${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/bin && cp -r ${workspaceFolder}/publish/calcpad-server-slim ${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/bin && echo 'Deployed to vscode-calcpad/bin/'"
+                ]
+            },
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}\\Calcpad.Web\\backend\\scripts\\deploy-slim-bundle.ps1"
+                ]
+            }
+        },
+
+        // ── Frontend (calcpad-web) ──────────────────────────────────────
+        {
+            "label": "Web: Dev Server",
+            "type": "shell",
+            "command": "npm",
+            "args": ["run", "dev"],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-web"
+            },
+            "group": "build",
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": { "regexp": "^$" },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^\\s*VITE",
+                    "endsPattern": "ready in"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "frontend"
+            }
+        },
+        {
+            "label": "Web: Build",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-web"
+            },
+            "group": "build",
+            "linux": {
+                "command": "bash",
+                "args": ["-c", "[ -d node_modules ] || npm install && npm run build"]
+            },
+            "osx": {
+                "command": "bash",
+                "args": ["-c", "[ -d node_modules ] || npm install && npm run build"]
+            },
+            "windows": {
+                "command": "powershell",
+                "args": ["-NoProfile", "-Command", "if(-not(Test-Path node_modules)){npm install}; npm run build"]
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Web: Install Dependencies",
+            "type": "shell",
+            "command": "npm",
+            "args": ["install"],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-web"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+
+        // ── Desktop (Neutralino) ────────────────────────────────────────
+        {
+            "label": "Desktop: Build Server + Assets",
+            "type": "shell",
+            "command": "bash",
+            "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh"],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Desktop: Dev Mode",
+            "type": "shell",
+            "command": "npx",
+            "args": ["neu", "run"],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
+            },
+            "group": "build",
+            "isBackground": true,
+            "dependsOn": "Server: Start Dev",
+            "problemMatcher": {
+                "pattern": { "regexp": "^$" },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^neu:",
+                    "endsPattern": "CLI connected"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "desktop"
+            }
+        },
+        {
+            "label": "Desktop: Package",
+            "type": "shell",
+            "command": "npx",
+            "args": ["neu", "build"],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
+            },
+            "group": "build",
+            "dependsOn": "Desktop: Build Server + Assets",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Desktop: Clean & Rebuild",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "rm -rf dist resources && npx neu build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
+            },
+            "group": "build",
+            "dependsOn": "Desktop: Build Server + Assets",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Desktop: Install via pacman (Arch)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "rm -f *.pkg.tar.zst && makepkg -sif && sudo pacman -U --noconfirm calcpad-ce-*.pkg.tar.zst"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/packaging/arch"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+
+        // ── Server → Extension DLL sync (dev builds) ──────────────────
+        {
+            "label": "Server: Build & Deploy to Extension",
+            "type": "shell",
+            "group": "build",
+            "dependsOn": [],
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}\\Calcpad.Web\\backend\\scripts\\build-and-deploy-extension.ps1",
+                    "-RepoRoot", "${workspaceFolder}"
+                ]
+            },
+            "linux": {
+                "command": "bash",
+                "args": [
+                    "${workspaceFolder}/Calcpad.Web/backend/scripts/build-and-deploy-extension.sh",
+                    "${workspaceFolder}"
+                ]
+            },
+            "osx": {
+                "command": "bash",
+                "args": [
+                    "${workspaceFolder}/Calcpad.Web/backend/scripts/build-and-deploy-extension.sh",
+                    "${workspaceFolder}"
+                ]
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            // Script runs dotnet build (msCompile errors) and npm run compile
+            // (tsc errors), both of which we want to surface in the Problems
+            // panel since Extension: Compile is now just a dependency wrapper.
+            "problemMatcher": ["$msCompile", "$tsc"]
+        },
+
+        // ── VS Code Extension ───────────────────────────────────────────
+        // Extension: Compile is now an alias — the actual `npm run compile`
+        // step lives inside the Server: Build & Deploy to Extension script,
+        // so both that task and this one produce a fully-built extension.
+        // Kept as a separate label because launch.json's "Extension: Run"
+        // configuration references it as a preLaunchTask.
+        {
+            "label": "Extension: Compile",
+            "dependsOn": ["Frontend: Install & Build", "Server: Build & Deploy to Extension"],
+            "dependsOrder": "parallel",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Extension: Watch",
+            "type": "npm",
+            "script": "watch",
+            "path": "Calcpad.Web/frontend/vscode-calcpad",
+            "group": "build",
+            "isBackground": true,
+            "presentation": {
+                "panel": "shared",
+                "reveal": "silent"
+            },
+            "problemMatcher": "$tsc-watch"
+        },
+
+        // ── Build All ──────────────────────────────────────────────────
+        {
+            "label": "Frontend: Install & Build",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-frontend"
+            },
+            "linux": {
+                "command": "bash",
+                "args": ["-c", "[ -d node_modules ] || npm install && npm run build"]
+            },
+            "osx": {
+                "command": "bash",
+                "args": ["-c", "[ -d node_modules ] || npm install && npm run build"]
+            },
+            "windows": {
+                "command": "powershell",
+                "args": ["-NoProfile", "-Command", "if(-not(Test-Path node_modules)){npm install}; npm run build"]
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Extension: Install & Compile",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            },
+            "dependsOn": "Frontend: Install & Build",
+            "linux": {
+                "command": "bash",
+                "args": ["-c", "[ -d node_modules ] || npm install && npm run compile"]
+            },
+            "osx": {
+                "command": "bash",
+                "args": ["-c", "[ -d node_modules ] || npm install && npm run compile"]
+            },
+            "windows": {
+                "command": "powershell",
+                "args": ["-NoProfile", "-Command", "if(-not(Test-Path node_modules)){npm install}; npm run compile"]
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Build All",
+            "dependsOn": ["Extension: Install & Compile", "Web: Build"],
+            "dependsOrder": "parallel",
+            "group": "build",
+            "problemMatcher": []
+        },
+
+        // ── Compound ────────────────────────────────────────────────────
+        {
+            "label": "Full Stack: Start Dev",
+            "dependsOn": ["Server: Start Dev", "Web: Dev Server"],
+            "dependsOrder": "parallel",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Extension + Server: Compile & Start",
+            "dependsOn": ["Extension: Compile", "Server: Start Dev"],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
+        },
+        {
+            "label": "Extension: Compile + Deploy Bundle",
+            "dependsOn": ["Extension: Compile", "Server: Deploy Slim Bundle to Extension"],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
+        },
+        {
+            "label": "Extension: Build VSIX",
+            "type": "npm",
+            "script": "package:vsix",
+            "path": "Calcpad.Web/frontend/vscode-calcpad",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

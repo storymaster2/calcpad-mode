@@ -1,0 +1,109 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Server: Run",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "bash",
+            "runtimeArgs": [
+                "${workspaceFolder}/Calcpad.Web/backend/scripts/restart-dev-server.sh"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Extension: Run",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension: Compile"
+        },
+        {
+            "name": "Extension + Server: Run",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension + Server: Compile & Start"
+        },
+        {
+            "name": "Extension + Bundled Server (Linux x64)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension: Compile + Deploy Bundle"
+        },
+        {
+            "name": "Extension + Bundled Server (Fedora x64)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension: Compile + Deploy Bundle"
+        },
+        {
+            "name": "Extension + Bundled Server (Debian x64)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension: Compile + Deploy Bundle"
+        },
+        {
+            "name": "Extension + Bundled Server (Windows x64)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension: Compile + Deploy Bundle"
+        },
+        {
+            "name": "Desktop: Run Local Build (Linux x64)",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/dist/calcpad-desktop/calcpad-desktop-linux_x64",
+            "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/dist/calcpad-desktop",
+            "env": {
+                "GDK_BACKEND": "x11",
+                "WEBKIT_DISABLE_DMABUF_RENDERER": "1",
+                "BROWSER_PATH": "/usr/bin/chromium"
+            },
+            "console": "integratedTerminal",
+            "preLaunchTask": "Desktop: Clean & Rebuild"
+        },
+        {
+            "name": "Desktop: Run Installed (Arch pacman)",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "/usr/bin/calcpad-ce",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Desktop: Install via pacman (Arch)"
+        }
+    ]
+}

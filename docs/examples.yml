@@ -1,8 +1,4 @@
 Engineering Examples:
-  Getting Started:
-    - Calculating
-    - Functions
-    - Unit Conversion
   Areas:
     - Square
     - Circle
@@ -12,13 +8,13 @@ Engineering Examples:
     - Equilateral Triangle
     - Right Triangle
     - Triangle
-    - Triangle (Height)
+    - Triangle (height)
     - Parabola
     - Ellipse
-    - Sector (Angle)
-    - Sector (Chord)
-    - Segment (Angle)
-    - Segment (Chord)
+    - Sector (angle)
+    - Sector (chord)
+    - Segment (angle)
+    - Segment (chord)
   Volumes:
     - Cube
     - Sphere
@@ -32,11 +28,11 @@ Engineering Examples:
     - Right Polygonal Prism
     - Triangular Frustum
     - Triangular Pyramid
-    - Triangular Prism
+    - Triangular prism
     - Tetrahedron
     - Rectangular Prism
   Geometrical:
-    - Solution of a Triangle
+    - Solution of a triangle
     - Tee Section
     - Double Tee Section
     - Polygon
@@ -55,7 +51,7 @@ Engineering Examples:
     - Rectangle
     - Rectangular Tube
     - Rhombus
-    - Rhombus (Square)
+    - Rhombus (square)
     - Right Triangle
     - Segment
     - Square
@@ -87,13 +83,13 @@ Engineering Examples:
     - Numerical Differentiation
     - Numerical Integration
     - Rayleigh Quotient Iteration
-    - System of Nonlinear Equations
+    - System of nonlinear equations
   Pendulums:
-    - Simple Undamped Pendulum Animated
-    - Simple Damped Pendulum Animated
-    - Elastic Damped Pendulum Animated
-    - Double Damped Pendulum Animated
-    - Comparison of Different Methods for Analysis of Simple Undamped Pendulum
+    - Simple undamped Animated
+    - Simple damped Animated
+    - Elastic damped Animated
+    - Double damped Animated
+    - Comparison of different methods for analysis of simple undamped pendulum
   Waves:
     - Waves 2D on Water Interference Animated
     - Waves 2D on Water Interference
@@ -112,7 +108,7 @@ Engineering Examples:
     - Hypocycloid
     - Lissajous Curve
     - Rose Curve
-  Elastic Analysis:
+  Elastic analysis:
     - Deep Beam
     - Rectangular Slab
     - Saint-Venant Torsion
@@ -129,63 +125,56 @@ Engineering Examples:
   Special Math Functions:
     - Special Math Functions
   Vectors:
-    - Vector Initialization, Indexing and Operators
-    - Vector Data Functions
-    - Vector Math Functions
-    - Vector Structural Functions
+    - Vector Initialization, indexing and operators
+    - Vector data functions
+    - Vector math functions
+    - Vector structural functions
   Vectors - High Performance:
-    - Vector Initialization, Indexing and Operators
-    - Vector Data Functions
-    - Vector Math Functions
-    - Vector Structural Functions
+    - Vector Initialization, indexing and operators
+    - Vector data functions
+    - Vector math functions
+    - Vector structural functions
   Matrices:
-    - Matrix Initialization and Indexing
-    - Matrix Creational Functions
-    - Matrix Data Functions
-    - Matrix Math Functions
-    - Matrix Structural Functions
-    - Matrix Operators
+    - Matrix initialization and indexing
+    - Matrix creational functions
+    - Matrix data functions
+    - Matrix math functions
+    - Matrix structural functions
+    - Matrix operators
   Matrices - High Performance:
-    - Matrix Initialization and Indexing
-    - Matrix Creational Functions
-    - Matrix Data Functions
-    - Matrix Math Functions
-    - Matrix Structural Functions
-    - Matrix Operators
-  Multiline Functions:
-    - Cubic Roots Function
-    - Fibonacci Numbers
-    - Greatest Common Divisor - Euclid Algorithm
-    - Quadratic Roots Function
-  Custom Units:
-    - Currency Units
-    - Information Units
+    - Matrix initialization and indexing
+    - Matrix creational functions
+    - Matrix data functions
+    - Matrix math functions
+    - Matrix structural functions
+    - Matrix operators
+  Multiline functions:
+    - Cubic roots function
+    - Fibonacci numbers
+    - Greatest common divisor - Euclid algorithm
+    - Quadratic roots function
+  Custom units:
+    - Currency units
+    - Information units
   Formatting:
     - CSS Classes
     - Design Check
-    - Page Header with Logo
+    - Page header with logo
     - Markdown
-    - Beam Design with Markdown
-    - Rounding and Formatting
+    - Beam design with Markdown
+    - Rounding and formatting
 #    - toc # Broken when rendered with CLI and displayed in MkDocs
   Others:
-    - HTML UI
+    - Html UI
     - Collatz Check
     - Quadratic Equation
     - Cubic Equation
-    - Bitwise Operations
+    - Bitwise operations
     - Combinatorics
     - Functions of Multiple Parameters
-    - Himmelblau Function
+    - Himmelblau function
 
 Structural Engineering Examples:
-  Simply Supported Beams:
-    - Uniformly Distributed Load
-    - Linearly Distributed Load
-    - Partially Distributed Load
-    - Concentrated Force
-    - Concentrated Forces
-    - Concentrated Moment
   Cantilevers:
     - Concentrated Force
     - Concentrated Moment
@@ -198,8 +187,8 @@ Structural Engineering Examples:
     - Linearly Distributed Load
     - Partially Distributed Load
     - Uniformly Distributed Load
-  Continuous Beam:
-    - Continuous Beam
+  Continuous beam:
+    - Continuous beam
   Deflections:
     - Cantilever with Concentrated Load
     - Cantilever with Unifrom Load
@@ -207,7 +196,7 @@ Structural Engineering Examples:
     - Simply Supported Beam with Unifrom Load
   Frames:
     - Frame
-    - Frame-Var
+    - Frame-var
     - Multi-Story Frame
   Fully Restrained Beams:
     - Concentrated Force
@@ -216,20 +205,27 @@ Structural Engineering Examples:
     - Partially Distributed Load
     - Uniformly Distributed Load
   Loads:
-    - Optimization of Foundation Pad Dimensions
+    - Optimization of foundation pad dimensions
     - Snow Drift
     - Snow Load
     - Wind Load
   Nonlinear:
-    - Material and Geometric Nonlinear Analysis of Prestressed Asymmetric Biot Truss
-    - Nonlinear Analysis of a Von-Mises Truss Animated
-    - Third Order Geometric Nonlinearity Analysis of a Double-Strut Biot System
+    - Material and geometric nonlinear analysis of prestressed asymmetric Biot truss
+    - Nonlinear analysis of a Von-Mises truss Animated
+    - Third order geometric nonlinearity analysis of a double-strut Biot system
+  Simply Supported Beams:
+    - Concentrated Force
+    - Concentrated Forces
+    - Concentrated Moment
+    - Linearly Distributed Load
+    - Partially Distributed Load
+    - Uniformly Distributed Load
   Soil Mechanics:
-    - Soil Stress and Deformations
+    - Soil stress and deformations
   Steel:
-    - I-Section Properties
-    - I-Section Properties Excel
-    - I-Section Properties and Drawing
+    - I section properties
+    - I section properties Excel
+    - I section properties and drawing
   Structural Dynamics:
     - Beam Impact Analysis Animated
     - Free Vibrations of Steel Pole Animated
@@ -242,9 +238,9 @@ Structural Engineering Examples:
     - Bending Design of Tee Section
     - Column Design for Bending and Axial Force
     - Column Design for Biaxial Bending and Axial Force
-    - Column Design for Biaxial Bending and Axial Force (with Units)
+    - Column Design for Biaxial Bending and Axial Force (with units)
     - Combined Bending, Shear and Torsion
-    - Interaction Diagram of RC Section
+    - Interaction Diagram of RC section
     - SLS Design of Beam with Rectangular Section
     - SLS Design of Beam with Tee Section
     - Shear Design of Rectangular Section

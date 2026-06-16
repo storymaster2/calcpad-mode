@@ -52,7 +52,7 @@ In the next example, speed is calculated in m/s, but is converted and stored as 
 | `'What distance you will travel for't_2 = 5s'?` | What distance you will travel for $t_2 = 5s$?  
 | `s_2 = V*t_2\|m` | $s_2 = V*t_2 = 90 km/h*5s = 125m$
 
-## Predefined Units
+## Predefined units
 
 CalcpadCE includes a large collection of predefined units as follows:
 
@@ -61,7 +61,7 @@ CalcpadCE includes a large collection of predefined units as follows:
 - Parts: %, ‰, ‱, pcm, ppm, ppb, ppt, ppq;
 - Angles: °, ′, ″, deg, rad, grad, rev;
 
-### Metric Units (SI and Compatible)
+### Metric units (SI and compatible)
 
 - Mass: g, hg, kg, t, kt, Mt, Gt, dg, cg, mg, μg, ng, pg, Da (or u);
 - Length: m, km, dm, cm, mm, μm, nm, pm, AU, ly;
@@ -100,7 +100,7 @@ CalcpadCE includes a large collection of predefined units as follows:
 - Equivalent dose: Sv, kSv, MSv, GSv, TSv, mSv, μSv, nSv, pSv;
 - Catalytic activity: kat;
 
-### Non-Metric Units (Imperial/US)
+### Non-metric units (Imperial/US)
 
 - Mass: gr, dr, oz, lb (or lbm, lb_m), kipm (or kip_m), st, qr,  
      cwt (or cwt_UK, cwt_US), ton (or ton_UK, ton_US), slug;
@@ -127,7 +127,7 @@ Literals that follow numbers immediately are parsed as units, e.g. "2 m". Stan
 Otherwise, it is parsed as a variable, even if a unit with the same name exists.
 If you put a dot before the literal, you will force it to be parsed as a unit, even if a variable with the same name exists, e.g. ".N\*.m".
 
-## Custom Units
+## Custom units
 
 You can define your own "custom" units and use them like any others in your code.
 Defining a unit is similar to defining a variable, but the name must be prefixed with a dot ".":

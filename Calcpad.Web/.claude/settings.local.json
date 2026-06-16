@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"ParseLineBreak\\\\|_continueTextComment =\" \"c:/Users/IsaiahMartin/source/repos/CalcpadVM/Calcpad.Highlighter/Tokenizer\"/*.cs)",
+      "Bash(ls -la \"c:\\\\Users\\\\IsaiahMartin\\\\source\\\\repos\\\\CalcpadVM\\\\Calcpad.Highlighter\\\\Linter\"\" 2>/dev/null || echo \"Directory not found \")",
+      "Bash(find c:UsersIsaiahMartinsourcereposCalcpadVMCalcpad.HighlighterLinterValidators -type f -name *.cs)"
+    ]
+  }
+}
