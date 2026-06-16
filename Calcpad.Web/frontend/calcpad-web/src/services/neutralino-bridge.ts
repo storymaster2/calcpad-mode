@@ -258,8 +258,10 @@ export class NeutralinoMessageBridge {
     }
 
     private getServerLogPath(): string | null {
-        const NL_PATH = (window as Window & { NL_PATH?: string }).NL_PATH;
-        if (!NL_PATH) return null;
+        const raw = (window as Window & { NL_PATH?: string }).NL_PATH;
+        if (!raw) return null;
+        // Normalize backslashes — on Windows NL_PATH uses native separators
+        const NL_PATH = raw.replace(/\\/g, '/');
         return `${NL_PATH}/extensions/server/logs/server-stderr.log`;
     }
 

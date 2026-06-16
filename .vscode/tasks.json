@@ -146,9 +146,22 @@
         {
             "label": "Desktop: Build Server + Assets",
             "type": "shell",
-            "command": "bash",
-            "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh"],
             "group": "build",
+            "linux": {
+                "command": "bash",
+                "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh"]
+            },
+            "osx": {
+                "command": "bash",
+                "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh"]
+            },
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop\\build-desktop.ps1"
+                ]
+            },
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"
@@ -193,6 +206,65 @@
                 "reveal": "always",
                 "panel": "dedicated"
             }
+        },
+        {
+            "label": "Desktop: Package Windows Portable",
+            "type": "shell",
+            "group": "build",
+            // On Linux/macOS: cross-compile win-x64 server → neu build → zip
+            "linux": {
+                "command": "bash",
+                "args": [
+                    "-c",
+                    "bash build-desktop.sh --rid=win-x64 && npx neu build && bash packaging/windows/package-portable.sh"
+                ],
+                "options": { "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop" }
+            },
+            "osx": {
+                "command": "bash",
+                "args": [
+                    "-c",
+                    "bash build-desktop.sh --rid=win-x64 && npx neu build && bash packaging/windows/package-portable.sh"
+                ],
+                "options": { "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop" }
+            },
+            // On Windows: native build → neu build → zip
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-Command",
+                    ".\\build-desktop.ps1; if ($LASTEXITCODE) { exit 1 }; npx neu build; if ($LASTEXITCODE) { exit 1 }; .\\packaging\\windows\\package-portable.ps1"
+                ],
+                "options": { "cwd": "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop" }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Desktop: Build Web Installer (Windows)",
+            "type": "shell",
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-Command",
+                    "New-Item -ItemType Directory -Path Output -Force | Out-Null; & \"${env:ProgramFiles(x86)}\\NSIS\\makensis.exe\" CalcpadCEWeb.nsi"
+                ],
+                "options": {
+                    "cwd": "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop\\Installer"
+                }
+            },
+            "group": "build",
+            "dependsOn": "Desktop: Package",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
         },
         {
             "label": "Desktop: Clean & Rebuild",

@@ -27,8 +27,21 @@ REPO_ROOT="$(cd "$FRONTEND_DIR/../.." && pwd)"
 EXTENSIONS_DIR="$DESKTOP_DIR/extensions/server"
 
 # ─── Detect OS and Architecture ─────────────────────────────────────────────
+# Accepts an optional --rid=<rid> override for cross-compilation (e.g. building
+# the win-x64 server on Linux).
 detect_platform() {
     local os arch
+
+    if [ -n "${RID_OVERRIDE:-}" ]; then
+        # Parse os and arch from the override (e.g. "win-x64" → os=win arch=x64)
+        os="${RID_OVERRIDE%%-*}"
+        arch="${RID_OVERRIDE##*-}"
+        DOTNET_RID="$RID_OVERRIDE"
+        PLATFORM_OS="$os"
+        PLATFORM_ARCH="$arch"
+        info "Platform override: ${DOTNET_RID}"
+        return
+    fi
 
     case "$(uname -s)" in
         Linux*)  os="linux" ;;
@@ -219,6 +232,14 @@ print_summary() {
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 main() {
+    # Parse args
+    RID_OVERRIDE=""
+    for arg in "$@"; do
+        case "$arg" in
+            --rid=*) RID_OVERRIDE="${arg#--rid=}" ;;
+        esac
+    done
+
     echo -e "${BLUE}╔══════════════════════════════════════════════╗${NC}"
     echo -e "${BLUE}║     CalcPad Desktop Build Script             ║${NC}"
     echo -e "${BLUE}╚══════════════════════════════════════════════╝${NC}"
@@ -226,12 +247,25 @@ main() {
 
     detect_platform
 
-    # Find browser
-    if find_browser; then
-        ok "Found browser: ${BROWSER_PATH}"
+    # Skip browser detection when cross-compiling — the browser runs on the
+    # target machine, not the build machine.
+    local host_os
+    case "$(uname -s)" in
+        Linux*)           host_os="linux" ;;
+        Darwin*)          host_os="osx" ;;
+        MINGW*|MSYS*|CYGWIN*) host_os="win" ;;
+        *)                host_os="unknown" ;;
+    esac
+
+    if [ "$PLATFORM_OS" = "$host_os" ]; then
+        if find_browser; then
+            ok "Found browser: ${BROWSER_PATH}"
+        else
+            warn "No Chromium/Chrome/Edge found on PATH"
+            warn "PDF generation will be unavailable until BROWSER_PATH is set"
+        fi
     else
-        warn "No Chromium/Chrome/Edge found on PATH"
-        warn "PDF generation will be unavailable until BROWSER_PATH is set"
+        warn "Cross-compiling for ${DOTNET_RID} — skipping browser detection"
     fi
 
     # Clean previous server build

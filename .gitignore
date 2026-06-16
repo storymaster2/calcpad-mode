@@ -375,6 +375,9 @@ Calcpad.Web/frontend/calcpad-desktop/packaging/arch/src/
 Calcpad.Web/frontend/calcpad-desktop/packaging/arch/*.pkg.tar.*
 Calcpad.Web/frontend/calcpad-desktop/packaging/arch/*.log
 
+# Windows portable ZIP output
+Calcpad.Web/frontend/calcpad-desktop/packaging/windows/*.zip
+
 # MathJax bundle (downloaded during CI build)
 docs/javascripts/mathjax/
 

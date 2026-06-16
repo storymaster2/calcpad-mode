@@ -117,7 +117,8 @@ async function waitForServerExtension(timeoutMs: number = 15000): Promise<string
     const { init, filesystem } = await import('@neutralinojs/lib');
     init();
 
-    const NL_PATH = (window as Window & { NL_PATH?: string }).NL_PATH ?? '';
+    // Normalize backslashes — on Windows NL_PATH uses native separators
+    const NL_PATH = ((window as Window & { NL_PATH?: string }).NL_PATH ?? '').replace(/\\/g, '/');
     const portFile = `${NL_PATH}/extensions/server/.calcpad-server.port`;
     const fallback = 'http://localhost:9420';
 
