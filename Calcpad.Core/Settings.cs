@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Calcpad.Core
@@ -20,9 +18,6 @@ namespace Calcpad.Core
     [Serializable()]
     public class ClientFileCache
     {
-        private const int DiskThresholdBytes = 51_200;
-        private const string CacheFileExtension = ".cache";
-
         public string[] Filenames { get; set; } = Array.Empty<string>();
         public byte[][] Contents { get; set; } = Array.Empty<byte[]>();
         public string[] Errors { get; set; } = Array.Empty<string>();
@@ -64,13 +59,8 @@ namespace Calcpad.Core
 
             if (DiskGuids[idx] != null && DiskCacheFolder != null)
             {
-                var path = Path.Combine(DiskCacheFolder, DiskGuids[idx] + CacheFileExtension);
-                if (File.Exists(path))
-                {
-                    bytes = File.ReadAllBytes(path);
-                    try { File.SetLastWriteTimeUtc(path, DateTime.UtcNow); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+                if (ClientFileDiskCache.TryRead(DiskCacheFolder, DiskGuids[idx], out bytes))
                     return true;
-                }
 
                 if (RefetchDelegate != null)
                 {
@@ -79,7 +69,7 @@ namespace Calcpad.Core
                         bytes = RefetchDelegate(filename);
                         if (bytes != null)
                         {
-                            WriteToDisk(idx, bytes);
+                            DiskGuids[idx] = ClientFileDiskCache.Write(DiskCacheFolder, filename, bytes);
                             return true;
                         }
                     }
@@ -109,9 +99,9 @@ namespace Calcpad.Core
             byte[] contentEntry;
             string guidEntry;
 
-            if (content != null && content.Length > DiskThresholdBytes && DiskCacheFolder != null)
+            if (content != null && content.Length > ClientFileDiskCache.DiskThresholdBytes && DiskCacheFolder != null)
             {
-                guidEntry = WriteToDisk(filename, content);
+                guidEntry = ClientFileDiskCache.Write(DiskCacheFolder, filename, content);
                 contentEntry = null;
             }
             else
@@ -124,30 +114,6 @@ namespace Calcpad.Core
             Contents = [.. Contents, contentEntry];
             Errors = [.. Errors, error];
             DiskGuids = [.. DiskGuids, guidEntry];
-        }
-
-        private static string GetDiskCacheKey(string filename) =>
-            Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(filename)))[..32];
-
-        private string WriteToDisk(string filename, byte[] bytes)
-        {
-            var cacheKey = GetDiskCacheKey(filename);
-            var path = Path.Combine(DiskCacheFolder, cacheKey + CacheFileExtension);
-            if (File.Exists(path))
-            {
-                try { File.SetLastWriteTimeUtc(path, DateTime.UtcNow); } catch { }
-            }
-            else
-            {
-                Directory.CreateDirectory(DiskCacheFolder);
-                File.WriteAllBytes(path, bytes);
-            }
-            return cacheKey;
-        }
-
-        private void WriteToDisk(int index, byte[] bytes)
-        {
-            DiskGuids[index] = WriteToDisk(Filenames[index], bytes);
         }
     }
 

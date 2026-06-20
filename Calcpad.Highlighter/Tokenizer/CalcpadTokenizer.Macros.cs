@@ -40,6 +40,21 @@ namespace Calcpad.Highlighter.Tokenizer
         // When true, CollectDefinitions will not overwrite the external info
         private bool _hasExternalMacroCommentInfo;
 
+        // Macros currently being resolved on the arg-tokenization recursion stack.
+        // Shared across nested tokenizer instances created in ResolveMacroCallArgTokens so that
+        // a parameterized self-reference (#def grow$(x$) = grow$(x$)) does not recurse forever.
+        private HashSet<string> _resolvingMacros;
+
+        /// <summary>
+        /// Shares the "currently-resolving macros" set with a nested tokenizer.
+        /// Used by ResolveMacroCallArgTokens to propagate cycle state into the fresh
+        /// tokenizer that re-tokenizes the substituted macro body.
+        /// </summary>
+        internal void SetResolvingMacros(HashSet<string> resolvingMacros)
+        {
+            _resolvingMacros = resolvingMacros;
+        }
+
         /// <summary>
         /// Sets macro comment parameter information from ContentResolver Stage2.
         /// Call this before Tokenize() when you have pre-computed comment parameter info.
@@ -599,118 +614,136 @@ namespace Calcpad.Highlighter.Tokenizer
             if (paramOrder.Count == 0)
                 return;
 
+            // Cycle guard: a macro whose body re-invokes itself (directly or transitively)
+            // would otherwise drive ResolveMacroCallArgTokens -> TokenizeSingleLine -> ParseBrackets
+            // back into ResolveMacroCallArgTokens forever and overflow the stack.
+            // Falling through with _macroCallPreTokenized = null routes ParseMacroArgs through
+            // the non-pre-tokenized path, which tokenizes the call literally without re-expanding.
+            if (_resolvingMacros != null && _resolvingMacros.Contains(macroName))
+                return;
+
             // Look ahead to extract arguments from the current line
             var args = ExtractMacroCallArgsWithPositions(_state.Text, openParenCol + 1);
             if (args.Count == 0)
                 return;
 
-            _macroCallPreTokenized = new List<List<Token>>();
-
-            for (int i = 0; i < args.Count && i < paramOrder.Count; i++)
+            _resolvingMacros ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _resolvingMacros.Add(macroName);
+            try
             {
-                var (argText, argStartCol) = args[i];
-                var paramName = paramOrder[i];
+                _macroCallPreTokenized = new List<List<Token>>();
 
-                // Find parameter position in body, searching line-by-line to avoid
-                // cross-line state leakage (PreviousType carrying over from prior lines
-                // would cause identifiers after Const tokens to be misclassified as Units)
-                string targetLine = null;
-                int posInLine = -1;
-                if (body.IndexOf('\n') >= 0)
+                for (int i = 0; i < args.Count && i < paramOrder.Count; i++)
                 {
-                    // Multi-line body: find the specific line containing the parameter
-                    int lineStart = 0;
-                    while (lineStart < body.Length)
+                    var (argText, argStartCol) = args[i];
+                    var paramName = paramOrder[i];
+
+                    // Find parameter position in body, searching line-by-line to avoid
+                    // cross-line state leakage (PreviousType carrying over from prior lines
+                    // would cause identifiers after Const tokens to be misclassified as Units)
+                    string targetLine = null;
+                    int posInLine = -1;
+                    if (body.IndexOf('\n') >= 0)
                     {
-                        int lineEnd = body.IndexOf('\n', lineStart);
-                        if (lineEnd < 0) lineEnd = body.Length;
-                        var lineSpan = body.AsSpan(lineStart, lineEnd - lineStart);
-                        int idx = lineSpan.IndexOf(paramName.AsSpan(), StringComparison.Ordinal);
+                        // Multi-line body: find the specific line containing the parameter
+                        int lineStart = 0;
+                        while (lineStart < body.Length)
+                        {
+                            int lineEnd = body.IndexOf('\n', lineStart);
+                            if (lineEnd < 0) lineEnd = body.Length;
+                            var lineSpan = body.AsSpan(lineStart, lineEnd - lineStart);
+                            int idx = lineSpan.IndexOf(paramName.AsSpan(), StringComparison.Ordinal);
+                            if (idx >= 0)
+                            {
+                                targetLine = lineSpan.ToString();
+                                posInLine = idx;
+                                break;
+                            }
+                            lineStart = lineEnd + 1;
+                        }
+                    }
+                    else
+                    {
+                        // Single-line body: use as-is
+                        var idx = body.AsSpan().IndexOf(paramName.AsSpan(), StringComparison.Ordinal);
                         if (idx >= 0)
                         {
-                            targetLine = lineSpan.ToString();
+                            targetLine = body;
                             posInLine = idx;
-                            break;
                         }
-                        lineStart = lineEnd + 1;
                     }
-                }
-                else
-                {
-                    // Single-line body: use as-is
-                    var idx = body.AsSpan().IndexOf(paramName.AsSpan(), StringComparison.Ordinal);
-                    if (idx >= 0)
+
+                    if (targetLine == null || posInLine < 0)
                     {
-                        targetLine = body;
-                        posInLine = idx;
+                        _macroCallPreTokenized.Add(new List<Token>());
+                        continue;
                     }
-                }
 
-                if (targetLine == null || posInLine < 0)
-                {
-                    _macroCallPreTokenized.Add(new List<Token>());
-                    continue;
-                }
+                    // Substitute parameter with argument in the target line only
+                    var expanded = targetLine.Substring(0, posInLine) + argText + targetLine.Substring(posInLine + paramName.Length);
 
-                // Substitute parameter with argument in the target line only
-                var expanded = targetLine.Substring(0, posInLine) + argText + targetLine.Substring(posInLine + paramName.Length);
+                    // Tokenize the expanded line using a fresh tokenizer with macro context
+                    // so nested macro calls (e.g., outer$(inner$(x))) are properly resolved
+                    var tokenizer = new CalcpadTokenizer();
+                    if (_hasExternalMacroCommentInfo)
+                        tokenizer.SetMacroCommentParameters(_macroCommentParameters, _macroParameterOrder, _macroBodies);
+                    tokenizer.SetResolvingMacros(_resolvingMacros);
+                    var result = tokenizer.TokenizeSingleLine(expanded, _state.Line);
 
-                // Tokenize the expanded line using a fresh tokenizer with macro context
-                // so nested macro calls (e.g., outer$(inner$(x))) are properly resolved
-                var tokenizer = new CalcpadTokenizer();
-                if (_hasExternalMacroCommentInfo)
-                    tokenizer.SetMacroCommentParameters(_macroCommentParameters, _macroParameterOrder, _macroBodies);
-                var result = tokenizer.TokenizeSingleLine(expanded, _state.Line);
+                    // Extract tokens overlapping with the argument region in the expanded string
+                    int argStartInExpanded = posInLine;
+                    int argEndInExpanded = posInLine + argText.Length;
+                    var argTokens = new List<Token>();
 
-                // Extract tokens overlapping with the argument region in the expanded string
-                int argStartInExpanded = posInLine;
-                int argEndInExpanded = posInLine + argText.Length;
-                var argTokens = new List<Token>();
-
-                foreach (var token in result.Tokens)
-                {
-                    int tokStart = token.Column;
-                    int tokEnd = token.Column + token.Length;
-
-                    // Skip tokens entirely outside the arg range
-                    if (tokEnd <= argStartInExpanded || tokStart >= argEndInExpanded)
-                        continue;
-
-                    // Clip to arg range
-                    int clipStart = Math.Max(tokStart, argStartInExpanded);
-                    int clipEnd = Math.Min(tokEnd, argEndInExpanded);
-                    int clipLen = clipEnd - clipStart;
-
-                    if (clipLen <= 0)
-                        continue;
-
-                    // Adjust column to original call-site line
-                    int originalCol = clipStart - argStartInExpanded + argStartCol;
-
-                    // Extract clipped text
-                    int textOffset = clipStart - tokStart;
-                    string clipText = (textOffset == 0 && clipLen == token.Length)
-                        ? token.Text
-                        : token.Text.Substring(textOffset, clipLen);
-
-                    argTokens.Add(new Token(_state.Line, originalCol, clipLen, token.Type, clipText));
-                }
-
-                // Fix up tokens: if inside a macro definition, reclassify any tokens
-                // matching outer macro parameters from Macro to MacroParameter
-                if (_inMacroDefinition && _macroParameters.Count > 0)
-                {
-                    for (int j = 0; j < argTokens.Count; j++)
+                    foreach (var token in result.Tokens)
                     {
-                        var t = argTokens[j];
-                        if (t.Type == TokenType.Macro && _macroParameters.Contains(t.Text))
+                        int tokStart = token.Column;
+                        int tokEnd = token.Column + token.Length;
+
+                        // Skip tokens entirely outside the arg range
+                        if (tokEnd <= argStartInExpanded || tokStart >= argEndInExpanded)
+                            continue;
+
+                        // Clip to arg range
+                        int clipStart = Math.Max(tokStart, argStartInExpanded);
+                        int clipEnd = Math.Min(tokEnd, argEndInExpanded);
+                        int clipLen = clipEnd - clipStart;
+
+                        if (clipLen <= 0)
+                            continue;
+
+                        // Adjust column to original call-site line
+                        int originalCol = clipStart - argStartInExpanded + argStartCol;
+
+                        // Extract clipped text
+                        int textOffset = clipStart - tokStart;
+                        string clipText = (textOffset == 0 && clipLen == token.Length)
+                            ? token.Text
+                            : token.Text.Substring(textOffset, clipLen);
+
+                        argTokens.Add(new Token(_state.Line, originalCol, clipLen, token.Type, clipText));
+                    }
+
+                    // Fix up tokens: if inside a macro definition, reclassify any tokens
+                    // matching outer macro parameters from Macro to MacroParameter
+                    if (_inMacroDefinition && _macroParameters.Count > 0)
+                    {
+                        for (int j = 0; j < argTokens.Count; j++)
                         {
-                            argTokens[j] = new Token(t.Line, t.Column, t.Length, TokenType.MacroParameter, t.Text);
+                            var t = argTokens[j];
+                            if (t.Type == TokenType.Macro && _macroParameters.Contains(t.Text))
+                            {
+                                argTokens[j] = new Token(t.Line, t.Column, t.Length, TokenType.MacroParameter, t.Text);
+                            }
                         }
                     }
-                }
 
-                _macroCallPreTokenized.Add(argTokens);
+                    _macroCallPreTokenized.Add(argTokens);
+                }
+            }
+            finally
+            {
+                _resolvingMacros.Remove(macroName);
             }
         }
 

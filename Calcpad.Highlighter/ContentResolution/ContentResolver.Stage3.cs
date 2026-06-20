@@ -845,7 +845,7 @@ namespace Calcpad.Highlighter.ContentResolution
         /// For example, with macros "string$" and "ng$", "gstring$" should expand "string$", not "ng$".
         /// Optionally tracks which macros were expanded for source mapping.
         /// </summary>
-        private string ExpandMacros(string line, Dictionary<string, (List<string> Params, List<string> Defaults, List<string> Content)> macros, List<string> expandedMacroNames = null)
+        private string ExpandMacros(string line, Dictionary<string, (List<string> Params, List<string> Defaults, List<string> Content)> macros, List<string> expandedMacroNames = null, HashSet<string> currentlyExpanding = null)
         {
             if (macros.Count == 0 || !line.AsSpan().Contains('$'))
                 return line;
@@ -875,6 +875,10 @@ namespace Calcpad.Highlighter.ContentResolution
                     foreach (var kvp in sortedMacros)
                     {
                         var name = kvp.Key;
+                        // Skip macros currently being expanded on the call stack to break
+                        // self-referential (#def a$ = a$) and mutual (a$↔b$) cycles.
+                        if (currentlyExpanding != null && currentlyExpanding.Contains(name))
+                            continue;
                         if (textBuffer.Length >= name.Length &&
                             StringBuilderEndsWith(textBuffer, name))
                         {
@@ -962,8 +966,19 @@ namespace Calcpad.Highlighter.ContentResolution
                                 }
                             }
 
-                            // Recursively expand any macros in the result (nested expansions also tracked)
-                            macroContent = ExpandMacros(macroContent, macros, expandedMacroNames);
+                            // Recursively expand any macros in the result (nested expansions also tracked).
+                            // Track this macro in the cycle set so any recursive reference to itself
+                            // (direct or transitive) is matched against the guard above.
+                            currentlyExpanding ??= new HashSet<string>(StringComparer.Ordinal);
+                            currentlyExpanding.Add(macroName);
+                            try
+                            {
+                                macroContent = ExpandMacros(macroContent, macros, expandedMacroNames, currentlyExpanding);
+                            }
+                            finally
+                            {
+                                currentlyExpanding.Remove(macroName);
+                            }
 
                             result.Append(macroContent);
                             i = replacementEnd;

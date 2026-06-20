@@ -433,7 +433,7 @@ namespace Calcpad.Core
             return fields;
         }
 
-        private static string ApplyMacros(ReadOnlySpan<char> lineContent)
+        private static string ApplyMacros(ReadOnlySpan<char> lineContent, HashSet<string> currentlyExpanding = null)
         {
             var index = lineContent.IndexOf("$");
             if (index < 0)
@@ -445,6 +445,7 @@ namespace Calcpad.Core
             var bracketCount = 0;
             var emptyMacro = new Macro(null, null);
             var macro = emptyMacro;
+            string macroKey = null;
             Queue<string> fields = null;
             if (index >= 0)
             {
@@ -472,7 +473,7 @@ namespace Calcpad.Core
 
                     if (c == ';' && bracketCount == 1 || c == ')' && bracketCount == 0)
                     {
-                        var s = ApplyMacros(textSpan.Cut());
+                        var s = ApplyMacros(textSpan.Cut(), currentlyExpanding);
                         macroArguments.Add(s);
                         textSpan.Reset(i + 1);
                         if ((macroArguments.Count == macro.ParameterCount) != (c == ')'))
@@ -486,9 +487,16 @@ namespace Calcpad.Core
                     textSpan.Expand();
                     var macroName = textSpan.ToString();
                     int j, mlen = macroName.Length - 1;
+                    macroKey = null;
                     for (j = 0; j < mlen; ++j)
-                        if (Macros.TryGetValue(macroName[j..], out macro))
+                    {
+                        var candidate = macroName[j..];
+                        if (Macros.TryGetValue(candidate, out macro))
+                        {
+                            macroKey = candidate;
                             break;
+                        }
+                    }
 
                     if (macro.IsEmpty)
                         throw Exceptions.UndefinedMacro(macroName);
@@ -503,7 +511,13 @@ namespace Calcpad.Core
                 {
                     if (!macro.IsEmpty)
                     {
-                        var s = ApplyMacros(macro.Run(macroArguments));
+                        if (currentlyExpanding != null && currentlyExpanding.Contains(macroKey))
+                            throw Exceptions.CircularReference(macroKey);
+                        currentlyExpanding ??= new HashSet<string>(StringComparer.Ordinal);
+                        currentlyExpanding.Add(macroKey);
+                        string s;
+                        try { s = ApplyMacros(macro.Run(macroArguments), currentlyExpanding); }
+                        finally { currentlyExpanding.Remove(macroKey); }
                         var sbLength = stringBuilder.Length;
                         SetLineInputFields(s, stringBuilder, fields, false);
                         if (stringBuilder.Length == sbLength)
@@ -537,7 +551,13 @@ namespace Calcpad.Core
             }
             else if (macroArguments.Count == macro.ParameterCount)
             {
-                var s = ApplyMacros(macro.Run(macroArguments));
+                if (currentlyExpanding != null && currentlyExpanding.Contains(macroKey))
+                    throw Exceptions.CircularReference(macroKey);
+                currentlyExpanding ??= new HashSet<string>(StringComparer.Ordinal);
+                currentlyExpanding.Add(macroKey);
+                string s;
+                try { s = ApplyMacros(macro.Run(macroArguments), currentlyExpanding); }
+                finally { currentlyExpanding.Remove(macroKey); }
                 stringBuilder.Append(s);
             }
             return stringBuilder.ToString();

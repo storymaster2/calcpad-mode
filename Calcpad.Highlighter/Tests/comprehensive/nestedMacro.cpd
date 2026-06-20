@@ -1,6 +1,8 @@
 #include nestedMacroInclude.cpd
 #include nestedMacroInclude2.cpd
-#include %userprofile%\cei-engineering.com\Engineering Tools - Documents\CalcPad\Modules\Helper.cpd
+#def note$(text$) = "text"
+#def hide$ = ''
+#def unhide$ = ''
 debug = 0
 #def out_check$(M_a$; V_a$; P_a$; M_aLC$; P_aLC$; A_s$; d$; A_n$; y_g$; r_g$; I_N$; ind1$; ind2$)
     '<strong>Allowable Moment</strong>
@@ -58,8 +60,8 @@ h_ws,sw = [4;5;6]*ft
 p_W,CC = 30psf
 RB_walls = [1;1;2]
 NS_walls = [1;2;2]
-WT_cmu = [10;20;30]*plf
-WT_cmu,typ = [10;20;30]*plf
+WT_cmu = [10;20;30]*lbf/ft
+WT_cmu,typ = [10;20;30]*lbf/ft
 WT_roof = 10psf
 l = 40ft
 b = 20ft
