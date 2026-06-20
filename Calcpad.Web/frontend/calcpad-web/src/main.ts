@@ -175,7 +175,23 @@ async function setupNeutralinoMenu(recents: string[], previewMode: PreviewMode):
                 sep,
                 { id: 'export-pdf', text: 'Export PDF...' },
                 sep,
-                { id: 'quit', text: 'Quit', shortcut: 'Ctrl+Q' },
+                { id: 'quit', text: 'Quit' },
+            ],
+        },
+        {
+            id: 'edit',
+            text: 'Edit',
+            menuItems: [
+                { id: 'undo', text: 'Undo', shortcut: 'Ctrl+Z' },
+                { id: 'redo', text: 'Redo', shortcut: 'Ctrl+Shift+Z' },
+                sep,
+                { id: 'cut', text: 'Cut', shortcut: 'Ctrl+X' },
+                { id: 'copy', text: 'Copy', shortcut: 'Ctrl+C' },
+                { id: 'paste', text: 'Paste', shortcut: 'Ctrl+V' },
+                sep,
+                { id: 'select-all', text: 'Select All', shortcut: 'Ctrl+A' },
+                { id: 'find', text: 'Find', shortcut: 'Ctrl+F' },
+                { id: 'replace', text: 'Replace', shortcut: 'Ctrl+H' },
             ],
         },
         {
@@ -191,7 +207,7 @@ async function setupNeutralinoMenu(recents: string[], previewMode: PreviewMode):
             id: 'server',
             text: 'Server',
             menuItems: [
-                { id: 'refresh', text: 'Refresh', shortcut: 'Ctrl+R' },
+                { id: 'refresh', text: 'Refresh', shortcut: 'F5' },
                 { id: 'show-server-log', text: 'Show Server Log' },
                 { id: 'restart-app', text: 'Restart App' },
             ],
@@ -359,11 +375,14 @@ async function bootstrap(): Promise<void> {
 
     // Register Monaco providers
     const editorBridge = activeBridge as unknown as EditorBridge;
-    registerSemanticTokensProvider(activeBridge.api);
+    const getFileContext = 'buildFileContext' in activeBridge
+        ? (content: string) => (activeBridge as any).buildFileContext(content)
+        : undefined;
+    registerSemanticTokensProvider(activeBridge.api, getFileContext);
     const diagnostics = setupDiagnostics(editor, activeBridge.api, () => {
         const sev = editorBridge.getExtraSetting('linterMinSeverity');
         return (sev === 'error' || sev === 'warning') ? sev : 'information';
-    });
+    }, getFileContext);
     registerCompletionProvider(activeBridge.snippets);
     registerHoverProvider(editorBridge);
     registerDefinitionProvider(editorBridge);
@@ -450,7 +469,7 @@ async function bootstrap(): Promise<void> {
 
     // Mount the CalcPad Vue sidebar
     const sidebarApp = createApp(CalcpadAppVue);
-    sidebarApp.mount('#vue-sidebar');
+    const sidebarInstance = sidebarApp.mount('#vue-sidebar') as { switchTab?: (id: string) => void };
 
     // HTML preview via convert endpoint (debounced)
     let previewTimer: ReturnType<typeof setTimeout> | null = null;
@@ -476,11 +495,13 @@ async function bootstrap(): Promise<void> {
             return;
         }
 
+        const fileContext = getFileContext ? await getFileContext(content) : {};
+
         let html: string | ArrayBuffer | null;
         if (mode === 'unwrapped') {
-            html = await activeBridge.api.convertUnwrapped(content, apiSettings);
+            html = await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.clientFileCache, fileContext.sourceFilePath);
         } else {
-            html = await activeBridge.api.convert(content, apiSettings, 'html');
+            html = await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.clientFileCache, fileContext.sourceFilePath);
         }
 
         if (typeof html === 'string') {
@@ -647,6 +668,59 @@ async function bootstrap(): Promise<void> {
         appInstance.onTabCloseRequest = (id: string) => { void tryCloseTab(id); };
         appInstance.onNewTabRequest = () => { tabs.newUntitled(); };
 
+        /**
+         * Route a clipboard / edit action from the native menu. On WebKitGTK
+         * (Linux Neutralino) Ctrl+C/X/V are not bound to native clipboard ops
+         * inside the WebView, so the menu accelerator is the only way to fire
+         * them. We dispatch to Monaco when it has focus (which is true 99% of
+         * the time in this app), and fall back to execCommand for non-editor
+         * focus (sidebar text fields). Paste falls back to navigator.clipboard
+         * since execCommand('paste') is disabled in most engines.
+         */
+        async function runClipboardAction(
+            action: 'cut' | 'copy' | 'paste' | 'select-all' | 'undo' | 'redo' | 'find' | 'replace',
+        ): Promise<void> {
+            const editorHasFocus = editor.hasTextFocus();
+            if (editorHasFocus) {
+                const cmd = {
+                    cut: 'editor.action.clipboardCutAction',
+                    copy: 'editor.action.clipboardCopyAction',
+                    paste: 'editor.action.clipboardPasteAction',
+                    'select-all': 'editor.action.selectAll',
+                    undo: 'undo',
+                    redo: 'redo',
+                    find: 'actions.find',
+                    replace: 'editor.action.startFindReplaceAction',
+                }[action];
+                editor.focus();
+                editor.trigger('menu', cmd, null);
+                return;
+            }
+            // Fallback for sidebar / preview / etc.
+            if (action === 'paste') {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    const el = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
+                    if (el && 'setRangeText' in el) {
+                        const start = el.selectionStart ?? el.value.length;
+                        const end = el.selectionEnd ?? start;
+                        el.setRangeText(text, start, end, 'end');
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                } catch {
+                    // Permission denied or unsupported — silent.
+                }
+                return;
+            }
+            if (action === 'select-all') {
+                const el = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
+                if (el && 'select' in el && typeof el.select === 'function') el.select();
+                return;
+            }
+            // cut / copy / undo / redo work via execCommand in inputs.
+            document.execCommand(action === 'find' || action === 'replace' ? '' : action);
+        }
+
         // Single mainMenuItemClicked listener — handles static + dynamic IDs.
         neuEvents.on('mainMenuItemClicked', async (evt: any) => {
             const id: string = evt.detail.id;
@@ -724,6 +798,31 @@ async function bootstrap(): Promise<void> {
 
                 case 'restart-app':
                     await neuApp.restartProcess();
+                    break;
+
+                case 'undo':
+                    runClipboardAction('undo');
+                    break;
+                case 'redo':
+                    runClipboardAction('redo');
+                    break;
+                case 'cut':
+                    await runClipboardAction('cut');
+                    break;
+                case 'copy':
+                    await runClipboardAction('copy');
+                    break;
+                case 'paste':
+                    await runClipboardAction('paste');
+                    break;
+                case 'select-all':
+                    runClipboardAction('select-all');
+                    break;
+                case 'find':
+                    runClipboardAction('find');
+                    break;
+                case 'replace':
+                    runClipboardAction('replace');
                     break;
             }
         });
@@ -805,8 +904,26 @@ async function bootstrap(): Promise<void> {
             const result = await neuBridge.openFile();
             if (result) await loadFile(result.path);
         });
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyN, () => {
+            tabs.newUntitled();
+        });
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyP, () => {
+            appInstance.togglePreview();
+        });
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Comma, () => {
+            sidebarInstance.switchTab?.('settings');
+        });
+        editor.addCommand(monaco.KeyCode.F5, () => {
+            void runRefresh();
+        });
 
         window.addEventListener('keydown', (e) => {
+            // F5 — refresh (no modifier; bound here so it fires from any focus).
+            if (e.key === 'F5' && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) {
+                e.preventDefault();
+                void runRefresh();
+                return;
+            }
             if (!e.ctrlKey || e.metaKey) return;
             // Ctrl+S / Ctrl+Shift+S — fallback when focus is outside the editor
             // (sidebar, preview iframe parent, etc.).
@@ -822,6 +939,24 @@ async function bootstrap(): Promise<void> {
                     const result = await neuBridge.openFile();
                     if (result) await loadFile(result.path);
                 })();
+                return;
+            }
+            // Ctrl+N — new tab.
+            if ((e.key === 'n' || e.key === 'N') && !e.shiftKey && !e.altKey) {
+                e.preventDefault();
+                tabs.newUntitled();
+                return;
+            }
+            // Ctrl+P — toggle preview.
+            if ((e.key === 'p' || e.key === 'P') && !e.shiftKey && !e.altKey) {
+                e.preventDefault();
+                appInstance.togglePreview();
+                return;
+            }
+            // Ctrl+, — open Settings tab in sidebar (VS Code convention).
+            if (e.key === ',' && !e.shiftKey && !e.altKey) {
+                e.preventDefault();
+                sidebarInstance.switchTab?.('settings');
                 return;
             }
             // Ctrl+Shift+B → toggle sidebar (Ctrl+B is reserved for Bold formatting).

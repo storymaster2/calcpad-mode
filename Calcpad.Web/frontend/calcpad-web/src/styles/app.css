@@ -178,8 +178,16 @@ select option {
 }
 
 .tab-dirty-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 10px;
+    height: 18px;
+    margin-right: 4px;
     color: var(--vscode-tab-activeForeground, #ffffff);
-    font-size: 14px;
+    font-size: 10px;
+    line-height: 1;
+    pointer-events: none;
 }
 
 .tab-new {

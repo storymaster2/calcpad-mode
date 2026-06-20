@@ -1,5 +1,6 @@
 import { filesystem, os, storage } from '@neutralinojs/lib';
 import { CalcpadApiClient } from 'calcpad-frontend/api/client';
+import type { ClientFileCache } from 'calcpad-frontend/types/api';
 import { CalcpadSnippetService } from 'calcpad-frontend/services/snippets';
 import { CalcpadDefinitionsService } from 'calcpad-frontend/services/definitions';
 import { parseHeadings } from 'calcpad-frontend/services/headings';
@@ -16,6 +17,106 @@ import { getActiveEditorContent } from './active-editor';
 const SETTINGS_KEY = 'calcpad-settings';
 const RECENT_FILES_KEY = 'calcpad-recent-files';
 const MAX_RECENT_FILES = 10;
+
+// Browser-compatible path helpers (no Node.js 'path' module available in Neutralino WebView)
+function pathDirname(p: string): string {
+    const idx = Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\'));
+    return idx > 0 ? p.slice(0, idx) : '';
+}
+
+function pathIsAbsolute(p: string): boolean {
+    return p.startsWith('/') || /^[a-zA-Z]:[\\/]/.test(p);
+}
+
+function pathResolve(dir: string, file: string): string {
+    if (pathIsAbsolute(file)) return file;
+    if (!dir) return file;
+    const sep = dir.includes('\\') ? '\\' : '/';
+    const raw = `${dir}${sep}${file}`.replace(/\\/g, '/');
+    const parts = raw.split('/');
+    const result: string[] = [];
+    for (const part of parts) {
+        if (part === '..') result.pop();
+        else if (part !== '.') result.push(part);
+    }
+    const joined = result.join('/');
+    return sep === '\\' ? joined.replace(/\//g, '\\') : joined;
+}
+
+function parseIncludeFilenames(content: string): string[] {
+    const filenames: string[] = [];
+    for (const line of content.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('#include ')) {
+            let rest = trimmed.substring(9).trim();
+            if (rest.startsWith('<')) continue;
+            const hashIdx = rest.indexOf(' #');
+            if (hashIdx !== -1) rest = rest.substring(0, hashIdx).trim();
+            const cpdIdx = rest.indexOf('.cpd');
+            const txtIdx = rest.indexOf('.txt');
+            const extIdx = cpdIdx !== -1 ? cpdIdx : txtIdx;
+            if (extIdx !== -1) filenames.push(rest.substring(0, extIdx + 4).trim());
+        } else if (trimmed.startsWith('#read ')) {
+            const fromIdx = trimmed.indexOf(' from ');
+            if (fromIdx === -1) continue;
+            const afterFrom = trimmed.substring(fromIdx + 6).trim();
+            if (afterFrom.startsWith('<')) continue;
+            const atIdx = afterFrom.indexOf('@');
+            const raw = atIdx !== -1 ? afterFrom.substring(0, atIdx).trim() : afterFrom;
+            const csvM = raw.match(/^(.+\.csv)(?:\s|$)/i);
+            const txtM = raw.match(/^(.+\.txt)(?:\s|$)/i);
+            const fname = csvM?.[1]?.trim() ?? txtM?.[1]?.trim();
+            if (fname) filenames.push(fname);
+        }
+    }
+    return filenames;
+}
+
+function uint8ToBase64(bytes: Uint8Array): string {
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+async function buildNeutralinoFileCache(
+    content: string,
+    sourceDir: string
+): Promise<ClientFileCache | undefined> {
+    if (!sourceDir) return undefined;
+
+    const cache: ClientFileCache = {};
+    const processed = new Set<string>();
+    const pending: { filename: string; resolveDir: string }[] =
+        parseIncludeFilenames(content).map(f => ({ filename: f, resolveDir: sourceDir }));
+
+    while (pending.length > 0) {
+        const { filename, resolveDir } = pending.shift()!;
+        if (processed.has(filename)) continue;
+        processed.add(filename);
+
+        const resolvedPath = pathResolve(resolveDir, filename);
+        try {
+            const bytes = new Uint8Array(await filesystem.readBinaryFile(resolvedPath));
+            cache[resolvedPath] = uint8ToBase64(bytes);
+
+            if (filename.endsWith('.cpd')) {
+                const nestedContent = new TextDecoder().decode(bytes);
+                const nestedDir = pathDirname(resolvedPath);
+                for (const nested of parseIncludeFilenames(nestedContent)) {
+                    if (!processed.has(nested)) {
+                        pending.push({ filename: nested, resolveDir: nestedDir });
+                    }
+                }
+            }
+        } catch {
+            // File not found or unreadable — backend will report the error
+        }
+    }
+
+    return Object.keys(cache).length > 0 ? cache : undefined;
+}
 
 const IMAGE_MIME_MAP: Record<string, string> = {
     png: 'image/png',
@@ -81,8 +182,9 @@ export class NeutralinoMessageBridge {
     private _extraSettings: Record<string, string> = {};
 
     constructor(serverUrl: string) {
-        this.apiClient = new CalcpadApiClient(serverUrl);
-        this.snippetService = new CalcpadSnippetService(this.apiClient);
+        const logger = { appendLine: (msg: string) => console.debug('[CalcPad]', msg) };
+        this.apiClient = new CalcpadApiClient(serverUrl, logger);
+        this.snippetService = new CalcpadSnippetService(this.apiClient, logger);
         this.definitionsService = new CalcpadDefinitionsService(this.apiClient);
         this.settings = getDefaultSettings();
 
@@ -216,8 +318,28 @@ export class NeutralinoMessageBridge {
             case 'getServerLog':
                 this.handleGetServerLog();
                 break;
+            case 'openLogsFolder':
+                this.handleOpenLogsFolder();
+                break;
+            case 'getHeadings':
+                this.refreshHeadings();
+                break;
+            case 'goToLine':
+                this.handleGoToLine(message.line);
+                break;
             case 'debug':
                 break;
+        }
+    }
+
+    private handleGoToLine(line: number): void {
+        if (typeof line !== 'number') return;
+        const editors = (window as Window & { monaco?: typeof import('monaco-editor') }).monaco?.editor?.getEditors?.();
+        const editor = editors?.[0];
+        if (editor) {
+            editor.revealLineInCenter(line);
+            editor.setPosition({ lineNumber: line, column: 1 });
+            editor.focus();
         }
     }
 
@@ -258,11 +380,37 @@ export class NeutralinoMessageBridge {
     }
 
     private getServerLogPath(): string | null {
+        const dir = this.getServerLogDir();
+        return dir ? `${dir}/server-stderr.log` : null;
+    }
+
+    private getServerLogDir(): string | null {
         const raw = (window as Window & { NL_PATH?: string }).NL_PATH;
         if (!raw) return null;
         // Normalize backslashes — on Windows NL_PATH uses native separators
         const NL_PATH = raw.replace(/\\/g, '/');
-        return `${NL_PATH}/extensions/server/logs/server-stderr.log`;
+        return `${NL_PATH}/extensions/server/logs`;
+    }
+
+    /**
+     * Open the server-extension logs directory in the OS file explorer.
+     * The folder may not exist on a fresh install — createDirectory is
+     * best-effort so the explorer always has something to open.
+     */
+    private async handleOpenLogsFolder(): Promise<void> {
+        const dir = this.getServerLogDir();
+        if (!dir) {
+            console.warn('Open Logs Folder: NL_PATH unavailable — desktop-only feature.');
+            return;
+        }
+        try { await filesystem.createDirectory(dir); } catch { /* already exists */ }
+        try {
+            await os.open(dir);
+            console.info(`Opened logs folder: ${dir}`);
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            console.error(`Failed to open logs folder (${dir}): ${msg}`);
+        }
     }
 
     // ---- File operations (exposed for menu actions) ----
@@ -426,7 +574,8 @@ export class NeutralinoMessageBridge {
     private async handleSaveSourceHtml(): Promise<void> {
         const content = getActiveEditorContent();
         const apiSettings = buildApiSettings(this.settings);
-        const html = await this.apiClient.convert(content, apiSettings, 'html');
+        const { clientFileCache, sourceFilePath } = await this.buildFileContext(content);
+        const html = await this.apiClient.convert(content, apiSettings, 'html', false, clientFileCache, sourceFilePath);
         if (typeof html !== 'string') return;
         const filePath = await os.showSaveDialog('Save HTML', {
             filters: [{ name: 'HTML Files', extensions: ['html', 'htm'] }],
@@ -438,7 +587,8 @@ export class NeutralinoMessageBridge {
     private async handleSaveDocx(): Promise<void> {
         const content = getActiveEditorContent();
         const apiSettings = buildApiSettings(this.settings);
-        const buf = await this.apiClient.convertDocx(content, apiSettings);
+        const { clientFileCache, sourceFilePath } = await this.buildFileContext(content);
+        const buf = await this.apiClient.convertDocx(content, apiSettings, clientFileCache, sourceFilePath);
         if (!buf) return;
         const filePath = await os.showSaveDialog('Save Word Document', {
             filters: [{ name: 'Word Documents', extensions: ['docx'] }],
@@ -461,6 +611,7 @@ export class NeutralinoMessageBridge {
         const content = getActiveEditorContent();
         const apiSettings = buildApiSettings(this.settings);
         const baseUrl = this.apiClient.getBaseUrl();
+        const { clientFileCache, sourceFilePath } = await this.buildFileContext(content);
 
         try {
             // Step 1 — convert calcpad source → HTML (forPrint: true).
@@ -470,7 +621,7 @@ export class NeutralinoMessageBridge {
             const htmlResp = await fetch(`${baseUrl}/api/calcpad/convert`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings: apiSettings, forPrint: true }),
+                body: JSON.stringify({ content, settings: apiSettings, forPrint: true, clientFileCache, sourceFilePath }),
                 signal: AbortSignal.timeout(30000),
             });
             if (!htmlResp.ok) throw new Error(`HTML convert returned ${htmlResp.status}`);
@@ -510,13 +661,36 @@ export class NeutralinoMessageBridge {
         }
     }
 
+    /** Returns the full path of the active tab's file, or '' if untitled. */
+    private activeTabFilePath(): string {
+        const tabs = (window as any).calcpadTabs;
+        return tabs?.activeTab?.filePath ?? '';
+    }
+
     /** Returns the directory of the active tab's file, or '' if untitled. */
     private activeTabDirectory(): string {
-        const tabs = (window as any).calcpadTabs;
-        const filePath: string | null | undefined = tabs?.activeTab?.filePath;
-        if (!filePath) return '';
-        const idx = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
-        return idx > 0 ? filePath.slice(0, idx) : '';
+        return pathDirname(this.activeTabFilePath());
+    }
+
+    /**
+     * Builds the file cache and source path needed to resolve #include directives.
+     * Called from the preview renderer and export handlers before any convert call.
+     */
+    public async buildFileContext(content: string): Promise<{ clientFileCache?: ClientFileCache; sourceFilePath?: string }> {
+        const sourceFilePath = this.activeTabFilePath() || undefined;
+        const clientFileCache = await buildNeutralinoFileCache(content, this.activeTabSourceDir());
+        return { clientFileCache, sourceFilePath };
+    }
+
+    /**
+     * Returns the directory to use as the base for resolving #include paths.
+     * Falls back to the Neutralino install directory (NL_PATH) for untitled tabs
+     * so that includes placed alongside the app still resolve.
+     */
+    private activeTabSourceDir(): string {
+        const dir = this.activeTabDirectory();
+        if (dir) return dir;
+        return (window as Window & { NL_PATH?: string }).NL_PATH ?? '';
     }
 
     /** Resolves stored PDF settings for the /pdf endpoint. */

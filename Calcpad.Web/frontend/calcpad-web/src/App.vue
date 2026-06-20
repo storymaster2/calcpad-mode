@@ -53,14 +53,14 @@
           @mousedown.middle.prevent="onTabClose(tab.id)"
         >
           <span class="tab-title">{{ tab.title }}</span>
+          <span v-if="tab.dirty" class="tab-dirty-dot" :title="'Unsaved changes'">●</span>
           <button
             class="tab-close"
             :title="tab.dirty ? 'Close (unsaved changes)' : 'Close'"
             @mousedown.stop
             @click.stop="onTabClose(tab.id)"
           >
-            <span v-if="tab.dirty" class="tab-dirty-dot">●</span>
-            <span v-else>✕</span>
+            ✕
           </button>
         </div>
         <button class="tab-new" title="New tab (Ctrl+T)" @click="onNewTab">+</button>

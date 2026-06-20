@@ -166,6 +166,10 @@ export class MessageBridge {
                 this.handleGoToLine(message.line);
                 break;
 
+            case 'openLogsFolder':
+                console.warn('Open Logs Folder is only available in the desktop build — server logs live on the host running CalcPad.');
+                break;
+
             case 'debug':
                 console.debug('[Vue]', message.message);
                 break;

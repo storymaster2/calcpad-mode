@@ -354,6 +354,8 @@ const handleMessage = (event: MessageEvent) => {
   }
 }
 
+defineExpose({ switchTab })
+
 // Initialize
 onMounted(() => {
   // Listen for messages from host

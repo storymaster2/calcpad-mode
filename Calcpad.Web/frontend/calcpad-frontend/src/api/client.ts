@@ -74,14 +74,16 @@ export class CalcpadApiClient {
         content: string,
         settings: unknown,
         outputFormat: string = 'html',
-        forPrint: boolean = false
+        forPrint: boolean = false,
+        clientFileCache?: ClientFileCache,
+        sourceFilePath?: string
     ): Promise<ArrayBuffer | string | null> {
         const url = this.baseUrl + '/api/calcpad/convert';
         try {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings, outputFormat, forPrint }),
+                body: JSON.stringify({ content, settings, outputFormat, forPrint, clientFileCache, sourceFilePath }),
                 signal: AbortSignal.timeout(60000),
             });
             if (!response.ok) return null;
@@ -137,13 +139,14 @@ export class CalcpadApiClient {
         content: string,
         settings: unknown,
         clientFileCache?: ClientFileCache,
+        sourceFilePath?: string,
     ): Promise<string | null> {
         const url = this.baseUrl + '/api/calcpad/convert-unwrapped';
         try {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings, clientFileCache }),
+                body: JSON.stringify({ content, settings, clientFileCache, sourceFilePath }),
                 signal: AbortSignal.timeout(60000),
             });
             if (!response.ok) return null;
@@ -162,8 +165,12 @@ export class CalcpadApiClient {
                 body: '{}',
                 signal: AbortSignal.timeout(5000),
             });
+            if (!response.ok) {
+                this.logger?.appendLine(`[RefreshCache] Server returned ${response.status} ${response.statusText}`);
+            }
             return response.ok;
-        } catch {
+        } catch (error) {
+            this.logError('RefreshCache', error);
             return false;
         }
     }

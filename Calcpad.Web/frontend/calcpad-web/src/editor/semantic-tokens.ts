@@ -2,13 +2,15 @@ import * as monaco from 'monaco-editor';
 import { CalcpadApiClient } from 'calcpad-frontend/api/client';
 import { SEMANTIC_TOKEN_TYPES, mapTokenTypeToIndex } from 'calcpad-frontend/services/highlight';
 import { truncateBase64Content } from 'calcpad-frontend/services/base64-truncate';
+import type { FileContextProvider } from './diagnostics';
 
 /**
  * Register a DocumentSemanticTokensProvider that fetches tokens from the CalcPad server.
  * Returns a disposable to unregister the provider.
  */
 export function registerSemanticTokensProvider(
-    apiClient: CalcpadApiClient
+    apiClient: CalcpadApiClient,
+    getFileContext?: FileContextProvider,
 ): monaco.IDisposable {
     const legend = {
         tokenTypes: SEMANTIC_TOKEN_TYPES,
@@ -23,7 +25,8 @@ export function registerSemanticTokensProvider(
         async provideDocumentSemanticTokens(model) {
             const content = model.getValue();
             const truncatedContent = truncateBase64Content(content);
-            const tokens = await apiClient.highlight(truncatedContent);
+            const ctx = getFileContext ? await getFileContext(content) : {};
+            const tokens = await apiClient.highlight(truncatedContent, false, ctx.clientFileCache, ctx.sourceFilePath);
 
             if (!tokens || tokens.length === 0) {
                 return { data: new Uint32Array(0) };

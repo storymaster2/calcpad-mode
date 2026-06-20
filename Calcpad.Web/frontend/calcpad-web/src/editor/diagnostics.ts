@@ -1,9 +1,12 @@
 import * as monaco from 'monaco-editor';
 import { CalcpadApiClient } from 'calcpad-frontend/api/client';
 import { CalcpadLintService } from 'calcpad-frontend/services/linter';
-import type { LintDiagnostic } from 'calcpad-frontend/types/api';
+import type { ClientFileCache, LintDiagnostic } from 'calcpad-frontend/types/api';
 
 export type LintSeverity = 'error' | 'warning' | 'information';
+
+export type FileContextProvider =
+    (content: string) => Promise<{ clientFileCache?: ClientFileCache; sourceFilePath?: string }>;
 
 export interface DiagnosticsHandle extends monaco.IDisposable {
     /** Re-run lint immediately (used by manual Refresh). */
@@ -14,15 +17,18 @@ export interface DiagnosticsHandle extends monaco.IDisposable {
  * Set up diagnostics: lint on content change (debounced), filter by severity,
  * show markers in Monaco. `getMinSeverity` is read on every lint pass so
  * Settings-tab changes take effect on the next refresh without reattachment.
+ * `getFileContext` resolves the client file cache + source path before each
+ * lint pass so #include directives in the desktop build are linted correctly.
  */
 export function setupDiagnostics(
     editor: monaco.editor.IStandaloneCodeEditor,
     apiClient: CalcpadApiClient,
     getMinSeverity: () => LintSeverity = () => 'information',
+    getFileContext?: FileContextProvider,
 ): DiagnosticsHandle {
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const run = () => lintAndMark(editor, apiClient, getMinSeverity());
+    const run = () => lintAndMark(editor, apiClient, getMinSeverity(), getFileContext);
 
     const listener = editor.onDidChangeModelContent(() => {
         if (debounceTimer) clearTimeout(debounceTimer);
@@ -44,12 +50,14 @@ async function lintAndMark(
     editor: monaco.editor.IStandaloneCodeEditor,
     apiClient: CalcpadApiClient,
     minSeverity: LintSeverity,
+    getFileContext?: FileContextProvider,
 ): Promise<void> {
     const model = editor.getModel();
     if (!model) return;
 
     const content = model.getValue();
-    const response = await apiClient.lint(content);
+    const ctx = getFileContext ? await getFileContext(content) : {};
+    const response = await apiClient.lint(content, ctx.clientFileCache, ctx.sourceFilePath);
 
     if (!response?.diagnostics) {
         monaco.editor.setModelMarkers(model, 'calcpad', []);
