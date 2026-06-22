@@ -333,7 +333,7 @@ namespace Calcpad.Server.Services
             return outputText;
         }
 
-        public async Task<string> ConvertAsync(string calcpadContent, Settings? settings = null, bool forceUnwrappedCode = false, string theme = "light", WebFetchContext? ctx = null, bool forPrint = false)
+        public async Task<string> ConvertAsync(string calcpadContent, Settings? settings = null, bool forceUnwrappedCode = false, string theme = "light", WebFetchContext? ctx = null, bool forPrint = false, List<string>? openXmlExpressions = null)
         {
             if (string.IsNullOrWhiteSpace(calcpadContent))
             {
@@ -404,8 +404,9 @@ namespace Calcpad.Server.Services
                     try
                     {
                         var parser = new ExpressionParser { Settings = coreSettings };
-                        parser.Parse(outputText, true, false);
+                        parser.Parse(outputText, true, openXmlExpressions != null);
                         htmlResult = RemoveEmptyParagraphs(parser.HtmlResult);
+                        openXmlExpressions?.AddRange(parser.OpenXmlExpressions);
                     }
                     catch (Exception parseEx)
                     {

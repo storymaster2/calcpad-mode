@@ -23,6 +23,7 @@ import { registerFormatDocumentProvider } from './editor/format-document';
 import { setActiveDocumentKeyResolver, type EditorBridge } from './editor/bridge';
 import { TabManager } from './tabs/tab-manager';
 import './editor/vscode-variables.css';
+import 'calcpad-frontend/vue/styles/base.css';
 import './styles/app.css';
 
 // Monaco worker setup — must run before editor creation
@@ -101,41 +102,12 @@ c = √(a² + b²)
 }
 
 /**
- * Discover the Neutralino server-extension's URL.
- *
- * The .NET server binds to a random free port (`--urls http://localhost:0`)
- * and writes the bound URL to `extensions/server/.calcpad-server.port`
- * when Kestrel finishes binding. We poll that file with a backoff until
- * it appears, then return its contents.
- *
- * Falls back to `http://localhost:9420` if the file never appears within
- * `timeoutMs` — that shouldn't happen in practice but keeps the UI from
- * locking up if the server died on launch (the user will get the usual
- * "Disconnected" status indicator and the server-stderr.log will explain).
+ * Locate the server binary's directory inside the Neutralino install
+ * (where the lock + port files live, and where Calcpad.Server[.exe] sits).
  */
-async function waitForServerExtension(timeoutMs: number = 15000): Promise<string> {
-    const { init, filesystem } = await import('@neutralinojs/lib');
-    init();
-
-    // Normalize backslashes — on Windows NL_PATH uses native separators
+function getServerDir(): string {
     const NL_PATH = ((window as Window & { NL_PATH?: string }).NL_PATH ?? '').replace(/\\/g, '/');
-    const portFile = `${NL_PATH}/extensions/server/.calcpad-server.port`;
-    const fallback = 'http://localhost:9420';
-
-    const deadline = Date.now() + timeoutMs;
-    let delay = 50;
-    while (Date.now() < deadline) {
-        try {
-            const url = (await filesystem.readFile(portFile)).trim();
-            if (url) return url;
-        } catch {
-            // File not written yet — keep polling with capped backoff.
-        }
-        await new Promise((r) => setTimeout(r, delay));
-        delay = Math.min(delay * 1.5, 500);
-    }
-    console.warn(`[bootstrap] Port file ${portFile} did not appear within ${timeoutMs}ms; falling back to ${fallback}`);
-    return fallback;
+    return `${NL_PATH}/extensions/server`;
 }
 
 /**
@@ -209,6 +181,8 @@ async function setupNeutralinoMenu(recents: string[], previewMode: PreviewMode):
             menuItems: [
                 { id: 'refresh', text: 'Refresh', shortcut: 'F5' },
                 { id: 'show-server-log', text: 'Show Server Log' },
+                { id: 'stop-server', text: 'Stop Server' },
+                { id: 'restart-server', text: 'Restart Server' },
                 { id: 'restart-app', text: 'Restart App' },
             ],
         },
@@ -228,10 +202,34 @@ async function bootstrap(): Promise<void> {
     let serverUrl: string;
     let bridge: MessageBridge | null = null;
     let neuBridge: any = null;
+    let serverManager: import('./services/server-manager').NeutralinoServerManager | null = null;
+    // Server-manager log lines that arrive before the Output panel mounts
+    // get buffered here, then flushed when appInstance is ready.
+    const pendingServerLogs: string[] = [];
 
     if (isNeutralino) {
-        // Neutralino desktop: wait for server extension and use native bridge
-        serverUrl = await waitForServerExtension();
+        // Neutralino desktop: own the server lifecycle ourselves (spawn,
+        // health-check, crash-restart) rather than relying on Neutralino's
+        // extensions[] — Neutralino has no API to stop/restart an extension
+        // and no auto-restart on crash.
+        const { init } = await import('@neutralinojs/lib');
+        init();
+
+        const { NeutralinoServerManager } = await import('./services/server-manager');
+        const NL_OS = (window as Window & { NL_OS?: string }).NL_OS ?? 'Unknown';
+        serverManager = new NeutralinoServerManager(getServerDir(), {
+            // Buffered into a top-level array, drained into the Output panel
+            // once the Vue app mounts. The panel doesn't exist yet here.
+            appendLine: (msg) => pendingServerLogs.push(msg),
+        }, NL_OS);
+
+        try {
+            await serverManager.start();
+        } catch (err) {
+            console.error('[bootstrap] Server failed to start:', err);
+        }
+        serverUrl = serverManager.getBaseUrl() || 'http://localhost:9420';
+
         const { NeutralinoMessageBridge } = await import('./services/neutralino-bridge');
         neuBridge = new NeutralinoMessageBridge(serverUrl);
         (window as any).calcpadBridge = neuBridge;
@@ -373,6 +371,26 @@ async function bootstrap(): Promise<void> {
 
     appInstance.appendOutput('info', `CalcPad Web started — server: ${serverUrl}`);
 
+    // Flush any server-manager log lines buffered before the Output panel mounted,
+    // then redirect future ones straight into the panel.
+    for (const msg of pendingServerLogs) appInstance.appendOutput('info', msg);
+    pendingServerLogs.length = 0;
+    if (serverManager) {
+        serverManager.setLogger({
+            appendLine: (msg: string) => appInstance.appendOutput('info', msg),
+        });
+        serverManager.onUrlChanged = (newUrl: string) => {
+            activeBridge.api.setBaseUrl(newUrl);
+            appInstance.appendOutput('info', `Server URL updated: ${newUrl}`);
+        };
+        serverManager.onCrashExhausted = (crashOutput: string) => {
+            appInstance.appendOutput('error',
+                'CalcPad server crashed repeatedly — auto-restart disabled. ' +
+                'Use Server → Restart Server to try again.');
+            if (crashOutput) appInstance.appendOutput('error', crashOutput);
+        };
+    }
+
     // Register Monaco providers
     const editorBridge = activeBridge as unknown as EditorBridge;
     const getFileContext = 'buildFileContext' in activeBridge
@@ -393,6 +411,12 @@ async function bootstrap(): Promise<void> {
     attachOperatorReplacer(editor);
     attachAutoIndenter(editor);
     registerFormattingCommands(editor, editorBridge);
+
+    // Ctrl+D duplicates the current line (or all selected lines) — overrides
+    // Monaco's default "add selection to next find match" binding.
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
+        editor.trigger('keyboard', 'editor.action.copyLinesDownAction', null);
+    });
 
     // Keep the definitions cache fresh so hover provider has data to show.
     // Debounced — same cadence as TOC refresh.
@@ -562,7 +586,7 @@ async function bootstrap(): Promise<void> {
 
     // Neutralino-specific: native menu + file operations
     if (isNeutralino && neuBridge) {
-        const { events: neuEvents, app: neuApp } = await import('@neutralinojs/lib');
+        const { events: neuEvents, app: neuApp, clipboard: neuClipboard } = await import('@neutralinojs/lib');
 
         let recents: string[] = await neuBridge.getRecentFiles();
         let menuPreviewMode: PreviewMode =
@@ -673,19 +697,54 @@ async function bootstrap(): Promise<void> {
          * (Linux Neutralino) Ctrl+C/X/V are not bound to native clipboard ops
          * inside the WebView, so the menu accelerator is the only way to fire
          * them. We dispatch to Monaco when it has focus (which is true 99% of
-         * the time in this app), and fall back to execCommand for non-editor
-         * focus (sidebar text fields). Paste falls back to navigator.clipboard
-         * since execCommand('paste') is disabled in most engines.
+         * the time in this app), and fall back for non-editor focus (sidebar
+         * text fields). Copy/cut/paste go through Neutralino's native clipboard
+         * API so the editor can exchange text with other applications — the
+         * WebView's navigator.clipboard only sees content the page itself put
+         * on the system clipboard.
          */
         async function runClipboardAction(
             action: 'cut' | 'copy' | 'paste' | 'select-all' | 'undo' | 'redo' | 'find' | 'replace',
         ): Promise<void> {
             const editorHasFocus = editor.hasTextFocus();
             if (editorHasFocus) {
+                if (action === 'copy' || action === 'cut') {
+                    const sel = editor.getSelection();
+                    const model = editor.getModel();
+                    if (!sel || !model) return;
+                    if (sel.isEmpty()) {
+                        // Empty selection: copy/cut the whole current line, matching
+                        // Monaco's default. Cut removes the line including its newline.
+                        const line = sel.startLineNumber;
+                        const text = model.getLineContent(line) + '\n';
+                        try { await neuClipboard.writeText(text); } catch { /* ignored */ }
+                        if (action === 'cut') {
+                            const lineCount = model.getLineCount();
+                            const range = line < lineCount
+                                ? new monaco.Range(line, 1, line + 1, 1)
+                                : new monaco.Range(line, 1, line, model.getLineMaxColumn(line));
+                            editor.executeEdits('menu-cut', [{ range, text: '', forceMoveMarkers: true }]);
+                        }
+                    } else {
+                        const text = model.getValueInRange(sel);
+                        try { await neuClipboard.writeText(text); } catch { /* ignored */ }
+                        if (action === 'cut') {
+                            editor.executeEdits('menu-cut', [{ range: sel, text: '', forceMoveMarkers: true }]);
+                        }
+                    }
+                    return;
+                }
+                if (action === 'paste') {
+                    let text = '';
+                    try { text = await neuClipboard.readText(); } catch { /* ignored */ }
+                    if (!text) return;
+                    const sel = editor.getSelection();
+                    if (!sel) return;
+                    editor.executeEdits('menu-paste', [{ range: sel, text, forceMoveMarkers: true }]);
+                    editor.pushUndoStop();
+                    return;
+                }
                 const cmd = {
-                    cut: 'editor.action.clipboardCutAction',
-                    copy: 'editor.action.clipboardCopyAction',
-                    paste: 'editor.action.clipboardPasteAction',
                     'select-all': 'editor.action.selectAll',
                     undo: 'undo',
                     redo: 'redo',
@@ -697,28 +756,42 @@ async function bootstrap(): Promise<void> {
                 return;
             }
             // Fallback for sidebar / preview / etc.
+            const el = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
             if (action === 'paste') {
-                try {
-                    const text = await navigator.clipboard.readText();
-                    const el = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
-                    if (el && 'setRangeText' in el) {
-                        const start = el.selectionStart ?? el.value.length;
-                        const end = el.selectionEnd ?? start;
-                        el.setRangeText(text, start, end, 'end');
-                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                let text = '';
+                try { text = await neuClipboard.readText(); } catch { /* ignored */ }
+                if (!text) return;
+                if (el && 'setRangeText' in el) {
+                    const start = el.selectionStart ?? el.value.length;
+                    const end = el.selectionEnd ?? start;
+                    el.setRangeText(text, start, end, 'end');
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                return;
+            }
+            if (action === 'copy' || action === 'cut') {
+                if (el && 'selectionStart' in el) {
+                    const start = el.selectionStart ?? 0;
+                    const end = el.selectionEnd ?? start;
+                    if (end > start) {
+                        const text = el.value.substring(start, end);
+                        try { await neuClipboard.writeText(text); } catch { /* ignored */ }
+                        if (action === 'cut') {
+                            el.setRangeText('', start, end, 'end');
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
                     }
-                } catch {
-                    // Permission denied or unsupported — silent.
                 }
                 return;
             }
             if (action === 'select-all') {
-                const el = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
                 if (el && 'select' in el && typeof el.select === 'function') el.select();
                 return;
             }
-            // cut / copy / undo / redo work via execCommand in inputs.
-            document.execCommand(action === 'find' || action === 'replace' ? '' : action);
+            // undo / redo work via execCommand in inputs.
+            if (action === 'undo' || action === 'redo') {
+                document.execCommand(action);
+            }
         }
 
         // Single mainMenuItemClicked listener — handles static + dynamic IDs.
@@ -794,6 +867,30 @@ async function bootstrap(): Promise<void> {
                 case 'show-server-log':
                     appInstance.appendOutput('info', 'Fetching server log…');
                     neuBridge.handleMessage({ type: 'getServerLog' });
+                    break;
+
+                case 'stop-server':
+                    if (serverManager) {
+                        appInstance.appendOutput('info', 'Stopping server…');
+                        try {
+                            await serverManager.forceStop();
+                            appInstance.appendOutput('info', 'Server stopped. Use Restart Server to start it again.');
+                        } catch (err) {
+                            appInstance.appendOutput('error', `Stop failed: ${err instanceof Error ? err.message : String(err)}`);
+                        }
+                    }
+                    break;
+
+                case 'restart-server':
+                    if (serverManager) {
+                        appInstance.appendOutput('info', 'Restarting server…');
+                        try {
+                            await serverManager.restart();
+                            appInstance.appendOutput('info', `Server restarted at ${serverManager.getBaseUrl()}`);
+                        } catch (err) {
+                            appInstance.appendOutput('error', `Restart failed: ${err instanceof Error ? err.message : String(err)}`);
+                        }
+                    }
                     break;
 
                 case 'restart-app':
@@ -916,6 +1013,19 @@ async function bootstrap(): Promise<void> {
         editor.addCommand(monaco.KeyCode.F5, () => {
             void runRefresh();
         });
+        // Monaco's built-in clipboard actions route through navigator.clipboard
+        // and document.execCommand, neither of which sees content written by
+        // other applications on WebKitGTK. Override Ctrl+C/X/V so all three
+        // operations go through Neutralino's native clipboard API.
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyC, () => {
+            void runClipboardAction('copy');
+        });
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyX, () => {
+            void runClipboardAction('cut');
+        });
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+            void runClipboardAction('paste');
+        });
 
         window.addEventListener('keydown', (e) => {
             // F5 — refresh (no modifier; bound here so it fires from any focus).
@@ -1015,6 +1125,15 @@ async function bootstrap(): Promise<void> {
                 }
             } finally {
                 if (isExiting) {
+                    // Kill our spawned server before the Neutralino runtime tears
+                    // down — once neuApp.exit() returns, the WebView is gone and
+                    // we lose the chance to clean up. dispose() is best-effort and
+                    // returns within ~100ms; killProcess() fires after 500ms
+                    // regardless, so a slow dispose can't strand the user.
+                    if (serverManager) {
+                        try { await serverManager.dispose(); }
+                        catch (e) { appInstance.appendOutput('debug', `serverManager.dispose() rejected: ${e}`); }
+                    }
                     appInstance.appendOutput('debug', 'Exit path: calling neuApp.exit()');
                     neuApp.exit()
                         .then(() => appInstance.appendOutput('debug', 'neuApp.exit() resolved'))

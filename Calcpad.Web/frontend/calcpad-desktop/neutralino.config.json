@@ -17,7 +17,8 @@
     "storage.*",
     "window.*",
     "extensions.*",
-    "events.*"
+    "events.*",
+    "clipboard.*"
   ],
   "modes": {
     "window": {
@@ -33,14 +34,6 @@
       "exitProcessOnClose": false
     }
   },
-  "extensions": [
-    {
-      "id": "com.calcpad.server",
-      "commandLinux": "${NL_PATH}/extensions/server/Calcpad.Server",
-      "commandWindows": "${NL_PATH}/extensions/server/Calcpad.Server.exe",
-      "commandDarwin": "${NL_PATH}/extensions/server/Calcpad.Server"
-    }
-  ],
   "cli": {
     "binaryName": "calcpad-desktop",
     "resourcesPath": "/resources/",

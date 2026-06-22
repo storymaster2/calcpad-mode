@@ -42,6 +42,10 @@ export class CalcpadServerManager {
     private _spawnFailed: boolean = false;
     private _spawnFailedCode: string | null = null;
     private lockFilePath: string;
+    /** Last-seen mtime of last-crash.dmp.crashreport.json (ms). Seeded at boot
+     *  so an old dump from a previous extension run doesn't re-fire the watcher. */
+    private _lastSeenDumpMtimeMs: number = 0;
+    private _crashWatchInterval: ReturnType<typeof setInterval> | null = null;
 
     /** Called when auto-restart retries are exhausted. Receives the last stderr output. */
     public onCrashExhausted?: (crashOutput: string) => void;
@@ -56,6 +60,7 @@ export class CalcpadServerManager {
         this.mainLogger = mainLogger ?? logger;
         this.dotnetPath = dotnetPath;
         this.lockFilePath = path.join(basePath, 'bin', '.calcpad-server.lock');
+        this.startCrashWatcher();
     }
 
     /**
@@ -528,6 +533,7 @@ export class CalcpadServerManager {
 
     public dispose(): void {
         // Default disposal = disconnect, not kill. Use stop() for explicit kill.
+        this.stopCrashWatcher();
         this.disconnect();
     }
 
@@ -696,26 +702,177 @@ export class CalcpadServerManager {
      * record (matching the dump-file rolling-overwrite policy).
      */
     private persistCrashRecord(code: number | null, signal: NodeJS.Signals | null, decoded: string): void {
+        this.writeCrashTxt(code, signal, decoded);
+    }
+
+    /**
+     * Write `last-crash.txt` with whatever crash info we have at this moment:
+     * exit code/signal (when called from the exit handler), the in-memory stderr
+     * tail, and a parsed traceback from `last-crash.dmp.crashreport.json` if
+     * createdump produced one.
+     *
+     * Called from two paths:
+     *   1. The 'exit' handler — has exit code + signal but the JSON may or may
+     *      not exist yet (and on stack overflow / SIGSEGV this handler often
+     *      doesn't fire reliably).
+     *   2. The crash watcher (5s poll on the JSON mtime) — has no exit info but
+     *      catches dumps the exit handler missed.
+     *
+     * Both paths share this writer so the on-disk format is identical. Last
+     * writer wins, which is fine — they pull from the same sources.
+     */
+    private writeCrashTxt(code: number | null, signal: NodeJS.Signals | null, decoded: string): void {
         try {
             const crashDir = path.join(this.basePath, 'bin', 'logs');
             fs.mkdirSync(crashDir, { recursive: true });
             const file = path.join(crashDir, 'last-crash.txt');
-            const lines = [
-                `Calcpad.Server crash record`,
-                `Timestamp: ${new Date().toISOString()}`,
-                `Exit code: ${code} (0x${(code ?? 0) >>> 0 ? ((code ?? 0) >>> 0).toString(16).toUpperCase() : '0'})${decoded ? ' ' + decoded : ''}`,
-                `Signal: ${signal ?? '(none)'}`,
-                '',
-                '--- last stderr ---',
-                this._lastCrashOutput.join('\n') || '(empty)',
-                '',
-            ].join('\n');
-            fs.writeFileSync(file, lines, 'utf-8');
+            const sections: string[] = [];
+            sections.push('Calcpad.Server crash record');
+            sections.push(`Timestamp: ${new Date().toISOString()}`);
+            if (code !== null || signal !== null) {
+                const hex = ((code ?? 0) >>> 0).toString(16).toUpperCase();
+                sections.push(`Exit code: ${code} (0x${hex})${decoded ? ' ' + decoded : ''}`);
+                sections.push(`Signal: ${signal ?? '(none)'}`);
+            }
+            sections.push('');
+            sections.push('--- last stderr ---');
+            sections.push(this._lastCrashOutput.join('\n') || '(empty)');
+            sections.push('');
+
+            const reportPath = path.join(crashDir, 'last-crash.dmp.crashreport.json');
+            const formatted = formatCrashReportJson(reportPath);
+            if (formatted) {
+                sections.push('--- managed traceback ---', formatted, '');
+            }
+
+            fs.writeFileSync(file, sections.join('\n'), 'utf-8');
             this.mainLogger.appendLine(`[ServerManager] Crash record written: ${file}`);
         } catch (err) {
-            this.log(`Warning: could not persist crash record: ${err instanceof Error ? err.message : String(err)}`);
+            this.log(`Warning: could not write crash record: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
+
+    /**
+     * Poll the dump JSON's mtime every 5 seconds. When it advances past the
+     * last seen value, a fresh crash has happened — regenerate `last-crash.txt`.
+     *
+     * Polling rather than fs.watch because (a) the watcher needs to survive
+     * stop/start cycles and adopted-server scenarios where we never owned the
+     * crashing process, and (b) fs.watch is unreliable across platforms for
+     * file-overwrite semantics — createdump writes a fresh JSON each time, and
+     * inotify/FSEvents don't agree on whether that's a "rename" or a "change".
+     *
+     * Seeded at construction with the current mtime (or 0 if missing) so a
+     * stale dump from a previous extension run doesn't immediately re-fire.
+     */
+    private startCrashWatcher(): void {
+        if (this._crashWatchInterval) return;
+        const reportPath = path.join(this.basePath, 'bin', 'logs', 'last-crash.dmp.crashreport.json');
+        try {
+            this._lastSeenDumpMtimeMs = fs.statSync(reportPath).mtimeMs;
+        } catch {
+            this._lastSeenDumpMtimeMs = 0;
+        }
+        this._crashWatchInterval = setInterval(() => {
+            let mtimeMs: number;
+            try {
+                mtimeMs = fs.statSync(reportPath).mtimeMs;
+            } catch {
+                return;
+            }
+            if (mtimeMs > this._lastSeenDumpMtimeMs) {
+                this._lastSeenDumpMtimeMs = mtimeMs;
+                this.log(`Detected fresh crash dump (mtime=${new Date(mtimeMs).toISOString()})`);
+                this.writeCrashTxt(null, null, '');
+            }
+        }, 5000);
+    }
+
+    private stopCrashWatcher(): void {
+        if (this._crashWatchInterval) {
+            clearInterval(this._crashWatchInterval);
+            this._crashWatchInterval = null;
+        }
+    }
+}
+
+/**
+ * Parse a .NET createdump `*.crashreport.json` and render the crashed thread's
+ * managed exception + stack as a traceback-style block. Returns null if the file
+ * is missing or doesn't match the expected shape — `writeCrashTxt` still emits
+ * the exit-code/stderr portion in that case.
+ *
+ * Frames are written in the order createdump produced them (most-recent-first).
+ * Managed frames show method_name + defining assembly; native frames show the
+ * unmanaged symbol if known, otherwise just the module.
+ */
+function formatCrashReportJson(reportPath: string): string | null {
+    let raw: string;
+    try {
+        raw = fs.readFileSync(reportPath, 'utf-8');
+    } catch {
+        return null;
+    }
+
+    interface StackFrame {
+        is_managed?: string;
+        method_name?: string;
+        filename?: string;
+        unmanaged_name?: string;
+        native_module?: string;
+    }
+    interface Thread {
+        crashed?: string;
+        native_thread_id?: string;
+        managed_exception_type?: string;
+        managed_exception_hresult?: string;
+        stack_frames?: StackFrame[];
+    }
+    interface Payload {
+        process_name?: string;
+        configuration?: { version?: string; architecture?: string };
+        threads?: Thread[];
+    }
+
+    let parsed: { payload?: Payload };
+    try {
+        parsed = JSON.parse(raw);
+    } catch {
+        return null;
+    }
+    const payload = parsed?.payload;
+    if (!payload || !Array.isArray(payload.threads)) return null;
+
+    const crashed = payload.threads.find(t => t?.crashed === 'true');
+    if (!crashed) return null;
+
+    const out: string[] = [];
+    out.push(`Process: ${payload.process_name ?? '(unknown)'}`);
+    const cfg = payload.configuration;
+    if (cfg) out.push(`Runtime: ${cfg.version ?? '(unknown)'} (${cfg.architecture ?? '?'})`);
+
+    if (crashed.managed_exception_type) {
+        out.push('');
+        const hr = crashed.managed_exception_hresult ? ` (HRESULT ${crashed.managed_exception_hresult})` : '';
+        out.push(`Exception: ${crashed.managed_exception_type}${hr}`);
+    }
+
+    const frames = Array.isArray(crashed.stack_frames) ? crashed.stack_frames : [];
+    out.push('');
+    out.push(`Stack trace (most recent call first, thread ${crashed.native_thread_id ?? '?'}):`);
+    if (frames.length === 0) {
+        out.push('  (no frames)');
+    }
+    for (const f of frames) {
+        if (f?.is_managed === 'true' && f.method_name) {
+            out.push(`  at ${f.method_name}${f.filename ? `  [${f.filename}]` : ''}`);
+        } else if (f?.unmanaged_name) {
+            out.push(`  at ${f.unmanaged_name}  [${f.native_module ?? 'native'}]`);
+        } else if (f?.native_module) {
+            out.push(`  at <native>  [${f.native_module}]`);
+        }
+    }
+    return out.join('\n');
 }
 
 /**

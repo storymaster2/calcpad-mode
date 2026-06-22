@@ -478,6 +478,14 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
+                Insert = "ϕ",
+                Description = "Phi symbol (alternative form)",
+                Label = "ϕ phi",
+                Category = "Symbols/Special",
+                QuickType = "ff"
+            },
+            new SnippetItem
+            {
                 Insert = "‰",
                 Description = "Per mille sign",
                 Label = "‰ per mille",

@@ -257,16 +257,15 @@ namespace Calcpad.Server.Controllers
                     SourceFilePath = request.SourceFilePath
                 };
                 // forPrint=true so the HTML is the printable / unwrapped form,
-                // matching what the OpenXmlWriter expects.
+                // matching what the OpenXmlWriter expects. Passing a non-null
+                // openXmlExpressions list signals the parser to emit OMML so
+                // equations render as native Word math instead of empty <m:oMath/>.
+                var openXmlExpressions = new List<string>();
                 var html = await _calcpadService.ConvertAsync(
-                    request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, ctx, forPrint: true);
+                    request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, ctx, forPrint: true, openXmlExpressions: openXmlExpressions);
 
                 using var ms = new MemoryStream();
-                // Calcpad's plot/inline-expression list isn't surfaced through
-                // CalcpadService yet; pass an empty list so equations render
-                // as text (still well-formed). Plot images embedded in HTML
-                // are picked up by OpenXmlWriter's image processor as normal.
-                var writer = new OpenXmlWriter(new List<string>());
+                var writer = new OpenXmlWriter(openXmlExpressions);
                 writer.Convert(html, ms);
                 var bytes = ms.ToArray();
 

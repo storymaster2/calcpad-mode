@@ -511,13 +511,7 @@ namespace Calcpad.Core
                 {
                     if (!macro.IsEmpty)
                     {
-                        if (currentlyExpanding != null && currentlyExpanding.Contains(macroKey))
-                            throw Exceptions.CircularReference(macroKey);
-                        currentlyExpanding ??= new HashSet<string>(StringComparer.Ordinal);
-                        currentlyExpanding.Add(macroKey);
-                        string s;
-                        try { s = ApplyMacros(macro.Run(macroArguments), currentlyExpanding); }
-                        finally { currentlyExpanding.Remove(macroKey); }
+                        var s = ExpandMacro(macro, macroArguments, macroKey, ref currentlyExpanding);
                         var sbLength = stringBuilder.Length;
                         SetLineInputFields(s, stringBuilder, fields, false);
                         if (stringBuilder.Length == sbLength)
@@ -551,16 +545,20 @@ namespace Calcpad.Core
             }
             else if (macroArguments.Count == macro.ParameterCount)
             {
-                if (currentlyExpanding != null && currentlyExpanding.Contains(macroKey))
-                    throw Exceptions.CircularReference(macroKey);
-                currentlyExpanding ??= new HashSet<string>(StringComparer.Ordinal);
-                currentlyExpanding.Add(macroKey);
-                string s;
-                try { s = ApplyMacros(macro.Run(macroArguments), currentlyExpanding); }
-                finally { currentlyExpanding.Remove(macroKey); }
+                var s = ExpandMacro(macro, macroArguments, macroKey, ref currentlyExpanding);
                 stringBuilder.Append(s);
             }
             return stringBuilder.ToString();
+        }
+
+        private static string ExpandMacro(Macro macro, List<string> macroArguments, string macroKey, ref HashSet<string> currentlyExpanding)
+        {
+            if (currentlyExpanding != null && currentlyExpanding.Contains(macroKey))
+                throw Exceptions.CircularReference(macroKey);
+            currentlyExpanding ??= new HashSet<string>(StringComparer.Ordinal);
+            currentlyExpanding.Add(macroKey);
+            try { return ApplyMacros(macro.Run(macroArguments), currentlyExpanding); }
+            finally { currentlyExpanding.Remove(macroKey); }
         }
 
 
