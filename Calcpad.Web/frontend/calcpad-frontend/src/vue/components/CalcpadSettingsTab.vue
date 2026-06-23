@@ -361,7 +361,7 @@ const props = withDefaults(defineProps<Props>(), {
       lightDirection: 'NorthWest'
     },
     server: {
-      url: 'http://localhost:9420'
+      url: ''
     },
     units: 'm'
   }),

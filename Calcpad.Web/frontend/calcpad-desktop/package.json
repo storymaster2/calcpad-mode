@@ -8,6 +8,6 @@
     "build": "neu build"
   },
   "devDependencies": {
-    "@neutralinojs/neu": "latest"
+    "@neutralinojs/neu": "^11.7.2"
   }
 }

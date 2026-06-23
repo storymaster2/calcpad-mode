@@ -128,13 +128,19 @@ export class NeutralinoServerManager {
 
         const cmd = this.buildSpawnCommand();
         this.log(`Spawning: ${cmd}`);
+        // NOTE: do NOT pass the `envs` option here. Neutralino's Windows core
+        // implementation of os.spawnProcess fails to launch the child when
+        // `envs` is supplied — the process never executes (no port file, no
+        // server log) and the spawn effectively no-ops, leaving serverUrl empty
+        // and the app making doomed relative /api requests. We previously used
+        // `envs: { CALCPAD_DETACHED: '1' }` to make the server skip the
+        // Neutralino extension handshake / stdin-EOF watchdog; that is now done
+        // with the `--no-exit-on-stdin-close` CLI flag in buildSpawnCommand(),
+        // which is functionally identical and avoids the broken `envs` path.
+        // cwd must use native separators — CreateProcess rejects a forward-slash
+        // working directory on Windows.
         const result = await os.spawnProcess(cmd, {
-            cwd: this.serverDir,
-            // CALCPAD_DETACHED=1 makes the server skip the Neutralino
-            // extension handshake (which expects a JSON line on stdin).
-            // Without this it would try to open a WebSocket to a port we
-            // never told it about and exit immediately.
-            envs: { CALCPAD_DETACHED: '1' },
+            cwd: this.toNativePath(this.serverDir),
         });
         this.spawnId = result.id;
         this.spawnPid = result.pid;
@@ -330,8 +336,26 @@ export class NeutralinoServerManager {
     }
 
     private buildSpawnCommand(): string {
-        // Quote both for paths with spaces (common on Windows + macOS).
-        return `"${this.serverExePath}" --port-file "${this.portFilePath}"`;
+        // Quote both for paths with spaces (common on Windows + macOS), and use
+        // native separators — CreateProcess on Windows is unreliable with a
+        // forward-slash program path. `--no-exit-on-stdin-close` disables the
+        // server's stdin-EOF watchdog and Neutralino extension handshake (the
+        // role CALCPAD_DETACHED=1 used to play via the `envs` option, which is
+        // broken on the Windows Neutralino core — see start()).
+        const exe = this.toNativePath(this.serverExePath);
+        const portFile = this.toNativePath(this.portFilePath);
+        return `"${exe}" --port-file "${portFile}" --no-exit-on-stdin-close`;
+    }
+
+    /**
+     * Convert a forward-slash path (our internal canonical form, since
+     * getServerDir normalizes NL_PATH with `/`) to native OS separators.
+     * Neutralino's filesystem.* APIs accept forward slashes, but anything that
+     * flows into os.spawnProcess (the command's program path and the cwd) hits
+     * Win32 CreateProcess, which wants backslashes on Windows.
+     */
+    private toNativePath(p: string): string {
+        return this.platform === 'Windows' ? p.replace(/\//g, '\\') : p;
     }
 
     private async waitForPortFile(timeoutMs: number): Promise<string> {

@@ -51,7 +51,7 @@ export function getDefaultSettings(): CalcpadSettings {
             lightDirection: "NorthWest"
         },
         server: {
-            url: "http://localhost:9420",
+            url: "",
             mode: "auto"
         },
         units: "m"

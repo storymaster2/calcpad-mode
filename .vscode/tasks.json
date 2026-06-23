@@ -351,6 +351,29 @@
             "problemMatcher": ["$msCompile", "$tsc"]
         },
 
+        // Full framework-dependent publish mirrored into vscode-calcpad/bin/.
+        // Unlike "Server: Build & Deploy to Extension" (which only copies the 4
+        // Calcpad DLLs and assumes the .NET host manifest is already present),
+        // this runs `dotnet publish` so Calcpad.Server.runtimeconfig.json,
+        // Calcpad.Server.deps.json, and every transitive managed DLL land in
+        // bin/ together. Without the runtimeconfig the host falls back to
+        // self-contained mode and dies looking for hostpolicy.dll.
+        {
+            "label": "Server: Sync Bundle to Extension",
+            "type": "shell",
+            "command": "node",
+            "args": ["scripts/sync-bundled-server.mjs", "--framework-dependent"],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": ["$msCompile"]
+        },
+
         // ── VS Code Extension ───────────────────────────────────────────
         // Extension: Compile is now an alias — the actual `npm run compile`
         // step lives inside the Server: Build & Deploy to Extension script,
@@ -451,6 +474,16 @@
             "label": "Extension + Server: Compile & Start",
             "dependsOn": ["Extension: Compile", "Server: Start Dev"],
             "dependsOrder": "parallel",
+            "problemMatcher": []
+        },
+        {
+            // preLaunchTask for "Extension: Run". Runs in sequence so the full
+            // server publish (Server: Sync Bundle to Extension) lands LAST and
+            // leaves bin/ complete — the 4-DLL copy inside Extension: Compile
+            // would otherwise be missing runtimeconfig.json / deps.json.
+            "label": "Extension: Compile & Sync Server",
+            "dependsOn": ["Extension: Compile", "Server: Sync Bundle to Extension"],
+            "dependsOrder": "sequence",
             "problemMatcher": []
         },
         {

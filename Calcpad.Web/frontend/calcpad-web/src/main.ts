@@ -286,7 +286,7 @@ async function bootstrap(): Promise<void> {
         } catch (err) {
             console.error('[bootstrap] Server failed to start:', err);
         }
-        serverUrl = serverManager.getBaseUrl() || 'http://localhost:9420';
+        serverUrl = serverManager.getBaseUrl() || '';
 
         const { NeutralinoMessageBridge } = await import('./services/neutralino-bridge');
         neuBridge = new NeutralinoMessageBridge(serverUrl);

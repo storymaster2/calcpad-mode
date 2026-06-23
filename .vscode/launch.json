@@ -21,7 +21,7 @@
             "outFiles": [
                 "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
             ],
-            "preLaunchTask": "Extension: Compile"
+            "preLaunchTask": "Extension: Compile & Sync Server"
         },
         {
             "name": "Extension + Server: Run",

@@ -99,7 +99,7 @@
         "url": {
           "type": "string",
           "description": "Server URL for CalcPad API",
-          "default": "http://localhost:9420"
+          "default": ""
         }
       }
     },
