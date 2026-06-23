@@ -111,6 +111,55 @@ function getServerDir(): string {
 }
 
 /**
+ * Native message box shown when the calculation server is spawned but never
+ * becomes ready — on Windows this almost always means SmartScreen / Microsoft
+ * Defender blocked the unsigned Calcpad.Server.exe (the "Windows protected
+ * your PC" modal). Mirrors the VS Code extension's spawn-block guidance: tell
+ * the user to unblock the file, then restart the server from the menu. The
+ * editor itself keeps working; only server-backed features (preview, linting,
+ * export) need it. Non-Windows platforms get generic wording since the
+ * unblock-via-Properties flow is Windows-specific.
+ */
+async function showServerBlockedDialog(exePath: string, nlOs: string): Promise<void> {
+    const { os } = await import('@neutralinojs/lib');
+    // exePath comes through with native separators; show the folder the user
+    // needs to open, normalized to backslashes on Windows for copy-paste.
+    const folder = exePath.replace(/[\\/][^\\/]+$/, '');
+    const displayFolder = nlOs === 'Windows' ? folder.replace(/\//g, '\\') : folder;
+
+    const steps = nlOs === 'Windows'
+        ? 'To unblock it:\n'
+            + `  1. Open this folder:\n     ${displayFolder}\n`
+            + '  2. Right-click Calcpad.Server.exe → Properties\n'
+            + '  3. Tick "Unblock" near the bottom, then click OK\n'
+            + '  4. Back in CalcPad, choose Server → Restart Server'
+        : 'Make sure the server executable is present and executable, then\n'
+            + 'choose Server → Restart Server in CalcPad.';
+
+    const message =
+        'CalcPad\'s calculation server started but never became ready.\n\n'
+        + (nlOs === 'Windows'
+            ? 'Windows appears to be blocking Calcpad.Server.exe (SmartScreen / '
+              + 'Microsoft Defender). '
+            : '')
+        + 'The editor still works, but preview, linting, and PDF/Word export '
+        + 'need the server.\n\n'
+        + steps;
+
+    try {
+        await os.showMessageBox(
+            'CalcPad server blocked',
+            message,
+            'OK' as any,
+            'WARNING' as any,
+        );
+    } catch {
+        // showMessageBox can throw if the runtime is tearing down — the
+        // buffered log line in the Output panel is the fallback.
+    }
+}
+
+/**
  * Set up the Neutralino native menu bar. The recents submenu is rebuilt
  * each time this function is called.
  */
@@ -222,6 +271,15 @@ async function bootstrap(): Promise<void> {
             // once the Vue app mounts. The panel doesn't exist yet here.
             appendLine: (msg) => pendingServerLogs.push(msg),
         }, NL_OS);
+
+        // Wire the "Windows blocked the exe" handler BEFORE the first start()
+        // so the guidance dialog fires on the very first launch — the Vue app
+        // (and its Output panel) hasn't mounted yet at this point, so the log
+        // line is buffered and the message box is shown directly via Neutralino.
+        serverManager.onStartupBlocked = (exePath: string) => {
+            pendingServerLogs.push(`Server did not start — Windows may be blocking ${exePath}`);
+            void showServerBlockedDialog(exePath, NL_OS);
+        };
 
         try {
             await serverManager.start();

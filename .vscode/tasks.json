@@ -269,16 +269,26 @@
         {
             "label": "Desktop: Clean & Rebuild",
             "type": "shell",
-            "command": "bash",
-            "args": [
-                "-c",
-                "rm -rf dist resources && npx neu build"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
-            },
             "group": "build",
             "dependsOn": "Desktop: Build Server + Assets",
+            "linux": {
+                "command": "bash",
+                "args": ["-c", "rm -rf dist resources && ([ -f bin/neutralino-linux_x64 ] || npx neu update) && npx neu build"],
+                "options": { "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop" }
+            },
+            "osx": {
+                "command": "bash",
+                "args": ["-c", "rm -rf dist resources && ([ -f bin/neutralino-mac_x64 ] || [ -f bin/neutralino-mac_universal ] || npx neu update) && npx neu build"],
+                "options": { "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop" }
+            },
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-Command",
+                    "Remove-Item -Recurse -Force dist,resources -ErrorAction SilentlyContinue; if (-not (Test-Path bin\\neutralino-win_x64.exe)) { npx neu update }; Push-Location ..\\calcpad-web; npm run build:desktop; Pop-Location; npx neu build"
+                ],
+                "options": { "cwd": "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop" }
+            },
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"

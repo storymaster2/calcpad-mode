@@ -51,6 +51,9 @@ export class NeutralinoServerManager {
     private _restartCount = 0;
     private _lastCrashOutput: string[] = [];
     private _intentionalStop = false;
+    /** Guards the one-shot auto Unblock-File retry so a still-blocked exe
+     *  can't loop. Reset on success and on user-initiated restart. */
+    private _unblockAttempted = false;
     private spawnedListener: ((evt: Event) => void) | null = null;
     private logger: ServerManagerLogger;
 
@@ -59,6 +62,17 @@ export class NeutralinoServerManager {
 
     /** Called whenever the active server URL changes (start, restart, reuse). */
     public onUrlChanged?: (newUrl: string) => void;
+
+    /**
+     * Called when startup times out with the process *still alive* — the
+     * signature of a Windows SmartScreen / Defender block (the child is
+     * spawned but held behind the "Windows protected your PC" modal, so it
+     * never binds a port, never writes the port file, and never exits).
+     * Receives the full path of the server executable so the UI can point
+     * the user at the file to unblock. Distinct from onCrashExhausted, which
+     * fires only after the process has actually exited and been retried.
+     */
+    public onStartupBlocked?: (exePath: string) => void;
 
     constructor(
         private readonly serverDir: string,
@@ -138,6 +152,7 @@ export class NeutralinoServerManager {
             this.url = await this.waitForPortFile(PORT_FILE_TIMEOUT_MS);
             this._isRunning = true;
             this._lastCrashOutput = [];
+            this._unblockAttempted = false;
             await this.writeLockFile({
                 pid: this.spawnPid,
                 url: this.url,
@@ -146,8 +161,38 @@ export class NeutralinoServerManager {
             this.log(`Server ready at ${this.url}`);
             this.onUrlChanged?.(this.url);
         } catch (err) {
+            // If the process is STILL ALIVE at the timeout (spawnId not nulled
+            // by an exit event), it never bound a port — on Windows the usual
+            // cause is SmartScreen / Defender holding the unsigned exe behind
+            // the "Windows protected your PC" modal. Treat it as a block:
+            // re-spawning blindly just re-blocks, so DON'T trip the 3-strike
+            // auto-restart. A genuine crash nulls spawnId via handleExit, so
+            // this branch is skipped for crashes.
+            const likelyBlocked = this.spawnId !== null;
+            if (likelyBlocked) {
+                this._intentionalStop = true; // suppress handleExit auto-restart
+            }
             await this.removeLockFile();
             await this.killSpawned();
+
+            if (likelyBlocked) {
+                // First block on Windows: the exe almost certainly carries
+                // Mark-of-the-Web (the Zone.Identifier stream SmartScreen
+                // gates on). Strip it with Unblock-File and retry startup
+                // once before bothering the user. The one-shot guard plus
+                // start()'s own reset-on-success keep this from looping.
+                if (this.platform === 'Windows' && !this._unblockAttempted) {
+                    this._unblockAttempted = true;
+                    const unblocked = await this.tryUnblockWindows();
+                    if (unblocked) {
+                        this.log('Unblocked server files — retrying startup');
+                        this._isRunning = false;
+                        return await this.start();
+                    }
+                }
+                this.log(`Server process started but never became ready — Windows may be blocking ${this.serverExePath}`);
+                this.onStartupBlocked?.(this.serverExePath);
+            }
             throw err;
         }
     }

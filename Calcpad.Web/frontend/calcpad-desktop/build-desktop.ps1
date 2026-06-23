@@ -16,9 +16,9 @@ $SyncScript    = Join-Path $FrontendDir "vscode-calcpad\scripts\sync-bundled-ser
 $ExtensionsDir = Join-Path $ScriptDir "extensions\server"
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║   CalcPad Desktop Build Script (Windows)     ║" -ForegroundColor Cyan
-Write-Host "╚══════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "+----------------------------------------------+" -ForegroundColor Cyan
+Write-Host "|   CalcPad Desktop Build Script (Windows)     |" -ForegroundColor Cyan
+Write-Host "+----------------------------------------------+" -ForegroundColor Cyan
 Write-Host ""
 
 if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { Err "dotnet CLI not found. Install .NET 10 SDK." }
@@ -46,16 +46,16 @@ node $SyncScript `
     --keep-skia-natives
 
 $ExePath = Join-Path $ExtensionsDir "Calcpad.Server.exe"
-if (-not (Test-Path $ExePath)) { Err "Build failed — Calcpad.Server.exe not found in $ExtensionsDir" }
+if (-not (Test-Path $ExePath)) { Err "Build failed - Calcpad.Server.exe not found in $ExtensionsDir" }
 
 $SizeMb = [math]::Round(
     (Get-ChildItem $ExtensionsDir -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB, 1)
 Ok "Server built: $ExePath ($SizeMb MB total)"
 
 Write-Host ""
-Write-Host "═══════════════════════════════════════════════" -ForegroundColor Green
-Write-Host "  CalcPad Desktop server build complete        " -ForegroundColor Green
-Write-Host "═══════════════════════════════════════════════" -ForegroundColor Green
+Write-Host "===============================================" -ForegroundColor Green
+Write-Host "  CalcPad Desktop server build complete       " -ForegroundColor Green
+Write-Host "===============================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Next steps:" -ForegroundColor Cyan
 Write-Host "    Dev mode:  npx neu run   (from calcpad-desktop/)" -ForegroundColor White

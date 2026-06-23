@@ -98,6 +98,14 @@
             "preLaunchTask": "Desktop: Clean & Rebuild"
         },
         {
+            "name": "Desktop: Run Local Build (Windows x64)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/scripts/launch-win.mjs",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Desktop: Clean & Rebuild"
+        },
+        {
             "name": "Desktop: Run Installed (Arch pacman)",
             "type": "node",
             "request": "launch",
