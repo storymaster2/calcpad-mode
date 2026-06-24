@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Calcpad.Core
 {
@@ -27,9 +26,11 @@ namespace Calcpad.Core
             return true;
         }
 
-        internal static string Write(string folder, string filename, byte[] bytes)
+        // Keys by content hash, so the same path with new content gets a fresh cache entry
+        // instead of serving stale bytes. Orphaned files are removed by the LRU cleanup job.
+        internal static string Write(string folder, byte[] bytes)
         {
-            var cacheKey = GetCacheKey(filename);
+            var cacheKey = GetCacheKey(bytes);
             var path = Path.Combine(folder, cacheKey + CacheFileExtension);
             if (File.Exists(path))
             {
@@ -43,7 +44,7 @@ namespace Calcpad.Core
             return cacheKey;
         }
 
-        private static string GetCacheKey(string filename) =>
-            Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(filename)))[..32];
+        private static string GetCacheKey(byte[] bytes) =>
+            Convert.ToHexStringLower(SHA256.HashData(bytes))[..32];
     }
 }

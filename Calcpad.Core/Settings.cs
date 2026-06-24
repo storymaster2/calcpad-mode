@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Calcpad.Core
@@ -18,18 +19,28 @@ namespace Calcpad.Core
     [Serializable()]
     public class ClientFileCache
     {
-        public string[] Filenames { get; set; } = Array.Empty<string>();
-        public byte[][] Contents { get; set; } = Array.Empty<byte[]>();
-        public string[] Errors { get; set; } = Array.Empty<string>();
-        public string[] DiskGuids { get; set; } = Array.Empty<string>();
+        private sealed class Entry
+        {
+            public string Filename;
+            public byte[] Content;
+            public string Error;
+            public string DiskGuid;
+        }
+
+        private readonly List<Entry> _entries = [];
 
         public string DiskCacheFolder { get; set; }
 
         [field: NonSerialized]
         public Func<string, byte[]> RefetchDelegate { get; set; }
 
-        private int IndexOf(string filename) =>
-            Array.FindIndex(Filenames, f => string.Equals(f, filename, StringComparison.OrdinalIgnoreCase));
+        private Entry Find(string filename)
+        {
+            foreach (var e in _entries)
+                if (string.Equals(e.Filename, filename, StringComparison.OrdinalIgnoreCase))
+                    return e;
+            return null;
+        }
 
         public bool TryGetContent(string filename, out string content)
         {
@@ -47,19 +58,19 @@ namespace Calcpad.Core
         public bool TryGetBytes(string filename, out byte[] bytes)
         {
             bytes = null;
-            var idx = IndexOf(filename);
-            if (idx < 0)
+            var entry = Find(filename);
+            if (entry == null)
                 return false;
 
-            if (Contents[idx] != null)
+            if (entry.Content != null)
             {
-                bytes = Contents[idx];
+                bytes = entry.Content;
                 return true;
             }
 
-            if (DiskGuids[idx] != null && DiskCacheFolder != null)
+            if (entry.DiskGuid != null && DiskCacheFolder != null)
             {
-                if (ClientFileDiskCache.TryRead(DiskCacheFolder, DiskGuids[idx], out bytes))
+                if (ClientFileDiskCache.TryRead(DiskCacheFolder, entry.DiskGuid, out bytes))
                     return true;
 
                 if (RefetchDelegate != null)
@@ -69,11 +80,17 @@ namespace Calcpad.Core
                         bytes = RefetchDelegate(filename);
                         if (bytes != null)
                         {
-                            DiskGuids[idx] = ClientFileDiskCache.Write(DiskCacheFolder, filename, bytes);
+                            entry.DiskGuid = ClientFileDiskCache.Write(DiskCacheFolder, bytes);
                             return true;
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        // Boundary: the delegate is user-supplied (HTTP fetch, S3, etc.) and can throw anything.
+                        // Record the message so TryGetError surfaces it and we stop retrying this entry.
+                        entry.Error = ex.Message;
+                        entry.DiskGuid = null;
+                    }
                 }
             }
 
@@ -83,10 +100,10 @@ namespace Calcpad.Core
         public bool TryGetError(string filename, out string error)
         {
             error = null;
-            var idx = IndexOf(filename);
-            if (idx < 0)
+            var entry = Find(filename);
+            if (entry == null)
                 return false;
-            error = Errors[idx];
+            error = entry.Error;
             return error != null;
         }
 
@@ -96,24 +113,22 @@ namespace Calcpad.Core
 
         public void AddEntry(string filename, byte[] content, string error)
         {
-            byte[] contentEntry;
-            string guidEntry;
+            string diskGuid = null;
+            byte[] inlineContent = content;
 
             if (content != null && content.Length > ClientFileDiskCache.DiskThresholdBytes && DiskCacheFolder != null)
             {
-                guidEntry = ClientFileDiskCache.Write(DiskCacheFolder, filename, content);
-                contentEntry = null;
-            }
-            else
-            {
-                guidEntry = null;
-                contentEntry = content;
+                diskGuid = ClientFileDiskCache.Write(DiskCacheFolder, content);
+                inlineContent = null;
             }
 
-            Filenames = [.. Filenames, filename];
-            Contents = [.. Contents, contentEntry];
-            Errors = [.. Errors, error];
-            DiskGuids = [.. DiskGuids, guidEntry];
+            _entries.Add(new Entry
+            {
+                Filename = filename,
+                Content = inlineContent,
+                Error = error,
+                DiskGuid = diskGuid,
+            });
         }
     }
 

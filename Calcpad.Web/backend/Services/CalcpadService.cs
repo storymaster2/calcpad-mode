@@ -1,7 +1,4 @@
 using System.Collections.Concurrent;
-using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text;
 using Calcpad.Core;
 using Calcpad.Server.Controllers;
 
@@ -797,9 +794,8 @@ tan_angle = tan(angle°)";
                 (fetchErrors == null || fetchErrors.Count == 0))
                 return null;
 
-            var cacheFolder = DiskCacheCleanupService.CacheFolder;
+            var cache = new ClientFileCache { DiskCacheFolder = DiskCacheCleanupService.CacheFolder };
 
-            // Merge content and error entries into parallel arrays
             var allKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             if (clientFileCache != null)
                 foreach (var key in clientFileCache.Keys)
@@ -808,52 +804,14 @@ tan_angle = tan(angle°)";
                 foreach (var key in fetchErrors.Keys)
                     allKeys.Add(key);
 
-            var filenames = new string[allKeys.Count];
-            var contents = new byte[]?[allKeys.Count];
-            var errors = new string?[allKeys.Count];
-            var diskGuids = new string?[allKeys.Count];
-
-            int i = 0;
             foreach (var key in allKeys)
             {
-                filenames[i] = key;
-                errors[i] = fetchErrors != null && fetchErrors.TryGetValue(key, out var e) ? e : null;
-
                 var bytes = clientFileCache != null && clientFileCache.TryGetValue(key, out var b) ? b : null;
-                if (bytes != null && bytes.Length > 51_200) // 50 KB
-                {
-                    // Use deterministic key so the same file always maps to the same cache file
-                    var cacheKey = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(key)))[..32];
-                    var cachePath = Path.Combine(cacheFolder, cacheKey + ".cache");
-                    if (File.Exists(cachePath))
-                    {
-                        // Already cached — just touch to prevent cleanup
-                        try { File.SetLastWriteTimeUtc(cachePath, DateTime.UtcNow); } catch { }
-                    }
-                    else
-                    {
-                        Directory.CreateDirectory(cacheFolder);
-                        File.WriteAllBytes(cachePath, bytes);
-                    }
-                    contents[i] = null;
-                    diskGuids[i] = cacheKey;
-                }
-                else
-                {
-                    contents[i] = bytes;
-                    diskGuids[i] = null;
-                }
-                i++;
+                var error = fetchErrors != null && fetchErrors.TryGetValue(key, out var e) ? e : null;
+                cache.AddEntry(key, bytes, error);
             }
 
-            return new ClientFileCache
-            {
-                Filenames = filenames,
-                Contents = contents,
-                Errors = errors,
-                DiskGuids = diskGuids,
-                DiskCacheFolder = cacheFolder
-            };
+            return cache;
         }
 
         /// <summary>

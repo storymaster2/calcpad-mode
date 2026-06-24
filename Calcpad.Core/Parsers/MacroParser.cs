@@ -82,7 +82,11 @@ namespace Calcpad.Core
             Include,
         }
         private readonly List<int> _lineNumbers = [];
-        private readonly HashSet<string> _includeStack = new(StringComparer.OrdinalIgnoreCase);
+        // Filesystem path comparison must match the host OS to avoid false-positive circular
+        // detection on case-sensitive filesystems (Linux) or missed detection on Windows.
+        private static readonly StringComparer PathComparer =
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        private readonly HashSet<string> _includeStack = new(PathComparer);
         private static readonly Dictionary<string, Macro> Macros = new(StringComparer.Ordinal);
         public Func<string, Queue<string>, string> Include;
         public ClientFileCache ClientFileCache { get; set; }
@@ -251,7 +255,7 @@ namespace Calcpad.Core
                 var includeKey = resolvedPath ?? rawFileName;
                 if (!_includeStack.Add(includeKey))
                 {
-                    AppendError(lineContent, $"Circular #include detected: {rawFileName}");
+                    AppendError(lineContent, string.Format(Messages.Circular_include_detected_0, rawFileName));
                     return;
                 }
 
@@ -259,10 +263,7 @@ namespace Calcpad.Core
                 {
                     if (fileExists)
                     {
-                        var savedSourcePath = SourceFilePath;
-                        SourceFilePath = resolvedPath;
-                        try { Parse(Include(resolvedPath, fields), out _, sb, lineNumber, addLineNumbers); }
-                        finally { SourceFilePath = savedSourcePath; }
+                        ParseWithSourcePath(Include(resolvedPath, fields), resolvedPath);
                         return;
                     }
 
@@ -270,10 +271,7 @@ namespace Calcpad.Core
                     var fallbackKey = resolvedPath != null ? rawFileName : null;
                     if (ClientFileCache != null && ClientFileCache.TryGetContentMultiKey(cacheKey, fallbackKey, out var cachedContent))
                     {
-                        var savedSourcePath = SourceFilePath;
-                        SourceFilePath = resolvedPath;
-                        try { Parse(cachedContent, out _, sb, lineNumber, addLineNumbers); }
-                        finally { SourceFilePath = savedSourcePath; }
+                        ParseWithSourcePath(cachedContent, resolvedPath);
                         return;
                     }
 
@@ -289,6 +287,14 @@ namespace Calcpad.Core
                 {
                     _includeStack.Remove(includeKey);
                 }
+            }
+
+            void ParseWithSourcePath(string content, string newSourcePath)
+            {
+                var savedSourcePath = SourceFilePath;
+                SourceFilePath = newSourcePath;
+                try { Parse(content, out _, sb, lineNumber, addLineNumbers); }
+                finally { SourceFilePath = savedSourcePath; }
             }
 
             void ParseDef(ReadOnlySpan<char> lineContent)
@@ -554,7 +560,7 @@ namespace Calcpad.Core
         private static string ExpandMacro(Macro macro, List<string> macroArguments, string macroKey, ref HashSet<string> currentlyExpanding)
         {
             if (currentlyExpanding != null && currentlyExpanding.Contains(macroKey))
-                throw Exceptions.CircularReference(macroKey);
+                throw Exceptions.CircularMacroReference(macroKey);
             currentlyExpanding ??= new HashSet<string>(StringComparer.Ordinal);
             currentlyExpanding.Add(macroKey);
             try { return ApplyMacros(macro.Run(macroArguments), currentlyExpanding); }

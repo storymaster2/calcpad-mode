@@ -3,6 +3,7 @@
 ## Remaining before deployment
 
 -   Add error logging that passes Calcpad errors to the frontend even if they aren't visible in the webview
+-   Audit Calcpad.Core for shared mutable state that races under concurrent server requests. Known offender: `MacroParser.Macros` is a `static` dictionary cleared and repopulated per `Parse(..., includeLine == 0)` call, so two simultaneous requests stomp each other. There are likely other instances. This needs a broader refactor (e.g. instance-scoped state or request-scoped parser pools) before Calcpad.Web is exposed to real traffic.
 
 ### To Test/Review
 
@@ -64,6 +65,7 @@
 -   Refactor CalcpadAuth routing to work with \<service:endpoint> structure and make router.json config to work with any API calls (such as GET vs POST and auth/content type headers). Body is passed from Calcpad itself.
 -   Add token management config with auth endpoints for various tokens. MAKE SURE TOKENS ARE ONLY STORED IN SERVER MEMORY AND SELECTED BASED ON CONFIG SETTINGS. Use handlebars {{jwt.calcpad}} syntax to select which token to use in API calls. This is the only time handlebars are needed (anything only in server program memory), as all other params should be passed from Calcpad as JSON in the body of the request.
 -   Don't add getting JS variables from the webview as a string, instead, use the authenticated API to do complex intermediate steps with JS or C# via server-based deployments. This is more reliable and secure.
+- Add support for other languages, especially Chinese as there is a large Chinese community.
 
 ### Bugs
 

@@ -1,6 +1,6 @@
 {
   "applicationId": "com.calcpad.desktop",
-  "applicationName": "CalcPad",
+  "applicationName": "CalcPadCE Web",
   "version": "0.2.0",
   "defaultMode": "window",
   "port": 0,
@@ -22,7 +22,7 @@
   ],
   "modes": {
     "window": {
-      "title": "CalcPad",
+      "title": "CalcPadCE Web",
       "width": 1400,
       "height": 900,
       "minWidth": 800,
@@ -50,4 +50,3 @@
     "clientVersion": "6.5.0"
   }
 }
-
