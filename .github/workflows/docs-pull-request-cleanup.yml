@@ -3,6 +3,11 @@ name: Cleanup PR preview
 on:
   pull_request_target:
     types: [closed]
+    paths:
+      - '.github/**'
+      - 'Examples/**'
+      - 'docs/**'
+      - 'mkdocs.yml'
 
 permissions:
   contents: write
