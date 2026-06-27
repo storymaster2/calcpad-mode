@@ -26,12 +26,12 @@ namespace Calcpad.Highlighter.ContentResolution
             var macroExpansions = new Dictionary<int, MacroExpansionInfo>();
 
             // Build macro map from stage2 definitions (skip duplicates, use first definition)
-            var macros = new Dictionary<string, (List<string> Params, List<string> Defaults, List<string> Content)>(StringComparer.OrdinalIgnoreCase);
+            var macros = new Dictionary<string, (List<string> Params, List<string> Content)>(StringComparer.OrdinalIgnoreCase);
             foreach (var macroDef in stage2.MacroDefinitions)
             {
                 if (!macros.ContainsKey(macroDef.Name))
                 {
-                    macros[macroDef.Name] = (macroDef.Params, macroDef.Defaults, macroDef.Content);
+                    macros[macroDef.Name] = (macroDef.Params, macroDef.Content);
                 }
             }
 
@@ -123,22 +123,10 @@ namespace Calcpad.Highlighter.ContentResolution
             var functions = new Dictionary<string, FunctionInfo>(StringComparer.OrdinalIgnoreCase);
             foreach (var f in functionsWithParams)
             {
-                int requiredCount;
-                if (f.Defaults != null)
-                {
-                    requiredCount = 0;
-                    foreach (var d in f.Defaults)
-                        if (d is null) requiredCount++;
-                }
-                else
-                {
-                    requiredCount = f.Params?.Count ?? 0;
-                }
                 functions[f.Name] = new FunctionInfo
                 {
                     LineNumber = f.LineNumber,
                     ParamCount = f.Params?.Count ?? 0,
-                    RequiredParamCount = requiredCount,
                     ParamNames = f.Params ?? new List<string>()
                 };
             }
@@ -225,13 +213,12 @@ namespace Calcpad.Highlighter.ContentResolution
                         func.LineNumber,
                         0,
                         func.Source,
-                        func.IsConst,
-                        func.Defaults);
+                        func.IsConst);
                 }
                 else
                 {
                     // Normal function - use the expression for return type inference
-                    info = typeTracker.RegisterFunction(func.Name, func.Params, func.Expression ?? "", func.LineNumber, 0, func.Source, func.IsConst, func.Defaults);
+                    info = typeTracker.RegisterFunction(func.Name, func.Params, func.Expression ?? "", func.LineNumber, 0, func.Source, func.IsConst);
                 }
                 // Copy metadata from definition comment
                 info.Description = func.Description;
@@ -246,11 +233,11 @@ namespace Calcpad.Highlighter.ContentResolution
                 VariableInfo info;
                 if (isInline)
                 {
-                    info = typeTracker.RegisterInlineMacro(macro.Name, macro.Params ?? new List<string>(), macro.Content[0], macro.LineNumber, 0, macro.Source, macro.Defaults);
+                    info = typeTracker.RegisterInlineMacro(macro.Name, macro.Params ?? new List<string>(), macro.Content[0], macro.LineNumber, 0, macro.Source);
                 }
                 else
                 {
-                    info = typeTracker.RegisterMultilineMacro(macro.Name, macro.Params ?? new List<string>(), macro.LineNumber, 0, macro.Source, macro.Defaults);
+                    info = typeTracker.RegisterMultilineMacro(macro.Name, macro.Params ?? new List<string>(), macro.LineNumber, 0, macro.Source);
                 }
                 // Copy metadata from definition comment
                 info.Description = macro.Description;
@@ -845,7 +832,7 @@ namespace Calcpad.Highlighter.ContentResolution
         /// For example, with macros "string$" and "ng$", "gstring$" should expand "string$", not "ng$".
         /// Optionally tracks which macros were expanded for source mapping.
         /// </summary>
-        private string ExpandMacros(string line, Dictionary<string, (List<string> Params, List<string> Defaults, List<string> Content)> macros, List<string> expandedMacroNames = null, HashSet<string> currentlyExpanding = null)
+        private string ExpandMacros(string line, Dictionary<string, (List<string> Params, List<string> Content)> macros, List<string> expandedMacroNames = null, HashSet<string> currentlyExpanding = null)
         {
             if (macros.Count == 0 || !line.AsSpan().Contains('$'))
                 return line;
@@ -869,7 +856,7 @@ namespace Calcpad.Highlighter.ContentResolution
 
                     // Try to find the longest matching macro name that ends at this position
                     // Compare StringBuilder chars directly to avoid textBuffer.ToString() allocation
-                    (string macroName, (List<string> Params, List<string> Defaults, List<string> Content) macro)? matchedMacro = null;
+                    (string macroName, (List<string> Params, List<string> Content) macro)? matchedMacro = null;
                     int macroStartInBuffer = -1;
 
                     foreach (var kvp in sortedMacros)
@@ -903,8 +890,7 @@ namespace Calcpad.Highlighter.ContentResolution
                         int pos = i + 1;
 
                         // Skip whitespace
-                        while (pos < line.Length && char.IsWhiteSpace(line[pos]))
-                            pos++;
+                        ParsingHelpers.SkipWhitespace(line, ref pos);
 
                         List<string> argList;
                         int replacementEnd;
@@ -913,22 +899,14 @@ namespace Calcpad.Highlighter.ContentResolution
                         if (pos < line.Length && line[pos] == '(')
                         {
                             var argsStart = pos + 1;
-                            var depth = 1;
-                            pos++;
-                            while (pos < line.Length && depth > 0)
-                            {
-                                if (line[pos] == '(') depth++;
-                                else if (line[pos] == ')') depth--;
-                                pos++;
-                            }
+                            var closePos = ParsingHelpers.FindMatchingClose(line, pos, '(', ')');
 
-                            if (depth == 0)
+                            if (closePos >= 0)
                             {
-                                var argsEnd = pos - 1;
-                                var argsStr = line.Substring(argsStart, argsEnd - argsStart);
+                                var argsStr = line.Substring(argsStart, closePos - argsStart);
                                 // Use ParseMacroParameters for macro calls - only parentheses count for nesting
                                 argList = ParameterParser.ParseMacroParameters(argsStr);
-                                replacementEnd = pos;
+                                replacementEnd = closePos + 1;
                             }
                             else
                             {
@@ -945,8 +923,8 @@ namespace Calcpad.Highlighter.ContentResolution
                             replacementEnd = i + 1;
                         }
 
-                        // Resolve keyword args and fill defaults
-                        var resolvedArgs = ResolveMacroArgs(macro.Params, macro.Defaults, argList);
+                        // Resolve positional arguments against macro params
+                        var resolvedArgs = ResolveMacroArgs(macro.Params, argList);
                         if (resolvedArgs != null)
                         {
                             expandedMacroNames?.Add(macroName);
@@ -1026,83 +1004,23 @@ namespace Calcpad.Highlighter.ContentResolution
         }
 
         /// <summary>
-        /// Resolves positional and keyword arguments against macro parameters with optional defaults.
+        /// Resolves positional arguments against macro parameters.
         /// Returns a resolved argument array parallel to params, or null if the call is invalid.
         /// </summary>
-        private static List<string> ResolveMacroArgs(List<string> paramNames, List<string> defaults, List<string> argList)
+        private static List<string> ResolveMacroArgs(List<string> paramNames, List<string> argList)
         {
             if (paramNames == null || paramNames.Count == 0)
                 return argList.Count == 0 ? new List<string>() : null;
 
-            // Separate positional and keyword arguments
-            var positional = new List<string>();
-            var keywords = new Dictionary<string, string>(StringComparer.Ordinal);
+            // Treat a single empty-string arg as "no args" — corresponds to macro$()
+            var effectiveArgs = (argList.Count == 1 && argList[0].Trim().Length == 0)
+                ? new List<string>()
+                : argList;
 
-            foreach (var rawArg in argList)
-            {
-                var trimmed = rawArg.Trim();
-                if (trimmed.Length == 0 && argList.Count == 1)
-                    continue; // Empty parens: macro$()
-
-                if (TryParseMacroKeywordArg(trimmed, paramNames, out var kwName, out var kwValue))
-                    keywords[kwName] = kwValue;
-                else
-                    positional.Add(rawArg);
-            }
-
-            int totalProvided = positional.Count + keywords.Count;
-            if (totalProvided > paramNames.Count)
+            if (effectiveArgs.Count != paramNames.Count)
                 return null;
 
-            // Compute required count
-            int requiredCount = paramNames.Count;
-            if (defaults != null)
-            {
-                requiredCount = 0;
-                foreach (var d in defaults)
-                    if (d == null) requiredCount++;
-            }
-
-            if (totalProvided < requiredCount)
-                return null;
-
-            // Build resolved args
-            var resolved = new List<string>(paramNames.Count);
-            int posIdx = 0;
-            for (int j = 0; j < paramNames.Count; j++)
-            {
-                if (keywords.TryGetValue(paramNames[j], out var kwVal))
-                    resolved.Add(kwVal);
-                else if (posIdx < positional.Count)
-                    resolved.Add(positional[posIdx++]);
-                else if (defaults != null && j < defaults.Count && defaults[j] != null)
-                    resolved.Add(defaults[j]);
-                else
-                    return null; // Required param not satisfied
-            }
-            return resolved;
-        }
-
-        /// <summary>
-        /// Tries to parse a macro keyword argument in the form "name$=value".
-        /// </summary>
-        private static bool TryParseMacroKeywordArg(ReadOnlySpan<char> arg, List<string> paramNames, out string kwName, out string kwValue)
-        {
-            int idx = 0;
-            while (idx < arg.Length && (char.IsLetterOrDigit(arg[idx]) || arg[idx] == '_')) idx++;
-            if (idx > 0 && idx + 1 < arg.Length && arg[idx] == '$' && arg[idx + 1] == '=')
-            {
-                var name = arg[..(idx + 1)].ToString();
-                if (paramNames.Contains(name))
-                {
-                    kwName = name;
-                    kwValue = arg[(idx + 2)..].Trim().ToString();
-                    return true;
-                }
-            }
-            kwName = null;
-            kwValue = null;
-            return false;
+            return new List<string>(effectiveArgs);
         }
 
         /// <summary>

@@ -124,29 +124,18 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
             // Skip whitespace to find opening paren
             var pos = afterFuncName;
-            while (pos < lineSpan.Length && char.IsWhiteSpace(lineSpan[pos]))
-                pos++;
+            ParsingHelpers.SkipWhitespace(lineSpan, ref pos);
 
             if (pos >= lineSpan.Length || lineSpan[pos] != '(')
                 return null;
 
             var startPos = pos + 1;
+            var closePos = ParsingHelpers.FindMatchingClose(lineSpan, pos, '(', ')');
 
-            // Find matching closing paren
-            var depth = 1;
-            pos++;
-
-            while (pos < lineSpan.Length && depth > 0)
-            {
-                if (lineSpan[pos] == '(') depth++;
-                else if (lineSpan[pos] == ')') depth--;
-                pos++;
-            }
-
-            if (depth != 0)
+            if (closePos < 0)
                 return null;
 
-            var paramsStr = lineSpan.Slice(startPos, pos - 1 - startPos).ToString();
+            var paramsStr = lineSpan.Slice(startPos, closePos - startPos).ToString();
             return ParameterParser.ParseParameters(paramsStr);
         }
 
@@ -162,18 +151,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             if (pos >= lineSpan.Length)
                 return funcStart + 1;
 
-            // Find matching closing paren
-            var depth = 1;
-            pos++;
-
-            while (pos < lineSpan.Length && depth > 0)
-            {
-                if (lineSpan[pos] == '(') depth++;
-                else if (lineSpan[pos] == ')') depth--;
-                pos++;
-            }
-
-            return pos;
+            var closePos = ParsingHelpers.FindMatchingClose(lineSpan, pos, '(', ')');
+            return closePos >= 0 ? closePos + 1 : lineSpan.Length;
         }
 
         private static List<ValidationError> ValidateBlockStatements(

@@ -19,7 +19,6 @@ namespace Calcpad.Core
             private readonly Dictionary<string, Variable> _variables;
             private readonly Stack<Dictionary<string, Variable>> _localVariables = new();
             private readonly Dictionary<string, Unit> _units;
-            private static readonly char[] UnitChars = Validator.UnitChars.ToCharArray();
             static Input()
             {
                 // This array is needed to quickly check the token type of a character during parsing
@@ -134,7 +133,7 @@ namespace Calcpad.Core
                     {
                         if (pt == TokenTypes.Unit || pt == TokenTypes.Variable)
                         {
-                            tt = tokenLiteral.StartsWithAny(UnitChars) ?
+                            tt = tokenLiteral.StartsWithAny(Validator.UnitChars) ?
                                 TokenTypes.Unit :
                                 TokenTypes.Variable;
 
@@ -264,7 +263,7 @@ namespace Calcpad.Core
                                         if (!tokenLiteral.IsEmpty)
                                             t = MakeUnitToken(s, true);
                                     }
-                                    else if (UnitChars.Contains(s[0]))
+                                    else if (Validator.UnitChars.Contains(s[0]))
                                         t = MakeUnitToken(s, true);
                                     else
                                         t = new VariableToken(s, null);

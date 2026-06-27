@@ -76,12 +76,10 @@ namespace Calcpad.Server.Services
                 coreSettings = _fileSettingsExtractor.ApplyFileSettings(calcpadContent, coreSettings);
 
                 // 2. Parse macros and includes (server reads referenced files from disk).
-                // Note: sourceFilePath is reserved for re-introducing SourceFilePath-based
-                // include resolution once the include-recursion-protection PR lands on main.
-                _ = sourceFilePath;
                 var macroParser = new MacroParser
                 {
-                    Include = CreateIncludeDelegate(timeoutMs: 10000)
+                    Include = CreateIncludeDelegate(timeoutMs: 10000),
+                    SourceFilePath = sourceFilePath
                 };
 
                 string outputText;
@@ -97,7 +95,7 @@ namespace Calcpad.Server.Services
                 {
                     try
                     {
-                        var parser = new ExpressionParser { Settings = coreSettings };
+                        var parser = new ExpressionParser { Settings = coreSettings, SourceFilePath = sourceFilePath };
                         parser.Parse(outputText, true, openXmlExpressions != null);
                         htmlResult = RemoveEmptyParagraphs(parser.HtmlResult);
                         openXmlExpressions?.AddRange(parser.OpenXmlExpressions);

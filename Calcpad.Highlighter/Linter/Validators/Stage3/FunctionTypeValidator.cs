@@ -61,8 +61,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
                 // Compute column of first character inside the parentheses
                 var parenCol = token.Column + token.Length;
-                while (parenCol < line.Length && char.IsWhiteSpace(line[parenCol]))
-                    parenCol++;
+                ParsingHelpers.SkipWhitespace(line, ref parenCol);
                 var paramStartCol = parenCol + 1; // skip the '('
 
                 var paramTokenGroups = new List<List<Token>>();
@@ -284,7 +283,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 CalcpadType.Value => "scalar",
                 CalcpadType.Vector => "vector",
                 CalcpadType.Matrix => "matrix",
-                CalcpadType.StringVariable => "string",
                 CalcpadType.Various => "various",
                 CalcpadType.Unknown => "unknown",
                 _ => type.ToString().ToLower()

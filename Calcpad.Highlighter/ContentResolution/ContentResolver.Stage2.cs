@@ -244,29 +244,20 @@ namespace Calcpad.Highlighter.ContentResolution
                         int afterDollar = dollarIdx + 1;
 
                         // Skip whitespace
-                        while (afterDollar < lineSpan.Length && char.IsWhiteSpace(lineSpan[afterDollar]))
-                            afterDollar++;
+                        ParsingHelpers.SkipWhitespace(lineSpan, ref afterDollar);
 
                         if (afterDollar < lineSpan.Length && lineSpan[afterDollar] == '(')
                         {
                             // Find matching close paren and extract args
                             int parenStart = afterDollar;
-                            int depth = 1;
-                            int pos = parenStart + 1;
+                            var closePos = ParsingHelpers.FindMatchingClose(lineSpan, parenStart, '(', ')');
 
-                            while (pos < lineSpan.Length && depth > 0)
+                            if (closePos >= 0)
                             {
-                                if (lineSpan[pos] == '(') depth++;
-                                else if (lineSpan[pos] == ')') depth--;
-                                pos++;
-                            }
-
-                            if (depth == 0)
-                            {
-                                var argsStr = lineSpan.Slice(parenStart + 1, pos - parenStart - 2).ToString();
+                                var argsStr = lineSpan.Slice(parenStart + 1, closePos - parenStart - 1).ToString();
                                 var args = ParameterParser.ParseMacroParameters(argsStr);
                                 results.Add((macroName, args));
-                                i = pos;
+                                i = closePos + 1;
                                 continue;
                             }
                         }

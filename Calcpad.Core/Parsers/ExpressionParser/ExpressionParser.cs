@@ -30,6 +30,7 @@ namespace Calcpad.Core
         private static bool[] IsLineExtension = new bool[128];
 
         public Settings Settings { get; set; } = new();
+        public string SourceFilePath { get; set; }
         public string HtmlResult { get; private set; }
         public static bool IsUs
         {

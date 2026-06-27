@@ -395,8 +395,7 @@ namespace Calcpad.Server.Controllers
                         SourceFile = m.SourceFile,
                         Description = m.Description,
                         ParamTypes = m.ParamTypes,
-                        ParamDescriptions = m.ParamDescriptions,
-                        Defaults = m.Defaults
+                        ParamDescriptions = m.ParamDescriptions
                     }).ToList(),
 
                     Functions = staged.Stage3.FunctionsWithParams.Select(f =>
@@ -417,8 +416,7 @@ namespace Calcpad.Server.Controllers
                             SourceFile = f.SourceFile,
                             Description = f.Description,
                             ParamTypes = f.ParamTypes,
-                            ParamDescriptions = f.ParamDescriptions,
-                            Defaults = f.Defaults
+                            ParamDescriptions = f.ParamDescriptions
                         };
                     }).ToList(),
 
@@ -868,9 +866,6 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>User-provided descriptions per parameter</summary>
         public List<string>? ParamDescriptions { get; set; }
-
-        /// <summary>Default values parallel to Parameters. null = required, string = default expression.</summary>
-        public List<string?>? Defaults { get; set; }
     }
 
     public class FunctionDefinitionDto
@@ -886,13 +881,13 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>
         /// Inferred return type name.
-        /// Values: Unknown, Value, Vector, Matrix, StringVariable, Various, Function, InlineMacro, MultilineMacro, CustomUnit
+        /// Values: Unknown, Value, Vector, Matrix, CustomUnit, Function, InlineMacro, MultilineMacro, Various
         /// </summary>
         public string ReturnType { get; set; } = "Unknown";
 
         /// <summary>
         /// Return type ID for efficient frontend processing.
-        /// 0=Unknown, 1=Value, 2=Vector, 3=Matrix, 4=StringVariable, 5=Various, 6=Function, 7=InlineMacro, 8=MultilineMacro, 9=CustomUnit
+        /// 0=Unknown, 1=Value, 2=Vector, 3=Matrix, 4=CustomUnit, 5=Function, 6=InlineMacro, 7=MultilineMacro, 8=Various
         /// </summary>
         public int ReturnTypeId { get; set; }
 
@@ -922,9 +917,6 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>User-provided descriptions per parameter</summary>
         public List<string>? ParamDescriptions { get; set; }
-
-        /// <summary>Default values parallel to Parameters. null = required, string = default expression.</summary>
-        public List<string?>? Defaults { get; set; }
     }
 
     public class VariableDefinitionDto
@@ -937,13 +929,13 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>
         /// Inferred type name.
-        /// Values: Unknown, Value, Vector, Matrix, StringVariable, Various
+        /// Values: Unknown, Value, Vector, Matrix, Various
         /// </summary>
         public string Type { get; set; } = "Unknown";
 
         /// <summary>
         /// Type ID for efficient frontend processing.
-        /// 0=Unknown, 1=Value, 2=Vector, 3=Matrix, 4=StringVariable, 5=Various
+        /// 0=Unknown, 1=Value, 2=Vector, 3=Matrix, 8=Various
         /// </summary>
         public int TypeId { get; set; }
 

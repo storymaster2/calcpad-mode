@@ -70,8 +70,6 @@ namespace Calcpad.Highlighter.Linter.Models
                 ParameterType.Vector => actual == CalcpadType.Vector,
                 ParameterType.Matrix => actual == CalcpadType.Matrix,
                 ParameterType.Integer => actual == CalcpadType.Value, // Can't distinguish int from float
-                ParameterType.String => actual == CalcpadType.StringVariable || actual == CalcpadType.StringTable,
-                ParameterType.StringTable => actual == CalcpadType.StringTable,
                 ParameterType.Expression => true, // Can't validate expressions
                 _ => true
             };
@@ -89,8 +87,6 @@ namespace Calcpad.Highlighter.Linter.Models
                 ParameterType.Vector => "vector",
                 ParameterType.Matrix => "matrix",
                 ParameterType.Integer => "integer",
-                ParameterType.String => "string",
-                ParameterType.StringTable => "string table",
                 ParameterType.Boolean => "boolean",
                 ParameterType.Expression => "expression",
                 ParameterType.Various => "various",

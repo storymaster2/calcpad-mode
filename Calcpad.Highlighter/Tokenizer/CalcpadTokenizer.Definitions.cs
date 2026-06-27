@@ -208,7 +208,6 @@ namespace Calcpad.Highlighter.Tokenizer
                     {
                         Name = _lintDefName,
                         Params = funcParams,
-                        Defaults = ExtractFunctionParamDefaults(_lintDefLineText, funcParams),
                         LineNumber = _lintDefNameLine,
                         Source = sourceInfo.Source,
                         SourceFile = sourceInfo.SourceFile,
@@ -294,64 +293,6 @@ namespace Calcpad.Highlighter.Tokenizer
             _lintPendingIsConst = false;
             _lintExpectingReadVariable = false;
             _lintPendingReadVariableName = null;
-        }
-
-        /// <summary>
-        /// Parses the (params) section of a function definition line to extract default values.
-        /// Returns a list parallel to paramNames: null = required, string = default value expression.
-        /// Returns null if no parameters have defaults.
-        /// </summary>
-        private static List<string> ExtractFunctionParamDefaults(string line, List<string> paramNames)
-        {
-            if (paramNames == null || paramNames.Count == 0 || string.IsNullOrEmpty(line))
-                return null;
-
-            int openIdx = line.IndexOf('(');
-            if (openIdx < 0) return null;
-
-            // Find matching close paren
-            int depth = 1, closeIdx = -1;
-            for (int i = openIdx + 1; i < line.Length && depth > 0; i++)
-            {
-                if (line[i] == '(') depth++;
-                else if (line[i] == ')') { depth--; if (depth == 0) { closeIdx = i; break; } }
-            }
-            if (closeIdx < 0) return null;
-
-            var paramsSpan = line.AsSpan(openIdx + 1, closeIdx - openIdx - 1);
-            var defaults = new List<string>(paramNames.Count);
-            bool hasDefaults = false;
-
-            // Split by ';' at depth 0, then check each segment for '=' at depth 0
-            int segStart = 0, d = 0;
-            void AddSeg(ReadOnlySpan<char> seg)
-            {
-                seg = seg.Trim();
-                int eqIdx = -1, dd = 0;
-                for (int j = 0; j < seg.Length; j++)
-                {
-                    if (seg[j] == '(') dd++;
-                    else if (seg[j] == ')') dd--;
-                    else if (seg[j] == '=' && dd == 0) { eqIdx = j; break; }
-                }
-                if (eqIdx < 0)
-                    defaults.Add(null);
-                else
-                {
-                    defaults.Add(seg[(eqIdx + 1)..].Trim().ToString());
-                    hasDefaults = true;
-                }
-            }
-            for (int i = 0; i < paramsSpan.Length; i++)
-            {
-                char c = paramsSpan[i];
-                if (c == '(') d++;
-                else if (c == ')') d--;
-                else if (c == ';' && d == 0) { AddSeg(paramsSpan[segStart..i]); segStart = i + 1; }
-            }
-            AddSeg(paramsSpan[segStart..]);
-
-            return hasDefaults ? defaults : null;
         }
 
         /// <summary>

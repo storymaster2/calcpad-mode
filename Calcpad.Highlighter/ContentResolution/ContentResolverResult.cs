@@ -8,12 +8,6 @@ namespace Calcpad.Highlighter.ContentResolution
     {
         public string Name { get; set; }
         public List<string> Params { get; set; }
-
-        /// <summary>
-        /// Default values parallel to Params. null entry = required parameter, string = optional with default.
-        /// </summary>
-        public List<string> Defaults { get; set; }
-
         public List<string> Content { get; set; }
         public int LineNumber { get; set; }
         public string Source { get; set; } // "local" | "include"
@@ -59,12 +53,6 @@ namespace Calcpad.Highlighter.ContentResolution
         /// this contains the block content for validation at call sites.
         /// </summary>
         public CommandBlockInfo CommandBlock { get; set; }
-
-        /// <summary>
-        /// Default values parallel to Params. null entry = required parameter, string = default value expr.
-        /// Null list = all parameters are required.
-        /// </summary>
-        public List<string> Defaults { get; set; }
 
         /// <summary>User-provided description from a metadata comment on the preceding line.</summary>
         public string Description { get; set; }
@@ -141,11 +129,6 @@ namespace Calcpad.Highlighter.ContentResolution
     {
         public int LineNumber { get; set; }
         public int ParamCount { get; set; }
-
-        /// <summary>Number of required parameters (those without defaults).</summary>
-        public int RequiredParamCount { get; set; }
-
-        /// <summary>Ordered parameter names, used for keyword argument validation.</summary>
         public List<string> ParamNames { get; set; } = new();
     }
 
@@ -153,11 +136,6 @@ namespace Calcpad.Highlighter.ContentResolution
     {
         public int LineNumber { get; set; }
         public int ParamCount { get; set; }
-
-        /// <summary>Number of required parameters (those without defaults).</summary>
-        public int RequiredParamCount { get; set; }
-
-        /// <summary>Ordered parameter names, used for keyword argument validation.</summary>
         public List<string> ParamNames { get; set; } = new();
     }
 

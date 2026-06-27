@@ -39,10 +39,6 @@ namespace Calcpad.Highlighter.Linter.Helpers
             @"^\s*\[.+\|.+\]\s*$",
             RegexOptions.Compiled);
 
-        private static readonly Regex StringLiteralPattern = new(
-            @"^\s*""[^""]*""\s*$",
-            RegexOptions.Compiled);
-
         // Functions that return vectors - derived from SnippetRegistry
         private static FrozenSet<string> VectorReturningFunctions => SnippetRegistry.GetVectorReturningFunctions();
 
@@ -77,16 +73,6 @@ namespace Calcpad.Highlighter.Linter.Helpers
         {
             var newType = InferTypeFromExpression(expression, lineNumber);
 
-            // Variables ending with $ are string variables (#string) or string tables (#table).
-            // Distinguish by expression content when type couldn't be inferred from expression alone.
-            if (name.EndsWith("$") && newType == CalcpadType.Unknown)
-            {
-                if (IsTableExpression(expression))
-                    newType = CalcpadType.StringTable;
-                else
-                    newType = CalcpadType.StringVariable;
-            }
-
             // Check if variable already exists with a different type
             if (_variables.TryGetValue(name, out var existing))
             {
@@ -118,7 +104,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// <summary>
         /// Registers a function definition and infers its return type from the expression.
         /// </summary>
-        public VariableInfo RegisterFunction(string name, List<string> parameters, string expression, int lineNumber, int column = 0, string source = "local", bool isConst = false, List<string> defaults = null)
+        public VariableInfo RegisterFunction(string name, List<string> parameters, string expression, int lineNumber, int column = 0, string source = "local", bool isConst = false)
         {
             var returnType = InferTypeFromExpression(expression);
 
@@ -126,7 +112,6 @@ namespace Calcpad.Highlighter.Linter.Helpers
             {
                 Name = name,
                 Parameters = parameters,
-                ParameterDefaults = defaults,
                 Expression = expression,
                 LineNumber = lineNumber,
                 Column = column,
@@ -144,7 +129,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// Registers a function definition with a command block.
         /// The return type is inferred from the last statement in the block.
         /// </summary>
-        public VariableInfo RegisterCommandBlockFunction(string name, List<string> parameters, List<string> statements, int lineNumber, int column = 0, string source = "local", bool isConst = false, List<string> defaults = null)
+        public VariableInfo RegisterCommandBlockFunction(string name, List<string> parameters, List<string> statements, int lineNumber, int column = 0, string source = "local", bool isConst = false)
         {
             // Infer return type from the last statement in the block
             var returnType = CalcpadType.Unknown;
@@ -158,7 +143,6 @@ namespace Calcpad.Highlighter.Linter.Helpers
             {
                 Name = name,
                 Parameters = parameters,
-                ParameterDefaults = defaults,
                 Expression = string.Join("; ", statements ?? new List<string>()),
                 LineNumber = lineNumber,
                 Column = column,
@@ -211,13 +195,12 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// <summary>
         /// Registers an inline macro definition.
         /// </summary>
-        public VariableInfo RegisterInlineMacro(string name, List<string> parameters, string expression, int lineNumber, int column = 0, string source = "local", List<string> defaults = null)
+        public VariableInfo RegisterInlineMacro(string name, List<string> parameters, string expression, int lineNumber, int column = 0, string source = "local")
         {
             var info = new VariableInfo
             {
                 Name = name,
                 Parameters = parameters,
-                ParameterDefaults = defaults,
                 Expression = expression,
                 LineNumber = lineNumber,
                 Column = column,
@@ -232,13 +215,12 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// <summary>
         /// Registers a multiline macro definition.
         /// </summary>
-        public VariableInfo RegisterMultilineMacro(string name, List<string> parameters, int lineNumber, int column = 0, string source = "local", List<string> defaults = null)
+        public VariableInfo RegisterMultilineMacro(string name, List<string> parameters, int lineNumber, int column = 0, string source = "local")
         {
             var info = new VariableInfo
             {
                 Name = name,
                 Parameters = parameters,
-                ParameterDefaults = defaults,
                 LineNumber = lineNumber,
                 Column = column,
                 Source = source,
@@ -381,10 +363,6 @@ namespace Calcpad.Highlighter.Linter.Helpers
                 return CalcpadType.Unknown;
 
             var trimmed = expression.Trim();
-
-            // Check for string literal
-            if (StringLiteralPattern.IsMatch(trimmed))
-                return CalcpadType.StringVariable;
 
             // Check for matrix literal first (contains |)
             if (MatrixLiteralPattern.IsMatch(trimmed))
@@ -719,27 +697,6 @@ namespace Calcpad.Highlighter.Linter.Helpers
                 return identifier;
 
             return string.Empty;
-        }
-
-        /// <summary>
-        /// Checks if an expression represents a string table value.
-        /// Matches table$(...), split$(...), or table literal ['...' | '...'] patterns.
-        /// </summary>
-        private static bool IsTableExpression(string expression)
-        {
-            if (string.IsNullOrWhiteSpace(expression))
-                return false;
-
-            var trimmed = expression.TrimStart();
-            if (trimmed.StartsWith("table$(", StringComparison.OrdinalIgnoreCase) ||
-                trimmed.StartsWith("split$(", StringComparison.OrdinalIgnoreCase))
-                return true;
-
-            // Table literal: starts with [ and contains | (string table rows)
-            if (trimmed.StartsWith("[") && trimmed.Contains('|') && trimmed.Contains('\''))
-                return true;
-
-            return false;
         }
 
         /// <summary>

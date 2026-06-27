@@ -16,7 +16,6 @@ namespace Calcpad.Highlighter.Tokenizer
         // Macro collection state
         private string _macroCurrName;
         private List<string> _macroCurrParams;
-        private List<string> _macroCurrDefaults;
         private int _macroCurrStartLine;
         private bool _macroCurrIsInline;
         private string _macroCurrInlineContent;
@@ -31,7 +30,6 @@ namespace Calcpad.Highlighter.Tokenizer
         {
             _macroCurrName = null;
             _macroCurrParams = null;
-            _macroCurrDefaults = null;
             _macroCurrStartLine = -1;
             _macroCurrIsInline = false;
             _macroCurrInlineContent = null;
@@ -84,7 +82,6 @@ namespace Calcpad.Highlighter.Tokenizer
                     _macroCurrCollectingBody = false;
                     _macroCurrName = null;
                     _macroCurrParams = null;
-                    _macroCurrDefaults = null;
                     _macroCurrContentLines = new List<string>();
                 }
                 else
@@ -104,7 +101,6 @@ namespace Calcpad.Highlighter.Tokenizer
                 _macroCurrIsInline = false;
                 _macroCurrName = null;
                 _macroCurrParams = null;
-                _macroCurrDefaults = null;
                 _macroCurrInlineContent = null;
                 emittedMacro = true;
             }
@@ -112,9 +108,7 @@ namespace Calcpad.Highlighter.Tokenizer
             // If we saw #def this line but no '=' (multiline start), begin body collection
             if (!emittedMacro && _state.HasMacro && _macroCurrName != null && !_macroCurrIsInline)
             {
-                var (paramNames, paramDefaults) = ExtractMacroParamsWithDefaults(_state.Text);
-                _macroCurrParams = paramNames;
-                _macroCurrDefaults = paramDefaults;
+                _macroCurrParams = ExtractMacroParams(_state.Text);
                 _macroCurrCollectingBody = true;
                 // Don't clear metadata — it will be consumed when the macro is emitted
                 return;
@@ -146,7 +140,6 @@ namespace Calcpad.Highlighter.Tokenizer
             {
                 Name = _macroCurrName,
                 Params = _macroCurrParams ?? new List<string>(),
-                Defaults = _macroCurrDefaults,
                 Content = isMultiline
                     ? new List<string>(_macroCurrContentLines)
                     : new List<string> { _macroCurrInlineContent ?? string.Empty },
@@ -179,23 +172,10 @@ namespace Calcpad.Highlighter.Tokenizer
             if (!_result.UserDefinedMacros.ContainsKey(_macroCurrName))
             {
                 var paramList = _macroCurrParams ?? new List<string>();
-                int requiredCount;
-                if (_macroCurrDefaults != null)
-                {
-                    requiredCount = 0;
-                    foreach (var d in _macroCurrDefaults)
-                        if (d is null) requiredCount++;
-                }
-                else
-                {
-                    requiredCount = paramList.Count;
-                }
-
                 _result.UserDefinedMacros[_macroCurrName] = new ContentResolution.MacroInfo
                 {
                     LineNumber = _macroCurrStartLine,
                     ParamCount = paramList.Count,
-                    RequiredParamCount = requiredCount,
                     ParamNames = paramList
                 };
             }

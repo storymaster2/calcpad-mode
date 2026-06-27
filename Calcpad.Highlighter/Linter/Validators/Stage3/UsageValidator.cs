@@ -587,34 +587,13 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                             if (argList.Count == 1 && argList[0].Length == 0)
                                 argList.Clear();
 
-                            var keywordArgNames = new List<string>();
-                            foreach (var rawArg in argList)
-                            {
-                                if (IsFunctionKeywordArg(rawArg, funcInfo, out var kwName))
-                                    keywordArgNames.Add(kwName);
-                            }
-
                             int totalActual = argList.Count;
-                            if (totalActual < funcInfo.RequiredParamCount || totalActual > funcInfo.ParamCount)
+                            if (totalActual != funcInfo.ParamCount)
                             {
                                 var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
                                 if (endCol <= token.Column + token.Length) endCol = token.Column + token.Length;
-                                var expectRange = funcInfo.RequiredParamCount == funcInfo.ParamCount
-                                    ? funcInfo.ParamCount.ToString()
-                                    : funcInfo.RequiredParamCount + "-" + funcInfo.ParamCount;
                                 result.AddError(i, token.Column, endCol, "CPD-3302",
-                                    "'" + funcName + "' expects " + expectRange + " parameter(s) but got " + totalActual);
-                            }
-
-                            foreach (var kwName in keywordArgNames)
-                            {
-                                if (!funcInfo.ParamNames.Contains(kwName, StringComparer.OrdinalIgnoreCase))
-                                {
-                                    var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
-                                    if (endCol <= token.Column + token.Length) endCol = token.Column + token.Length;
-                                    result.AddError(i, token.Column, endCol, "CPD-3315",
-                                        "'" + funcName + "' has no parameter named '" + kwName + "'");
-                                }
+                                    "'" + funcName + "' expects " + funcInfo.ParamCount + " parameter(s) but got " + totalActual);
                             }
                         }
                     }
@@ -664,45 +643,20 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                         continue;
                     }
 
-                    // Check parameter count and keyword arguments
+                    // Check parameter count
                     if (stage3.DefinedMacros.TryGetValue(macroName, out MacroInfo macroInfo))
                     {
                         var rawArgs = ParseMacroCallArgStrings(line, token.Column + token.Length);
                         if (rawArgs == null) rawArgs = new List<string>();
 
-                        int positionalCount = 0;
-                        var keywordArgNames = new List<string>();
-
-                        foreach (var rawArg in rawArgs)
-                        {
-                            if (IsKeywordArg(rawArg.Trim(), out var kwName))
-                                keywordArgNames.Add(kwName);
-                            else
-                                positionalCount++;
-                        }
-
                         int totalActual = rawArgs.Count;
-                        var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
-                        if (endCol <= token.Column + token.Length)
-                            endCol = token.Column + token.Length;
-
-                        if (totalActual < macroInfo.RequiredParamCount || totalActual > macroInfo.ParamCount)
+                        if (totalActual != macroInfo.ParamCount)
                         {
-                            var expectedStr = macroInfo.RequiredParamCount == macroInfo.ParamCount
-                                ? macroInfo.ParamCount.ToString()
-                                : macroInfo.RequiredParamCount + "-" + macroInfo.ParamCount;
+                            var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
+                            if (endCol <= token.Column + token.Length)
+                                endCol = token.Column + token.Length;
                             result.AddError(i, token.Column, endCol, "CPD-3304",
-                                "'" + macroName + "' expects " + expectedStr + " parameter(s) but got " + totalActual);
-                        }
-
-                        // Validate keyword argument names
-                        foreach (var kwName in keywordArgNames)
-                        {
-                            if (!macroInfo.ParamNames.Contains(kwName, StringComparer.Ordinal))
-                            {
-                                result.AddError(i, token.Column, endCol, "CPD-3314",
-                                    "'" + macroName + "' has no parameter named '" + kwName + "'");
-                            }
+                                "'" + macroName + "' expects " + macroInfo.ParamCount + " parameter(s) but got " + totalActual);
                         }
                     }
                 }
@@ -742,33 +696,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             return ParameterParser.CountParameters(paramsStr);
         }
 
-        private static bool IsFunctionKeywordArg(string arg, FunctionInfo funcInfo, out string kwName)
-        {
-            // Detect: "identifier = expr" where identifier is a parameter name
-            // Handles optional whitespace: "x=5", "x = 5"
-            var trimmed = arg.AsSpan().Trim();
-            int i = 0;
-            while (i < trimmed.Length && (char.IsLetterOrDigit(trimmed[i]) || trimmed[i] == '_')) i++;
-            if (i > 0)
-            {
-                var potentialName = trimmed[..i];
-                var rest = trimmed[i..].TrimStart();
-                if (!rest.IsEmpty && rest[0] == '=')
-                {
-                    var nameStr = potentialName.ToString();
-                    if (funcInfo.ParamNames.Contains(nameStr, StringComparer.OrdinalIgnoreCase))
-                    {
-                        kwName = nameStr;
-                        return true;
-                    }
-                }
-            }
-            kwName = null;
-            return false;
-        }
-
-
-
         /// <summary>
         /// Returns the raw argument strings for a macro call, or null if no opening paren found.
         /// </summary>
@@ -777,23 +704,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             var (found, paramsStr) = ParsingHelpers.ExtractParamsString(line, afterMacroName);
             if (!found) return null;
             return ParameterParser.ParseMacroParameters(paramsStr);
-        }
-
-        /// <summary>
-        /// Returns true if arg is a keyword argument (name$=value pattern).
-        /// Sets kwName to the parameter name including the $ suffix.
-        /// </summary>
-        private static bool IsKeywordArg(string arg, out string kwName)
-        {
-            int idx = 0;
-            while (idx < arg.Length && (char.IsLetterOrDigit(arg[idx]) || arg[idx] == '_')) idx++;
-            if (idx > 0 && idx + 1 < arg.Length && arg[idx] == '$' && arg[idx + 1] == '=')
-            {
-                kwName = arg[..(idx + 1)]; // name including $
-                return true;
-            }
-            kwName = null;
-            return false;
         }
 
         /// <summary>

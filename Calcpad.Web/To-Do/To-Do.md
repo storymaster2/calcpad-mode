@@ -63,6 +63,9 @@
 
 -   Test snippet updates
 
+## Calcpad.Web Desktop App
+-   Add missing sourceFilePath plumbing such as variable/macro scanning
+
 ## Calcpad.Highlighter
 
 -   Order greek symbols by greek alphabet instead of english
