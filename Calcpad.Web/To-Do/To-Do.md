@@ -1,20 +1,18 @@
 # To-Do
 
-## Remaining before deployment
+> Hosted/Docker/multi-user/auth/S3 deployment work has moved to the `calcpad-experimental` branch. This branch is localhost-only; items below are scoped to the local-mode runtime.
+
+## General
 
 -   Add error logging that passes Calcpad errors to the frontend even if they aren't visible in the webview
--   Audit Calcpad.Core for shared mutable state that races under concurrent server requests. Known offender: `MacroParser.Macros` is a `static` dictionary cleared and repopulated per `Parse(..., includeLine == 0)` call, so two simultaneous requests stomp each other. There are likely other instances. This needs a broader refactor (e.g. instance-scoped state or request-scoped parser pools) before Calcpad.Web is exposed to real traffic.
+-   Audit Calcpad.Core for shared mutable state that races under concurrent local requests. Known offender: `MacroParser.Macros` is a `static` dictionary cleared and repopulated per `Parse(..., includeLine == 0)` call, so two simultaneous requests stomp each other. Less acute in single-user local mode but still a correctness bug if two editor panes hit the server concurrently.
 
 ### To Test/Review
 
 -   Add HTML table styling when a table is called in the code
 -   Update documentation for new features
 -   Get desktop version usable so new features can be tested and vs code can be used as a fallback.
-
-## General
-
 -   Add better documentation for using vs code features
--   S3 client = AWSSDK.S3 (done); default Docker backend = Garage with native bucket versioning (done). Re-evaluate RustFS once distributed mode ships.
 
 ## calcpad-frontend
 
@@ -54,25 +52,16 @@
 
 ## Calcpad.Web
 
--   Do a deep investigation on what is needed to avoid DDoS, provide extra security to the backend, and provide file size/rate limits/etc.
--   Add exception handling for filesize limits on API endpoints.
--   Finish adding CalcpadAuth to Calcpad.Web. This will allow secure access to API resources (such as S3 storage or cu) using SSO.
--   CalcpadS3 should be in a separate folder (with a frontend built into vs code). However, make config in Calcpad.Core that allows #include and #read to directly pull files from s3. Example: #include myfile.cpd should check 1. Local files, 2. File cache sent from client. 3. CalcpadS3 if config is available.
--   Write/Append should prompt a ZIP download when using Calcpad.Server with the Linux build rather than appending to the local filepath (for Docker, this makes no sense). Make an endpoint to do this and add a button to vscode. Add a setting to Calcpad.Core to control if write/append content is cached for download or directly affecting files.
--   Make Docker config that allows using MinIO or external S3 provider.
--   Add password or OAuth to Docker.
--   Add cloudflare tunnel config as option in Docker.
--   Refactor CalcpadAuth routing to work with \<service:endpoint> structure and make router.json config to work with any API calls (such as GET vs POST and auth/content type headers). Body is passed from Calcpad itself.
--   Add token management config with auth endpoints for various tokens. MAKE SURE TOKENS ARE ONLY STORED IN SERVER MEMORY AND SELECTED BASED ON CONFIG SETTINGS. Use handlebars {{jwt.calcpad}} syntax to select which token to use in API calls. This is the only time handlebars are needed (anything only in server program memory), as all other params should be passed from Calcpad as JSON in the body of the request.
--   Don't add getting JS variables from the webview as a string, instead, use the authenticated API to do complex intermediate steps with JS or C# via server-based deployments. This is more reliable and secure.
-- Add support for other languages, especially Chinese as there is a large Chinese community.
+-   Write/Append: prompt a download (ZIP for multiple files) when running under the Linux build instead of writing to the local filepath. Add a setting in Calcpad.Core to control whether write/append output is cached for download or applied directly to disk.
+-   Add support for other languages, especially Chinese as there is a large Chinese community.
+
+> Hosted-mode items (DDoS hardening, file-size/rate limits, CalcpadAuth SSO, S3 backend, Docker config, OAuth, Cloudflare tunnel, `<service:endpoint>` routing, token management) live on `calcpad-experimental`.
 
 ### Bugs
 
 ### Testing
 
 -   Test snippet updates
--   Add disk based caching above a certain file size to prevent using too much memory.
 
 ## Calcpad.Highlighter
 

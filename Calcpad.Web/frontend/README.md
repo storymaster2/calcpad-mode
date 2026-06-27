@@ -1,5 +1,7 @@
 # CalcPad Web Frontend
 
+> **Localhost-only build.** This branch (`calcpad-web`) only supports running Calcpad.Server bound to a loopback address. The backend's startup loopback guard in [Program.cs](../backend/Program.cs) throws `InvalidOperationException` if the resolved bind URL is anything other than `localhost`, `127.0.0.0/8`, or `::1`. Multi-user / hosted / Docker deployment, auth, and shared file storage live on the `calcpad-experimental` branch.
+
 A monorepo containing all frontend projects for CalcPad: a VS Code extension, a standalone web editor, a desktop application, and a shared library that powers them all.
 
 ## Projects
@@ -176,9 +178,8 @@ The backend REST API is documented in [API_SCHEMA.md](API_SCHEMA.md). Key endpoi
 | `/api/calcpad/highlight` | POST | Syntax tokenization |
 | `/api/calcpad/snippets` | GET | Autocomplete snippets by category |
 | `/api/calcpad/pdf` | POST | Generate PDF from HTML |
-| `/api/calcpad/resolve-content` | POST | Resolve includes and macros |
-| `/api/calcpad/refresh-cache` | POST | Clear remote content cache |
-| `/api/auth/login` | POST | Authenticate (optional) |
+| `/api/calcpad/docx` | POST | Generate DOCX from source |
+| `/api/calcpad/prettify` | POST | Pretty-print Calcpad source |
 
 ---
 

@@ -1,5 +1,7 @@
 f# Calcpad.Core review — `calcpad-web` vs `main`
 
+> Historical document. This was written before the `calcpad-web` branch was scoped to localhost-only mode. Items referencing `ClientFileCache` and the disk cache (`AddEntry`, parallel-array refactor, `TryGetBytes` refetch error swallow, disk-cache write duplication) describe code that has since been removed from Calcpad.Core entirely when the hosted-mode plumbing moved to `calcpad-experimental`. The fixes are still valid history for that branch; on this branch the underlying class no longer exists.
+
 Findings from auditing the Calcpad.Core diff between `calcpad-web` and `origin/main`.
 The three highest-impact items (stale disk cache, `_includeStack` case sensitivity, and disk-cache write duplication) are tracked in the active session to-do list. The rest are documented here.
 

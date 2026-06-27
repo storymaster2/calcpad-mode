@@ -82,15 +82,8 @@ namespace Calcpad.Core
             Include,
         }
         private readonly List<int> _lineNumbers = [];
-        // Filesystem path comparison must match the host OS to avoid false-positive circular
-        // detection on case-sensitive filesystems (Linux) or missed detection on Windows.
-        private static readonly StringComparer PathComparer =
-            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        private readonly HashSet<string> _includeStack = new(PathComparer);
         private static readonly Dictionary<string, Macro> Macros = new(StringComparer.Ordinal);
         public Func<string, Queue<string>, string> Include;
-        public ClientFileCache ClientFileCache { get; set; }
-        public string SourceFilePath { get; set; }
 
         private static Keywords GetKeyword(ReadOnlySpan<char> s)
         {
@@ -115,7 +108,6 @@ namespace Calcpad.Core
                 sb = new StringBuilder(sourceCode.Length);
                 Macros.Clear();
                 _lineNumbers.Clear();
-                _includeStack.Clear();
                 _parsedLineNumber = 0;
             }
             var macroBuilder = new StringBuilder(1000);
@@ -218,7 +210,11 @@ namespace Calcpad.Core
                 if (n < 9)
                     n = lineContent.Length;
 
-                var rawFileName = lineContent[8..n].Trim().ToString();
+                var includeFileName = lineContent[8..n].Trim().ToString();
+                includeFileName = Path.GetFullPath(Environment.ExpandEnvironmentVariables(includeFileName));
+                var fileExists = File.Exists(includeFileName);
+                if (!fileExists)
+                    AppendError(lineContent, Messages.File_not_found);
 
                 Queue<string> fields = new();
                 if (nf1 > 0)
@@ -233,68 +229,8 @@ namespace Calcpad.Core
                             fields.Enqueue(item.Trim().ToString());
                     }
                 }
-
-                // Resolve relative to source file directory when available
-                var sourceDir = !string.IsNullOrEmpty(SourceFilePath)
-                    ? Path.GetDirectoryName(SourceFilePath) : null;
-
-                // Try filesystem first
-                bool fileExists = false;
-                string resolvedPath = null;
-                try
-                {
-                    var expanded = Environment.ExpandEnvironmentVariables(rawFileName);
-                    resolvedPath = sourceDir != null
-                        ? Path.GetFullPath(expanded, sourceDir)
-                        : Path.GetFullPath(expanded);
-                    fileExists = File.Exists(resolvedPath);
-                }
-                catch { /* Not a valid filesystem path (e.g., URLs, API syntax) */ }
-
-                // Detect circular includes
-                var includeKey = resolvedPath ?? rawFileName;
-                if (!_includeStack.Add(includeKey))
-                {
-                    AppendError(lineContent, string.Format(Messages.Circular_include_detected_0, rawFileName));
-                    return;
-                }
-
-                try
-                {
-                    if (fileExists)
-                    {
-                        ParseWithSourcePath(Include(resolvedPath, fields), resolvedPath);
-                        return;
-                    }
-
-                    var cacheKey = resolvedPath ?? rawFileName;
-                    var fallbackKey = resolvedPath != null ? rawFileName : null;
-                    if (ClientFileCache != null && ClientFileCache.TryGetContentMultiKey(cacheKey, fallbackKey, out var cachedContent))
-                    {
-                        ParseWithSourcePath(cachedContent, resolvedPath);
-                        return;
-                    }
-
-                    if (ClientFileCache != null && ClientFileCache.TryGetErrorMultiKey(cacheKey, fallbackKey, out var cachedError))
-                    {
-                        AppendError(lineContent, cachedError);
-                        return;
-                    }
-
-                    AppendError(lineContent, Messages.File_not_found);
-                }
-                finally
-                {
-                    _includeStack.Remove(includeKey);
-                }
-            }
-
-            void ParseWithSourcePath(string content, string newSourcePath)
-            {
-                var savedSourcePath = SourceFilePath;
-                SourceFilePath = newSourcePath;
-                try { Parse(content, out _, sb, lineNumber, addLineNumbers); }
-                finally { SourceFilePath = savedSourcePath; }
+                if (fileExists)
+                    Parse(Include(includeFileName, fields), out _, sb, lineNumber, addLineNumbers);
             }
 
             void ParseDef(ReadOnlySpan<char> lineContent)

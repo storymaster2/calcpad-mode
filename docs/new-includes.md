@@ -1,8 +1,8 @@
-# Recursive Includes and API Routing
+# Recursive Includes
 
-> Calcpad.Web only (web editor and VS Code extension). Not available in the WPF desktop application.
+> Calcpad.Web only (web editor and VS Code extension). Not available in the WPF desktop application. This branch (`calcpad-web`) is localhost-only — the hosted/multi-user variant of remote routing lives on `calcpad-experimental`.
 
-`#include` and `#read` now support recursive resolution, remote URLs, and a structured `<service:endpoint>` syntax for API calls.
+`#include` and `#read` support recursive resolution and direct HTTP/HTTPS URLs.
 
 ## Recursive `#include` resolution
 
@@ -34,52 +34,13 @@ Include content directly from the web:
 #include "https://example.com/shared-calcs.cpd"
 ```
 
-- Only `http://` and `https://` are recognized
+- Only `http://` and `https://` are recognized — any other scheme is rejected
 - Default timeout: **10 seconds** (configurable per request via `apiTimeoutMs`)
-- User-Agent: `Calcpad/1.0` (static fetch) or `Calcpad-Server/1.0` (routed API calls)
+- User-Agent: `Calcpad/1.0`
 - Non-2xx responses throw an error with status code and reason phrase
+- Implemented by the single static helper [`Router.FetchUrlAsync`](../Calcpad.Web/backend/Services/Router.cs)
 
-## `<service:endpoint>` routing syntax
-
-Structured remote calls are written as:
-
-```text
-#include "<weather_api:forecast>{\"city\":\"Seattle\"}"
-```
-
-Parsed as `serviceName:endpointName` plus a trailing request body. The body determines the HTTP method:
-
-- Body starts with `{` or `[` → **POST** with `Content-Type: application/json`
-- Otherwise → **GET**
-
-### Routing config structure
-
-```json
-{
-  "weather_api": {
-    "base_url": "https://api.weather.com",
-    "auth": "jwt",
-    "endpoints": {
-      "current":  "/v1/current",
-      "forecast": "/v1/forecast"
-    }
-  }
-}
-```
-
-- Keys use `snake_case`
-- `auth: "jwt"` causes `Authorization: Bearer <token>` to be added from the request's auth settings
-- Final URL is `base_url + endpoint_template`
-
-## Pre-fetching and caching
-
-Before the main conversion runs, all remote `#include` and `#read` targets are fetched asynchronously in parallel.
-
-- **Global cache** — shared across all requests, keyed by URL or `<service:endpoint>` token
-- **Per-request `ClientFileCache`** — base64-encoded file contents supplied by the client
-- **Disk cache** — files over ~1 MB are offloaded to `{AppContext.BaseDirectory}/cache/` as SHA-256-keyed `.cache` files
-- Cache files older than 24 hours are deleted by an hourly cleanup service
-- Cache cleared manually via `POST /api/calcpad/refresh-cache` (single key, multiple keys, or full flush)
+There is no `<service:endpoint>` routing layer, no JWT/auth headers, no domain allowlist, and no server-side remote-content cache on this branch.
 
 ## Source mapping and error attribution
 
@@ -93,4 +54,4 @@ Every expanded line tracks its origin through three maps so diagnostics trace er
 | Content | Calcpad source code | CSV, TSV, Excel, JSON data |
 | Scope filtering | `#local` blocks stripped | n/a |
 | Output | Nested source inlined | Directive preserved; produces a matrix/vector variable |
-| Pre-fetching | Yes | Yes |
+| Remote URL support | Yes | Yes |

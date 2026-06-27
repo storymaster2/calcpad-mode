@@ -935,3 +935,41 @@ The HTML preview pane previously had a single mode (full wrapped document). It n
 - **Unwrapped** — body markup only, via the new [`convertUnwrapped`](frontend/calcpad-frontend/src/api/client.ts) method that hits `/api/calcpad/convert-unwrapped`.
 
 A segmented control on the preview-pane toolbar lets the user pick a mode, with an `.active` style added in [styles/app.css](frontend/calcpad-web/src/styles/app.css). The selection persists via `setExtraSetting('previewMode', mode)` — `Neutralino.storage` on the desktop, `localStorage` on the web — and the desktop's `View → Preview Mode →` menu shows a checkmark next to the active item, rebuilt whenever the mode changes.
+
+---
+
+## 20. Localhost-Only Branch Split
+
+The `calcpad-web` branch was scoped down to a local single-user runtime. The hosted/multi-user/Docker variant — auth, S3 storage, the API router, per-user file caching — was split off to a separate `calcpad-experimental` branch where that work can continue without dragging deployment surface into the local mode that ships with the VS Code extension and desktop wrapper.
+
+### 20.1 Startup Loopback Guard
+
+[Program.cs](backend/Program.cs) now resolves the configured bind URL (`--urls` / `ASPNETCORE_URLS` / `CALCPAD_PORT`) and throws `InvalidOperationException` at startup if it does not resolve to `localhost`, `127.0.0.0/8`, or `::1`. Any attempt to expose the server to a LAN address, `0.0.0.0`, or a public hostname fails fast with a clear error rather than silently binding.
+
+### 20.2 Backend Removals
+
+Deleted from this branch:
+
+- **Controllers**: `AuthController`, `UserController`, `FilesController`
+- **Services**: `AuthService`, `IFileStorageService` / `S3FileStorageService`, `DiskCacheCleanupService`, `IncludeResolver`, and the `Router` instance methods (`RoutingConfig`, `AuthSettings`)
+- **Data**: `CalcpadAuthDbContext`, every type under `Models/Auth/*`, `FileEntry`, `S3Options`
+- **Endpoints**: `/api/calcpad/refresh-cache`, `/api/calcpad/resolve-content`, `/api/calcpad/debug-raw-code`
+- **DTO fields**: `clientFileCache`, `authSettings`, `includeFiles` removed from every remaining request type (`sourceFilePath` is kept — the server uses it to resolve relative `#include` against the parent file's directory)
+- **Config**: `Jwt`, `Auth`, `Storage`, `S3` sections dropped from `appsettings.json`
+- **Packages**: EF Core, SQLite, JWT bearer, and AWS SDK S3 packages dropped from the backend `.csproj`
+- **Deploy assets**: `Dockerfile`, `docker-compose.yml`, `garage.toml`, `garage-init.sh`, `.dockerignore`, and every `.env*` file
+
+`Router` is now a static helper exposing a single `FetchUrlAsync` method for `http://` / `https://` `#include` directives. There is no API routing layer, no JWT, no domain allowlist, and no server-side remote-content cache on this branch.
+
+### 20.3 Frontend Removals
+
+Removed from the shared frontend library and its consumers:
+
+- **UI**: the entire `CalcpadFilesTab.vue` (S3 files tab) and all S3 message handlers
+- **Types**: `S3User`, `S3File`, `S3State`, `S3Config` deleted from `ui.ts`; the `ClientFileCache` type alias removed
+- **API client**: `getStoredS3JWT`, `refreshCache()`, and the `auth: { url, jwt }` block in `buildApiSettings`
+- **Services**: `file-cache.ts` deleted in full (`buildClientFileCache` / `buildClientFileCacheFromContent`)
+
+### 20.4 Documentation
+
+Refreshed [backend/README.md](backend/README.md), [backend/API_SCHEMA.md](backend/API_SCHEMA.md), [frontend/README.md](frontend/README.md), [frontend/API_SCHEMA.md](frontend/API_SCHEMA.md), [../docs/new-web-deployment.md](../docs/new-web-deployment.md), and [../docs/new-includes.md](../docs/new-includes.md) to match the new surface and added a "Localhost-only build" notice at the top of each user-facing doc. Earlier sections of this CHANGELOG (notably 5, 8, 9, 10) describe the hosted-mode features as they were on this branch before the strip — those entries remain as historical record; the current behavior is what this section describes.

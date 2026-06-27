@@ -1,11 +1,9 @@
 <template>
   <div class="calcpad-vue-ui">
     <div class="tab-container">
-      <!-- TODO: Remove v-show condition after Files feature is fully developed -->
       <button
         v-for="tab in tabs"
         :key="tab.id"
-        v-show="tab.id !== 'files'"
         :class="['tab', { active: activeTab === tab.id }]"
         @click="switchTab(tab.id)"
       >
@@ -56,9 +54,6 @@
         :loading="variablesLoading"
         @insert-text="handleInsertText"
       />
-      <CalcpadFilesTab
-        v-else-if="activeTab === 'files'"
-      />
       <CalcpadPdfTab
         v-else-if="activeTab === 'pdf'"
         :pdf-settings="pdfSettings"
@@ -95,7 +90,6 @@ import CalcpadInsertTab from './CalcpadInsertTab.vue'
 import CalcpadTocTab from './CalcpadTocTab.vue'
 import CalcpadSettingsTab from './CalcpadSettingsTab.vue'
 import CalcpadVariablesTab from './CalcpadVariablesTab.vue'
-import CalcpadFilesTab from './CalcpadFilesTab.vue'
 import CalcpadPdfTab from './CalcpadPdfTab.vue'
 import CalcpadFormattingTab from './CalcpadFormattingTab.vue'
 import CalcpadExportTab from './CalcpadExportTab.vue'
@@ -136,7 +130,6 @@ const tabs: Tab[] = [
   { id: 'toc', label: 'TOC' },
   { id: 'settings', label: 'Settings' },
   { id: 'variables', label: 'Variables' },
-  { id: 'files', label: 'Files' },
   { id: 'pdf', label: 'PDF' },
   { id: 'formatting', label: 'Formatting' },
   { id: 'export', label: 'Export' }

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { CalcpadApiClient, buildClientFileCacheFromContent, DEFAULT_PDF_SETTINGS } from 'calcpad-frontend';
+import { CalcpadApiClient, DEFAULT_PDF_SETTINGS } from 'calcpad-frontend';
 import type { PdfSettings as FrontendPdfSettings } from 'calcpad-frontend';
 import { CalcpadServerLinter } from './calcpadServerLinter';
 import { CalcpadSemanticTokensProvider, semanticTokensLegend } from './calcpadSemanticTokensProvider';
@@ -431,12 +431,6 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         outputChannel.appendLine(`Server URL: ${apiBaseUrl}`);
         outputChannel.appendLine(`Settings retrieved: ${JSON.stringify(settings)}`);
 
-        // Build client file cache for referenced files
-        const vsFileSystem = new VSCodeFileSystem();
-        const vsLogger = new VSCodeLogger(outputChannel);
-        const sourceDir = path.dirname(sourceFileUri.fsPath);
-        const clientFileCache = await buildClientFileCacheFromContent(content, sourceDir, vsFileSystem, vsLogger, '[Convert]');
-
         // Select API endpoint based on unwrapped parameter
         const endpoint = unwrapped ? '/api/calcpad/convert-unwrapped' : '/api/calcpad/convert';
         outputChannel.appendLine(`Making API call to ${endpoint}...`);
@@ -450,7 +444,6 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
                 settings: settings,
                 theme: theme,
                 forceUnwrappedCode: unwrapped,
-                clientFileCache: clientFileCache,
                 sourceFilePath: sourceFileUri.fsPath
             }),
             signal: AbortSignal.timeout(10000)
@@ -544,15 +537,9 @@ async function generatePdfToFile(
 
     const settings = await settingsManager.getApiSettings();
 
-    progress?.report({ increment: 10, message: 'Loading referenced files...' });
-
-    // Build client file cache for referenced files
-    const vsFileSystem = new VSCodeFileSystem();
-    const vsLogger = new VSCodeLogger(outputChannel);
-    const sourceDir = path.dirname(sourceFileUri.fsPath);
-    const clientFileCache = await buildClientFileCacheFromContent(documentContent, sourceDir, vsFileSystem, vsLogger, '[PDF]');
-
     progress?.report({ increment: 20, message: 'Converting to HTML...' });
+
+    const sourceDir = path.dirname(sourceFileUri.fsPath);
 
     // Step 1: Convert calcpad content to HTML
     const htmlResponse = await fetch(`${apiBaseUrl}/api/calcpad/convert`, {
@@ -561,7 +548,6 @@ async function generatePdfToFile(
         body: JSON.stringify({
             content: documentContent,
             settings: settings,
-            clientFileCache: clientFileCache,
             sourceFilePath: sourceFileUri.fsPath,
             forPrint: true
         }),
@@ -688,10 +674,6 @@ async function saveSourceHtml() {
         }, async () => {
             const settings = await settingsManager.getApiSettings();
             const documentContent = activeEditor.document.getText();
-            const vsFileSystem = new VSCodeFileSystem();
-            const vsLogger = new VSCodeLogger(outputChannel);
-            const sourceDir = path.dirname(activeEditor.document.uri.fsPath);
-            const clientFileCache = await buildClientFileCacheFromContent(documentContent, sourceDir, vsFileSystem, vsLogger, '[HTML]');
 
             const response = await fetch(`${apiBaseUrl}/api/calcpad/convert`, {
                 method: 'POST',
@@ -699,7 +681,6 @@ async function saveSourceHtml() {
                 body: JSON.stringify({
                     content: documentContent,
                     settings,
-                    clientFileCache,
                     sourceFilePath: activeEditor.document.uri.fsPath,
                     forPrint: false,
                 }),
@@ -760,10 +741,6 @@ async function saveDocx() {
         }, async () => {
             const settings = await settingsManager.getApiSettings();
             const documentContent = activeEditor.document.getText();
-            const vsFileSystem = new VSCodeFileSystem();
-            const vsLogger = new VSCodeLogger(outputChannel);
-            const sourceDir = path.dirname(activeEditor.document.uri.fsPath);
-            const clientFileCache = await buildClientFileCacheFromContent(documentContent, sourceDir, vsFileSystem, vsLogger, '[DOCX]');
 
             const response = await fetch(`${apiBaseUrl}/api/calcpad/docx`, {
                 method: 'POST',
@@ -771,7 +748,6 @@ async function saveDocx() {
                 body: JSON.stringify({
                     content: documentContent,
                     settings,
-                    clientFileCache,
                     sourceFilePath: activeEditor.document.uri.fsPath,
                     forPrint: true,
                 }),
@@ -1420,12 +1396,6 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
             }
         }
-
-        // Clear server-side caches (remote content + disk file cache)
-        const cacheCleared = await apiClient.refreshCache();
-        outputChannel.appendLine(cacheCleared
-            ? '[Refresh] Server cache cleared'
-            : '[Refresh] Failed to clear server cache');
 
         const activeEditor = vscode.window.activeTextEditor;
         if (activeEditor) {

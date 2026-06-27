@@ -2,21 +2,11 @@
 // Based on API_SCHEMA.md
 
 // ============================================
-// Client File Cache Types
-// ============================================
-
-// Simple dictionary mapping filename -> base64-encoded content.
-// Files larger than 1 MB are not cached — Core reads them from disk instead.
-export type ClientFileCache = Record<string, string>;
-
-// ============================================
 // Lint API Types
 // ============================================
 
 export interface LintRequest {
     content: string;
-    includeFiles?: Record<string, string>;
-    clientFileCache?: ClientFileCache;
     sourceFilePath?: string;
 }
 
@@ -60,8 +50,6 @@ export interface PrettifyResponse {
 export interface HighlightRequest {
     content: string;
     includeText?: boolean;
-    includeFiles?: Record<string, string>;
-    clientFileCache?: ClientFileCache;
     sourceFilePath?: string;
 }
 
@@ -191,8 +179,6 @@ export enum CalcpadTokenType {
 
 export interface DefinitionsRequest {
     content: string;
-    includeFiles?: Record<string, string>;
-    clientFileCache?: ClientFileCache;
     sourceFilePath?: string;
 }
 

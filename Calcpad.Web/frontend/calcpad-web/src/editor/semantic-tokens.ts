@@ -26,7 +26,7 @@ export function registerSemanticTokensProvider(
             const content = model.getValue();
             const truncatedContent = truncateBase64Content(content);
             const ctx = getFileContext ? await getFileContext(content) : {};
-            const tokens = await apiClient.highlight(truncatedContent, false, ctx.clientFileCache, ctx.sourceFilePath);
+            const tokens = await apiClient.highlight(truncatedContent, false, ctx.sourceFilePath);
 
             if (!tokens || tokens.length === 0) {
                 return { data: new Uint32Array(0) };

@@ -440,6 +440,31 @@ export class NeutralinoServerManager {
         }
     }
 
+    /**
+     * Strip Mark-of-the-Web from every file under the server directory via
+     * PowerShell's Unblock-File. Returns true if the sweep ran cleanly so
+     * start() can retry; false (or thrown) means the user still has to
+     * unblock manually. -Recurse covers the runtime DLLs SmartScreen also
+     * gates on, and -ErrorAction SilentlyContinue keeps one locked file
+     * from failing the whole pass.
+     */
+    private async tryUnblockWindows(): Promise<boolean> {
+        const nativeDir = this.toNativePath(this.serverDir);
+        const cmd = `powershell -NoProfile -Command "Get-ChildItem -Path '${nativeDir}' -Recurse | Unblock-File -ErrorAction SilentlyContinue"`;
+        this.log(`Running Unblock-File on ${nativeDir}`);
+        try {
+            const result = await os.execCommand(cmd, { background: false });
+            if (result.exitCode !== 0) {
+                this.log(`Unblock-File exited with code ${result.exitCode}: ${result.stdErr}`);
+                return false;
+            }
+            return true;
+        } catch (err) {
+            this.log(`Unblock-File failed: ${err instanceof Error ? err.message : String(err)}`);
+            return false;
+        }
+    }
+
     private async killByPid(pid: number): Promise<void> {
         const cmd = this.platform === 'Windows'
             ? `taskkill /F /T /PID ${pid}`

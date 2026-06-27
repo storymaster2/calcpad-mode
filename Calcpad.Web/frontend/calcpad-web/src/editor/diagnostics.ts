@@ -1,12 +1,12 @@
 import * as monaco from 'monaco-editor';
 import { CalcpadApiClient } from 'calcpad-frontend/api/client';
 import { CalcpadLintService } from 'calcpad-frontend/services/linter';
-import type { ClientFileCache, LintDiagnostic } from 'calcpad-frontend/types/api';
+import type { LintDiagnostic } from 'calcpad-frontend/types/api';
 
 export type LintSeverity = 'error' | 'warning' | 'information';
 
 export type FileContextProvider =
-    (content: string) => Promise<{ clientFileCache?: ClientFileCache; sourceFilePath?: string }>;
+    (content: string) => Promise<{ sourceFilePath?: string }>;
 
 export interface DiagnosticsHandle extends monaco.IDisposable {
     /** Re-run lint immediately (used by manual Refresh). */
@@ -57,7 +57,7 @@ async function lintAndMark(
 
     const content = model.getValue();
     const ctx = getFileContext ? await getFileContext(content) : {};
-    const response = await apiClient.lint(content, ctx.clientFileCache, ctx.sourceFilePath);
+    const response = await apiClient.lint(content, ctx.sourceFilePath);
 
     if (!response?.diagnostics) {
         monaco.editor.setModelMarkers(model, 'calcpad', []);

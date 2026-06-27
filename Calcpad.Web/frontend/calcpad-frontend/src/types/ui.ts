@@ -67,46 +67,6 @@ export interface VariablesData {
   customUnits: VariableItem[];
 }
 
-export interface S3User {
-  id: string;
-  username: string;
-  email: string;
-  role: number;
-}
-
-export interface S3File {
-  fileName: string;
-  size: number;
-  lastModified: string;
-  tags?: string[];
-}
-
-export interface S3State {
-  isAuthenticated: boolean;
-  authToken: string | null;
-  currentUser: S3User | null;
-  apiUrl: string;
-  files: S3File[];
-  loading: boolean;
-  error: string | null;
-  searchQuery: string;
-}
-
-export interface S3Config {
-  apiBaseUrl: string;
-  minio: {
-    endpoint: string;
-    useSSL: boolean;
-  };
-  fileUpload: {
-    maxFileSize: number;
-  };
-  ui: {
-    defaultTab: string;
-    filesPerPage: number;
-  };
-}
-
 export interface Tab {
   id: string;
   label: string;

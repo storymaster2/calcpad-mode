@@ -2,7 +2,6 @@ using Calcpad.Server.Services;
 using Calcpad.Server.Models.Pdf;
 using Microsoft.AspNetCore.Mvc;
 using Calcpad.Core;
-using ServerAuthSettings = Calcpad.Server.Services.AuthSettings;
 using Calcpad.Highlighter.ContentResolution;
 using Calcpad.Highlighter.Linter;
 using Calcpad.Highlighter.Linter.Models;
@@ -29,22 +28,6 @@ namespace Calcpad.Server.Controllers
             _pdfService = pdfService;
         }
 
-        /// <summary>
-        /// Decodes a base64-encoded client file cache dictionary into raw bytes.
-        /// Frontend sends base64 strings over JSON; this converts at the boundary.
-        /// </summary>
-        private static Dictionary<string, byte[]> DecodeClientFileCache(Dictionary<string, string>? base64Cache)
-        {
-            var result = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
-            if (base64Cache == null) return result;
-            foreach (var kvp in base64Cache)
-            {
-                try { result[kvp.Key] = Convert.FromBase64String(kvp.Value); }
-                catch (FormatException) { /* skip malformed entries */ }
-            }
-            return result;
-        }
-
         [HttpPost("convert")]
         public async Task<IActionResult> ConvertToHtml([FromBody] CalcpadRequest request)
         {
@@ -55,14 +38,7 @@ namespace Calcpad.Server.Controllers
                     return BadRequest("Content is required");
                 }
 
-                var ctx = new WebFetchContext
-                {
-                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
-                    AuthSettings = request.AuthSettings,
-                    ApiTimeoutMs = request.ApiTimeoutMs,
-                    SourceFilePath = request.SourceFilePath
-                };
-                var htmlResult = await _calcpadService.ConvertAsync(request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, ctx, request.ForPrint);
+                var htmlResult = await _calcpadService.ConvertAsync(request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, request.ForPrint);
 
                 return Content(htmlResult, "text/html");
             }
@@ -83,38 +59,12 @@ namespace Calcpad.Server.Controllers
                     return BadRequest("Content is required");
                 }
 
-                var ctx = new WebFetchContext
-                {
-                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
-                    AuthSettings = request.AuthSettings,
-                    ApiTimeoutMs = request.ApiTimeoutMs,
-                    SourceFilePath = request.SourceFilePath
-                };
-                var result = await _calcpadService.ConvertAsync(request.Content, request.Settings, forceUnwrappedCode: true, request.Theme, ctx, request.ForPrint);
+                var result = await _calcpadService.ConvertAsync(request.Content, request.Settings, forceUnwrappedCode: true, request.Theme, request.SourceFilePath, request.ForPrint);
 
                 // Process data-text links to make them functional
                 var processedResult = ProcessDataTextLinks(result);
 
                 return Content(processedResult, "text/html");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error processing Calcpad content: {ex.Message}");
-            }
-        }
-
-        [HttpPost("debug-raw-code")]
-        public async Task<IActionResult> GetRawCode([FromBody] CalcpadRequest request)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(request.Content))
-                {
-                    return BadRequest("Content is required");
-                }
-
-                var rawCode = await _calcpadService.GetRawCodeFromMacroParser(request.Content);
-                return Content(rawCode, "text/plain");
             }
             catch (Exception ex)
             {
@@ -249,20 +199,13 @@ namespace Calcpad.Server.Controllers
                 if (string.IsNullOrWhiteSpace(request.Content))
                     return BadRequest(new { error = "Content is required" });
 
-                var ctx = new WebFetchContext
-                {
-                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
-                    AuthSettings = request.AuthSettings,
-                    ApiTimeoutMs = request.ApiTimeoutMs,
-                    SourceFilePath = request.SourceFilePath
-                };
                 // forPrint=true so the HTML is the printable / unwrapped form,
                 // matching what the OpenXmlWriter expects. Passing a non-null
                 // openXmlExpressions list signals the parser to emit OMML so
                 // equations render as native Word math instead of empty <m:oMath/>.
                 var openXmlExpressions = new List<string>();
                 var html = await _calcpadService.ConvertAsync(
-                    request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, ctx, forPrint: true, openXmlExpressions: openXmlExpressions);
+                    request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, forPrint: true, openXmlExpressions: openXmlExpressions);
 
                 using var ms = new MemoryStream();
                 var writer = new OpenXmlWriter(openXmlExpressions);
@@ -283,64 +226,6 @@ namespace Calcpad.Server.Controllers
         }
 
         /// <summary>
-        /// Clears the server-side remote content cache.
-        /// If keys are provided, only those entries are removed. Otherwise, the entire cache is cleared.
-        /// </summary>
-        [HttpPost("refresh-cache")]
-        public IActionResult RefreshCache([FromBody] RefreshCacheRequest request)
-        {
-            if (request?.Keys != null && request.Keys.Count > 0)
-            {
-                foreach (var key in request.Keys)
-                    CalcpadService.RemoveFromRemoteContentCache(key);
-                FileLogger.LogInfo($"Remote content cache: {request.Keys.Count} entries removed");
-            }
-            else if (!string.IsNullOrEmpty(request?.Key))
-            {
-                CalcpadService.RemoveFromRemoteContentCache(request.Key);
-                FileLogger.LogInfo($"Remote content cache entry removed: {request.Key}");
-            }
-            else
-            {
-                CalcpadService.ClearRemoteContentCache();
-                FileLogger.LogInfo("Remote content cache cleared");
-            }
-            return Ok(new { status = "ok" });
-        }
-
-        [HttpPost("resolve-content")]
-        public async Task<IActionResult> ResolveContent([FromBody] ContentResolverRequest request)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(request.Content))
-                    return BadRequest("Content is required");
-
-                FileLogger.LogInfo("Content resolution request received",
-                    $"Length: {request.Content.Length}, Staged: {request.Staged}");
-
-                // Pre-fetch remote content (URLs and API routes) into the cache
-                var ctx = new WebFetchContext
-                {
-                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
-                    AuthSettings = request.AuthSettings,
-                    ApiTimeoutMs = request.ApiTimeoutMs
-                };
-                await CalcpadService.PreFetchRemoteContentAsync(request.Content, ctx);
-
-                var resolver = new ContentResolver();
-                var result = resolver.GetStagedContent(request.Content, request.IncludeFiles, ctx.ClientFileCache, request.SourceFilePath);
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                FileLogger.LogError("Content resolution failed", ex);
-                return StatusCode(500, $"Error resolving content: {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// Get syntax highlighting tokens for Calcpad source code.
         /// Returns tokens with line/column positions and types for frontend colorization.
         /// </summary>
@@ -356,12 +241,12 @@ namespace Calcpad.Server.Controllers
 
                 var tokenizer = new CalcpadTokenizer();
 
-                // Run content resolution to collect macro info from includes
-                if (request.IncludeFiles != null || request.ClientFileCache != null)
+                // Run content resolution to collect macro info from includes (resolver reads
+                // referenced files from disk via SourceFilePath when no in-memory cache is supplied).
+                if (!string.IsNullOrEmpty(request.SourceFilePath))
                 {
-                    var clientCache = DecodeClientFileCache(request.ClientFileCache);
                     var resolver = new ContentResolver();
-                    var staged = resolver.GetStagedContent(request.Content, request.IncludeFiles, clientCache, request.SourceFilePath);
+                    var staged = resolver.GetStagedContent(request.Content, sourceFilePath: request.SourceFilePath);
                     tokenizer.SetMacroCommentParameters(
                         staged.Stage2.MacroCommentParameters,
                         staged.Stage2.MacroParameterOrder,
@@ -433,7 +318,7 @@ namespace Calcpad.Server.Controllers
         /// Lint Calcpad source code and return diagnostics (errors and warnings).
         /// </summary>
         [HttpPost("lint")]
-        public async Task<IActionResult> LintContent([FromBody] LintRequest request)
+        public IActionResult LintContent([FromBody] LintRequest request)
         {
             try
             {
@@ -442,20 +327,10 @@ namespace Calcpad.Server.Controllers
 
                 FileLogger.LogInfo("Lint request received", "Length: " + request.Content.Length);
 
-                // Pre-fetch remote content (URLs and API routes) into the cache
-                var ctx = new WebFetchContext
-                {
-                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
-                    AuthSettings = request.AuthSettings,
-                    ApiTimeoutMs = request.ApiTimeoutMs
-                };
-                await CalcpadService.PreFetchRemoteContentAsync(request.Content, ctx);
-
                 var resolver = new ContentResolver();
                 var linter = new CalcpadLinter();
 
-                // Resolve content with includes and client file cache
-                var staged = resolver.GetStagedContent(request.Content, request.IncludeFiles, ctx.ClientFileCache, request.SourceFilePath);
+                var staged = resolver.GetStagedContent(request.Content, sourceFilePath: request.SourceFilePath);
 
                 // Extract LintIgnore regions from raw source, then lint with suppression
                 var ignoreRegions = _lintIgnoreRegionParser.ExtractRegions(request.Content);
@@ -493,7 +368,7 @@ namespace Calcpad.Server.Controllers
         /// Returns type information, parameters, return types, and source locations.
         /// </summary>
         [HttpPost("definitions")]
-        public async Task<IActionResult> GetDefinitions([FromBody] DefinitionsRequest request)
+        public IActionResult GetDefinitions([FromBody] DefinitionsRequest request)
         {
             try
             {
@@ -502,17 +377,8 @@ namespace Calcpad.Server.Controllers
 
                 FileLogger.LogInfo("Definitions request received", "Length: " + request.Content.Length);
 
-                // Pre-fetch remote content (URLs and API routes) into the cache
-                var ctx = new WebFetchContext
-                {
-                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
-                    AuthSettings = request.AuthSettings,
-                    ApiTimeoutMs = request.ApiTimeoutMs
-                };
-                await CalcpadService.PreFetchRemoteContentAsync(request.Content, ctx);
-
                 var resolver = new ContentResolver();
-                var staged = resolver.GetStagedContent(request.Content, request.IncludeFiles, ctx.ClientFileCache, request.SourceFilePath);
+                var staged = resolver.GetStagedContent(request.Content, sourceFilePath: request.SourceFilePath);
 
                 var typeTracker = staged.Stage3.TypeTracker;
 
@@ -597,7 +463,7 @@ namespace Calcpad.Server.Controllers
         /// with original source line positions and include file info.
         /// </summary>
         [HttpPost("find-references")]
-        public async Task<IActionResult> FindReferences([FromBody] DefinitionsRequest request)
+        public IActionResult FindReferences([FromBody] DefinitionsRequest request)
         {
             try
             {
@@ -606,17 +472,8 @@ namespace Calcpad.Server.Controllers
 
                 FileLogger.LogInfo("Find references request received", "Length: " + request.Content.Length);
 
-                // Pre-fetch remote content (URLs and API routes) into the cache
-                var ctx = new WebFetchContext
-                {
-                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
-                    AuthSettings = request.AuthSettings,
-                    ApiTimeoutMs = request.ApiTimeoutMs
-                };
-                await CalcpadService.PreFetchRemoteContentAsync(request.Content, ctx);
-
                 var resolver = new ContentResolver();
-                var staged = resolver.GetStagedContent(request.Content, request.IncludeFiles, ctx.ClientFileCache, request.SourceFilePath);
+                var staged = resolver.GetStagedContent(request.Content, sourceFilePath: request.SourceFilePath);
 
                 SymbolLocationDto ToDto(Calcpad.Highlighter.ContentResolution.SymbolLocation loc) => new SymbolLocationDto
                 {
@@ -827,15 +684,6 @@ namespace Calcpad.Server.Controllers
         public string Content { get; set; } = string.Empty;
     }
 
-    public class RefreshCacheRequest
-    {
-        /// <summary>Specific cache key (URL or API route) to invalidate. If null/empty, clears entire cache.</summary>
-        public string? Key { get; set; }
-
-        /// <summary>List of cache keys to invalidate. Takes precedence over Key if provided.</summary>
-        public List<string>? Keys { get; set; }
-    }
-
     public class CalcpadRequest
     {
         public string Content { get; set; } = string.Empty;
@@ -851,48 +699,8 @@ namespace Calcpad.Server.Controllers
         public bool ForPrint { get; set; } = false;
 
         /// <summary>
-        /// Client-side file cache with base64-encoded file contents.
-        /// Key is the filename, value is the file content encoded as base64.
-        /// Used to resolve #include and #read directives from client-cached files.
-        /// </summary>
-        public Dictionary<string, string>? ClientFileCache { get; set; }
-
-        /// <summary>
-        /// Authentication settings for API routing (JWT token and routing config).
-        /// Used by the server-side Router to fetch remote files for #include and #read.
-        /// </summary>
-        public ServerAuthSettings? AuthSettings { get; set; }
-
-        /// <summary>
-        /// Timeout in milliseconds for API calls (used by #include, #read, etc.).
-        /// Default is 10000ms (10 seconds).
-        /// </summary>
-        public int ApiTimeoutMs { get; set; } = 10000;
-
-        /// <summary>
-        /// Full path of the source file on the client. Used to resolve relative
-        /// #include and #read paths so they match the client's cache keys.
-        /// </summary>
-        public string? SourceFilePath { get; set; }
-    }
-
-    public class ContentResolverRequest
-    {
-        public string Content { get; set; } = string.Empty;
-        public ServerAuthSettings? AuthSettings { get; set; }
-        public int ApiTimeoutMs { get; set; } = 10000;
-        public bool Staged { get; set; } = false;
-        public Dictionary<string, string>? IncludeFiles { get; set; }
-
-        /// <summary>
-        /// Client-side file cache with base64-encoded file contents.
-        /// Key is the filename, value is the file content encoded as base64.
-        /// Used to resolve #include and #read directives from client-cached files.
-        /// </summary>
-        public Dictionary<string, string>? ClientFileCache { get; set; }
-
-        /// <summary>
-        /// Full path of the source file on the client.
+        /// Full path of the source file on disk. Used to resolve relative
+        /// #include and #read paths against the parent file's directory.
         /// </summary>
         public string? SourceFilePath { get; set; }
     }
@@ -905,17 +713,8 @@ namespace Calcpad.Server.Controllers
         /// <summary>Whether to include the token text in the response (default: false to reduce payload size)</summary>
         public bool IncludeText { get; set; } = false;
 
-        /// <summary>Optional dictionary of include file contents (filename -> content)</summary>
-        public Dictionary<string, string>? IncludeFiles { get; set; }
-
         /// <summary>
-        /// Client-side file cache with base64-encoded file contents.
-        /// Used to resolve #include directives from client-cached files.
-        /// </summary>
-        public Dictionary<string, string>? ClientFileCache { get; set; }
-
-        /// <summary>
-        /// Full path of the source file on the client.
+        /// Full path of the source file on disk.
         /// </summary>
         public string? SourceFilePath { get; set; }
     }
@@ -969,24 +768,8 @@ namespace Calcpad.Server.Controllers
         /// <summary>The Calcpad source code to lint</summary>
         public string Content { get; set; } = string.Empty;
 
-        /// <summary>Optional dictionary of include file contents (filename -> content)</summary>
-        public Dictionary<string, string>? IncludeFiles { get; set; }
-
         /// <summary>
-        /// Client-side file cache with base64-encoded file contents.
-        /// Key is the filename, value is the file content encoded as base64.
-        /// Used to resolve #include and #read directives from client-cached files.
-        /// </summary>
-        public Dictionary<string, string>? ClientFileCache { get; set; }
-
-        /// <summary>Authentication settings for API routing (JWT token and routing config).</summary>
-        public ServerAuthSettings? AuthSettings { get; set; }
-
-        /// <summary>Timeout in milliseconds for remote fetches. Default is 10000ms.</summary>
-        public int ApiTimeoutMs { get; set; } = 10000;
-
-        /// <summary>
-        /// Full path of the source file on the client.
+        /// Full path of the source file on disk.
         /// </summary>
         public string? SourceFilePath { get; set; }
     }
@@ -1035,23 +818,7 @@ namespace Calcpad.Server.Controllers
         /// <summary>The Calcpad source code to analyze</summary>
         public string Content { get; set; } = string.Empty;
 
-        /// <summary>Optional dictionary of include file contents (filename -> content)</summary>
-        public Dictionary<string, string>? IncludeFiles { get; set; }
-
-        /// <summary>
-        /// Client-side file cache with base64-encoded file contents.
-        /// Key is the filename, value is the file content encoded as base64.
-        /// Used to resolve #include and #read directives from client-cached files.
-        /// </summary>
-        public Dictionary<string, string>? ClientFileCache { get; set; }
-
-        /// <summary>Authentication settings for API routing (JWT token and routing config).</summary>
-        public ServerAuthSettings? AuthSettings { get; set; }
-
-        /// <summary>Timeout in milliseconds for remote fetches. Default is 10000ms.</summary>
-        public int ApiTimeoutMs { get; set; } = 10000;
-
-        /// <summary>Full path of the source file on the client.</summary>
+        /// <summary>Full path of the source file on disk.</summary>
         public string? SourceFilePath { get; set; }
     }
 

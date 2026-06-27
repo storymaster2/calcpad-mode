@@ -83,8 +83,6 @@ namespace Calcpad.Server.Services
             var result = new Settings
             {
                 Units           = base_.Units,
-                ClientFileCache = base_.ClientFileCache,
-                SourceFilePath  = base_.SourceFilePath,
                 Math = new MathSettings
                 {
                     Decimals                = math.Decimals,

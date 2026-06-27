@@ -72,28 +72,6 @@ export interface VariablesData {
   customUnits: VariableItem[]
 }
 
-export interface S3User {
-  username: string
-  id: string
-}
-
-export interface S3File {
-  fileName: string
-  size: number
-  lastModified: string
-}
-
-export interface S3State {
-  isAuthenticated: boolean
-  authToken: string | null
-  currentUser: S3User | null
-  apiUrl: string
-  files: S3File[]
-  loading: boolean
-  error: string | null
-  searchQuery: string
-}
-
 export interface Tab {
   id: string
   label: string
@@ -116,36 +94,6 @@ export interface VscodeMessage {
 
 export type { PdfSettings } from '../../types/pdf-settings'
 export { DEFAULT_PDF_SETTINGS } from '../../types/pdf-settings'
-
-// S3 File Management Types
-export interface S3File {
-  fileName: string
-  size: number
-  lastModified: string
-  tags?: string[]
-}
-
-export interface S3User {
-  id: string
-  username: string
-  email: string
-  role: number
-}
-
-export interface S3Config {
-  apiBaseUrl: string
-  minio: {
-    endpoint: string
-    useSSL: boolean
-  }
-  fileUpload: {
-    maxFileSize: number
-  }
-  ui: {
-    defaultTab: string
-    filesPerPage: number
-  }
-}
 
 export interface TocHeading {
   level: number   // 1-6

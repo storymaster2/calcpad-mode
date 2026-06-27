@@ -1,91 +1,60 @@
-# Calcpad.Server API Schema
+# Calcpad.Web Backend API Schema
 
-This document describes the API endpoints for the Calcpad Server. The server provides endpoints for code conversion, syntax highlighting, linting, definitions, find-references, snippets, PDF generation, content resolution, caching, and optional authentication/user management.
+> **Localhost-only build.** This branch (`calcpad-web`) only supports loopback bindings. The startup guard in [Program.cs](Program.cs) throws if the bind URL is not `localhost`, `127.0.0.0/8`, or `::1`. Hosted/Docker/auth/storage live on `calcpad-experimental`. The auth, user-management, file-storage, content-resolution, and cache endpoints from the hosted branch are not present here.
 
-## Base URLs
+## Base URL
 
 ```
-http://localhost:9420/api/calcpad   — Calcpad conversion, highlighting, linting, definitions, etc.
-http://localhost:9420/api/auth      — Authentication (login, register, profile)
-http://localhost:9420/api/user      — User management (admin only)
+http://localhost:9420/api/calcpad
 ```
 
-The default port is `9420` (configurable via the `CALCPAD_PORT` environment variable).
+Default port is `9420` (override with `CALCPAD_PORT`).
 
 ---
 
 ## Table of Contents
 
-- [Calcpad Endpoints](#calcpad-endpoints)
-  - [POST /convert](#post-convert)
-  - [POST /convert-unwrapped](#post-convert-unwrapped)
-  - [POST /debug-raw-code](#post-debug-raw-code)
-  - [GET /sample](#get-sample)
-  - [POST /highlight](#post-highlight)
-  - [POST /highlight-line](#post-highlight-line)
-  - [POST /lint](#post-lint)
-  - [POST /definitions](#post-definitions)
-  - [POST /find-references](#post-find-references)
-  - [GET /snippets](#get-snippets)
-  - [POST /pdf](#post-pdf)
-  - [GET /pdf/health](#get-pdfhealth)
-  - [POST /refresh-cache](#post-refresh-cache)
-  - [POST /resolve-content](#post-resolve-content)
-- [Auth Endpoints](#auth-endpoints)
-  - [POST /login](#post-login)
-  - [POST /register](#post-register)
-  - [GET /profile](#get-profile)
-- [User Endpoints](#user-endpoints-admin-only)
-  - [GET /](#get-all-users)
-  - [GET /{userId}](#get-user-by-id)
-  - [PUT /{userId}](#update-user)
-  - [DELETE /{userId}](#delete-user)
-- [Shared Types](#shared-types)
+- [POST /convert](#post-convert)
+- [POST /convert-unwrapped](#post-convert-unwrapped)
+- [GET /sample](#get-sample)
+- [GET /debug-crash](#get-debug-crash)
+- [POST /pdf](#post-pdf)
+- [GET /pdf/health](#get-pdfhealth)
+- [POST /docx](#post-docx)
+- [POST /highlight](#post-highlight)
+- [POST /highlight-line](#post-highlight-line)
+- [POST /lint](#post-lint)
+- [POST /definitions](#post-definitions)
+- [POST /find-references](#post-find-references)
+- [POST /prettify](#post-prettify)
+- [GET /snippets](#get-snippets)
 - [Usage Notes](#usage-notes)
 
 ---
 
-## Calcpad Endpoints
-
-Base: `api/calcpad`
-
-### POST /convert
+## POST /convert
 
 Convert Calcpad source code to HTML. Processes macros, includes, and calculations.
 
 **Request:**
 ```typescript
 interface CalcpadRequest {
-  content: string;                           // The Calcpad source code to convert
-  settings?: Settings;                       // Optional Calcpad settings (math, plot, units, auth)
-  forceUnwrappedCode?: boolean;              // If true, return code without calculation (default: false)
-  theme?: string;                            // "light" or "dark" (default: "light")
-  clientFileCache?: Record<string, string>;  // Optional client file cache (filename -> base64-encoded content)
-  authSettings?: AuthSettings;               // Authentication settings for API routing
-  apiTimeoutMs?: number;                     // Timeout for remote fetches in ms (default: 10000)
-  sourceFilePath?: string;                   // Full path of source file on client (for resolving relative paths)
+  content: string;              // The Calcpad source code to convert
+  settings?: Settings;          // Optional Calcpad settings (math, plot, units)
+  forceUnwrappedCode?: boolean; // If true, return code without calculation (default: false)
+  theme?: string;               // "light" or "dark" (default: "light")
+  apiTimeoutMs?: number;        // Timeout for remote URL fetches in ms (default: 10000)
+  sourceFilePath?: string;      // Full path of source file on client (used to resolve relative #include against the parent file's directory)
 }
 ```
 
 **Response:** HTML content (`text/html`)
 
-**Example Request with Client File Cache:**
-```json
-{
-  "content": "#include helper.cpd\na = helperFunc(5)",
-  "clientFileCache": {
-    "helper.cpd": "aGVscGVyRnVuYyh4KSA9IHggKiAy"
-  }
-}
-```
-
-The base64 content above decodes to: `helperFunc(x) = x * 2`
-
 ---
 
-### POST /convert-unwrapped
+## POST /convert-unwrapped
 
-Convert Calcpad source code to HTML without calculation (shows raw code with syntax highlighting). Automatically processes `data-text` links to make them functional.
+Convert Calcpad source code to HTML without calculation (raw code with syntax highlighting). Automatically processes `data-text` links so they remain functional.
 
 **Request:** Same as `/convert` (uses `CalcpadRequest`)
 
@@ -93,17 +62,7 @@ Convert Calcpad source code to HTML without calculation (shows raw code with syn
 
 ---
 
-### POST /debug-raw-code
-
-Get the raw code output from the macro parser (for debugging macro expansion).
-
-**Request:** Same as `/convert` (uses `CalcpadRequest`, only `content` is used)
-
-**Response:** Plain text (`text/plain`)
-
----
-
-### GET /sample
+## GET /sample
 
 Get a sample Calcpad source code document.
 
@@ -117,20 +76,101 @@ interface CalcpadRequest {
 
 ---
 
-## Syntax Highlighter Endpoints
+## GET /debug-crash
 
-### POST /highlight
+Write a debug crash event from the client to the server's on-disk crash log. Used by the VS Code extension and desktop wrapper to surface client-side failures into the server log stream.
+
+**Response:** `200 OK`
+
+---
+
+## POST /pdf
+
+Generate a PDF from HTML content using Playwright browser automation and PDFsharp.
+
+**Request:**
+```typescript
+interface PdfGenerateRequest {
+  html: string;              // HTML content to convert to PDF (required)
+  browserPath?: string;      // Custom browser executable path
+  options?: PdfOptions;      // PDF generation settings
+}
+
+interface PdfOptions {
+  // Page settings
+  format?: string;           // Page format (default: "A4")
+  orientation?: string;      // "portrait" or "landscape" (default: "portrait")
+  printBackground?: boolean; // Print background graphics (default: true)
+  scale?: number;            // Scale factor (default: 1.0)
+
+  // Margins
+  marginTop?: string;        // Top margin (default: "2cm")
+  marginRight?: string;      // Right margin (default: "1.5cm")
+  marginBottom?: string;     // Bottom margin (default: "2cm")
+  marginLeft?: string;       // Left margin (default: "1.5cm")
+
+  // Headers and footers
+  enableHeader?: boolean;    // Enable page header
+  enableFooter?: boolean;    // Enable page footer
+
+  // Document metadata
+  documentTitle?: string;
+  documentSubtitle?: string;
+  author?: string;
+  company?: string;
+  project?: string;
+
+  // Custom content
+  headerCenter?: string;
+  footerCenter?: string;
+
+  // Timestamp format (null/empty uses system default)
+  dateTimeFormat?: string;
+
+  // Background PDF (base64-encoded or file path)
+  backgroundPdf?: string;
+}
+```
+
+**Response:** PDF binary (`application/pdf`, filename: `document.pdf`)
+
+---
+
+## GET /pdf/health
+
+Health check for the PDF generation service.
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "service": "calcpad-pdf",
+  "version": "2.0.0"
+}
+```
+
+---
+
+## POST /docx
+
+Generate a Word `.docx` from the source. Runs the calcpad → HTML pipeline (`forPrint: true`) and feeds it through `Calcpad.OpenXml.OpenXmlWriter`.
+
+**Request:** Same as `/convert` (uses `CalcpadRequest`)
+
+**Response:** Word binary (`application/vnd.openxmlformats-officedocument.wordprocessingml.document`)
+
+---
+
+## POST /highlight
 
 Tokenize Calcpad source code for syntax highlighting. Supports include file resolution for accurate macro-aware tokenization.
 
 **Request:**
 ```typescript
 interface HighlightRequest {
-  content: string;                           // The Calcpad source code to tokenize
-  includeText?: boolean;                     // Whether to include token text in response (default: false)
-  includeFiles?: Record<string, string>;     // Optional dictionary of include file contents (filename -> content)
-  clientFileCache?: Record<string, string>;  // Optional client file cache (filename -> base64-encoded content)
-  sourceFilePath?: string;                   // Full path of source file on client (for resolving relative paths)
+  content: string;          // The Calcpad source code to tokenize
+  includeText?: boolean;    // Whether to include token text in response (default: false)
+  sourceFilePath?: string;  // Full path of source file on client (for resolving relative #include)
 }
 ```
 
@@ -202,7 +242,7 @@ interface HighlightToken {
 
 ---
 
-### POST /highlight-line
+## POST /highlight-line
 
 Tokenize a single line of Calcpad source code (for incremental updates).
 
@@ -219,29 +259,24 @@ interface HighlightLineRequest {
 
 ---
 
-## Linter Endpoint
-
-### POST /lint
+## POST /lint
 
 Lint Calcpad source code and return diagnostics (errors, warnings, and informational messages). Supports lint-ignore regions via comments.
 
 **Request:**
 ```typescript
 interface LintRequest {
-  content: string;                           // The Calcpad source code to lint
-  includeFiles?: Record<string, string>;     // Optional dictionary of include file contents (filename -> content)
-  clientFileCache?: Record<string, string>;  // Optional client file cache (filename -> base64-encoded content)
-  authSettings?: AuthSettings;               // Authentication settings for API routing
-  apiTimeoutMs?: number;                     // Timeout for remote fetches in ms (default: 10000)
-  sourceFilePath?: string;                   // Full path of source file on client
+  content: string;          // The Calcpad source code to lint
+  apiTimeoutMs?: number;    // Timeout for remote URL fetches in ms (default: 10000)
+  sourceFilePath?: string;  // Full path of source file on client
 }
 ```
 
 **Response:**
 ```typescript
 interface LintResponse {
-  errorCount: number;           // Total number of errors
-  warningCount: number;         // Total number of warnings
+  errorCount: number;
+  warningCount: number;
   diagnostics: LintDiagnostic[];
 }
 
@@ -250,10 +285,10 @@ interface LintDiagnostic {
   column: number;      // Zero-based column (start position)
   endColumn: number;   // Zero-based end column position
   code: string;        // Error code (e.g., "CPD-3301")
-  message: string;     // Human-readable error/warning message
-  severity: string;    // Severity name: "error", "warning", or "information"
-  severityId: number;  // Severity ID: 0=Error, 1=Warning, 2=Information
-  source: string;      // Source of the diagnostic (default: "Calcpad Linter")
+  message: string;
+  severity: string;    // "error", "warning", or "information"
+  severityId: number;  // 0=Error, 1=Warning, 2=Information
+  source: string;      // Default: "Calcpad Linter"
 }
 ```
 
@@ -347,21 +382,16 @@ interface LintDiagnostic {
 
 ---
 
-## Definitions Endpoint
-
-### POST /definitions
+## POST /definitions
 
 Get detailed definitions (macros, functions, variables, custom units) from Calcpad source code. Returns type information, parameters, return types, source locations, and metadata from doc comments.
 
 **Request:**
 ```typescript
 interface DefinitionsRequest {
-  content: string;                           // The Calcpad source code to analyze
-  includeFiles?: Record<string, string>;     // Optional dictionary of include file contents (filename -> content)
-  clientFileCache?: Record<string, string>;  // Optional client file cache (filename -> base64-encoded content)
-  authSettings?: AuthSettings;               // Authentication settings for API routing
-  apiTimeoutMs?: number;                     // Timeout for remote fetches in ms (default: 10000)
-  sourceFilePath?: string;                   // Full path of source file on client
+  content: string;          // The Calcpad source code to analyze
+  apiTimeoutMs?: number;    // Timeout for remote URL fetches in ms (default: 10000)
+  sourceFilePath?: string;  // Full path of source file on client
 }
 ```
 
@@ -375,56 +405,55 @@ interface DefinitionsResponse {
 }
 
 interface MacroDefinitionDto {
-  name: string;                    // Macro name (including $ suffix)
-  parameters: string[];            // Parameter names
-  isMultiline: boolean;            // True if multiline macro (#def...#end def), false if inline
-  content: string[];               // Macro content lines
-  lineNumber: number;              // Zero-based line number where defined
+  name: string;
+  parameters: string[];
+  isMultiline: boolean;
+  content: string[];
+  lineNumber: number;
   source: string;                  // "local" or "include"
-  sourceFile?: string;             // Source file path if from include
-  description?: string;            // User-provided description from a metadata comment
-  paramTypes?: string[];           // User-provided type hints per parameter
-  paramDescriptions?: string[];    // User-provided descriptions per parameter
-  defaults?: (string | null)[];    // Default values parallel to parameters (null = required)
+  sourceFile?: string;
+  description?: string;
+  paramTypes?: string[];
+  paramDescriptions?: string[];
+  defaults?: (string | null)[];
 }
 
 interface FunctionDefinitionDto {
-  name: string;                       // Function name
-  parameters: string[];               // Parameter names
-  expression?: string;                // Function body expression (right side of =)
-  returnType: string;                 // Inferred return type name
-  returnTypeId: number;               // Return type ID for efficient processing
-  hasCommandBlock: boolean;           // True if uses $Inline, $Block, or $While
-  commandBlockType?: string;          // "Inline", "Block", or "While" (if applicable)
-  commandBlockStatements?: string[];  // Statements inside command block (if applicable)
-  lineNumber: number;                 // Zero-based line number where defined
-  source: string;                     // "local" or "include"
-  sourceFile?: string;                // Source file path if from include
-  description?: string;               // User-provided description from a metadata comment
-  paramTypes?: string[];              // User-provided type hints per parameter
-  paramDescriptions?: string[];       // User-provided descriptions per parameter
-  defaults?: (string | null)[];       // Default values parallel to parameters (null = required)
+  name: string;
+  parameters: string[];
+  expression?: string;
+  returnType: string;
+  returnTypeId: number;
+  hasCommandBlock: boolean;
+  commandBlockType?: string;          // "Inline", "Block", or "While"
+  commandBlockStatements?: string[];
+  lineNumber: number;
+  source: string;
+  sourceFile?: string;
+  description?: string;
+  paramTypes?: string[];
+  paramDescriptions?: string[];
+  defaults?: (string | null)[];
 }
 
 interface VariableDefinitionDto {
-  name: string;          // Variable name
-  expression?: string;   // Initial expression (right side of first assignment)
-  type: string;          // Inferred type name
-  typeId: number;        // Type ID for efficient processing
-  lineNumber: number;    // Zero-based line number where first defined
-  source: string;        // "local" or "include"
-  sourceFile?: string;   // Source file path if from include
-  description?: string;  // User-provided description from a metadata comment
+  name: string;
+  expression?: string;
+  type: string;
+  typeId: number;
+  lineNumber: number;
+  source: string;
+  sourceFile?: string;
+  description?: string;
 }
 
 interface CustomUnitDefinitionDto {
-  name: string;          // Unit name (without leading dot)
-  expression?: string;   // Unit definition expression
-  lineNumber: number;    // Zero-based line number where defined
-  source: string;        // "local" or "include"
-  sourceFile?: string;   // Source file path if from include
+  name: string;
+  expression?: string;
+  lineNumber: number;
+  source: string;
+  sourceFile?: string;
 }
-
 ```
 
 **Type IDs (typeId / returnTypeId):**
@@ -457,12 +486,7 @@ interface CustomUnitDefinitionDto {
       "isMultiline": false,
       "content": ["2*x$"],
       "lineNumber": 0,
-      "source": "local",
-      "sourceFile": null,
-      "description": null,
-      "paramTypes": null,
-      "paramDescriptions": null,
-      "defaults": null
+      "source": "local"
     }
   ],
   "functions": [
@@ -473,15 +497,8 @@ interface CustomUnitDefinitionDto {
       "returnType": "Value",
       "returnTypeId": 1,
       "hasCommandBlock": false,
-      "commandBlockType": null,
-      "commandBlockStatements": null,
       "lineNumber": 1,
-      "source": "local",
-      "sourceFile": null,
-      "description": null,
-      "paramTypes": null,
-      "paramDescriptions": null,
-      "defaults": null
+      "source": "local"
     }
   ],
   "variables": [
@@ -491,9 +508,7 @@ interface CustomUnitDefinitionDto {
       "type": "Vector",
       "typeId": 2,
       "lineNumber": 2,
-      "source": "local",
-      "sourceFile": null,
-      "description": null
+      "source": "local"
     }
   ],
   "customUnits": [
@@ -501,8 +516,7 @@ interface CustomUnitDefinitionDto {
       "name": "ksi",
       "expression": "1000*psi",
       "lineNumber": 3,
-      "source": "local",
-      "sourceFile": null
+      "source": "local"
     }
   ]
 }
@@ -536,12 +550,7 @@ Response includes:
         "result"
       ],
       "lineNumber": 0,
-      "source": "local",
-      "sourceFile": null,
-      "description": null,
-      "paramTypes": null,
-      "paramDescriptions": null,
-      "defaults": null
+      "source": "local"
     }
   ]
 }
@@ -549,9 +558,7 @@ Response includes:
 
 ---
 
-## Find References Endpoint
-
-### POST /find-references
+## POST /find-references
 
 Get all symbol occurrence locations (definitions, reassignments, and usages) for go-to-definition and find-all-references features. Returns dictionaries mapping symbol names to all their occurrences with original source line positions.
 
@@ -560,18 +567,18 @@ Get all symbol occurrence locations (definitions, reassignments, and usages) for
 **Response:**
 ```typescript
 interface FindReferencesResponse {
-  variables: Record<string, SymbolLocationDto[]>;  // Variable name -> occurrences
-  functions: Record<string, SymbolLocationDto[]>;  // Function name -> occurrences
-  macros: Record<string, SymbolLocationDto[]>;     // Macro name -> occurrences
+  variables: Record<string, SymbolLocationDto[]>;
+  functions: Record<string, SymbolLocationDto[]>;
+  macros: Record<string, SymbolLocationDto[]>;
 }
 
 interface SymbolLocationDto {
-  line: number;          // Zero-based line number (mapped back through all pipeline stages)
-  column: number;        // Zero-based column
-  length: number;        // Token length in characters
+  line: number;          // Mapped back through all pipeline stages
+  column: number;
+  length: number;
   source: string;        // "local" or "include"
-  sourceFile?: string;   // File path if from an #include, null otherwise
-  isAssignment: boolean; // True for definitions and reassignments, false for read-only usages
+  sourceFile?: string;
+  isAssignment: boolean; // True for definitions and reassignments
 }
 ```
 
@@ -587,16 +594,16 @@ interface SymbolLocationDto {
 {
   "variables": {
     "a": [
-      { "line": 0, "column": 0, "length": 1, "source": "local", "sourceFile": null, "isAssignment": true },
-      { "line": 1, "column": 4, "length": 1, "source": "local", "sourceFile": null, "isAssignment": false },
-      { "line": 2, "column": 4, "length": 1, "source": "local", "sourceFile": null, "isAssignment": false }
+      { "line": 0, "column": 0, "length": 1, "source": "local", "isAssignment": true },
+      { "line": 1, "column": 4, "length": 1, "source": "local", "isAssignment": false },
+      { "line": 2, "column": 4, "length": 1, "source": "local", "isAssignment": false }
     ],
     "b": [
-      { "line": 1, "column": 0, "length": 1, "source": "local", "sourceFile": null, "isAssignment": true },
-      { "line": 2, "column": 8, "length": 1, "source": "local", "sourceFile": null, "isAssignment": false }
+      { "line": 1, "column": 0, "length": 1, "source": "local", "isAssignment": true },
+      { "line": 2, "column": 8, "length": 1, "source": "local", "isAssignment": false }
     ],
     "c": [
-      { "line": 2, "column": 0, "length": 1, "source": "local", "sourceFile": null, "isAssignment": true }
+      { "line": 2, "column": 0, "length": 1, "source": "local", "isAssignment": true }
     ]
   },
   "functions": {},
@@ -606,9 +613,22 @@ interface SymbolLocationDto {
 
 ---
 
-## Snippets Endpoint
+## POST /prettify
 
-### GET /snippets
+Pretty-print Calcpad source code (consistent spacing, indentation for control blocks, etc.).
+
+**Request:**
+```typescript
+interface PrettifyRequest {
+  content: string;
+}
+```
+
+**Response:** Plain text (`text/plain`) — the prettified source code.
+
+---
+
+## GET /snippets
 
 Get all available snippets for autocomplete/intellisense. Returns snippet definitions with insert text, descriptions, categories, and parameter info.
 
@@ -620,22 +640,22 @@ Get all available snippets for autocomplete/intellisense. Returns snippet defini
 **Response:**
 ```typescript
 interface SnippetsResponse {
-  count: number;           // Total number of snippets returned
-  snippets: SnippetDto[];  // Array of snippet definitions
+  count: number;
+  snippets: SnippetDto[];
 }
 
 interface SnippetDto {
-  insert: string;                  // Text to insert (use '§' as cursor placeholder)
-  description: string;             // Description shown in tooltips
-  label?: string;                  // Optional display label (defaults to description)
-  category: string;                // Category path (e.g., "Functions/Trigonometric")
-  quickType?: string;              // Quick typing shortcut without ~ prefix (e.g., "a" means ~a -> insert)
+  insert: string;                     // Use '§' as cursor placeholder
+  description: string;
+  label?: string;
+  category: string;                   // e.g. "Functions/Trigonometric"
+  quickType?: string;                 // Shortcut without ~ prefix (e.g., "a" means ~a -> insert)
   parameters?: SnippetParameterDto[]; // Parameter info for functions (null for non-functions)
 }
 
 interface SnippetParameterDto {
-  name: string;         // Parameter name (e.g., "x", "M", "v")
-  description?: string; // Description of the parameter's purpose
+  name: string;
+  description?: string;
 }
 ```
 
@@ -672,9 +692,7 @@ GET /api/calcpad/snippets?category=Functions/Trigonometric
     {
       "insert": "sin(§)",
       "description": "Sine of angle in radians",
-      "label": null,
       "category": "Functions/Trigonometric",
-      "quickType": null,
       "parameters": [
         { "name": "x", "description": "Angle in radians" }
       ]
@@ -682,9 +700,7 @@ GET /api/calcpad/snippets?category=Functions/Trigonometric
     {
       "insert": "min(§; §)",
       "description": "Minimum of multiple scalar values",
-      "label": null,
       "category": "Functions/Aggregate",
-      "quickType": null,
       "parameters": [
         { "name": "values", "description": "Scalar values" }
       ]
@@ -692,10 +708,7 @@ GET /api/calcpad/snippets?category=Functions/Trigonometric
     {
       "insert": "#if",
       "description": "Conditional block",
-      "label": null,
-      "category": "Program Flow Control",
-      "quickType": null,
-      "parameters": null
+      "category": "Program Flow Control"
     }
   ]
 }
@@ -703,336 +716,21 @@ GET /api/calcpad/snippets?category=Functions/Trigonometric
 
 ---
 
-## PDF Endpoints
-
-### POST /pdf
-
-Generate a PDF from HTML content using Playwright browser automation and PDFsharp.
-
-**Request:**
-```typescript
-interface PdfGenerateRequest {
-  html: string;              // HTML content to convert to PDF (required)
-  browserPath?: string;      // Custom browser executable path
-  options?: PdfOptions;      // PDF generation settings
-}
-
-interface PdfOptions {
-  // Page settings
-  format?: string;           // Page format (default: "A4")
-  orientation?: string;      // "portrait" or "landscape" (default: "portrait")
-  printBackground?: boolean; // Print background graphics (default: true)
-  scale?: number;            // Scale factor (default: 1.0)
-
-  // Margins
-  marginTop?: string;        // Top margin (default: "2cm")
-  marginRight?: string;      // Right margin (default: "1.5cm")
-  marginBottom?: string;     // Bottom margin (default: "2cm")
-  marginLeft?: string;       // Left margin (default: "1.5cm")
-
-  // Headers and footers
-  enableHeader?: boolean;    // Enable page header
-  enableFooter?: boolean;    // Enable page footer
-
-  // Document metadata
-  documentTitle?: string;    // Document title
-  documentSubtitle?: string; // Document subtitle
-  author?: string;           // Author name
-  company?: string;          // Company name
-  project?: string;          // Project name
-
-  // Custom content
-  headerCenter?: string;     // Custom header center content
-  footerCenter?: string;     // Custom footer center content
-
-  // Timestamp format (null/empty uses system default)
-  dateTimeFormat?: string;
-
-  // Background PDF (base64-encoded or file path)
-  backgroundPdf?: string;
-}
-```
-
-**Response:** PDF binary (`application/pdf`, filename: `document.pdf`)
-
----
-
-### GET /pdf/health
-
-Health check for the PDF generation service.
-
-**Response:**
-```json
-{
-  "status": "ok",
-  "service": "calcpad-pdf",
-  "version": "2.0.0"
-}
-```
-
----
-
-## Cache Endpoint
-
-### POST /refresh-cache
-
-Clear or selectively invalidate the server-side remote content cache (used for API responses and URL fetches).
-
-**Request:**
-```typescript
-interface RefreshCacheRequest {
-  key?: string;       // Single cache key (URL or API route) to invalidate
-  keys?: string[];    // Multiple cache keys to invalidate (takes precedence over key)
-  // If both null/empty, clears entire cache
-}
-```
-
-**Response:**
-```json
-{ "status": "ok" }
-```
-
----
-
-## Content Resolution Endpoint
-
-### POST /resolve-content
-
-Pre-fetch remote content and resolve includes/macros for Calcpad source code. Returns the staged content resolution result.
-
-**Request:**
-```typescript
-interface ContentResolverRequest {
-  content: string;                           // The Calcpad source code to resolve
-  authSettings?: AuthSettings;               // Authentication settings for API routing
-  apiTimeoutMs?: number;                     // Timeout for remote fetches in ms (default: 10000)
-  staged?: boolean;                          // Whether to return staged content (default: false)
-  includeFiles?: Record<string, string>;     // Optional dictionary of include file contents
-  clientFileCache?: Record<string, string>;  // Optional client file cache (base64-encoded)
-  sourceFilePath?: string;                   // Full path of source file on client
-}
-```
-
-**Response:** Content resolution result (JSON)
-
----
-
-## Auth Endpoints
-
-Base: `api/auth`
-
-Authentication is optional and must be enabled via the `Auth:Enabled=true` configuration. When disabled, all auth endpoints return `404`.
-
-### POST /login
-
-Authenticate a user and receive a JWT token.
-
-**Request:**
-```typescript
-interface LoginRequest {
-  username: string;  // Required
-  password: string;  // Required
-}
-```
-
-**Response:**
-```typescript
-interface AuthResponse {
-  token: string;      // JWT bearer token
-  user: UserDto;      // User profile
-  expiresAt: string;  // Token expiry (ISO 8601)
-}
-
-interface UserDto {
-  id: string;             // GUID
-  username: string;
-  email: string;
-  role: UserRole;         // 1=Viewer, 2=Contributor, 3=Admin
-  createdAt: string;      // ISO 8601
-  lastLoginAt?: string;   // ISO 8601 or null
-  isActive: boolean;
-}
-```
-
-**Status Codes:**
-| Code | Description |
-|------|-------------|
-| 200 | Successful login |
-| 400 | Username and password are required |
-| 401 | Invalid username or password |
-| 404 | Auth is not enabled |
-
----
-
-### POST /register
-
-Register a new user. **Requires Admin role.**
-
-**Request:**
-```typescript
-interface RegisterRequest {
-  username: string;     // Required, 3-30 characters
-  email: string;        // Required, must contain @
-  password: string;     // Required, minimum 6 characters
-  role?: UserRole;      // Optional (1=Viewer, 2=Contributor, 3=Admin)
-}
-```
-
-**Response:** `AuthResponse` (201 Created)
-
-**Status Codes:**
-| Code | Description |
-|------|-------------|
-| 201 | User registered successfully |
-| 400 | Validation error (username, email, password, or role) |
-| 401 | Not authenticated |
-| 403 | Not authorized (non-admin) |
-| 404 | Auth is not enabled |
-| 409 | Username or email already exists |
-
----
-
-### GET /profile
-
-Get the current authenticated user's profile. **Requires authentication.**
-
-**Response:** `UserDto`
-
-**Status Codes:**
-| Code | Description |
-|------|-------------|
-| 200 | Profile returned |
-| 401 | Not authenticated |
-| 404 | Auth not enabled or user not found |
-
----
-
-## User Endpoints (Admin Only)
-
-Base: `api/user`
-
-All user management endpoints require Admin role authentication.
-
-### GET / (All Users)
-
-Get all registered users.
-
-**Response:** `UserDto[]`
-
----
-
-### GET /{userId}
-
-Get a specific user by ID.
-
-**Response:** `UserDto`
-
-**Status Codes:**
-| Code | Description |
-|------|-------------|
-| 200 | User returned |
-| 404 | Auth not enabled or user not found |
-
----
-
-### PUT /{userId}
-
-Update a user's role or active status.
-
-**Request:**
-```typescript
-interface UpdateUserRequest {
-  role?: UserRole;     // Optional new role (1=Viewer, 2=Contributor, 3=Admin)
-  isActive?: boolean;  // Optional active status
-}
-```
-
-**Response:**
-```json
-{ "message": "User updated" }
-```
-
-**Status Codes:**
-| Code | Description |
-|------|-------------|
-| 200 | User updated |
-| 400 | Invalid role |
-| 404 | Auth not enabled or user not found |
-
----
-
-### DELETE /{userId}
-
-Delete a user.
-
-**Response:**
-```json
-{ "message": "User deleted" }
-```
-
-**Status Codes:**
-| Code | Description |
-|------|-------------|
-| 200 | User deleted |
-| 404 | Auth not enabled or user not found |
-
----
-
-## Shared Types
-
-### AuthSettings
-
-Used across multiple endpoints for API routing authentication.
-
-```typescript
-interface AuthSettings {
-  jwt?: string;                  // JWT token for authenticated API calls
-  routingConfig?: RoutingConfig; // API routing configuration
-}
-
-// RoutingConfig is a dictionary mapping service names to their config
-type RoutingConfig = Record<string, ServiceConfig>;
-
-interface ServiceConfig {
-  baseUrl?: string;                       // Base URL for the service
-  auth?: string;                          // Auth type ("jwt" or null)
-  endpoints?: Record<string, string>;     // Endpoint name -> URL template
-}
-```
-
-### UserRole
-
-```typescript
-enum UserRole {
-  Viewer = 1,
-  Contributor = 2,
-  Admin = 3
-}
-```
-
----
-
 ## Usage Notes
 
-1. **Line and column numbers are zero-based** - The first line is line 0, and the first character is column 0.
+1. **Line and column numbers are zero-based** — The first line is line 0, and the first character is column 0.
 
-2. **Include files** - For the linter, highlighter, and definitions endpoints to properly validate code with `#include` statements, pass the include file contents in the `includeFiles` dictionary. The key should match the filename used in the `#include` statement.
+2. **Source file path** — Pass `sourceFilePath` when the client knows the full path of the source file. This is used to resolve relative `#include` and `#read` paths against the parent file's directory.
 
-3. **Client file cache** - An alternative to `includeFiles` for resolving `#include` and `#read` directives. Files are passed as base64-encoded content, which is useful when the client has files cached in memory that the server cannot access directly. The cache is checked after `includeFiles` - if a file exists in both, `includeFiles` takes precedence.
+3. **Remote `#include`** — `#include https://…` and `#include http://…` are fetched server-side via [`Router.FetchUrlAsync`](Services/Router.cs) with a 10-second default timeout (overridable per request via `apiTimeoutMs`). Non-HTTP/HTTPS URLs are rejected. There is no API routing layer, no auth headers, no domain allowlist, and no server-side remote-content cache on this branch.
 
-4. **Source file path** - Pass `sourceFilePath` when the client knows the full path of the source file. This is used to resolve relative `#include` and `#read` paths so they match the client's cache keys.
+4. **Token positions** — For syntax highlighting, use `column` and `length` to determine the exact span of each token for colorization.
 
-5. **Token positions** - For syntax highlighting, use `column` and `length` to determine the exact span of each token for colorization.
+5. **Error ranges** — For the linter, use `column` and `endColumn` to underline or highlight the problematic code region.
 
-6. **Error ranges** - For the linter, use `column` and `endColumn` to underline or highlight the problematic code region.
+6. **Incremental updates** — Use `/highlight-line` for real-time syntax highlighting as the user types, then periodically call `/lint` for full validation.
 
-7. **Incremental updates** - Use `/highlight-line` for real-time syntax highlighting as the user types, then periodically call `/lint` for full validation.
-
-8. **Authentication** - Auth is optional. When enabled, pass a JWT Bearer token in the `Authorization` header for protected endpoints. The `/api/calcpad/*` endpoints do not require authentication. For remote content fetching, pass credentials via `authSettings` in the request body.
-
-9. **PDF generation** - Use `/convert` to get HTML first, then pass it to `/pdf` to generate a PDF. Check `/pdf/health` to verify the service is available.
-
-10. **Content caching** - The server caches remote content fetched via URLs and API routes. Use `/refresh-cache` to invalidate stale entries.
+7. **PDF / DOCX generation** — Call `/convert` to obtain HTML and pass it to `/pdf`, or call `/docx` directly with Calcpad source. Check `/pdf/health` to verify the PDF service is available.
 
 ---
 
@@ -1040,8 +738,5 @@ enum UserRole {
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CALCPAD_PORT` | `9420` | Server port |
-| `CALCPAD_HOST` | `0.0.0.0` | Server host |
-| `CALCPAD_ENABLE_HTTPS` | (unset) | Set to `true` to enable HTTPS |
-| `Auth:Enabled` | (unset) | Set to `true` to enable authentication |
-| `Auth:DatabasePath` | `data/users.db` | Path to SQLite user database |
+| `CALCPAD_PORT` | `9420` | Server port (host always loopback) |
+| `ASPNETCORE_URLS` / `--urls` | `http://localhost:9420` | Full bind URL (must resolve to loopback) |

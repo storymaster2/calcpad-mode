@@ -28,15 +28,6 @@
     <!-- PDF generation -->
     <PackageReference Include="PuppeteerSharp" Version="21.1.1" />
     <PackageReference Include="PDFsharp" Version="6.2.0" />
-    <!-- Authentication -->
-    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
-    <!-- Override transitive SQLitePCLRaw 2.1.11 (GHSA-2m69-gcr7-jv3q, SQLite <3.50.2 memory corruption).
-         3.0.3 restructures the dependency graph onto SourceGear.sqlite3 3.50.4.5 (patched). -->
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
-    <!-- S3-compatible object storage (Garage / AWS S3 / MinIO / RustFS) -->
-    <PackageReference Include="AWSSDK.S3" Version="3.7.412" />
   </ItemGroup>
 
   <ItemGroup>

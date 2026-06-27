@@ -166,10 +166,6 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     });
                     break;
 
-                case 'openS3Config':
-                    vscode.commands.executeCommand('workbench.action.openSettings', 'calcpad.s3');
-                    break;
-
                 case 'openLogsFolder': {
                     // Resolve the same logs directory the server manager uses.
                     // Folder may not exist yet on a fresh install — create it so the
@@ -186,15 +182,6 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     }
                     break;
                 }
-
-                case 'getS3Config':
-                    const s3Config = vscode.workspace.getConfiguration('calcpad');
-                    const s3ApiUrl = s3Config.get<string>('s3.apiUrl', '');
-                    webviewView.webview.postMessage({
-                        type: 's3ConfigResponse',
-                        apiUrl: s3ApiUrl
-                    });
-                    break;
 
                 case 'getPdfSettings':
                     const pdfConfigGet = vscode.workspace.getConfiguration('calcpad');
@@ -236,22 +223,6 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
                         vscode.commands.executeCommand('calcpad.refreshVariables');
                     }
-                    break;
-
-                case 's3Login':
-                    this.handleS3Login(data.credentials, webviewView.webview);
-                    break;
-
-                case 's3ListFiles':
-                    this.handleS3ListFiles(data.token, webviewView.webview);
-                    break;
-
-                case 's3DownloadFile':
-                    this.handleS3DownloadFile(data.fileName, data.token, webviewView.webview);
-                    break;
-
-                case 's3UploadFile':
-                    this.handleS3UploadFile(data.fileName, data.fileData, data.tags, data.token, webviewView.webview);
                     break;
 
                 case 'getHeadings':
@@ -497,196 +468,6 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
     public dispose() {
         this._outputChannel.dispose();
-    }
-
-    private async handleS3Login(credentials: { username: string, password: string }, webview: vscode.Webview) {
-        try {
-            const config = vscode.workspace.getConfiguration('calcpad');
-            const apiUrl = config.get<string>('s3.apiUrl', 'http://localhost:5000');
-
-            this._outputChannel.appendLine(`[S3] Attempting login to: ${apiUrl}/api/auth/login`);
-            this._outputChannel.appendLine(`[S3] Username: ${credentials.username}`);
-
-            const response = await fetch(`${apiUrl}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(credentials)
-            });
-
-            this._outputChannel.appendLine(`[S3] Login response status: ${response.status}`);
-
-            if (!response.ok) {
-                const errorBody = await response.text();
-                throw new Error(errorBody || `HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
-            this._outputChannel.appendLine(`[S3] Login response data: ${JSON.stringify(data, null, 2)}`);
-
-            const jwt = data.token;
-            this._outputChannel.appendLine(`[S3] Extracted JWT: ${jwt ? `${jwt.substring(0, 20)}...` : 'EMPTY'}`);
-
-            webview.postMessage({
-                type: 's3LoginResponse',
-                success: true,
-                token: data.token,
-                user: data.user
-            });
-        } catch (error: unknown) {
-            this._outputChannel.appendLine(`[S3] Login error: ${error}`);
-            if (error instanceof Error) {
-                this._outputChannel.appendLine(`[S3] Login error message: ${error.message}`);
-                this._outputChannel.appendLine(`[S3] Login error stack: ${error.stack}`);
-            }
-            webview.postMessage({
-                type: 's3LoginResponse',
-                success: false,
-                error: 'Connection error. Make sure the S3 API is running.'
-            });
-        }
-    }
-
-    private async handleS3ListFiles(token: string, webview: vscode.Webview) {
-        try {
-            const config = vscode.workspace.getConfiguration('calcpad');
-            const apiUrl = config.get<string>('s3.apiUrl', 'http://localhost:5000');
-
-            this._outputChannel.appendLine(`[S3] Requesting file list from: ${apiUrl}/api/blobstorage/list-with-metadata`);
-            this._outputChannel.appendLine(`[S3] Using token: ${token ? `${token.substring(0, 20)}...` : 'EMPTY'}`);
-
-            const response = await fetch(`${apiUrl}/api/blobstorage/list-with-metadata`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            this._outputChannel.appendLine(`[S3] Response status: ${response.status}`);
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
-            this._outputChannel.appendLine(`[S3] Response data: ${JSON.stringify(data, null, 2)}`);
-
-            const files = data.files || data || [];
-            this._outputChannel.appendLine(`[S3] Extracted files array: ${JSON.stringify(files, null, 2)}`);
-            this._outputChannel.appendLine(`[S3] Number of files found: ${Array.isArray(files) ? files.length : 'Not an array'}`);
-
-            webview.postMessage({
-                type: 's3FilesResponse',
-                success: true,
-                files: files
-            });
-        } catch (error: unknown) {
-            this._outputChannel.appendLine(`[S3] List Files error: ${error}`);
-            if (error instanceof Error) {
-                this._outputChannel.appendLine(`[S3] Error message: ${error.message}`);
-                this._outputChannel.appendLine(`[S3] Error stack: ${error.stack}`);
-            }
-            webview.postMessage({
-                type: 's3FilesResponse',
-                success: false,
-                error: 'Failed to connect to S3 API'
-            });
-        }
-    }
-
-    private async handleS3DownloadFile(fileName: string, token: string, webview: vscode.Webview) {
-        try {
-            const config = vscode.workspace.getConfiguration('calcpad');
-            const apiUrl = config.get<string>('s3.apiUrl', 'http://localhost:5000');
-
-            this._outputChannel.appendLine(`[S3] Downloading file: ${fileName}`);
-            this._outputChannel.appendLine(`[S3] Download URL: ${apiUrl}/api/blobstorage/download/${fileName}`);
-
-            const response = await fetch(`${apiUrl}/api/blobstorage/download/${fileName}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            this._outputChannel.appendLine(`[S3] Download response status: ${response.status}`);
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const arrayBuffer = await response.arrayBuffer();
-            this._outputChannel.appendLine(`[S3] Download response size: ${arrayBuffer.byteLength} bytes`);
-
-            const base64 = Buffer.from(arrayBuffer).toString('base64');
-
-            webview.postMessage({
-                type: 's3DownloadResponse',
-                success: true,
-                fileName: fileName,
-                fileData: `data:application/octet-stream;base64,${base64}`
-            });
-        } catch (error: unknown) {
-            this._outputChannel.appendLine(`[S3] Download error: ${error}`);
-            if (error instanceof Error) {
-                this._outputChannel.appendLine(`[S3] Download error message: ${error.message}`);
-            }
-            webview.postMessage({
-                type: 's3DownloadResponse',
-                success: false,
-                error: 'Download failed'
-            });
-        }
-    }
-
-    private async handleS3UploadFile(fileName: string, fileData: string, tags: string[], token: string, webview: vscode.Webview) {
-        try {
-            const config = vscode.workspace.getConfiguration('calcpad');
-            const apiUrl = config.get<string>('s3.apiUrl', 'http://localhost:5000');
-
-            this._outputChannel.appendLine(`[S3] Uploading file: ${fileName}`);
-            this._outputChannel.appendLine(`[S3] Upload URL: ${apiUrl}/api/blobstorage/upload`);
-            this._outputChannel.appendLine(`[S3] Tags: ${JSON.stringify(tags)}`);
-
-            // Convert base64 data URL to buffer
-            const base64Data = fileData.split(',')[1];
-            const buffer = Buffer.from(base64Data, 'base64');
-
-            this._outputChannel.appendLine(`[S3] File size: ${buffer.length} bytes`);
-
-            // Use native FormData (available in Node.js 18+)
-            const formData = new FormData();
-
-            // Create a Blob for the file
-            const fileBlob = new Blob([buffer], { type: 'application/octet-stream' });
-            formData.append('file', fileBlob, fileName);
-
-            if (tags.length > 0) {
-                formData.append('tags', JSON.stringify(tags));
-            }
-
-            const response = await fetch(`${apiUrl}/api/blobstorage/upload`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-
-            this._outputChannel.appendLine(`[S3] Upload response status: ${response.status}`);
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            this._outputChannel.appendLine(`[S3] Upload successful for: ${fileName}`);
-
-            webview.postMessage({
-                type: 's3UploadResponse',
-                success: true
-            });
-        } catch (error: unknown) {
-            this._outputChannel.appendLine(`[S3] Upload error: ${error}`);
-            if (error instanceof Error) {
-                this._outputChannel.appendLine(`[S3] Upload error message: ${error.message}`);
-            }
-            webview.postMessage({
-                type: 's3UploadResponse',
-                success: false,
-                error: 'Upload failed'
-            });
-        }
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {

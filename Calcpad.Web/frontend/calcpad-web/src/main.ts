@@ -581,9 +581,9 @@ async function bootstrap(): Promise<void> {
 
         let html: string | ArrayBuffer | null;
         if (mode === 'unwrapped') {
-            html = await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.clientFileCache, fileContext.sourceFilePath);
+            html = await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath);
         } else {
-            html = await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.clientFileCache, fileContext.sourceFilePath);
+            html = await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath);
         }
 
         if (typeof html === 'string') {
@@ -591,20 +591,11 @@ async function bootstrap(): Promise<void> {
         }
     }
 
-    // Manual refresh: clear server cache, re-lint with current settings,
+    // Manual refresh: re-lint with current settings,
     // refresh definitions/headings, redraw preview. Called from the
     // Server > Refresh menu item.
     async function runRefresh(): Promise<void> {
         appInstance.appendOutput('info', 'Refreshing…');
-        try {
-            const cleared = await activeBridge.api.refreshCache();
-            appInstance.appendOutput(
-                cleared ? 'info' : 'warn',
-                cleared ? 'Server cache cleared' : 'Server cache clear failed',
-            );
-        } catch (err) {
-            appInstance.appendOutput('warn', `Cache clear error: ${err instanceof Error ? err.message : String(err)}`);
-        }
 
         await diagnostics.refresh();
         editorBridge.definitions.refreshDefinitions(editor.getValue(), activeDocumentKey());

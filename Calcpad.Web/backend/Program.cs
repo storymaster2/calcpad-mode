@@ -1,5 +1,6 @@
 using Calcpad.Server;
 using Calcpad.Server.Services;
+using System.Net;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -36,7 +37,7 @@ try
     FileLogger.LogInfo("Starting Calcpad Server");
 
     // Set default environment variables if not set
-    Environment.SetEnvironmentVariable("CALCPAD_HOST", Environment.GetEnvironmentVariable("CALCPAD_HOST") ?? "0.0.0.0");
+    Environment.SetEnvironmentVariable("CALCPAD_HOST", Environment.GetEnvironmentVariable("CALCPAD_HOST") ?? "127.0.0.1");
 
     // Pull our custom CLI flags out of args before handing them to ASP.NET.
     // --port-file <path>          Write the bound base URL to this file once
@@ -171,6 +172,18 @@ try
     // Create and configure web application using shared service
     var (app, serverUrl) = CalcpadApiService.CreateConfiguredApp(forwardedArgs);
 
+    // Server mode (non-localhost binding) is in development and not yet supported:
+    // the include-resolution path that ships uploaded files from a remote browser
+    // is being reworked. Crash early if anything resolves to a non-loopback URL.
+    foreach (var u in serverUrl.Split(';', StringSplitOptions.RemoveEmptyEntries))
+    {
+        if (!Program.IsLoopbackUrl(u))
+            throw new InvalidOperationException(
+                $"Calcpad server is bound to '{u}' which is not localhost. " +
+                "Server mode is in development and not yet supported. " +
+                "Set CALCPAD_HOST=127.0.0.1 or pass --urls http://127.0.0.1:<port>.");
+    }
+
     FileLogger.LogInfo("Starting console application", serverUrl);
     Console.WriteLine($"Calcpad Server starting at {serverUrl}");
     Console.WriteLine("Press Ctrl+C to stop the server.");
@@ -285,6 +298,18 @@ internal sealed class NeutralinoExtensionInfo
 
 internal static partial class Program
 {
+    /// <summary>
+    /// True if the URL's host resolves to a loopback address (localhost, 127.0.0.0/8, ::1).
+    /// Used to gate server-mode bindings until the remote-include path is finished.
+    /// </summary>
+    internal static bool IsLoopbackUrl(string urlString)
+    {
+        if (!Uri.TryCreate(urlString, UriKind.Absolute, out var uri)) return false;
+        var host = uri.Host;
+        if (string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase)) return true;
+        return IPAddress.TryParse(host, out var ip) && IPAddress.IsLoopback(ip);
+    }
+
     /// <summary>
     /// Try to parse a stdin line as Neutralino's extension-handshake JSON.
     /// Returns null on anything that doesn't structurally match.

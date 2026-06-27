@@ -4,7 +4,6 @@
 
 // --- Types -------------------------------------------------------------------
 export type {
-    ClientFileCache,
     LintRequest,
     LintResponse,
     LintDiagnostic,
@@ -59,17 +58,6 @@ export {
     TOKEN_TYPE_MAP,
     mapTokenTypeToIndex,
 } from './services/highlight';
-export {
-    expandEnvironmentVariables,
-    isAbsolutePath,
-    stripLocalBlocks,
-    parseIncludeDirective,
-    parseReadDirective,
-    extractReferencedFilenames,
-    extractReferencedFilenamesFromGlobalScope,
-    buildClientFileCache,
-    buildClientFileCacheFromContent,
-} from './services/file-cache';
 
 // --- Base64 Truncation -------------------------------------------------------
 export { truncateBase64Content } from './services/base64-truncate';

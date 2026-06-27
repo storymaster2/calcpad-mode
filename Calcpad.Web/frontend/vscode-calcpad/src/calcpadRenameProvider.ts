@@ -4,7 +4,6 @@ import {
     CalcpadApiClient,
     FindReferencesResponse,
     SymbolLocation,
-    buildClientFileCacheFromContent,
 } from 'calcpad-frontend';
 import { VSCodeLogger, VSCodeFileSystem } from './adapters';
 
@@ -99,11 +98,7 @@ export class CalcpadRenameProvider implements vscode.RenameProvider {
     private async fetchReferences(document: vscode.TextDocument): Promise<FindReferencesResponse | null> {
         const content = document.getText();
         try {
-            const sourceDir = path.dirname(document.uri.fsPath);
-            const clientFileCache = await buildClientFileCacheFromContent(
-                content, sourceDir, this.fileSystem, this.logger
-            );
-            return await this.apiClient.findReferences(content, clientFileCache);
+            return await this.apiClient.findReferences(content, document.uri.fsPath);
         } catch (error) {
             this.outputChannel.appendLine(
                 '[Rename] Error fetching references: ' + (error instanceof Error ? error.message : 'Unknown error')

@@ -86,17 +86,13 @@ export function lightDirectionToEnum(direction: string): number {
     return LIGHT_DIRECTION_MAP[direction] ?? 0;
 }
 
-export function buildApiSettings(settings: CalcpadSettings, jwt: string = ''): unknown {
+export function buildApiSettings(settings: CalcpadSettings): unknown {
     return {
         math: { ...settings.math },
         plot: {
             ...settings.plot,
             colorScale: colorScaleToEnum(settings.plot.colorScale),
             lightDirection: lightDirectionToEnum(settings.plot.lightDirection)
-        },
-        auth: {
-            url: settings.server.url,
-            jwt
         },
         units: settings.units
     };

@@ -61,7 +61,6 @@ export class CalcpadSettingsManager {
 
     /**
      * Returns the user-configured remote server URL (always from settings, ignores local server).
-     * Use this for operations that must go to the remote server (e.g., auth).
      */
     public getRemoteServerUrl(): string {
         return this._settings.server.url;
@@ -104,34 +103,14 @@ export class CalcpadSettingsManager {
         outputChannel.appendLine(`[Settings] Settings saved to workspace configuration`);
     }
 
-    public async getStoredS3JWT(): Promise<string> {
-        if (!this._context) {
-            const outputChannel = getOutputChannel();
-            outputChannel.appendLine('Warning: Extension context not available for S3 JWT retrieval');
-            return '';
-        }
-
-        const jwt = await this._context.secrets.get('calcpad.s3.jwt') || '';
-
-        const outputChannel = getOutputChannel();
-        outputChannel.appendLine(`Getting stored S3 JWT: ${jwt ? `${jwt.substring(0, 20)}...` : 'EMPTY'}`);
-        outputChannel.appendLine(`S3 JWT length: ${jwt ? jwt.length : 0}`);
-
-        return jwt;
-    }
-
     public async getApiSettings(): Promise<unknown> {
-        const storedS3JWT = await this.getStoredS3JWT();
-
-        const apiSettings = buildApiSettings(this._settings, storedS3JWT);
+        const apiSettings = buildApiSettings(this._settings);
 
         const outputChannel = getOutputChannel();
         outputChannel.appendLine('API settings being sent:');
         outputChannel.appendLine(`  Local Server URL: ${this._localServerUrl ?? '(none)'}`);
         outputChannel.appendLine(`  Remote Server URL: ${this._settings.server.url}`);
         outputChannel.appendLine(`  Effective Server URL: ${this.getServerUrl()}`);
-        outputChannel.appendLine(`  S3 JWT: ${storedS3JWT ? `${storedS3JWT.substring(0, 20)}...` : 'EMPTY'}`);
-        outputChannel.appendLine(`  S3 JWT Length: ${storedS3JWT ? storedS3JWT.length : 0}`);
 
         return apiSettings;
     }

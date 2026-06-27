@@ -5,7 +5,6 @@ import {
     CalcpadTokenType,
     SEMANTIC_TOKEN_TYPES,
     mapTokenTypeToIndex,
-    buildClientFileCacheFromContent,
     truncateBase64Content,
 } from 'calcpad-frontend';
 import { VSCodeLogger, VSCodeFileSystem } from './adapters';
@@ -55,16 +54,9 @@ export class CalcpadSemanticTokensProvider implements vscode.DocumentSemanticTok
         }
 
         try {
-            // Build client file cache for #include resolution
-            const sourceDir = path.dirname(document.uri.fsPath);
-            const logger = new VSCodeLogger(this.debugChannel);
-            const clientFileCache = await buildClientFileCacheFromContent(
-                content, sourceDir, this.fileSystem, logger, '[Highlight #' + reqId + ']'
-            );
-
             const truncatedContent = truncateBase64Content(content);
             const sourceFilePath = document.uri.fsPath;
-            const tokens = await this.apiClient.highlight(truncatedContent, false, clientFileCache, sourceFilePath);
+            const tokens = await this.apiClient.highlight(truncatedContent, false, sourceFilePath);
 
             if (cancellationToken.isCancellationRequested) {
                 this.debugChannel.appendLine('[Highlight #' + reqId + '] Cancelled after ' + (Date.now() - startTime) + 'ms');

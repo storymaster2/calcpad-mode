@@ -2,7 +2,6 @@ import type { ILogger } from '../types/interfaces';
 import type {
     LintRequest,
     LintResponse,
-    ClientFileCache,
     HighlightRequest,
     HighlightResponse,
     HighlightToken,
@@ -36,24 +35,24 @@ export class CalcpadApiClient {
         return this.baseUrl;
     }
 
-    public async lint(content: string, clientFileCache?: ClientFileCache, sourceFilePath?: string): Promise<LintResponse | null> {
-        const request: LintRequest = { content, clientFileCache, sourceFilePath };
+    public async lint(content: string, sourceFilePath?: string): Promise<LintResponse | null> {
+        const request: LintRequest = { content, sourceFilePath };
         return this.post<LintResponse>('/api/calcpad/lint', request, 'Lint');
     }
 
-    public async highlight(content: string, includeText: boolean = false, clientFileCache?: ClientFileCache, sourceFilePath?: string): Promise<HighlightToken[] | null> {
-        const request: HighlightRequest = { content, includeText, clientFileCache, sourceFilePath };
+    public async highlight(content: string, includeText: boolean = false, sourceFilePath?: string): Promise<HighlightToken[] | null> {
+        const request: HighlightRequest = { content, includeText, sourceFilePath };
         const response = await this.post<HighlightResponse>('/api/calcpad/highlight', request, 'Highlight');
         return response?.tokens ?? null;
     }
 
-    public async definitions(content: string, clientFileCache?: ClientFileCache, sourceFilePath?: string): Promise<DefinitionsResponse | null> {
-        const request: DefinitionsRequest = { content, clientFileCache, sourceFilePath };
+    public async definitions(content: string, sourceFilePath?: string): Promise<DefinitionsResponse | null> {
+        const request: DefinitionsRequest = { content, sourceFilePath };
         return this.post<DefinitionsResponse>('/api/calcpad/definitions', request, 'Definitions');
     }
 
-    public async findReferences(content: string, clientFileCache?: ClientFileCache, sourceFilePath?: string): Promise<FindReferencesResponse | null> {
-        const request: DefinitionsRequest = { content, clientFileCache, sourceFilePath };
+    public async findReferences(content: string, sourceFilePath?: string): Promise<FindReferencesResponse | null> {
+        const request: DefinitionsRequest = { content, sourceFilePath };
         return this.post<FindReferencesResponse>('/api/calcpad/find-references', request, 'FindReferences');
     }
 
@@ -75,7 +74,6 @@ export class CalcpadApiClient {
         settings: unknown,
         outputFormat: string = 'html',
         forPrint: boolean = false,
-        clientFileCache?: ClientFileCache,
         sourceFilePath?: string
     ): Promise<ArrayBuffer | string | null> {
         const url = this.baseUrl + '/api/calcpad/convert';
@@ -83,7 +81,7 @@ export class CalcpadApiClient {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings, outputFormat, forPrint, clientFileCache, sourceFilePath }),
+                body: JSON.stringify({ content, settings, outputFormat, forPrint, sourceFilePath }),
                 signal: AbortSignal.timeout(60000),
             });
             if (!response.ok) return null;
@@ -106,7 +104,6 @@ export class CalcpadApiClient {
     public async convertDocx(
         content: string,
         settings: unknown,
-        clientFileCache?: ClientFileCache,
         sourceFilePath?: string,
     ): Promise<ArrayBuffer | null> {
         const url = this.baseUrl + '/api/calcpad/docx';
@@ -117,7 +114,6 @@ export class CalcpadApiClient {
                 body: JSON.stringify({
                     content,
                     settings,
-                    clientFileCache,
                     sourceFilePath,
                     forPrint: true,
                 }),
@@ -138,7 +134,6 @@ export class CalcpadApiClient {
     public async convertUnwrapped(
         content: string,
         settings: unknown,
-        clientFileCache?: ClientFileCache,
         sourceFilePath?: string,
     ): Promise<string | null> {
         const url = this.baseUrl + '/api/calcpad/convert-unwrapped';
@@ -146,7 +141,7 @@ export class CalcpadApiClient {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings, clientFileCache, sourceFilePath }),
+                body: JSON.stringify({ content, settings, sourceFilePath }),
                 signal: AbortSignal.timeout(60000),
             });
             if (!response.ok) return null;
@@ -154,24 +149,6 @@ export class CalcpadApiClient {
         } catch (error) {
             this.logError('ConvertUnwrapped', error);
             return null;
-        }
-    }
-
-    public async refreshCache(): Promise<boolean> {
-        try {
-            const response = await fetch(this.baseUrl + '/api/calcpad/refresh-cache', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: '{}',
-                signal: AbortSignal.timeout(5000),
-            });
-            if (!response.ok) {
-                this.logger?.appendLine(`[RefreshCache] Server returned ${response.status} ${response.statusText}`);
-            }
-            return response.ok;
-        } catch (error) {
-            this.logError('RefreshCache', error);
-            return false;
         }
     }
 

@@ -4,7 +4,6 @@ import {
     CalcpadDefinitionsService as FrontendDefinitionsService,
     CalcpadApiClient,
     DefinitionsResponse,
-    buildClientFileCacheFromContent,
 } from 'calcpad-frontend';
 import { VSCodeLogger, VSCodeFileSystem } from './adapters';
 
@@ -32,13 +31,8 @@ export class CalcpadDefinitionsService {
         const content = document.getText();
 
         try {
-            const sourceDir = path.dirname(document.uri.fsPath);
-            const clientFileCache = await buildClientFileCacheFromContent(
-                content, sourceDir, this.fileSystem, this.logger
-            );
-
             return await this.definitionsService.refreshDefinitions(
-                content, document.uri.toString(), clientFileCache
+                content, document.uri.toString(), document.uri.fsPath
             );
         } catch (error) {
             this.logger.appendLine(
