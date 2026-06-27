@@ -40,7 +40,7 @@ namespace Calcpad.Core
             // #append M to filename.csv@R1C1:R2C2 type=[Y|N] sep=,
             // #append M to filename.txt@R1C1:R2C2 type=[Y|N] sep=
 
-            internal ReadWriteOptions(ReadOnlySpan<char> s, int command)
+            internal ReadWriteOptions(ReadOnlySpan<char> s, int command, string sourceDir = null)
             {
                 if (command > 0)
                     Type = 'N';
@@ -127,7 +127,9 @@ namespace Calcpad.Core
                     IsExcel = Ext.StartsWith("xls", StringComparison.OrdinalIgnoreCase);
                 }
                 var path = Environment.ExpandEnvironmentVariables($"{Path}.{Ext}");
-                FullPath = System.IO.Path.GetFullPath(path);
+                FullPath = sourceDir != null
+                    ? System.IO.Path.GetFullPath(path, sourceDir)
+                    : System.IO.Path.GetFullPath(path);
                 Append = command == 2;
                 ++i0;
                 for (int i = 0; i < 2; ++i)
