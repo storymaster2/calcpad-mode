@@ -51,3 +51,15 @@ jobs:
           body_path: release-notes.md
           generate_release_notes: true
           draft: true
+
+  bump-website-version:
+    needs: [build-all, determine-version]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger version bump in CalcpadCE-Website
+        run: |
+          gh workflow run bump-website-version.yml \
+            --repo fwolter/CalcpadCE-Website \
+            --field version=${{ needs.determine-version.outputs.version }}
+        env:
+          GH_TOKEN: ${{ secrets.WEBSITE_ACTIONS_TOKEN }}
