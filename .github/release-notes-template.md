@@ -1,6 +1,8 @@
-### 🛡️ Installation Note (Windows SmartScreen)
+## 🛡️ Installation Note (Windows SmartScreen)
 
-Because CalcpadCE is a new, community-driven project, Windows SmartScreen may flag the installer as an unrecognized app. This is normal for new open-source software. To proceed, simply click "More info" and then "Run anyway".
+Because CalcpadCE is a new, community-driven project, Windows SmartScreen flags the installer as an unrecognized app.
+This is normal for new open-source software.
+To proceed, simply click "More info" and then "Run anyway".
 
 ## Downloads
 
