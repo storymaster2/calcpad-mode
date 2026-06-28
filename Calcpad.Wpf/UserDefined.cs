@@ -104,10 +104,19 @@ namespace Calcpad.Wpf
                 var s = GetFileName(lineContent);
                 if (File.Exists(s))
                 {
-                    s = Include(s, null);
-                    var lines = s.EnumerateLines();
-                    foreach (var line in lines)
-                        Get(line, lineNumber);
+                    // Circular/recursive includes throw here. Swallow as the highlighter's
+                    // AppendInclude does - the error is surfaced inline on the #include line
+                    // during the parse pass. Letting it escape crashes the app, because this
+                    // runs on the UI thread inside a RichTextBox change block during a
+                    // dispatcher-suspended render pass (see App.xaml.cs unhandled handler).
+                    try
+                    {
+                        s = Include(s, null);
+                        var lines = s.EnumerateLines();
+                        foreach (var line in lines)
+                            Get(line, lineNumber);
+                    }
+                    catch { }
                 }
                 _hasIncludes = true;
             }
