@@ -14,6 +14,48 @@
         src: url('../media/Jost-200-Thin.otf') format('opentype');
     }
 
+    @font-face {
+        font-family: 'Georgia Pro';
+        src: url('../media/GeorgiaPro-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Georgia Pro';
+        src: url('../media/GeorgiaPro-Italic.ttf') format('truetype');
+        font-weight: normal;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Georgia Pro';
+        src: url('../media/GeorgiaPro-SemiBold.ttf') format('truetype');
+        font-weight: 600;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Georgia Pro';
+        src: url('../media/GeorgiaPro-SemiBoldItalic.ttf') format('truetype');
+        font-weight: 600;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Georgia Pro';
+        src: url('../media/GeorgiaPro-Bold.ttf') format('truetype');
+        font-weight: bold;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Georgia Pro';
+        src: url('../media/GeorgiaPro-BoldItalic.ttf') format('truetype');
+        font-weight: bold;
+        font-style: italic;
+    }
+
     :scope {
         background-color: white;
         color: black;
