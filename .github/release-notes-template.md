@@ -4,6 +4,16 @@ Because CalcpadCE is a new, community-driven project, Windows SmartScreen flags 
 This is normal for new open-source software.
 To proceed, simply click "More info" and then "Run anyway".
 
+You can skip the SmartScreen warning by installing CalcpadCE via [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/).
+This is also the easiest way to install CalcpadCE.
+Simply open a Windows terminal and run:
+
+`winget install calcpadce`
+
+CalcpadCE can be updated via winget after this release's PR in [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs/pulls?q=is%3Apr+calcpadce) is merged:
+
+`winget update calcpadce`
+
 ## Downloads
 
 | File | OS | Arch | .NET Runtime |
