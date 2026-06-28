@@ -462,7 +462,7 @@ async function bootstrap(): Promise<void> {
     // skip include locations. See `IncludeFileOpener` for the browser/remote
     // follow-up.
     const openIncludeFile: IncludeFileOpener | undefined = neuBridge
-        ? async (rawFileName: string) => {
+        ? async (rawFileName: string, navigateTo?: { line: number; column: number }) => {
             try {
                 const absPath = neuBridge.resolveIncludePath(rawFileName);
                 let model = tabs.findModelByPath(absPath);
@@ -474,6 +474,22 @@ async function bootstrap(): Promise<void> {
                         console.warn(`[references] opened ${absPath} as ${tabId} but no model was registered`);
                         return null;
                     }
+                } else {
+                    // Tab exists but may not be the active one — switch to it
+                    // so the editor actually shows the include file.
+                    const existing = tabs.findByPath(absPath);
+                    if (existing && tabs.activeId !== existing.id) {
+                        tabs.activate(existing.id);
+                    }
+                }
+                // Standalone Monaco's openCodeEditor service doesn't reliably
+                // re-apply the selection after a provider has swapped the
+                // active model, so position the cursor explicitly here.
+                if (navigateTo) {
+                    const lineNumber = Math.max(0, navigateTo.line) + 1;
+                    const column = Math.max(0, navigateTo.column) + 1;
+                    editor.setPosition({ lineNumber, column });
+                    editor.revealPositionInCenter({ lineNumber, column });
                 }
                 return model.uri;
             } catch (err) {
@@ -488,7 +504,7 @@ async function bootstrap(): Promise<void> {
         const sev = editorBridge.getExtraSetting('linterMinSeverity');
         return (sev === 'error' || sev === 'warning') ? sev : 'information';
     }, getFileContext);
-    registerCompletionProvider(activeBridge.snippets);
+    registerCompletionProvider(editorBridge);
     registerHoverProvider(editorBridge);
     registerDefinitionProvider(editorBridge, getFileContext, openIncludeFile);
     registerReferenceProvider(editorBridge, getFileContext, openIncludeFile);

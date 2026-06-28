@@ -84,6 +84,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import type { InsertItem } from '../types'
+import { replaceParameterPlaceholders } from '../../text/snippet-insert'
 
 // Props
 interface Props {
@@ -213,52 +214,18 @@ const buildTreeFromItems = (items: InsertItem[]): TreeNode => {
   return tree
 }
 
-// Helper: Replace § placeholders with parameter names in a given text
-const replaceParamPlaceholders = (text: string, item: InsertItem): string => {
-  if (!item.parameters || item.parameters.length === 0) {
-    return text
-  }
-
-  // Count § placeholders
-  const placeholderCount = (text.match(/§/g) || []).length
-  if (placeholderCount === 0) {
-    return text
-  }
-
-  // Build replacement array
-  const replacements: string[] = []
-  for (let i = 0; i < placeholderCount; i++) {
-    if (i < item.parameters.length) {
-      replacements.push(item.parameters[i].name)
-    } else {
-      // Variadic case: more placeholders than parameters, use ellipsis
-      replacements.push('...')
-    }
-  }
-
-  // Replace § with parameter names in order
-  let result = text
-  for (const replacement of replacements) {
-    result = result.replace('§', replacement)
-  }
-
-  return result
-}
-
-// Helper: Format display text (uses label if available, falls back to tag)
-// Appends (~shortcut) for items with quick typing support
+// Format display text (uses label if available, falls back to tag).
+// Appends (~shortcut) for items with quick typing support.
 const formatDisplayText = (item: InsertItem): string => {
-  const baseText = item.label || item.tag
-  const display = replaceParamPlaceholders(baseText, item)
+  const display = replaceParameterPlaceholders(item.label || item.tag, item)
   if (item.quickType) {
     return display + ' (~' + item.quickType + ')'
   }
   return display
 }
 
-// Helper: Format insert text (always uses tag as base)
 const formatInsertText = (item: InsertItem): string => {
-  return replaceParamPlaceholders(item.tag, item)
+  return replaceParameterPlaceholders(item.tag, item)
 }
 
 // Helper: Build tooltip with description and parameter breakdown

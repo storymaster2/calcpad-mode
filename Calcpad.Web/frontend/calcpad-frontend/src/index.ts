@@ -79,6 +79,22 @@ export {
     findQuickTypeReplacement,
 } from './text/quick-type';
 export {
+    buildInsertSnippet,
+    hasSnippetPlaceholders,
+    replaceParameterPlaceholders,
+    formatInsertLabel,
+} from './text/snippet-insert';
+export type { CompletionKind, CompletionData } from './text/completion-format';
+export {
+    buildParameterSnippet,
+    buildParameterizedDoc,
+    formatMacroCompletion,
+    formatFunctionCompletion,
+    formatVariableCompletion,
+    formatCustomUnitCompletion,
+    formatBuiltinSnippetCompletion,
+} from './text/completion-format';
+export {
     INDENT_INCREASE_PATTERNS,
     INDENT_DECREASE_PATTERNS,
     shouldIncreaseIndent,

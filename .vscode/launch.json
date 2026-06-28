@@ -123,6 +123,14 @@
             "runtimeExecutable": "/usr/bin/calcpad-ce",
             "console": "integratedTerminal",
             "preLaunchTask": "Desktop: Install via pacman (Arch)"
+        },
+        {
+            "name": "Desktop: Run AppImage (Linux x64)",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/packaging/appimage/out/CalcpadCE-0.2.0-x86_64.AppImage",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Desktop: Build AppImage (Linux)"
         }
     ]
 }

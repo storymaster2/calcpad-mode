@@ -336,15 +336,21 @@ export class NeutralinoServerManager {
     }
 
     private buildSpawnCommand(): string {
-        // Quote both for paths with spaces (common on Windows + macOS), and use
-        // native separators — CreateProcess on Windows is unreliable with a
-        // forward-slash program path. `--no-exit-on-stdin-close` disables the
+        // Resolve the exe and the port-file via cwd (serverDir) rather than
+        // embedding serverDir again in the command — Neutralino sometimes
+        // hands us a relative NL_PATH (e.g. "."), which would otherwise
+        // produce a double-prefixed path like
+        // "./extensions/server/Calcpad.Server" run from cwd
+        // "./extensions/server". The server resolves --port-file relative to
+        // its own cwd (= serverDir), so passing the basename here is enough
+        // and matches what filesystem.readFile(portFilePath) resolves to from
+        // Neutralino's own cwd. `--no-exit-on-stdin-close` disables the
         // server's stdin-EOF watchdog and Neutralino extension handshake (the
         // role CALCPAD_DETACHED=1 used to play via the `envs` option, which is
         // broken on the Windows Neutralino core — see start()).
-        const exe = this.toNativePath(this.serverExePath);
-        const portFile = this.toNativePath(this.portFilePath);
-        return `"${exe}" --port-file "${portFile}" --no-exit-on-stdin-close`;
+        const name = this.platform === 'Windows' ? 'Calcpad.Server.exe' : 'Calcpad.Server';
+        const exe = this.platform === 'Windows' ? name : `./${name}`;
+        return `"${exe}" --port-file ".calcpad-server.port" --no-exit-on-stdin-close`;
     }
 
     /**

@@ -1,0 +1,54 @@
+#!/bin/bash
+# CalcpadCE AppImage launcher.
+#
+# The bundled .NET server writes its port file, lock file, and logs next to
+# its binary (see Calcpad.Web/backend/Program.cs and the frontend
+# server-manager.ts), and the AppImage squashfs mount is read-only — so we
+# stage the Neutralino bundle into a writable per-user runtime directory on
+# first launch and run from there. Subsequent launches skip the copy when
+# the on-disk stamp matches this build.
+
+set -e
+
+HERE="$(dirname "$(readlink -f "$0")")"
+
+# Force X11 backend — WebKitGTK on Wayland has known rendering issues.
+export GDK_BACKEND="${GDK_BACKEND:-x11}"
+export WEBKIT_DISABLE_DMABUF_RENDERER="${WEBKIT_DISABLE_DMABUF_RENDERER:-1}"
+
+# Default browser for PDF export. Override by exporting BROWSER_PATH before
+# launching the AppImage.
+if [ -z "$BROWSER_PATH" ]; then
+    if [ -x /usr/bin/chromium ]; then
+        export BROWSER_PATH=/usr/bin/chromium
+    else
+        for cand in ungoogled-chromium chromium-browser \
+                    google-chrome-stable google-chrome microsoft-edge-stable; do
+            resolved="$(command -v "$cand" 2>/dev/null || true)"
+            if [ -n "$resolved" ]; then
+                export BROWSER_PATH="$resolved"
+                break
+            fi
+        done
+    fi
+fi
+
+# Stage the bundle into a writable runtime dir. Stamp against the AppImage's
+# resources.neu (changes on every build) so we only re-copy when the user
+# launches a newer AppImage.
+RUNTIME_BASE="${XDG_CACHE_HOME:-$HOME/.cache}/CalcpadCE"
+RUNTIME_DIR="$RUNTIME_BASE/runtime"
+STAMP_FILE="$RUNTIME_DIR/.stamp"
+
+SRC_DIR="$HERE/usr/bin"
+STAMP_VAL="$(stat -c '%Y-%s' "$SRC_DIR/resources.neu" 2>/dev/null || echo unknown)"
+
+if [ ! -f "$STAMP_FILE" ] || [ "$(cat "$STAMP_FILE" 2>/dev/null)" != "$STAMP_VAL" ]; then
+    rm -rf "$RUNTIME_DIR"
+    mkdir -p "$RUNTIME_DIR"
+    cp -a "$SRC_DIR/." "$RUNTIME_DIR/"
+    echo "$STAMP_VAL" > "$STAMP_FILE"
+fi
+
+cd "$RUNTIME_DIR" || exit 1
+exec ./calcpad-desktop "$@"

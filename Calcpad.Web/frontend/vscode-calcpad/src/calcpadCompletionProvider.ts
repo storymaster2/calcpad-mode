@@ -1,7 +1,35 @@
 import * as vscode from 'vscode';
+import {
+    buildInsertSnippet,
+    hasSnippetPlaceholders,
+    formatInsertLabel,
+    formatMacroCompletion,
+    formatFunctionCompletion,
+    formatVariableCompletion,
+    formatCustomUnitCompletion,
+    type CompletionData,
+    type CompletionKind,
+} from 'calcpad-frontend';
 import { CalcpadInsertManager, InsertItem } from './calcpadInsertManager';
 import { CalcpadDefinitionsService } from './calcpadDefinitionsService';
 import { buildBuiltinDocMarkdown } from './calcpadBuiltinDocs';
+
+const VSCODE_KIND_MAP: Record<CompletionKind, vscode.CompletionItemKind> = {
+    macro: vscode.CompletionItemKind.Class,
+    function: vscode.CompletionItemKind.Function,
+    variable: vscode.CompletionItemKind.Variable,
+    unit: vscode.CompletionItemKind.Unit,
+    snippet: vscode.CompletionItemKind.Snippet,
+};
+
+function toVscodeCompletion(data: CompletionData): vscode.CompletionItem {
+    const item = new vscode.CompletionItem(data.label, VSCODE_KIND_MAP[data.kind]);
+    item.detail = data.detail;
+    item.documentation = new vscode.MarkdownString(data.documentation);
+    item.insertText = data.isSnippet ? new vscode.SnippetString(data.insertText) : data.insertText;
+    item.sortText = data.sortText;
+    return item;
+}
 
 export class CalcpadCompletionProvider implements vscode.CompletionItemProvider {
     private insertManager: CalcpadInsertManager;
@@ -45,70 +73,27 @@ export class CalcpadCompletionProvider implements vscode.CompletionItemProvider 
             }
         }
 
-        // Get user-defined content from cached definitions (highest priority)
+        // Get user-defined content from cached definitions (highest priority).
+        // Items pulled in via #include are surfaced here too — the linter
+        // service tags them with source !== 'local' so the shared formatters
+        // can show their origin file in the docs.
         try {
             const definitions = this.definitionsService.getCachedDefinitions(document.uri.toString());
 
             if (definitions) {
-                // Add user-defined variables
+                const matches = (name: string) => !word || name.toLowerCase().includes(word.toLowerCase());
+
                 for (const variable of definitions.variables) {
-                    if (!word || variable.name.toLowerCase().includes(word.toLowerCase())) {
-                        const item = new vscode.CompletionItem(variable.name, vscode.CompletionItemKind.Variable);
-                        item.detail = variable.description || ('Variable = ' + (variable.expression || ''));
-                        let varDoc = '**User-defined variable**\n\nValue: `' + (variable.expression || '') + '`';
-                        if (variable.description) {
-                            varDoc += '\n\n' + variable.description;
-                        }
-                        item.documentation = new vscode.MarkdownString(varDoc);
-                        item.sortText = '0_' + variable.name; // Sort user-defined content first
-                        completionItems.push(item);
-                    }
+                    if (matches(variable.name)) completionItems.push(toVscodeCompletion(formatVariableCompletion(variable)));
                 }
-
-                // Add user-defined functions
                 for (const func of definitions.functions) {
-                    if (!word || func.name.toLowerCase().includes(word.toLowerCase())) {
-                        const item = new vscode.CompletionItem(func.name, vscode.CompletionItemKind.Function);
-                        const paramStr = func.parameters.join('; ');
-                        item.detail = func.description || ('Function(' + paramStr + ')');
-                        item.documentation = new vscode.MarkdownString(
-                            this.buildParameterizedDoc('User-defined function', func.description, func.parameters, func.paramTypes, func.paramDescriptions, undefined, func.defaults)
-                        );
-                        item.insertText = new vscode.SnippetString(func.name + '(' + this.createParameterSnippet(func.parameters) + ')');
-                        item.sortText = '0_' + func.name;
-                        completionItems.push(item);
-                    }
+                    if (matches(func.name)) completionItems.push(toVscodeCompletion(formatFunctionCompletion(func)));
                 }
-
-                // Add user-defined macros
                 for (const macro of definitions.macros) {
-                    if (!word || macro.name.toLowerCase().includes(word.toLowerCase())) {
-                        const item = new vscode.CompletionItem(macro.name, vscode.CompletionItemKind.Class);
-                        const paramStr = macro.parameters.join('; ');
-                        item.detail = macro.description || (macro.parameters.length > 0 ? 'Macro(' + paramStr + ')' : 'Macro');
-                        item.documentation = new vscode.MarkdownString(
-                            this.buildParameterizedDoc('User-defined macro', macro.description, macro.parameters, macro.paramTypes, macro.paramDescriptions, macro.source !== 'local' ? (macro.sourceFile || macro.source) : undefined, macro.defaults)
-                        );
-
-                        if (macro.parameters.length > 0) {
-                            item.insertText = new vscode.SnippetString(macro.name + '(' + this.createParameterSnippet(macro.parameters) + ')');
-                        } else {
-                            item.insertText = macro.name;
-                        }
-                        item.sortText = '0_' + macro.name;
-                        completionItems.push(item);
-                    }
+                    if (matches(macro.name)) completionItems.push(toVscodeCompletion(formatMacroCompletion(macro)));
                 }
-
-                // Add custom units
                 for (const unit of definitions.customUnits) {
-                    if (!word || unit.name.toLowerCase().includes(word.toLowerCase())) {
-                        const item = new vscode.CompletionItem(unit.name, vscode.CompletionItemKind.Unit);
-                        item.detail = 'Custom Unit = ' + (unit.expression || '');
-                        item.documentation = new vscode.MarkdownString('**Custom unit**\n\nDefinition: `' + (unit.expression || '') + '`');
-                        item.sortText = '0_' + unit.name;
-                        completionItems.push(item);
-                    }
+                    if (matches(unit.name)) completionItems.push(toVscodeCompletion(formatCustomUnitCompletion(unit)));
                 }
             }
 
@@ -160,20 +145,13 @@ export class CalcpadCompletionProvider implements vscode.CompletionItemProvider 
         // Categorize based on tag content and category path
         if (item.tag.includes('(') || item.categoryPath?.toLowerCase().includes('function')) {
             kind = vscode.CompletionItemKind.Function;
-            // Extract function name and create snippet
-            const funcMatch = item.tag.match(/^([a-zA-Z_][a-zA-Z0-9_]*)/);
-            if (funcMatch) {
-                const funcName = funcMatch[1];
-                // Try to extract parameters from the tag
-                const paramMatch = item.tag.match(/\\(([^)]*)\\)/);
-                if (paramMatch && paramMatch[1].trim()) {
-                    const params = paramMatch[1].split(/[;,]/).map(p => p.trim()).filter(p => p);
-                    insertText = `${funcName}(${this.createParameterSnippet(params)})`;
-                } else {
-                    insertText = `${funcName}()`;
-                }
+            if (hasSnippetPlaceholders(item)) {
+                insertText = buildInsertSnippet(item);
+            } else {
+                const funcMatch = item.tag.match(/^([a-zA-Z_][a-zA-Z0-9_]*)/);
+                insertText = funcMatch ? `${funcMatch[1]}()` : item.tag;
             }
-        } else if (item.categoryPath?.toLowerCase().includes('constant') || 
+        } else if (item.categoryPath?.toLowerCase().includes('constant') ||
                    item.tag.match(/^[A-Za-z_][A-Za-z0-9_]*\\s*=/) ||
                    ['π', 'e', 'φ', 'γ'].includes(item.tag)) {
             kind = vscode.CompletionItemKind.Constant;
@@ -187,7 +165,7 @@ export class CalcpadCompletionProvider implements vscode.CompletionItemProvider 
         }
 
         const completionItem = new vscode.CompletionItem(
-            item.label || item.tag,
+            formatInsertLabel(item),
             kind
         );
         
@@ -202,59 +180,6 @@ export class CalcpadCompletionProvider implements vscode.CompletionItemProvider 
         }
 
         return completionItem;
-    }
-
-    /**
-     * Build a markdown documentation string for a parameterized definition (function or macro).
-     * Includes description, parameter types, and parameter descriptions when available.
-     */
-    private buildParameterizedDoc(
-        heading: string,
-        description?: string,
-        params?: string[],
-        paramTypes?: string[],
-        paramDescriptions?: string[],
-        sourceFile?: string,
-        defaults?: (string | null)[]
-    ): string {
-        let doc = `**${heading}**`;
-
-        if (sourceFile) {
-            doc += `\n\nSource: \`${sourceFile}\``;
-        }
-
-        if (description) {
-            doc += '\n\n' + description;
-        }
-
-        if (params && params.length > 0) {
-            const hasTypes = paramTypes && paramTypes.length > 0;
-            const hasDescs = paramDescriptions && paramDescriptions.length > 0;
-            const hasDefaults = defaults && defaults.length > 0;
-
-            if (hasTypes || hasDescs || hasDefaults) {
-                doc += '\n\n**Parameters:**';
-                for (let i = 0; i < params.length; i++) {
-                    const name = params[i];
-                    const type = hasTypes && i < paramTypes.length ? paramTypes[i] : undefined;
-                    const desc = hasDescs && i < paramDescriptions.length ? paramDescriptions[i] : undefined;
-                    const def = hasDefaults && i < defaults.length ? defaults[i] : undefined;
-                    let line = `\n- \`${name}\``;
-                    if (type) line += ` *(${type})*`;
-                    if (desc) line += ` — ${desc}`;
-                    if (def !== undefined && def !== null) {
-                        line += ` *(default: ${def})*`;
-                    } else if (hasDefaults) {
-                        line += ` *(required)*`;
-                    }
-                    doc += line;
-                }
-            } else {
-                doc += '\n\nParameters: `' + params.join('; ') + '`';
-            }
-        }
-
-        return doc;
     }
 
     // ===== Metadata comment JSON autocomplete =====
@@ -523,28 +448,6 @@ export class CalcpadCompletionProvider implements vscode.CompletionItemProvider 
         }
 
         return items;
-    }
-
-    /**
-     * Create snippet parameters for function calls
-     */
-    private createParameterSnippet(params: string[]): string {
-        return params.map((param, index) => {
-            // Clean up parameter name for display
-            let cleanParam = param.trim();
-            // Remove $ suffix for display in snippet placeholder
-            if (cleanParam.endsWith('$')) {
-                cleanParam = cleanParam.slice(0, -1);
-            }
-            // Remove ? suffix for optional parameters
-            if (cleanParam.endsWith('?')) {
-                cleanParam = cleanParam.slice(0, -1);
-            }
-            // Remove type annotations if present (e.g., "x:number" -> "x")
-            cleanParam = cleanParam.split(':')[0].trim();
-            
-            return `\${${index + 1}:${cleanParam}}`;
-        }).join('; ');
     }
 
     /**

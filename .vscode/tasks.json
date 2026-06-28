@@ -314,6 +314,24 @@
             }
         },
         {
+            "label": "Desktop: Build AppImage (Linux)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "bash build-desktop.sh && npx neu build && bash packaging/appimage/build-appimage.sh"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Desktop: Install via pacman (Arch)",
             "type": "shell",
             "command": "bash",

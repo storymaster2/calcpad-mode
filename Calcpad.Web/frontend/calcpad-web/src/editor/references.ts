@@ -90,7 +90,7 @@ export function registerDefinitionProvider(
             const definition = sym.locations.find(loc => loc.isAssignment);
             if (!definition) return null;
 
-            const uri = await resolveLocationUri(definition, model.uri, openIncludeFile);
+            const uri = await resolveLocationUri(definition, model.uri, openIncludeFile, /* navigate */ true);
             if (!uri) return null;
 
             return { uri, range: locationToRange(definition) };
@@ -119,7 +119,7 @@ export function registerReferenceProvider(
 
             const results: monaco.languages.Location[] = [];
             for (const loc of filtered) {
-                const uri = await resolveLocationUri(loc, model.uri, openIncludeFile);
+                const uri = await resolveLocationUri(loc, model.uri, openIncludeFile, /* navigate */ false);
                 if (uri) results.push({ uri, range: locationToRange(loc) });
             }
             return results;
