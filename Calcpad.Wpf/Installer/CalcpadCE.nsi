@@ -59,7 +59,6 @@ ManifestDPIAware System
 !macro ProcessFonts ACTION UID_PREFIX
   !insertmacro ProcessFontPattern "${ACTION}" "*.ttf" "${UID_PREFIX}ttf"
   !insertmacro ProcessFontPattern "${ACTION}" "*.otf" "${UID_PREFIX}otf"
-  System::Call 'user32::SendMessageTimeoutW(p 0xFFFF, i ${WM_FONTCHANGE}, p 0, p 0, i 2, i 1000, *p .r2)'
 !macroend
 
 ;--------------------------------
