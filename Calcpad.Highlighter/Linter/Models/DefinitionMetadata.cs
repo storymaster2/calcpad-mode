@@ -33,13 +33,13 @@ namespace Calcpad.Highlighter.Linter.Models
         /// Returns true if a valid metadata comment was found and parsed.
         /// Malformed JSON is silently ignored (returns false).
         /// </summary>
-        public static bool TryParse(string line, out DefinitionMetadata metadata)
+        public static bool TryParse(ReadOnlySpan<char> line, out DefinitionMetadata metadata)
         {
             metadata = null;
-            if (string.IsNullOrEmpty(line))
+            if (line.IsEmpty)
                 return false;
 
-            var span = line.AsSpan();
+            var span = line;
 
             // Find the comment start (first ' or ")
             int commentStart = -1;

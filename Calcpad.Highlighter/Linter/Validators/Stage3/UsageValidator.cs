@@ -13,8 +13,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
     {
         public void Validate(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
-            ValidateCommandSyntax(stage3, result, tokenProvider);
-            ValidateCommandVariables(stage3, result, tokenProvider);
+            ValidateCommands(stage3, result, tokenProvider);
             ValidateUndefinedIdentifiers(stage3, result, tokenProvider);
             ValidateUndefinedUnits(stage3, result, tokenProvider);
             ValidateFunctionCalls(stage3, result, tokenProvider);
@@ -23,76 +22,64 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         }
 
         /// <summary>
-        /// Validates command syntax, specifically the @ separator pattern in commands like:
-        /// $Repeat{expression @ variable = start : end}
-        /// Checks that:
-        /// 1. There's exactly one variable (LocalVariable or Variable token) between @ and =
-        /// 2. No numbers or problematic tokens appear between @ and the variable
-        /// Example valid: $Sum{k*2 @ k = a : b}
-        /// Example invalid: $Repeat{i*j @ 90 i = 1 : 10} (has "90" between @ and variable)
-        /// Special case: $Map allows multiple counters with & separator
+        /// Validates the @ separator pattern in commands like $Repeat{expr @ variable = start : end}.
+        /// Two passes folded into one (formerly ValidateCommandSyntax + ValidateCommandVariables):
+        ///   - CPD-3410: command syntax — exactly one variable token between @ and =, no numbers
+        ///   - CPD-3412: expression uses the declared loop variable
+        /// $Plot is exempt from both checks when the expression contains | or & (multi-function /
+        /// parametric forms). $Map is exempt from the loop-variable check (allows multiple counters).
         /// </summary>
-        private void ValidateCommandSyntax(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
+        private void ValidateCommands(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
                 if (!tokenProvider.IsCpdMode(i)) continue;
 
                 var line = stage3.Lines[i];
-
-                if (LineParser.ShouldSkipLine(line))
-                    continue;
+                if (LineParser.ShouldSkipLine(line)) continue;
 
                 var trimmed = line.Trim();
+                if (LineParser.IsDirectiveLine(trimmed)) continue;
 
-                if (LineParser.IsDirectiveLine(trimmed))
-                    continue;
-
-                // Check if line contains a command with @ separator
                 var atIndex = line.IndexOf('@');
-                if (atIndex < 0)
-                    continue;
+                if (atIndex < 0) continue;
 
-                // Check if this is within a command block and determine which command
+                // Locate which $Command{ precedes the @
                 var hasCommand = false;
                 var commandName = string.Empty;
-                foreach (var cmd in CalcpadBuiltIns.CommandsExcludingCommandBlocks)
+                var cmdStartIndex = -1;
+                foreach (var (cmd, cmdWithBrace) in CalcpadBuiltIns.CommandsWithBrace)
                 {
-                    var cmdIndex = line.IndexOf(cmd + "{", StringComparison.OrdinalIgnoreCase);
+                    var cmdIndex = line.IndexOf(cmdWithBrace, StringComparison.OrdinalIgnoreCase);
                     if (cmdIndex >= 0 && cmdIndex < atIndex)
                     {
                         hasCommand = true;
                         commandName = cmd;
+                        cmdStartIndex = cmdIndex + cmd.Length + 1; // position just after "{"
                         break;
                     }
                 }
+                if (!hasCommand) continue;
 
-                if (!hasCommand)
-                    continue;
+                // Tokens consumed by both phases — fetch once.
+                var tokens = tokenProvider.GetTokensForLine(i);
 
-                // Special case: $Plot allows | and & operators before @
-                // Skip validation for $Plot commands as they have complex expression syntax
+                // $Plot with | or & is fully exempt (parametric / multi-function form).
+                bool skipSyntaxPhase = false;
                 if (commandName.Equals("$Plot", StringComparison.OrdinalIgnoreCase))
                 {
-                    var beforeAt = line.Substring(0, atIndex);
-                    // Check if the expression contains | (parametric) or & (multiple functions)
+                    var beforeAt = line.AsSpan(0, atIndex);
                     if (beforeAt.Contains('|') || beforeAt.Contains('&'))
-                    {
-                        // These are valid $Plot syntaxes, skip validation
-                        continue;
-                    }
+                        skipSyntaxPhase = true;
                 }
 
-                // Extract the part after @ (e.g., "x = 0 : 5}" or "90 i=1:10")
-                var afterAt = line.Substring(atIndex + 1);
-
-                // Find the = sign (not ==, <=, >=, !=)
+                // Find the non-comparison = sign after @. Used by both phases when present.
+                var afterAt = line.AsSpan(atIndex + 1);
                 var equalsIndex = -1;
                 for (int j = 0; j < afterAt.Length; j++)
                 {
                     if (afterAt[j] == '=')
                     {
-                        // Check it's not ==, <=, >=, or !=
                         var isComparison = (j > 0 && (afterAt[j - 1] == '<' || afterAt[j - 1] == '>' || afterAt[j - 1] == '!' || afterAt[j - 1] == '=')) ||
                                          (j + 1 < afterAt.Length && afterAt[j + 1] == '=');
                         if (!isComparison)
@@ -103,124 +90,57 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     }
                 }
 
-                if (equalsIndex < 0)
-                {
-                    // No = sign found after @
-                    result.AddError(i, atIndex, atIndex + 1, "CPD-3410",
-                        "Invalid command syntax: expected 'variable = start : end' after '@'");
-                    continue;
-                }
-
-                // Get tokens for this line to check what's between @ and =
-                var tokens = tokenProvider.GetTokensForLine(i);
-                var variableTokens = new List<Token>();
-                var numberTokens = new List<Token>();
-
-                // Find all tokens between @ and =
                 var atAbsolutePos = atIndex;
-                var equalsAbsolutePos = atIndex + 1 + equalsIndex;
+                var equalsAbsolutePos = equalsIndex >= 0 ? atIndex + 1 + equalsIndex : -1;
 
-                foreach (var token in tokens)
+                // --- Phase 1: command syntax (CPD-3410) ---
+                if (!skipSyntaxPhase)
                 {
-                    // Check if token is between @ and =
-                    if (token.Column > atAbsolutePos && token.Column < equalsAbsolutePos)
+                    if (equalsIndex < 0)
                     {
-                        if (token.Type == TokenType.LocalVariable || token.Type == TokenType.Variable)
+                        result.AddError(i, atIndex, atIndex + 1, "CPD-3410",
+                            "Invalid command syntax: expected 'variable = start : end' after '@'");
+                        continue;
+                    }
+
+                    var variableTokens = new List<Token>();
+                    var numberTokens = new List<Token>();
+                    foreach (var token in tokens)
+                    {
+                        if (token.Column > atAbsolutePos && token.Column < equalsAbsolutePos)
                         {
-                            variableTokens.Add(token);
+                            if (token.Type == TokenType.LocalVariable || token.Type == TokenType.Variable)
+                                variableTokens.Add(token);
+                            else if (token.Type == TokenType.Const)
+                                numberTokens.Add(token);
                         }
-                        else if (token.Type == TokenType.Const)
-                        {
-                            // Found a number token - this is problematic
-                            numberTokens.Add(token);
-                        }
-                        // Ignore whitespace, operators, and other tokens
+                    }
+
+                    if (variableTokens.Count == 0)
+                    {
+                        result.AddError(i, atAbsolutePos + 1, equalsAbsolutePos, "CPD-3410",
+                            "Invalid command syntax: expected variable name after '@'");
+                    }
+                    else if (variableTokens.Count > 1)
+                    {
+                        result.AddError(i, atAbsolutePos + 1, equalsAbsolutePos, "CPD-3410",
+                            "Invalid command syntax: expected single variable name after '@'");
+                    }
+                    else if (numberTokens.Count > 0)
+                    {
+                        var firstNumber = numberTokens[0];
+                        result.AddError(i, firstNumber.Column, firstNumber.Column + firstNumber.Length, "CPD-3410",
+                            "Invalid command syntax: unexpected number '" + firstNumber.Text + "' between '@' and variable name");
                     }
                 }
 
-                // Validation: should have exactly 1 variable token between @ and =
-                if (variableTokens.Count == 0)
-                {
-                    result.AddError(i, atAbsolutePos + 1, equalsAbsolutePos, "CPD-3410",
-                        "Invalid command syntax: expected variable name after '@'");
-                }
-                else if (variableTokens.Count > 1)
-                {
-                    result.AddError(i, atAbsolutePos + 1, equalsAbsolutePos, "CPD-3410",
-                        "Invalid command syntax: expected single variable name after '@'");
-                }
-                else if (numberTokens.Count > 0)
-                {
-                    // There are number tokens before the variable (like "@ 90 i")
-                    var firstNumber = numberTokens[0];
-                    result.AddError(i, firstNumber.Column, firstNumber.Column + firstNumber.Length, "CPD-3410",
-                        "Invalid command syntax: unexpected number '" + firstNumber.Text + "' between '@' and variable name");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Validates that variables used in command expressions match the declared loop variable.
-        /// Example valid: $Root{f(x) @ x = 0 : 5} - expression uses 'x', loop variable is 'x'
-        /// Example invalid: $Root{f(y) @ x = 0 : 5} - expression uses 'y', but loop variable is 'x'
-        /// </summary>
-        private void ValidateCommandVariables(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
-        {
-            for (int i = 0; i < stage3.Lines.Count; i++)
-            {
-                if (!tokenProvider.IsCpdMode(i)) continue;
-
-                var line = stage3.Lines[i];
-
-                if (LineParser.ShouldSkipLine(line))
-                    continue;
-
-                var trimmed = line.Trim();
-
-                if (LineParser.IsDirectiveLine(trimmed))
-                    continue;
-
-                // Check if line contains a command with @ separator
-                var atIndex = line.IndexOf('@');
-                if (atIndex < 0)
-                    continue;
-
-                // Check if this is within a command block
-                var hasCommand = false;
-                var commandName = string.Empty;
-                var cmdStartIndex = -1;
-                foreach (var cmd in CalcpadBuiltIns.CommandsExcludingCommandBlocks)
-                {
-                    var cmdIndex = line.IndexOf(cmd + "{", StringComparison.OrdinalIgnoreCase);
-                    if (cmdIndex >= 0 && cmdIndex < atIndex)
-                    {
-                        hasCommand = true;
-                        commandName = cmd;
-                        cmdStartIndex = cmdIndex + cmd.Length + 1; // Position after "{"
-                        break;
-                    }
-                }
-
-                if (!hasCommand)
-                    continue;
-
-                // Skip $Plot and $Map commands - they have special syntax
+                // --- Phase 2: command variable matching (CPD-3412) ---
+                // $Plot and $Map are exempt (different counter semantics).
                 if (commandName.Equals("$Plot", StringComparison.OrdinalIgnoreCase) ||
                     commandName.Equals("$Map", StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                // Extract the declared loop variable (after @, before =)
-                var afterAt = line.Substring(atIndex + 1);
-                var equalsIndex = afterAt.IndexOf('=');
-                if (equalsIndex < 0)
-                    continue; // Already handled by ValidateCommandSyntax
-
-                var declaredVarSection = afterAt.Substring(0, equalsIndex).Trim();
-
-                // Get tokens to find the declared variable
-                var tokens = tokenProvider.GetTokensForLine(i);
-                var atAbsolutePos = atIndex;
-                var equalsAbsolutePos = atIndex + 1 + equalsIndex;
+                if (equalsIndex < 0) continue; // already reported above
 
                 string declaredVar = null;
                 foreach (var token in tokens)
@@ -232,15 +152,11 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                         break;
                     }
                 }
+                if (string.IsNullOrEmpty(declaredVar)) continue;
 
-                if (string.IsNullOrEmpty(declaredVar))
-                    continue; // No declared variable found
-
-                // Now check variables used in the expression (before @)
                 var usedVariables = new HashSet<string>(StringComparer.Ordinal);
                 foreach (var token in tokens)
                 {
-                    // Only look at tokens in the expression (between { and @)
                     if (token.Column >= cmdStartIndex && token.Column < atAbsolutePos &&
                         (token.Type == TokenType.Variable || token.Type == TokenType.LocalVariable))
                     {
@@ -248,9 +164,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     }
                 }
 
-                // Check if the declared variable is used in the expression.
-                // The loop variable defined after @ (e.g., $Repeat{expr @ i = 1 : n})
-                // may appear directly or as an element access suffix (e.g., v1_ind.i)
+                // Loop variable may appear directly or as element-access suffix (e.g., v1_ind.i)
                 // when the tokenizer doesn't split because v1_ind isn't known as a vector.
                 var usesLoopVar = usedVariables.Contains(declaredVar);
                 if (!usesLoopVar)
@@ -268,7 +182,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
                 if (usedVariables.Count > 0 && !usesLoopVar)
                 {
-                    // Expression uses variables but not the declared one
                     var usedVarsList = string.Join(", ", usedVariables.Select(v => "'" + v + "'"));
                     result.AddError(i, cmdStartIndex, atAbsolutePos, "CPD-3412",
                         "Expression uses " + usedVarsList + " but loop variable is '" + declaredVar + "'");

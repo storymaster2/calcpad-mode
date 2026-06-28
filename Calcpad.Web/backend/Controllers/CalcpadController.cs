@@ -456,22 +456,24 @@ namespace Calcpad.Server.Controllers
         }
 
         /// <summary>
-        /// Get all variable occurrence locations (definitions, reassignments, and usages) for go-to-definition
-        /// and find-all-references features. Returns a dictionary mapping variable name to all its occurrences,
-        /// with original source line positions and include file info.
+        /// Resolve a cursor position to the user-defined symbol under it and
+        /// return all of that symbol's occurrences. Single round-trip that
+        /// powers go-to-definition, find-all-references, and rename across
+        /// every editor integration — the matching heuristic lives here so
+        /// the clients don't each re-implement it.
         /// </summary>
-        [HttpPost("find-references")]
-        public IActionResult FindReferences([FromBody] DefinitionsRequest request)
+        [HttpPost("symbol-at-position")]
+        public IActionResult SymbolAtPosition([FromBody] SymbolAtPositionRequest request)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(request.Content))
                     return BadRequest("Content is required");
 
-                FileLogger.LogInfo("Find references request received", "Length: " + request.Content.Length);
-
                 var resolver = new ContentResolver();
                 var staged = resolver.GetStagedContent(request.Content, sourceFilePath: request.SourceFilePath);
+                var hit = SymbolResolver.ResolveSymbolAt(staged.Stage3, request.Line, request.Column);
+                if (hit == null) return Ok(null);
 
                 SymbolLocationDto ToDto(Calcpad.Highlighter.ContentResolution.SymbolLocation loc) => new SymbolLocationDto
                 {
@@ -483,22 +485,18 @@ namespace Calcpad.Server.Controllers
                     IsAssignment = loc.IsAssignment
                 };
 
-                Dictionary<string, List<SymbolLocationDto>> MapIndex(Dictionary<string, List<Calcpad.Highlighter.ContentResolution.SymbolLocation>> src)
-                    => src.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(ToDto).ToList());
-
-                var response = new FindReferencesResponse
+                var response = new SymbolAtPositionResponse
                 {
-                    Variables = MapIndex(staged.Stage3.VariableIndex),
-                    Functions = MapIndex(staged.Stage3.FunctionIndex),
-                    Macros = MapIndex(staged.Stage3.MacroIndex)
+                    SymbolName = hit.Name,
+                    Kind = hit.Kind.ToString().ToLowerInvariant(),
+                    Locations = hit.Locations.Select(ToDto).ToList()
                 };
-
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                FileLogger.LogError("Find references request failed", ex);
-                return StatusCode(500, "Error finding references: " + ex.Message);
+                FileLogger.LogError("Symbol-at-position request failed", ex);
+                return StatusCode(500, "Error resolving symbol: " + ex.Message);
             }
         }
 
@@ -970,23 +968,31 @@ namespace Calcpad.Server.Controllers
         public string? SourceFile { get; set; }
     }
 
-    public class FindReferencesResponse
+    public class SymbolAtPositionRequest
     {
-        /// <summary>
-        /// Maps variable name to all its occurrences (definitions, reassignments, and usages).
-        /// Each occurrence has original source line/column, source file info, and whether it's an assignment.
-        /// </summary>
-        public Dictionary<string, List<SymbolLocationDto>> Variables { get; set; } = new();
+        /// <summary>The Calcpad source code to analyze</summary>
+        public string Content { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Maps user-defined function name to all its occurrences (definition and call sites).
-        /// </summary>
-        public Dictionary<string, List<SymbolLocationDto>> Functions { get; set; } = new();
+        /// <summary>Zero-based line of the cursor in the original source</summary>
+        public int Line { get; set; }
 
-        /// <summary>
-        /// Maps macro name to all its occurrences (definition and call sites).
-        /// </summary>
-        public Dictionary<string, List<SymbolLocationDto>> Macros { get; set; } = new();
+        /// <summary>Zero-based column of the cursor in the original source</summary>
+        public int Column { get; set; }
+
+        /// <summary>Full path of the source file on disk (used to resolve #include).</summary>
+        public string? SourceFilePath { get; set; }
+    }
+
+    public class SymbolAtPositionResponse
+    {
+        /// <summary>The resolved symbol's name</summary>
+        public string SymbolName { get; set; } = string.Empty;
+
+        /// <summary>"variable" | "function" | "macro"</summary>
+        public string Kind { get; set; } = "variable";
+
+        /// <summary>Every occurrence of the symbol (definition, reassignments, usages).</summary>
+        public List<SymbolLocationDto> Locations { get; set; } = new();
     }
 
     public class SymbolLocationDto

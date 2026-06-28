@@ -82,6 +82,7 @@ namespace Calcpad.Highlighter.Linter.Constants
         private static FrozenSet<string> _controlBlockStarters;
         private static FrozenSet<string> _controlBlockEnders;
         private static FrozenSet<string> _commandsExcludingCommandBlocks;
+        private static (string Name, string NameWithBrace)[] _commandsWithBrace;
 
         /// <summary>
         /// Valid hash keywords without the # prefix (case-insensitive).
@@ -176,6 +177,24 @@ namespace Calcpad.Highlighter.Linter.Constants
 
                 _commandsExcludingCommandBlocks = commands.ToFrozenSet(System.StringComparer.OrdinalIgnoreCase);
                 return _commandsExcludingCommandBlocks;
+            }
+        }
+
+        /// <summary>
+        /// Same set as <see cref="CommandsExcludingCommandBlocks"/>, but as an array of
+        /// (Name, NameWithBrace) pairs. NameWithBrace is the name + "{" precomputed,
+        /// avoiding per-line string concatenation when searching for command tokens.
+        /// </summary>
+        public static (string Name, string NameWithBrace)[] CommandsWithBrace
+        {
+            get
+            {
+                if (_commandsWithBrace != null) return _commandsWithBrace;
+
+                _commandsWithBrace = CommandsExcludingCommandBlocks
+                    .Select(c => (c, c + "{"))
+                    .ToArray();
+                return _commandsWithBrace;
             }
         }
 

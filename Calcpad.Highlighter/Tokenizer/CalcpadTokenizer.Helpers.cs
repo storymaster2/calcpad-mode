@@ -10,21 +10,16 @@ namespace Calcpad.Highlighter.Tokenizer
 
         private static bool IsDelimiter(char c) => CharClassifier.IsDelimiter(c);
 
-        private static bool IsDigit(char c)
-        {
-            return c >= '0' && c <= '9';
-        }
-
-        private static bool IsMacroLetter(char c, int position)
+        // Tokenizer-internal macro-identifier scan: permissive (Unicode letters allowed,
+        // '$' allowed after position 0). Distinct from CalcpadCharacterHelpers.IsMacroLetter,
+        // which matches Calcpad.Core's strict Latin-only macro-name validator and is used
+        // when checking whether a name *is* a valid macro identifier. This one is used by
+        // the tokenizer to find an identifier boundary in the token builder before emitting.
+        private static bool IsMacroIdentChar(char c, int position)
         {
             if (position == 0)
                 return char.IsLetter(c) || c == '_';
             return char.IsLetterOrDigit(c) || c == '_' || c == '$';
-        }
-
-        private static bool IsLatinLetter(char c)
-        {
-            return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
         }
 
         private static bool IsPlotLine(ReadOnlySpan<char> text)
@@ -38,7 +33,7 @@ namespace Calcpad.Highlighter.Tokenizer
         /// Checks if position i in text starts the closing tag for the current special content block.
         /// Maps the SpecialContentType to its tag name and delegates to IsClosingSpecialTag.
         /// </summary>
-        private static bool IsClosingSpecialContentTag(string text, int i, SpecialContentType content)
+        private static bool IsClosingSpecialContentTag(ReadOnlySpan<char> text, int i, SpecialContentType content)
         {
             var tagName = content switch
             {
@@ -54,7 +49,7 @@ namespace Calcpad.Highlighter.Tokenizer
         /// Checks if position i in text starts a closing tag for the given tag name (e.g., "&lt;/script&gt;").
         /// Requires the full pattern &lt;/tagName&gt; and ignores matches inside string literals (" or `).
         /// </summary>
-        private static bool IsClosingSpecialTag(string text, int i, string tagName)
+        private static bool IsClosingSpecialTag(ReadOnlySpan<char> text, int i, string tagName)
         {
             // Need at least </tagName> characters remaining
             var needed = 3 + tagName.Length; // "</" + tagName + ">"
@@ -64,7 +59,7 @@ namespace Calcpad.Highlighter.Tokenizer
             if (text[i] != '<' || text[i + 1] != '/')
                 return false;
 
-            if (!text.AsSpan(i + 2, tagName.Length).Equals(tagName.AsSpan(), StringComparison.OrdinalIgnoreCase))
+            if (!text.Slice(i + 2, tagName.Length).Equals(tagName.AsSpan(), StringComparison.OrdinalIgnoreCase))
                 return false;
 
             if (text[i + 2 + tagName.Length] != '>')
@@ -114,12 +109,12 @@ namespace Calcpad.Highlighter.Tokenizer
         /// Checks if the current position in a data exchange line marks the end of a file path.
         /// File paths end when followed by keywords like "sep", "type", or a comment.
         /// </summary>
-        private static bool IsFilePathEndMarker(string text, int spaceIndex)
+        private static bool IsFilePathEndMarker(ReadOnlySpan<char> text, int spaceIndex)
         {
             if (spaceIndex + 1 >= text.Length)
                 return false;
 
-            var remaining = text.AsSpan(spaceIndex + 1).TrimStart();
+            var remaining = text[(spaceIndex + 1)..].TrimStart();
             if (remaining.Length == 0)
                 return false;
 
@@ -137,7 +132,7 @@ namespace Calcpad.Highlighter.Tokenizer
         /// Checks if a line contains a function definition pattern: name(params) = expression
         /// Used to determine if parameters inside parentheses should be marked as LocalVariable.
         /// </summary>
-        private static bool IsFunctionDefinitionLine(string text, int startPos)
+        private static bool IsFunctionDefinitionLine(ReadOnlySpan<char> text, int startPos)
         {
             // Look for pattern: identifier( ... ) =
             // We need to find the matching close paren and check if = follows
@@ -163,7 +158,7 @@ namespace Calcpad.Highlighter.Tokenizer
                     if (foundOpenParen && parenDepth == 0)
                     {
                         // Found matching close paren, check for = after it
-                        var afterParen = text.AsSpan(i + 1).TrimStart();
+                        var afterParen = text[(i + 1)..].TrimStart();
                         return afterParen.Length > 0 && afterParen[0] == '=' &&
                                (afterParen.Length == 1 || afterParen[1] != '='); // Exclude ==
                     }

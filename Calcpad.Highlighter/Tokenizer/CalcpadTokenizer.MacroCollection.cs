@@ -75,7 +75,7 @@ namespace Calcpad.Highlighter.Tokenizer
             // Handle multiline macro body collection
             if (_macroCurrCollectingBody)
             {
-                ReadOnlySpan<char> trimmedSpan = _state.Text.AsSpan().Trim();
+                ReadOnlySpan<char> trimmedSpan = _state.Text.Span.Trim();
                 if (trimmedSpan.Equals("#end def", StringComparison.OrdinalIgnoreCase))
                 {
                     EmitMacroDefinition(isMultiline: true);
@@ -86,8 +86,8 @@ namespace Calcpad.Highlighter.Tokenizer
                 }
                 else
                 {
-                    // Accumulate body line
-                    _macroCurrContentLines.Add(_state.Text);
+                    // Accumulate body line (string materialization required — stored across lines)
+                    _macroCurrContentLines.Add(_state.Text.ToString());
                 }
                 return;
             }
@@ -108,7 +108,7 @@ namespace Calcpad.Highlighter.Tokenizer
             // If we saw #def this line but no '=' (multiline start), begin body collection
             if (!emittedMacro && _state.HasMacro && _macroCurrName != null && !_macroCurrIsInline)
             {
-                _macroCurrParams = ExtractMacroParams(_state.Text);
+                _macroCurrParams = ExtractMacroParams(_state.Text.Span);
                 _macroCurrCollectingBody = true;
                 // Don't clear metadata — it will be consumed when the macro is emitted
                 return;
@@ -121,9 +121,10 @@ namespace Calcpad.Highlighter.Tokenizer
             }
             else
             {
-                if (DefinitionMetadata.TryParse(_state.Text, out var metadata))
+                var textSpan = _state.Text.Span;
+                if (DefinitionMetadata.TryParse(textSpan, out var metadata))
                     _macroPendingMetadata = metadata;
-                else if (!string.IsNullOrWhiteSpace(_state.Text))
+                else if (!textSpan.IsWhiteSpace())
                     _macroPendingMetadata = null; // Non-blank, non-metadata line clears pending
             }
         }

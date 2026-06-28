@@ -1,4 +1,4 @@
-' Module target for #include tests
+'Module target for #include tests
 #global
 IMPORTED_CONST = 42
 circleArea(r) = π*r^2

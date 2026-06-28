@@ -1,41 +1,46 @@
 import * as monaco from 'monaco-editor';
-import type { FindReferencesResponse, SymbolLocation } from 'calcpad-frontend/types/api';
+import type { SymbolAtPositionResponse, SymbolLocation } from 'calcpad-frontend/types/api';
 import type { EditorBridge } from './bridge';
-
-interface SymbolHit {
-    name: string;
-    locations: SymbolLocation[];
-    hitLocation: SymbolLocation;
-}
+import type { FileContextProvider } from './diagnostics';
 
 /**
- * Find which symbol the cursor is on by checking actual token positions
- * from the server response. Position is 0-based.
+ * Resolves a `SymbolLocation` whose `source !== 'local'` to a Monaco model URI
+ * by opening the referenced include file (reading it from disk and registering
+ * a Monaco model). Activates the matching tab as a side effect so the editor
+ * shows the include file when this promise resolves. When `navigateTo` is
+ * provided, the opener should also position the cursor there — Monaco's
+ * standalone go-to-definition action doesn't reliably reapply the selection
+ * after a provider swaps the active model out from under it.
+ *
+ * Only available on platforms with disk access (Neutralino desktop, VS Code).
+ * Returns null if the file cannot be opened.
+ *
+ * TODO(web/remote): When running in a browser tab or against a remote server,
+ * disk access is not available — we need a story for fetching include content
+ * from the server (or from the in-memory `includeFiles` map the linter already
+ * accepts) and creating a read-only Monaco model from it so cross-file
+ * navigation works there too. Until then, navigation into includes is a
+ * desktop-only feature.
  */
-function findSymbolAtPosition(line: number, col: number, refs: FindReferencesResponse): SymbolHit | null {
-    const buckets = [refs.variables, refs.functions, refs.macros];
-    for (const bucket of buckets) {
-        for (const [name, locations] of Object.entries(bucket)) {
-            for (const loc of locations) {
-                if (
-                    loc.source === 'local' &&
-                    loc.line === line &&
-                    col >= loc.column &&
-                    col < loc.column + loc.length
-                ) {
-                    return { name, locations, hitLocation: loc };
-                }
-            }
-        }
-    }
-    return null;
-}
+export type IncludeFileOpener = (
+    rawFileName: string,
+    navigateTo?: { line: number; column: number },
+) => Promise<monaco.Uri | null>;
 
-async function fetchRefs(
+async function resolveSymbol(
     bridge: EditorBridge,
     model: monaco.editor.ITextModel,
-): Promise<FindReferencesResponse | null> {
-    return bridge.api.findReferences(model.getValue());
+    position: monaco.Position,
+    getFileContext?: FileContextProvider,
+): Promise<SymbolAtPositionResponse | null> {
+    const content = model.getValue();
+    const ctx = getFileContext ? await getFileContext(content) : {};
+    return bridge.api.symbolAtPosition(
+        content,
+        position.lineNumber - 1,
+        position.column - 1,
+        ctx.sourceFilePath,
+    );
 }
 
 function locationToRange(loc: SymbolLocation): monaco.IRange {
@@ -49,81 +54,117 @@ function locationToRange(loc: SymbolLocation): monaco.IRange {
 }
 
 /**
- * Go-to-Definition (F12). Jumps to the first assignment of the symbol under the cursor.
+ * Resolve a SymbolLocation to a Monaco URI. Local locations stay in the active
+ * model; include locations are opened on disk via the opener (desktop only).
+ * `navigate` controls whether the opener also positions the cursor on the
+ * target — true for the single jump in go-to-definition, false for the
+ * many-result find-references panel.
  */
-export function registerDefinitionProvider(bridge: EditorBridge): monaco.IDisposable {
+async function resolveLocationUri(
+    loc: SymbolLocation,
+    localUri: monaco.Uri,
+    openIncludeFile: IncludeFileOpener | undefined,
+    navigate: boolean,
+): Promise<monaco.Uri | null> {
+    if (loc.source === 'local') return localUri;
+    if (!openIncludeFile || !loc.sourceFile) return null;
+    return openIncludeFile(loc.sourceFile, navigate ? { line: loc.line, column: loc.column } : undefined);
+}
+
+/**
+ * Go-to-Definition (F12). Asks the server for the symbol under the cursor,
+ * then jumps to the first assignment location. When the definition lives in
+ * an `#include` file and an `openIncludeFile` is provided, opens that file
+ * in a new tab before returning the location.
+ */
+export function registerDefinitionProvider(
+    bridge: EditorBridge,
+    getFileContext?: FileContextProvider,
+    openIncludeFile?: IncludeFileOpener,
+): monaco.IDisposable {
     return monaco.languages.registerDefinitionProvider('calcpad', {
         async provideDefinition(model, position) {
-            const refs = await fetchRefs(bridge, model);
-            if (!refs) return null;
+            const sym = await resolveSymbol(bridge, model, position, getFileContext);
+            if (!sym) return null;
 
-            const hit = findSymbolAtPosition(position.lineNumber - 1, position.column - 1, refs);
-            if (!hit) return null;
-
-            const definition = hit.locations.find(loc => loc.isAssignment && loc.source === 'local');
+            const definition = sym.locations.find(loc => loc.isAssignment);
             if (!definition) return null;
 
-            return {
-                uri: model.uri,
-                range: locationToRange(definition),
-            };
+            const uri = await resolveLocationUri(definition, model.uri, openIncludeFile);
+            if (!uri) return null;
+
+            return { uri, range: locationToRange(definition) };
         },
     });
 }
 
 /**
- * Find All References (Shift+F12).
+ * Find All References (Shift+F12). Returns every occurrence of the symbol,
+ * including those that live in `#include` files when an `openIncludeFile` is
+ * available (desktop only — see `IncludeFileOpener` TODO).
  */
-export function registerReferenceProvider(bridge: EditorBridge): monaco.IDisposable {
+export function registerReferenceProvider(
+    bridge: EditorBridge,
+    getFileContext?: FileContextProvider,
+    openIncludeFile?: IncludeFileOpener,
+): monaco.IDisposable {
     return monaco.languages.registerReferenceProvider('calcpad', {
         async provideReferences(model, position, context) {
-            const refs = await fetchRefs(bridge, model);
-            if (!refs) return null;
-
-            const hit = findSymbolAtPosition(position.lineNumber - 1, position.column - 1, refs);
-            if (!hit) return null;
+            const sym = await resolveSymbol(bridge, model, position, getFileContext);
+            if (!sym) return null;
 
             const filtered = context.includeDeclaration
-                ? hit.locations
-                : hit.locations.filter(l => !l.isAssignment);
+                ? sym.locations
+                : sym.locations.filter(l => !l.isAssignment);
 
-            // Only return locations within the active document; cross-file refs
-            // would require resolving include paths — punt for now.
-            return filtered
-                .filter(l => l.source === 'local')
-                .map(l => ({ uri: model.uri, range: locationToRange(l) }));
+            const results: monaco.languages.Location[] = [];
+            for (const loc of filtered) {
+                const uri = await resolveLocationUri(loc, model.uri, openIncludeFile);
+                if (uri) results.push({ uri, range: locationToRange(loc) });
+            }
+            return results;
         },
     });
 }
 
 /**
  * Rename Symbol (F2). Renames all local occurrences in the active document.
+ * Cross-file rename is not supported — the user is told to rename in-place
+ * if the definition lives in an include.
  */
-export function registerRenameProvider(bridge: EditorBridge): monaco.IDisposable {
+export function registerRenameProvider(
+    bridge: EditorBridge,
+    getFileContext?: FileContextProvider,
+): monaco.IDisposable {
     return monaco.languages.registerRenameProvider('calcpad', {
         async resolveRenameLocation(model, position) {
-            const refs = await fetchRefs(bridge, model);
-            if (!refs) {
-                return { text: '', range: new monaco.Range(1, 1, 1, 1), rejectReason: 'CalcPad server unavailable' };
-            }
-            const hit = findSymbolAtPosition(position.lineNumber - 1, position.column - 1, refs);
-            if (!hit) {
+            const sym = await resolveSymbol(bridge, model, position, getFileContext);
+            if (!sym) {
                 return { text: '', range: new monaco.Range(1, 1, 1, 1), rejectReason: 'No renameable symbol at cursor' };
             }
-            if (hit.locations.every(l => l.source !== 'local')) {
-                return { text: hit.name, range: new monaco.Range(1, 1, 1, 1), rejectReason: `'${hit.name}' is defined in an include file` };
+            if (sym.locations.every(l => l.source !== 'local')) {
+                return { text: sym.symbolName, range: new monaco.Range(1, 1, 1, 1), rejectReason: `'${sym.symbolName}' is defined in an include file` };
             }
-            return { text: hit.name, range: locationToRange(hit.hitLocation) };
+            // Anchor the rename UI on a local occurrence at or covering the cursor.
+            const line = position.lineNumber - 1;
+            const col = position.column - 1;
+            const anchor = sym.locations.find(l =>
+                l.source === 'local' &&
+                l.line === line &&
+                col >= l.column &&
+                col <= l.column + l.length,
+            ) ?? sym.locations.find(l => l.source === 'local');
+            if (!anchor) {
+                return { text: sym.symbolName, range: new monaco.Range(1, 1, 1, 1), rejectReason: 'No local occurrence to anchor the rename' };
+            }
+            return { text: sym.symbolName, range: locationToRange(anchor) };
         },
 
         async provideRenameEdits(model, position, newName) {
-            const refs = await fetchRefs(bridge, model);
-            if (!refs) return null;
+            const sym = await resolveSymbol(bridge, model, position, getFileContext);
+            if (!sym || sym.symbolName === newName) return null;
 
-            const hit = findSymbolAtPosition(position.lineNumber - 1, position.column - 1, refs);
-            if (!hit || hit.name === newName) return null;
-
-            const localLocations = hit.locations.filter(l => l.source === 'local');
+            const localLocations = sym.locations.filter(l => l.source === 'local');
             const edits: monaco.languages.IWorkspaceTextEdit[] = localLocations.map(l => ({
                 resource: model.uri,
                 versionId: model.getVersionId(),

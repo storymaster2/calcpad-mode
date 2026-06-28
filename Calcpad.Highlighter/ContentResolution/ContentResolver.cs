@@ -69,13 +69,24 @@ namespace Calcpad.Highlighter.ContentResolution
                 totalLength += lines[i].Length;
 
             var sb = new StringBuilder(totalLength);
+            AppendJoinedLines(sb, lines);
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Appends the lines joined by '\n' into an existing StringBuilder.
+        /// Used when the caller needs to keep mutating the buffer (e.g. parameter
+        /// substitution in macro expansion).
+        /// </summary>
+        private static void AppendJoinedLines(StringBuilder sb, List<string> lines)
+        {
+            if (lines.Count == 0) return;
             sb.Append(lines[0]);
             for (int i = 1; i < lines.Count; i++)
             {
                 sb.Append('\n');
                 sb.Append(lines[i]);
             }
-            return sb.ToString();
         }
     }
 }

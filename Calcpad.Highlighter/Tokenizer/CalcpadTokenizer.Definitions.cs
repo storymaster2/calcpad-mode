@@ -17,7 +17,7 @@ namespace Calcpad.Highlighter.Tokenizer
         // Expression capture state
         private bool _lintCapturingExpression;
         private int _lintExpressionStartColumn;
-        private string _lintDefLineText;
+        private ReadOnlyMemory<char> _lintDefLineText;
         private int _lintDefLine;
 
         // Pending definition info (set when = confirms a definition)
@@ -55,7 +55,7 @@ namespace Calcpad.Highlighter.Tokenizer
         {
             _lintCapturingExpression = false;
             _lintExpressionStartColumn = 0;
-            _lintDefLineText = null;
+            _lintDefLineText = default;
             _lintDefLine = -1;
             _lintDefName = null;
             _lintDefNameLine = -1;
@@ -170,7 +170,7 @@ namespace Calcpad.Highlighter.Tokenizer
 
             _lintCapturingExpression = true;
             _lintExpressionStartColumn = _state.TokenStartColumn + 1; // Column after "="
-            _lintDefLineText = _state.Text;
+            _lintDefLineText = _state.Text;  // ReadOnlyMemory<char> — no allocation
             _lintDefLine = _state.Line;
             _lintPendingIsConst = false;
             _lintPendingFunctionParams.Clear();
@@ -186,7 +186,7 @@ namespace Calcpad.Highlighter.Tokenizer
             // Finalize expression capture
             if (_lintCapturingExpression && _lintDefName != null)
             {
-                var expression = ExtractExpressionFromLine(_lintDefLineText, _lintExpressionStartColumn);
+                var expression = ExtractExpressionFromLine(_lintDefLineText.Span, _lintExpressionStartColumn);
                 var sourceInfo = GetSourceInfo(_lintDefNameLine);
 
                 if (_lintDefIsCustomUnit)
@@ -249,7 +249,7 @@ namespace Calcpad.Highlighter.Tokenizer
             if (_lintPendingReadVariableName != null)
             {
                 // Check if TYPE=V (vector) or default (matrix)
-                var lineText = _state.Text;
+                var lineText = _state.Text.Span;
                 var isVector = lineText.Contains("TYPE=V", StringComparison.OrdinalIgnoreCase);
                 var definition = isVector ? "#read vector" : "#read matrix";
                 var sourceInfo = GetSourceInfo(_state.Line);
@@ -276,9 +276,10 @@ namespace Calcpad.Highlighter.Tokenizer
             // Check if the current line is a metadata comment for the next definition
             if (!producedDefinition)
             {
-                if (DefinitionMetadata.TryParse(_state.Text, out var metadata))
+                var textSpan = _state.Text.Span;
+                if (DefinitionMetadata.TryParse(textSpan, out var metadata))
                     _lintPendingMetadata = metadata;
-                else if (!string.IsNullOrWhiteSpace(_state.Text))
+                else if (!textSpan.IsWhiteSpace())
                     _lintPendingMetadata = null; // Non-blank, non-metadata line clears pending
             }
 
@@ -299,12 +300,12 @@ namespace Calcpad.Highlighter.Tokenizer
         /// Extracts the expression text from a line, starting after the = sign.
         /// Stops at the first comment delimiter (' or ") or end of line.
         /// </summary>
-        private static string ExtractExpressionFromLine(string lineText, int startColumn)
+        private static string ExtractExpressionFromLine(ReadOnlySpan<char> lineText, int startColumn)
         {
             if (startColumn >= lineText.Length)
                 return string.Empty;
 
-            var afterEquals = lineText.AsSpan(startColumn);
+            var afterEquals = lineText[startColumn..];
             var result = new StringBuilder(afterEquals.Length);
 
             for (int i = 0; i < afterEquals.Length; i++)

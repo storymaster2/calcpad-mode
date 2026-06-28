@@ -240,16 +240,6 @@ export interface CustomUnitDefinition {
     sourceFile?: string;
 }
 
-// ============================================
-// Find References API Types
-// ============================================
-
-export interface FindReferencesResponse {
-    variables: Record<string, SymbolLocation[]>;
-    functions: Record<string, SymbolLocation[]>;
-    macros: Record<string, SymbolLocation[]>;
-}
-
 export interface SymbolLocation {
     line: number;        // Zero-based line number (mapped to original source)
     column: number;      // Zero-based column
@@ -257,6 +247,25 @@ export interface SymbolLocation {
     source: string;      // "local" or "include"
     sourceFile?: string; // File path if from #include
     isAssignment: boolean; // true for definitions/reassignments
+}
+
+// ============================================
+// Symbol-at-position API Types
+// ============================================
+
+export type SymbolKind = 'variable' | 'function' | 'macro';
+
+export interface SymbolAtPositionRequest {
+    content: string;
+    line: number;       // 0-based, in original source
+    column: number;     // 0-based
+    sourceFilePath?: string;
+}
+
+export interface SymbolAtPositionResponse {
+    symbolName: string;
+    kind: SymbolKind;
+    locations: SymbolLocation[];
 }
 
 // Type IDs for variables and function return types

@@ -241,7 +241,7 @@ namespace Calcpad.Highlighter.Tokenizer
         /// </summary>
         private bool IsFollowedByOpenParen()
         {
-            var text = _state.Text;
+            var text = _state.Text.Span;
             var pos = _state.TokenStartColumn + _builder.Length;
             ParsingHelpers.SkipWhitespace(text, ref pos);
             return pos < text.Length && text[pos] == '(';
@@ -340,7 +340,7 @@ namespace Calcpad.Highlighter.Tokenizer
             int identStart = len - 1;
             for (int i = len - 2; i >= 0; i--)
             {
-                if (!IsMacroLetter(_builder[i], i))
+                if (!IsMacroIdentChar(_builder[i], i))
                     break;
                 identStart = i;
             }
@@ -567,29 +567,28 @@ namespace Calcpad.Highlighter.Tokenizer
         /// Scans from startPos (just after the opening '(') until the matching ')'.
         /// Returns list of (argText, argStartCol).
         /// </summary>
-        private static List<(string Text, int StartCol)> ExtractMacroCallArgsWithPositions(string text, int startPos)
+        private static List<(string Text, int StartCol)> ExtractMacroCallArgsWithPositions(ReadOnlySpan<char> text, int startPos)
         {
             var args = new List<(string, int)>();
-            var textSpan = text.AsSpan();
             var depth = 1;
             var argStart = startPos;
 
-            for (int i = startPos; i < textSpan.Length && depth > 0; i++)
+            for (int i = startPos; i < text.Length && depth > 0; i++)
             {
-                var c = textSpan[i];
+                var c = text[i];
                 if (c == '(') depth++;
                 else if (c == ')')
                 {
                     depth--;
                     if (depth == 0)
                     {
-                        args.Add((textSpan.Slice(argStart, i - argStart).ToString(), argStart));
+                        args.Add((text.Slice(argStart, i - argStart).ToString(), argStart));
                         break;
                     }
                 }
                 else if (c == ';' && depth == 1)
                 {
-                    args.Add((textSpan.Slice(argStart, i - argStart).ToString(), argStart));
+                    args.Add((text.Slice(argStart, i - argStart).ToString(), argStart));
                     argStart = i + 1;
                 }
             }
@@ -623,7 +622,7 @@ namespace Calcpad.Highlighter.Tokenizer
                 return;
 
             // Look ahead to extract arguments from the current line
-            var args = ExtractMacroCallArgsWithPositions(_state.Text, openParenCol + 1);
+            var args = ExtractMacroCallArgsWithPositions(_state.Text.Span, openParenCol + 1);
             if (args.Count == 0)
                 return;
 
@@ -816,7 +815,7 @@ namespace Calcpad.Highlighter.Tokenizer
         {
             if (c == '=' && _state.HasMacro && !_state.IsInFunctionParams)
             {
-                var afterEquals = i + 1 < len ? _state.Text.AsSpan(i + 1).TrimStart().ToString() : string.Empty;
+                var afterEquals = i + 1 < len ? _state.Text.Span[(i + 1)..].TrimStart().ToString() : string.Empty;
 
                 // Store macro body and param order for argument type resolution (all modes)
                 if (_pendingMacroDefName != null)
@@ -834,7 +833,7 @@ namespace Calcpad.Highlighter.Tokenizer
                 {
                     _macroCurrInlineContent = afterEquals;
                     _macroCurrIsInline = true;
-                    var paramNames = ExtractMacroParams(_state.Text);
+                    var paramNames = ExtractMacroParams(_state.Text.Span);
                     _macroCurrParams = paramNames;
                     // Ensure _macroParameterOrder reflects the ordered param names
                     if (!_macroParameterOrder.ContainsKey(_macroCurrName))
@@ -852,11 +851,10 @@ namespace Calcpad.Highlighter.Tokenizer
         /// Extracts macro parameter names from a #def line.
         /// Handles both inline (#def macro$(x$; y$) = ...) and multiline forms.
         /// </summary>
-        private static List<string> ExtractMacroParams(string line)
+        private static List<string> ExtractMacroParams(ReadOnlySpan<char> lineSpan)
         {
             var names = new List<string>();
 
-            var lineSpan = line.AsSpan();
             var dollarIndex = lineSpan.IndexOf('$');
             if (dollarIndex < 0) return names;
 

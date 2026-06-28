@@ -16,8 +16,10 @@ export type {
     FunctionDefinition,
     VariableDefinition,
     CustomUnitDefinition,
-    FindReferencesResponse,
     SymbolLocation,
+    SymbolKind,
+    SymbolAtPositionRequest,
+    SymbolAtPositionResponse,
     PrettifyRequest,
     PrettifyResponse,
 } from './types/api';

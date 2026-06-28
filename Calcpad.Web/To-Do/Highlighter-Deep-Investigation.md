@@ -15,6 +15,16 @@ Scope: `/home/isaiahm/repos/CalcpadCE/Calcpad.Highlighter/` — Tokenizer/, Lint
 - **D1** — Whitespace-skip loops consolidated behind `ParsingHelpers.SkipWhitespace(ReadOnlySpan<char>, ref int)`. 7 sites routed through it.
 - **D2** — Bracket-matching unified behind `ParsingHelpers.FindMatchingClose(ReadOnlySpan<char>, openPos, open, close)`. 6 depth-tracking loops collapsed. `HasEqualsOutsideParens` left alone — different semantics.
 - **D3** — Keyword-args / parameter-defaults feature **removed entirely** (was experimental, not intended for this branch). Strips `IsFunctionKeywordArg`, `IsKeywordArg`, `TryParseMacroKeywordArg`, `ExtractFunctionParamDefaults`, `Defaults` props on `MacroDefinition`/`FunctionDefinition`, `RequiredParamCount` on `MacroInfo`/`FunctionInfo`, `ParameterDefaults` on `VariableInfo`, `defaults` params on 4 `TypeTracker.Register*` methods, error codes `CPD-3314`/`CPD-3315`, and the matching DTO properties in `CalcpadController.cs`. To be re-imported alongside the feature from the experimental branch.
+- **P2** — `LinterResult` now caches `_errorCount` / `_warningCount` (incremented in new internal `AppendDiagnostic`, decremented in new `RemoveDiagnostics(predicate)`). `HasErrors`/`HasWarnings`/`ErrorCount`/`WarningCount` are O(1). `DiagnosticExtensions` routed through `AppendDiagnostic`; `CalcpadLinter.ApplyIgnoreRegions` routed through `RemoveDiagnostics` so counts stay consistent after suppression.
+- **P4** — Added `CalcpadBuiltIns.CommandsWithBrace` — precomputed `(Name, NameWithBrace)[]` for the `CommandsExcludingCommandBlocks` set. `UsageValidator.ValidateCommandSyntax` and `ValidateCommandVariables` now iterate this and do `line.IndexOf(cmdWithBrace, …)` directly — no per-line `cmd + "{"` allocation.
+- **P5** — Replaced `line.Substring(0, atIndex)` and `line.Substring(atIndex + 1)` in `UsageValidator` with `line.AsSpan(...)`. `Contains('|')`/`Contains('&')` and `IndexOf('=')` work on the span. Removed the unused `declaredVarSection` local along the way.
+- **P7** — Replaced `expandedLine.Split('\n')` in `ContentResolver.Stage3.cs` with a single-pass span scan that keeps `Split('\n')` semantics (does not consume `\r`). Removes the `string[]` allocation per macro-expanding line; per-segment `ToString()` only happens when it goes into `lines`.
+- **D5 (partial)** — Audit confirmed: all diagnostics now route through `DiagnosticExtensions` (only two `new LinterDiagnostic` literals remain, both *inside* `DiagnosticExtensions` itself). No validators construct diagnostics directly any more. The D5 finding below is stale — leaving in place pending a follow-up sweep with M1 (span-vs-string consistency).
+- **P6** — Macro expansion sorts macros once at the top of `ProcessStage3` into `sortedMacros` (a `(Name, Params, Content)` list) and threads it through `ExpandMacros`, eliminating the per-call `OrderByDescending().ToList()`. Parameter substitution now mutates a single `StringBuilder` via `Replace(oldValue, newValue)` instead of chaining `string.Replace` (which allocates a new string per parameter). New `AppendJoinedLines` helper in `ContentResolver.cs` feeds the StringBuilder without going through `JoinLines → ToString` first.
+- **P1** — Tokenizer migrated to `ReadOnlySpan<char>` / `ReadOnlyMemory<char>` through the hot path. `TokenizeLineInternal` now takes `ReadOnlyMemory<char>`; `_state.Text` is a `ReadOnlyMemory<char>` so it can be stored across method calls. The main `Tokenize` loop walks the source string with manual offset tracking (replacing `LineEnumerator + lineSpan.ToString()`) and slices `source.AsMemory(start, length)` per line — zero allocation per line. Helper signatures updated to span/memory: `IsFunctionDefinitionLine`, `IsClosingSpecialContentTag`, `IsClosingSpecialTag`, `IsFilePathEndMarker`, `ExtractMacroParams`, `ExtractMacroCallArgsWithPositions`, `ExtractExpressionFromLine`, `ParseImaginary`, `InitState`, `DefinitionMetadata.TryParse`. `_lintDefLineText` is now `ReadOnlyMemory<char>`; `_macroCurrContentLines` keeps materializing strings since lines accumulate across the line boundary.
+- **P3 (partial — D8)** — Merged `UsageValidator.ValidateCommandSyntax` and `ValidateCommandVariables` into a single `ValidateCommands` pass. Both methods previously ran their own pass over `stage3.Lines`, repeating `IsCpdMode` / `ShouldSkipLine` / `IsDirectiveLine` / `@`-search / command-name iteration / `tokens = tokenProvider.GetTokensForLine(i)` — now done once per line, then both diagnostic phases (CPD-3410 syntax, CPD-3412 loop-variable match) share the result. Behavior preserved: `$Plot` with `|`/`&` skips both phases; `$Plot`/`$Map` skip phase 2; phase 1 missing-`=` error still reported. The broader multi-validator unification (BalanceValidator, SemanticValidator, etc. sharing a single per-line dispatcher) remains as future work — see "Remaining Work" below.
+- **D4** — Removed local `IsDigit` and `IsLatinLetter` in `CalcpadTokenizer.Helpers.cs`; call sites now use `char.IsAsciiDigit` / `char.IsAsciiLetter` (.NET 7+ built-ins, identical semantics). The local `IsMacroLetter` is *not* a duplicate of `CalcpadCharacterHelpers.IsMacroLetter` — different semantics (tokenizer-side is Unicode-tolerant and allows `$` after position 0; helpers-side is Latin-only per Calcpad.Core's strict macro-name validator). Renamed the tokenizer version to `IsMacroIdentChar` so the naming no longer falsely implies duplication, and added a doc comment explaining the difference.
+- **M2** — Line iteration is now uniform across `ContentResolver`. Stage3's manual `\n` scan (introduced by P7) replaced with `LineEnumerator` — semantics still match because macro content is always `\n`-joined via `JoinLines` and per-line slices never contain `\r`. The tokenizer's main loop in `CalcpadTokenizer.Tokenize` previously did its own offset-tracking scan to produce `ReadOnlyMemory<char>` slices (a ref-struct `Span` can't be stored in `TokenizerState`); now uses a new `LineMemoryEnumerator` (added to `Parsing/LineEnumerator.cs`) which is the `ReadOnlyMemory<char>` analogue of `LineEnumerator`. The M2 finding's claim that *tests* use `string.Split` is stale — Highlighter tests no longer perform manual line splitting (they read whole-file content and pass it to `ContentResolver`/`CalcpadLinter`).
 
 ---
 
@@ -155,22 +165,22 @@ Fix: sort macros once at the top of Stage3, not per call. Use `StringBuilder` fo
 
 Order by ROI (impact ÷ effort). Items are independent and can land separately.
 
-**Tier 1 — significant perf, contained scope**
-1. **P2** — Cache `_errorCount`/`_warningCount` in `LinterResult` (1 file, ~10 lines)
-2. **P4** — Precompute `cmd + "{"` strings or restructure to single-pass command lookup (1 file)
-3. **P5** — Replace `Substring` with `AsSpan` in `UsageValidator` (~6 sites)
-4. **P7** — Replace `Split('\n')` with `LineEnumerator` in `Stage3.cs:78`
+**Tier 1 — significant perf, contained scope** *(complete — see "Already Completed" above)*
+1. ~~**P2** — Cache `_errorCount`/`_warningCount` in `LinterResult`~~ ✓
+2. ~~**P4** — Precompute `cmd + "{"` strings~~ ✓
+3. ~~**P5** — Replace `Substring` with `AsSpan` in `UsageValidator`~~ ✓ (hot sites at lines 77/87/213; remaining `Substring` calls in `TypeTracker`-style code paths are tracked under P8)
+4. ~~**P7** — Replace `Split('\n')` with `LineEnumerator` in `Stage3.cs:78`~~ ✓
 
-**Tier 2 — bigger perf wins, larger refactor**
-5. **P1** — Tokenizer span migration (touches `TokenizerState`, every partial file using `_state.Text`). Largest perf win; needs care.
-6. **P3** — Unify Stage3 validator passes (validator interface change, but eliminates redundant traversals)
-7. **P6** — Macro expansion: sort once, replace via StringBuilder
+**Tier 2 — bigger perf wins, larger refactor** *(complete — see "Already Completed" above)*
+5. ~~**P1** — Tokenizer span migration~~ ✓
+6. ~~**P3** — Unify Stage3 validator passes~~ ✓ (D8 merge in `UsageValidator`; broader multi-validator unification deferred — see Remaining Work)
+7. ~~**P6** — Macro expansion: sort once, replace via StringBuilder~~ ✓
 
 **Tier 3 — cleanup / consistency**
 8. **D5 + M1** — Audit all `new LinterDiagnostic` sites; route through `DiagnosticExtensions`; pick span-or-string and apply consistently
 9. **D8** — Merge the two `ValidateCommandSyntax`/`ValidateCommandVariables` methods (first ~30 lines are near-identical)
-10. **D4** — Consolidate char-class helpers (delegate `CalcpadTokenizer.Helpers.cs` to `CalcpadCharacterHelpers`)
-11. **M2** — Standardize line iteration on `LineEnumerator` everywhere
+10. ~~**D4** — Consolidate char-class helpers~~ ✓ (replaced `IsDigit`/`IsLatinLetter` with `char.IsAscii*`; kept local `IsMacroIdentChar` since semantics differ from `CalcpadCharacterHelpers.IsMacroLetter`)
+11. ~~**M2** — Standardize line iteration on `LineEnumerator` everywhere~~ ✓ (Stage3 + tokenizer main loop, added `LineMemoryEnumerator` for the Memory case)
 12. **M3, M7, M8** — Stage-context symmetry, visibility cleanup, partial-class re-organization
 
 ---
@@ -193,6 +203,17 @@ Reusable existing utilities (prefer over new code):
 - `Linter/Helpers/SourceMapper.cs` — central line/column mapping
 
 ---
+
+## Remaining Work — P3 broader unification
+
+D8 merged the two near-identical UsageValidator passes. The full P3 idea — *one* per-line pass that dispatches to all Stage3 validators — remains. Concretely:
+
+- 18 separate per-line scans still exist across `BalanceValidator` (2), `NamingValidator` (2), `SemanticValidator` (5), `UsageValidator` (5 remaining), `FunctionTypeValidator`, `FormatValidator`, `HtmlCommentValidator`, `CommandBlockValidator`. Each repeats the `if (!tokenProvider.IsCpdMode(i)) continue;` boilerplate and some repeat `LineParser.ShouldSkipLine` / `IsDirectiveLine` work.
+- Approach: introduce a `Stage3LineDispatcher` (or `Stage3Context.EnumerateCpdLines(tokenProvider)`) that yields `(int Index, string Line, string Trimmed, List<Token> Tokens)`. Validators expose a `ValidateLine(...)` plus optional `Finalize(...)` for cross-line state (e.g., control-block balance).
+- Risk: many validators have subtle multi-line state (e.g., balance tracking, naming context). Each needs an audit to confirm what is line-local vs cross-line before swapping to the dispatcher.
+- Expected reduction: ~3-5× fewer per-line operations on large files (per the original investigation estimate).
+
+The D6 boilerplate-extraction enumerator (`stage3.CpdLines()`) is also still pending — it's a prerequisite for the broader P3 refactor.
 
 ## Verification
 

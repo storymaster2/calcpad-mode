@@ -179,10 +179,10 @@ namespace Calcpad.Highlighter.Tokenizer
             if (c == '#')
                 return _state.IsLeading ? TokenType.Keyword : TokenType.Bracket;
 
-            if (IsDigit(c))
+            if (char.IsAsciiDigit(c))
                 return TokenType.Const;
 
-            if (_state.IsMacro && IsMacroLetter(c, 0))
+            if (_state.IsMacro && IsMacroIdentChar(c, 0))
                 return TokenType.Macro;
 
             if (CalcpadCharacterHelpers.IsLetterForTokenizer(c))

@@ -114,7 +114,7 @@ namespace Calcpad.Highlighter.Tokenizer
                     _state.CurrentType = TokenType.Function;
                     // Check if this is a function DEFINITION by looking ahead for "(...) ="
                     // Only mark params as LocalVariable for definitions, not calls
-                    _state.IsFunctionDefinition = IsFunctionDefinitionLine(_state.Text, _state.TokenStartColumn);
+                    _state.IsFunctionDefinition = IsFunctionDefinitionLine(_state.Text.Span, _state.TokenStartColumn);
                     _state.IsInFunctionParams = _state.IsFunctionDefinition;
                 }
                 else if (t == TokenType.Function)
@@ -283,7 +283,7 @@ namespace Calcpad.Highlighter.Tokenizer
             _state.CurrentType = TokenType.Bracket;
         }
 
-        private void ParseImaginary(char c, int i, int len, string text)
+        private void ParseImaginary(char c, int i, int len, ReadOnlySpan<char> text)
         {
             var j = i + 1;
             if (j < len && text[j] == 'n')

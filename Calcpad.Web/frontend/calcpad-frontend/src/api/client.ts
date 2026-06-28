@@ -7,7 +7,8 @@ import type {
     HighlightToken,
     DefinitionsRequest,
     DefinitionsResponse,
-    FindReferencesResponse,
+    SymbolAtPositionRequest,
+    SymbolAtPositionResponse,
     PrettifyRequest,
     PrettifyResponse,
 } from '../types/api';
@@ -51,9 +52,20 @@ export class CalcpadApiClient {
         return this.post<DefinitionsResponse>('/api/calcpad/definitions', request, 'Definitions');
     }
 
-    public async findReferences(content: string, sourceFilePath?: string): Promise<FindReferencesResponse | null> {
-        const request: DefinitionsRequest = { content, sourceFilePath };
-        return this.post<FindReferencesResponse>('/api/calcpad/find-references', request, 'FindReferences');
+    /**
+     * Resolve a cursor position to the user-defined symbol at that point and
+     * return every occurrence of it. Server-side replacement for the legacy
+     * client-side overlap test that powers go-to-definition, find-all-references,
+     * and rename across all editor integrations.
+     */
+    public async symbolAtPosition(
+        content: string,
+        line: number,
+        column: number,
+        sourceFilePath?: string,
+    ): Promise<SymbolAtPositionResponse | null> {
+        const request: SymbolAtPositionRequest = { content, line, column, sourceFilePath };
+        return this.post<SymbolAtPositionResponse>('/api/calcpad/symbol-at-position', request, 'SymbolAtPosition');
     }
 
     public async snippets(): Promise<SnippetsResponse | null> {

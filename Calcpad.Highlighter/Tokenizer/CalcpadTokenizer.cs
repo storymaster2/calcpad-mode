@@ -34,7 +34,7 @@ namespace Calcpad.Highlighter.Tokenizer
         {
             public int Line;
             public int TokenStartColumn;
-            public string Text;
+            public ReadOnlyMemory<char> Text;
             public char TextComment;
             public char TagComment;
             public bool IsSubscript;
@@ -113,10 +113,11 @@ namespace Calcpad.Highlighter.Tokenizer
                 InitMacroCollectionState();
 
             int lineNum = 0;
-            var sourceSpan = source.AsSpan();
-            foreach (var lineSpan in new LineEnumerator(sourceSpan))
+            // ReadOnlyMemory<char> slices survive across nested helper calls — a ref-struct
+            // ReadOnlySpan cannot, since TokenizerState stores Text as a field.
+            foreach (var lineMemory in new LineMemoryEnumerator(source.AsMemory()))
             {
-                TokenizeLineInternal(lineSpan.ToString(), lineNum++);
+                TokenizeLineInternal(lineMemory, lineNum++);
             }
 
             return _result;
@@ -130,13 +131,14 @@ namespace Calcpad.Highlighter.Tokenizer
             _result = new TokenizerResult();
             _builder = new StringBuilder(100);
             _inHtmlComment = false;
-            TokenizeLineInternal(line, lineNumber);
+            TokenizeLineInternal(line.AsMemory(), lineNumber);
             return _result;
         }
 
-        private void TokenizeLineInternal(string text, int lineNumber)
+        private void TokenizeLineInternal(ReadOnlyMemory<char> textMemory, int lineNumber)
         {
-            InitState(text, lineNumber);
+            InitState(textMemory, lineNumber);
+            var text = textMemory.Span;
             _builder.Clear();
             _tagState = TagState.None;
 
@@ -157,7 +159,7 @@ namespace Calcpad.Highlighter.Tokenizer
                 }
 
                 // Line continuation check - works in both code and comments
-                if (c == '_' && (i == len - 1 || text.AsSpan(i + 1).IsWhiteSpace()) && i > 0 && text[i - 1] == ' ')
+                if (c == '_' && (i == len - 1 || text[(i + 1)..].IsWhiteSpace()) && i > 0 && text[i - 1] == ' ')
                 {
                     ParseLineBreak();
                     break;
@@ -416,7 +418,7 @@ namespace Calcpad.Highlighter.Tokenizer
             }
         }
 
-        private void InitState(string text, int lineNumber)
+        private void InitState(ReadOnlyMemory<char> textMemory, int lineNumber)
         {
             // Preserve special content state across lines
             var prevInSpecialContent = _state.InSpecialContent;
@@ -432,9 +434,9 @@ namespace Calcpad.Highlighter.Tokenizer
             _state = new TokenizerState
             {
                 Line = lineNumber,
-                Text = text,
+                Text = textMemory,
                 IsLeading = true,
-                IsPlot = IsPlotLine(text),
+                IsPlot = IsPlotLine(textMemory.Span),
                 AllowUnaryMinus = true,
                 Keyword = string.Empty,
                 InSpecialContent = prevInSpecialContent,

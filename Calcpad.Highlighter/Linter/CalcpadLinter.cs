@@ -73,7 +73,7 @@ namespace Calcpad.Highlighter.Linter
 
             // Suppress diagnostics covered by LintIgnore regions
             if (ignoreRegions is { Count: > 0 })
-                ApplyIgnoreRegions(result.Diagnostics, ignoreRegions);
+                ApplyIgnoreRegions(result, ignoreRegions);
 
             return result;
         }
@@ -85,10 +85,10 @@ namespace Calcpad.Highlighter.Linter
         }
 
         private static void ApplyIgnoreRegions(
-            List<LinterDiagnostic> diagnostics,
+            LinterResult result,
             IReadOnlyList<LintIgnoreRegion> regions)
         {
-            diagnostics.RemoveAll(d =>
+            result.RemoveDiagnostics(d =>
                 regions.Any(r =>
                     d.Line >= r.StartLine &&
                     d.Line <= r.EndLine &&

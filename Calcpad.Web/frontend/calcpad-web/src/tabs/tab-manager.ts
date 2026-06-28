@@ -83,6 +83,11 @@ export class TabManager {
         return t ? this.toState(t) : null;
     }
 
+    /** Lookup the Monaco model for the tab matching `filePath`, or null. */
+    findModelByPath(filePath: string): monaco.editor.ITextModel | null {
+        return this.tabs.find(t => t.filePath === filePath)?.model ?? null;
+    }
+
     isDirty(id?: string): boolean {
         const t = id ? this.tabs.find(t => t.id === id) : this.findActive();
         return !!t?.dirty;

@@ -5,6 +5,7 @@ using Calcpad.Highlighter.ContentResolution;
 using Calcpad.Highlighter.Linter;
 using Calcpad.Highlighter.Linter.Models;
 
+
 namespace Calcpad.Tests.HighlighterTests
 {
     public class HighlighterLinterFixture
@@ -35,7 +36,8 @@ namespace Calcpad.Tests.HighlighterTests
             var content = File.ReadAllText(fullPath);
             var resolver = new ContentResolver();
             var staged = resolver.GetStagedContent(content, IncludeFiles);
-            return new CalcpadLinter().Lint(staged);
+            var ignoreRegions = new LintIgnoreRegionParser().ExtractRegions(content);
+            return new CalcpadLinter().Lint(staged, ignoreRegions);
         }
     }
 }

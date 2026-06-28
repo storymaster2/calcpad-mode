@@ -35,7 +35,7 @@
 	unhide$
 	R_u$|unit$
 	#if env$ ≡ 1
-		 '<!--getStringFromArray(LC_text; index; ""; " controls")--!> 
+		 '<!--getStringFromArray(LC_text; index; ""; " controls")--> 
 	#end if
 #end def
 '

@@ -1,9 +1,11 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Calcpad.Highlighter.Tokenizer.Models;
 
-namespace Calcpad.Server.Services
+namespace Calcpad.Highlighter.HtmlComment
 {
     public enum HtmlCommentParseStatus
     {

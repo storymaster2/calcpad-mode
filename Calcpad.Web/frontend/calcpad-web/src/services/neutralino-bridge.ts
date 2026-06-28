@@ -446,8 +446,9 @@ export class NeutralinoMessageBridge {
 
     private async handleGetVariables(): Promise<void> {
         const content = getActiveEditorContent();
+        const { sourceFilePath } = await this.buildFileContext(content);
 
-        const response = await this.definitionsService.refreshDefinitions(content, 'desktop-editor');
+        const response = await this.definitionsService.refreshDefinitions(content, 'desktop-editor', sourceFilePath);
         if (response) {
             this.postToVue({
                 type: 'updateVariables',
@@ -603,6 +604,15 @@ export class NeutralinoMessageBridge {
     public async buildFileContext(_content: string): Promise<{ sourceFilePath?: string }> {
         const sourceFilePath = this.activeTabFilePath() || undefined;
         return { sourceFilePath };
+    }
+
+    /**
+     * Resolve an `#include` filename (raw text from the directive) to an
+     * absolute path, using the active tab's directory as the base. Mirrors
+     * the resolution rules the backend uses for include lookup.
+     */
+    public resolveIncludePath(rawFileName: string): string {
+        return pathResolve(this.activeTabSourceDir(), rawFileName);
     }
 
     /**

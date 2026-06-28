@@ -35,6 +35,14 @@ namespace Calcpad.Highlighter.ContentResolution
                 }
             }
 
+            // Pre-sort macros by name length descending so longer names match first
+            // (e.g. "string$" before "ng$" in "gstring$"). Done once here instead of
+            // per ExpandMacros call.
+            var sortedMacros = macros
+                .OrderByDescending(m => m.Key.Length)
+                .Select(m => (Name: m.Key, m.Value.Params, m.Value.Content))
+                .ToList();
+
             // Process lines: skip macro definitions, expand macro calls
             bool inMultilineMacro = false;
 
@@ -71,16 +79,21 @@ namespace Calcpad.Highlighter.ContentResolution
                 // Regular line - expand macro calls, tracking which macros were expanded
                 var originalLine = line;
                 var expandedMacroNames = new List<string>();
-                var expandedLine = ExpandMacros(line, macros, expandedMacroNames);
+                var expandedLine = ExpandMacros(line, sortedMacros, expandedMacroNames);
                 var isFromMacroExpansion = expandedLine != originalLine;
 
-                // Handle multiline expansions (macro content can have multiple lines)
-                var expandedSubLines = expandedLine.Split('\n');
-                var totalContentLines = expandedSubLines.Length;
+                // Handle multiline expansions (macro content can have multiple lines).
+                // Macro content is built by JoinLines with '\n' only and macro body lines
+                // never carry '\r' (the tokenizer's per-line slicing strips line endings),
+                // so LineEnumerator's full \r\n/\r/\n handling yields identical segments
+                // to Split('\n') here — without the string[] allocation.
+                var expandedSpan = expandedLine.AsSpan();
+                int totalContentLines = expandedSpan.Count('\n') + 1;
 
-                for (int subIdx = 0; subIdx < totalContentLines; subIdx++)
+                int subIdx = 0;
+                foreach (var lineSpan in new LineEnumerator(expandedSpan))
                 {
-                    lines.Add(expandedSubLines[subIdx]);
+                    lines.Add(lineSpan.ToString());
                     sourceMap[lines.Count - 1] = i;
                     if (isFromMacroExpansion)
                     {
@@ -93,6 +106,7 @@ namespace Calcpad.Highlighter.ContentResolution
                             TotalContentLines = totalContentLines
                         };
                     }
+                    subIdx++;
                 }
             }
 
@@ -832,14 +846,10 @@ namespace Calcpad.Highlighter.ContentResolution
         /// For example, with macros "string$" and "ng$", "gstring$" should expand "string$", not "ng$".
         /// Optionally tracks which macros were expanded for source mapping.
         /// </summary>
-        private string ExpandMacros(string line, Dictionary<string, (List<string> Params, List<string> Content)> macros, List<string> expandedMacroNames = null, HashSet<string> currentlyExpanding = null)
+        private string ExpandMacros(string line, List<(string Name, List<string> Params, List<string> Content)> sortedMacros, List<string> expandedMacroNames = null, HashSet<string> currentlyExpanding = null)
         {
-            if (macros.Count == 0 || !line.AsSpan().Contains('$'))
+            if (sortedMacros.Count == 0 || !line.AsSpan().Contains('$'))
                 return line;
-
-            // Sort macros by name length descending so longer names are matched first
-            // This ensures "string$" is matched before "ng$" in "gstring$"
-            var sortedMacros = macros.OrderByDescending(m => m.Key.Length).ToList();
 
             var result = new System.Text.StringBuilder(line.Length * 2);
             var textBuffer = new System.Text.StringBuilder();
@@ -856,12 +866,12 @@ namespace Calcpad.Highlighter.ContentResolution
 
                     // Try to find the longest matching macro name that ends at this position
                     // Compare StringBuilder chars directly to avoid textBuffer.ToString() allocation
-                    (string macroName, (List<string> Params, List<string> Content) macro)? matchedMacro = null;
+                    (string Name, List<string> Params, List<string> Content)? matchedMacro = null;
                     int macroStartInBuffer = -1;
 
-                    foreach (var kvp in sortedMacros)
+                    foreach (var entry in sortedMacros)
                     {
-                        var name = kvp.Key;
+                        var name = entry.Name;
                         // Skip macros currently being expanded on the call stack to break
                         // self-referential (#def a$ = a$) and mutual (a$↔b$) cycles.
                         if (currentlyExpanding != null && currentlyExpanding.Contains(name))
@@ -869,7 +879,7 @@ namespace Calcpad.Highlighter.ContentResolution
                         if (textBuffer.Length >= name.Length &&
                             StringBuilderEndsWith(textBuffer, name))
                         {
-                            matchedMacro = (name, kvp.Value);
+                            matchedMacro = entry;
                             macroStartInBuffer = textBuffer.Length - name.Length;
                             break; // First match is the longest due to sorted order
                         }
@@ -877,7 +887,8 @@ namespace Calcpad.Highlighter.ContentResolution
 
                     if (matchedMacro.HasValue)
                     {
-                        var (macroName, macro) = matchedMacro.Value;
+                        var macro = matchedMacro.Value;
+                        var macroName = macro.Name;
 
                         // Output text before the macro name
                         if (macroStartInBuffer > 0)
@@ -928,9 +939,11 @@ namespace Calcpad.Highlighter.ContentResolution
                         if (resolvedArgs != null)
                         {
                             expandedMacroNames?.Add(macroName);
-                            var macroContent = JoinLines(macro.Content);
+                            string macroContent;
 
-                            // Substitute parameters - sort by length descending to handle nested param names
+                            // Substitute parameters - sort by length descending to handle nested
+                            // param names (e.g. "ab" before "a"). Use a single StringBuilder so
+                            // chained Replace calls don't allocate a new string per parameter.
                             if (macro.Params.Count > 0)
                             {
                                 var sortedParams = macro.Params
@@ -938,10 +951,17 @@ namespace Calcpad.Highlighter.ContentResolution
                                     .OrderByDescending(x => x.Param.Length)
                                     .ToList();
 
+                                var contentBuilder = new System.Text.StringBuilder();
+                                AppendJoinedLines(contentBuilder, macro.Content);
                                 foreach (var (param, arg) in sortedParams)
                                 {
-                                    macroContent = macroContent.Replace(param, arg);
+                                    contentBuilder.Replace(param, arg);
                                 }
+                                macroContent = contentBuilder.ToString();
+                            }
+                            else
+                            {
+                                macroContent = JoinLines(macro.Content);
                             }
 
                             // Recursively expand any macros in the result (nested expansions also tracked).
@@ -951,7 +971,7 @@ namespace Calcpad.Highlighter.ContentResolution
                             currentlyExpanding.Add(macroName);
                             try
                             {
-                                macroContent = ExpandMacros(macroContent, macros, expandedMacroNames, currentlyExpanding);
+                                macroContent = ExpandMacros(macroContent, sortedMacros, expandedMacroNames, currentlyExpanding);
                             }
                             finally
                             {

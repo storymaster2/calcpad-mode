@@ -14,6 +14,7 @@ import {
     registerDefinitionProvider,
     registerReferenceProvider,
     registerRenameProvider,
+    type IncludeFileOpener,
 } from './editor/references';
 import { attachQuickTyper } from './editor/quick-type';
 import { attachOperatorReplacer } from './editor/operator-replacer';
@@ -454,6 +455,34 @@ async function bootstrap(): Promise<void> {
     const getFileContext = 'buildFileContext' in activeBridge
         ? (content: string) => (activeBridge as any).buildFileContext(content)
         : undefined;
+
+    // Cross-file Go-to-Definition / Find All References needs to read include
+    // files off disk. Only wire the opener up on Neutralino desktop, where we
+    // have filesystem access; in the pure-web build the providers silently
+    // skip include locations. See `IncludeFileOpener` for the browser/remote
+    // follow-up.
+    const openIncludeFile: IncludeFileOpener | undefined = neuBridge
+        ? async (rawFileName: string) => {
+            try {
+                const absPath = neuBridge.resolveIncludePath(rawFileName);
+                let model = tabs.findModelByPath(absPath);
+                if (!model) {
+                    const content = await neuBridge.readFile(absPath);
+                    const tabId = tabs.openFile(absPath, content);
+                    model = tabs.findModelByPath(absPath);
+                    if (!model) {
+                        console.warn(`[references] opened ${absPath} as ${tabId} but no model was registered`);
+                        return null;
+                    }
+                }
+                return model.uri;
+            } catch (err) {
+                console.warn(`[references] failed to open include ${rawFileName}: ${err instanceof Error ? err.message : String(err)}`);
+                return null;
+            }
+        }
+        : undefined;
+
     registerSemanticTokensProvider(activeBridge.api, getFileContext);
     const diagnostics = setupDiagnostics(editor, activeBridge.api, () => {
         const sev = editorBridge.getExtraSetting('linterMinSeverity');
@@ -461,9 +490,9 @@ async function bootstrap(): Promise<void> {
     }, getFileContext);
     registerCompletionProvider(activeBridge.snippets);
     registerHoverProvider(editorBridge);
-    registerDefinitionProvider(editorBridge);
-    registerReferenceProvider(editorBridge);
-    registerRenameProvider(editorBridge);
+    registerDefinitionProvider(editorBridge, getFileContext, openIncludeFile);
+    registerReferenceProvider(editorBridge, getFileContext, openIncludeFile);
+    registerRenameProvider(editorBridge, getFileContext);
     registerFormatDocumentProvider(editorBridge);
     attachQuickTyper(editor, editorBridge);
     attachOperatorReplacer(editor);
@@ -479,9 +508,10 @@ async function bootstrap(): Promise<void> {
     // Keep the definitions cache fresh so hover provider has data to show.
     // Debounced — same cadence as TOC refresh.
     let definitionsTimer: ReturnType<typeof setTimeout> | null = null;
-    const refreshDefinitions = () => {
+    const refreshDefinitions = async () => {
         const content = editor.getValue();
-        editorBridge.definitions.refreshDefinitions(content, activeDocumentKey());
+        const ctx = getFileContext ? await getFileContext(content) : {};
+        editorBridge.definitions.refreshDefinitions(content, activeDocumentKey(), ctx.sourceFilePath);
     };
     editor.onDidChangeModelContent(() => {
         if (definitionsTimer) clearTimeout(definitionsTimer);
@@ -598,7 +628,9 @@ async function bootstrap(): Promise<void> {
         appInstance.appendOutput('info', 'Refreshing…');
 
         await diagnostics.refresh();
-        editorBridge.definitions.refreshDefinitions(editor.getValue(), activeDocumentKey());
+        const content = editor.getValue();
+        const ctx = getFileContext ? await getFileContext(content) : {};
+        editorBridge.definitions.refreshDefinitions(content, activeDocumentKey(), ctx.sourceFilePath);
         activeBridge.refreshHeadings();
         if (appInstance.isPreviewVisible()) {
             await refreshPreview();

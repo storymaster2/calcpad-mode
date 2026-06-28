@@ -54,6 +54,7 @@
 
 -   Write/Append: prompt a download (ZIP for multiple files) when running under the Linux build instead of writing to the local filepath. Add a setting in Calcpad.Core to control whether write/append output is cached for download or applied directly to disk.
 -   Add support for other languages, especially Chinese as there is a large Chinese community.
+-   Fix jumping to wrong definition when deep macro nesting is done, see line 73 in HighlighterTests/valid/nestedMacro.cpd for example.
 
 > Hosted-mode items (DDoS hardening, file-size/rate limits, CalcpadAuth SSO, S3 backend, Docker config, OAuth, Cloudflare tunnel, `<service:endpoint>` routing, token management) live on `calcpad-experimental`.
 
@@ -64,7 +65,6 @@
 -   Test snippet updates
 
 ## Calcpad.Web Desktop App
--   Add missing sourceFilePath plumbing such as variable/macro scanning
 
 ## Calcpad.Highlighter
 

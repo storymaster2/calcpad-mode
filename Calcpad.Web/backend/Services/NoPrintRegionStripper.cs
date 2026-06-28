@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using Calcpad.Highlighter.HtmlComment;
 using Calcpad.Highlighter.Tokenizer;
 
 namespace Calcpad.Server.Services
