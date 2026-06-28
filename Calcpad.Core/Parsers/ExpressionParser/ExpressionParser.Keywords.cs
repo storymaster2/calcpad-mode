@@ -634,7 +634,9 @@ namespace Calcpad.Core
             {
                 if (_condition.IsSatisfied)
                 {
-                    var options = new ReadWriteOptions(s, 0);
+                    var sourceDir = !string.IsNullOrEmpty(SourceFilePath)
+                        ? System.IO.Path.GetDirectoryName(SourceFilePath) : null;
+                    var options = new ReadWriteOptions(s, 0, sourceDir);
                     if (options.Name.IsEmpty)
                         return;
 
@@ -658,7 +660,9 @@ namespace Calcpad.Core
             {
                 if (_condition.IsSatisfied)
                 {
-                    var options = new ReadWriteOptions(s, keyword - Keyword.Read);
+                    var sourceDir = !string.IsNullOrEmpty(SourceFilePath)
+                        ? System.IO.Path.GetDirectoryName(SourceFilePath) : null;
+                    var options = new ReadWriteOptions(s, keyword - Keyword.Read, sourceDir);
                     if (options.Name.IsEmpty)
                         return;
 

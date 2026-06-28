@@ -21,6 +21,7 @@ namespace Calcpad.Wpf
         internal readonly Dictionary<string, List<int>> MacroVariables = new(StringComparer.Ordinal);
         internal readonly Dictionary<string, List<int>> MacroFunctions = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _macroContents = new(StringComparer.Ordinal);
+        private readonly HashSet<string> _expandingMacros = new(StringComparer.Ordinal);
         private static readonly bool[] LineExtensionsMap = new bool[128];
 
         internal bool HasMacros => _hasIncludes || Macros.Count > 0;
@@ -45,6 +46,7 @@ namespace Calcpad.Wpf
             MacroVariables.Clear();
             MacroFunctions.Clear();
             MacroProcedures.Clear();
+            _expandingMacros.Clear();
             Variables.Add("e", -1);
             Variables.Add("pi", -1);
             Variables.Add("π", -1);
@@ -102,10 +104,19 @@ namespace Calcpad.Wpf
                 var s = GetFileName(lineContent);
                 if (File.Exists(s))
                 {
-                    s = Include(s, null);
-                    var lines = s.EnumerateLines();
-                    foreach (var line in lines)
-                        Get(line, lineNumber);
+                    // Circular/recursive includes throw here. Swallow as the highlighter's
+                    // AppendInclude does - the error is surfaced inline on the #include line
+                    // during the parse pass. Letting it escape crashes the app, because this
+                    // runs on the UI thread inside a RichTextBox change block during a
+                    // dispatcher-suspended render pass (see App.xaml.cs unhandled handler).
+                    try
+                    {
+                        s = Include(s, null);
+                        var lines = s.EnumerateLines();
+                        foreach (var line in lines)
+                            Get(line, lineNumber);
+                    }
+                    catch { }
                 }
                 _hasIncludes = true;
             }
@@ -228,14 +239,21 @@ namespace Calcpad.Wpf
                             {
                                 if (Validator.IsMacroLetter(s[i], i))
                                 {
-                                    var s1 = s[i..];
-                                    ref var contents = ref CollectionsMarshal.GetValueRefOrNullRef(_macroContents, s1.ToString());
+                                    var macroName = s[i..].ToString();
+                                    ref var contents = ref CollectionsMarshal.GetValueRefOrNullRef(_macroContents, macroName);
                                     if (!System.Runtime.CompilerServices.Unsafe.IsNullRef(ref contents))
                                     {
-                                        if (!string.IsNullOrEmpty(contents))
+                                        if (!string.IsNullOrEmpty(contents) && _expandingMacros.Add(macroName))
                                         {
-                                            GetVariablesUnitsAndFunctions(contents, lineNumber);
-                                            contents = null;
+                                            try
+                                            {
+                                                GetVariablesUnitsAndFunctions(contents, lineNumber);
+                                                contents = null;
+                                            }
+                                            finally
+                                            {
+                                                _expandingMacros.Remove(macroName);
+                                            }
                                         }
                                     }
                                 }
