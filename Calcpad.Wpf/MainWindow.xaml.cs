@@ -73,6 +73,7 @@ namespace Calcpad.Wpf
         private readonly ExpressionParser _parser;
         private readonly MacroParser _macroParser;
         private readonly HighLighter _highlighter;
+        private readonly HashSet<string> _includeStack = new(StringComparer.OrdinalIgnoreCase);
 
         // Html strings
         private readonly string _htmlWorksheet;
@@ -3229,9 +3230,18 @@ namespace Calcpad.Wpf
                             if (!File.Exists(includeFilePath))
                                 throw new FileNotFoundException($"{Core.Messages.File_not_found}: {includeFileName}.");
 
-                            getLines.Add(fields is null
-                                    ? Include(includeFilePath, null)
-                                    : Include(includeFilePath, new()));
+                            if (!_includeStack.Add(includeFilePath))
+                                throw new InvalidOperationException(string.Format(Core.Messages.Circular_include_detected_0, includeFileName));
+                            try
+                            {
+                                getLines.Add(fields is null
+                                        ? Include(includeFilePath, null)
+                                        : Include(includeFilePath, new()));
+                            }
+                            finally
+                            {
+                                _includeStack.Remove(includeFilePath);
+                            }
                         }
                         else
                             getLines.Add(line.ToString());
