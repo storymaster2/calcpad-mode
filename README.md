@@ -49,8 +49,8 @@ If you prefer to write your worksheets in an IDE, we maintain a dedicated extens
 The easiest way to install CalcpadCE is via [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/).
 Simply open a Windows terminal and run:
 
-```shell
-winget install calcpadce
+```powershell
+winget install -e --id Imartincei.CalcpadCE
 ```
 
 ## ⚡ Quick Start

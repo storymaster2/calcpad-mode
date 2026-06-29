@@ -8,7 +8,7 @@ You can skip the SmartScreen warning by installing CalcpadCE via [winget](https:
 This is also the easiest way to install CalcpadCE.
 Simply open a Windows terminal and run:
 
-`winget install calcpadce`
+`winget install -e --id Imartincei.CalcpadCE`
 
 CalcpadCE can be updated via winget after this release's PR in [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs/pulls?q=is%3Apr+calcpadce) is merged:
 
