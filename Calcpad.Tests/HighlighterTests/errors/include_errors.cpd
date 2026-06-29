@@ -1,0 +1,6 @@
+' CPD-11xx: Include validation errors
+' CPD-1101: Malformed #include (regex doesn't match)
+#include !!!invalid!!!
+
+' CPD-1102: Missing filename
+#include

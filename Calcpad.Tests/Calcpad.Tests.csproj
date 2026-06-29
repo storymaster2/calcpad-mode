@@ -21,6 +21,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Calcpad.Core\Calcpad.Core.csproj" />
+    <ProjectReference Include="..\Calcpad.Highlighter\Calcpad.Highlighter.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="HighlighterTests\**\*.cpd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
