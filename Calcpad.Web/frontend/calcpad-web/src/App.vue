@@ -395,14 +395,119 @@ function getPreviewMode(): PreviewMode {
   return previewMode.value
 }
 
-function setPreviewHtml(html: string): void {
+function setPreviewHtml(html: string, scrollToLine?: number): void {
   const frame = previewFrame.value
   if (!frame) return
   const doc = frame.contentDocument
   if (!doc) return
   doc.open()
-  doc.write(injectPreviewConsole(html))
+  doc.write(injectPreviewConsole(injectLineLinks(injectScrollbarStyles(html), scrollToLine)))
   doc.close()
+}
+
+// Give the preview iframe a clearly visible vertical scrollbar. The default
+// scrollbar is nearly invisible; reserving the gutter with `overflow-y: scroll`
+// keeps the layout from shifting. The iframe has no VS Code theme variables, so
+// use plain rgba values (mirrors vscode-calcpad's getScrollbarStyleScript).
+function injectScrollbarStyles(html: string): string {
+  const style = [
+    '<' + 'style>',
+    'html { overflow-y: scroll; }',
+    '::-webkit-scrollbar { width: 12px; height: 12px; }',
+    '::-webkit-scrollbar-track { background: transparent; }',
+    '::-webkit-scrollbar-thumb { background: rgba(121,121,121,0.4); border-radius: 6px; }',
+    '::-webkit-scrollbar-thumb:hover { background: rgba(100,100,100,0.7); }',
+    '::-webkit-scrollbar-thumb:active { background: rgba(85,85,85,0.9); }',
+    '::-webkit-scrollbar-corner { background: transparent; }',
+    '</' + 'style>',
+  ].join('\n')
+  const headIdx = html.indexOf('<head>')
+  if (headIdx >= 0) {
+    return html.slice(0, headIdx + 6) + style + html.slice(headIdx + 6)
+  }
+  return style + html
+}
+
+// Inject the line-link behaviour ported from vscode-calcpad
+// (getErrorNavigationScript's a[data-text] binding + getLineLinkScript):
+//  - a[data-text] anchors (error links + .line-num code anchors) post
+//    'navigateToLine'. isCodeView (any .line-num present) or a .line-num class
+//    marks the target as a 'source' line; otherwise it's an expanded 'output'
+//    line — the discriminator main.ts uses for the macro two-step.
+//  - each wrapped-view .line gets a hover '←' link posting an 'output' line.
+//  - .roundBox error chips scroll the preview to their output line.
+//  - an optional baked-in scrollToLine target is scrolled into view on load,
+//    avoiding a postMessage race with the iframe reload.
+function injectLineLinks(html: string, scrollToLine?: number): string {
+  const scrollTarget = typeof scrollToLine === 'number' ? String(scrollToLine) : 'null'
+  const body = [
+    "document.addEventListener('DOMContentLoaded', function() {",
+    "  var post = function(line, lineType) {",
+    "    try { window.parent.postMessage({ type: 'navigateToLine', line: line, lineType: lineType }, '*'); } catch (e) {}",
+    "  };",
+    // Error links + line-num anchors: the code view (unwrapped output, or the
+    // wrapped view's error fallback) renders .line-num anchors whose data-text
+    // is already a source line. Tag each click so main.ts only does the
+    // output->unwrapped two-step for real output lines.
+    "  var isCodeView = !!document.querySelector('.line-num');",
+    "  document.querySelectorAll('a[data-text]').forEach(function(link) {",
+    "    link.addEventListener('click', function(e) {",
+    "      e.preventDefault();",
+    "      var n = link.getAttribute('data-text');",
+    "      if (!n) return;",
+    "      var lineType = (link.classList.contains('line-num') || isCodeView) ? 'source' : 'output';",
+    "      post(parseInt(n, 10), lineType);",
+    "    });",
+    "  });",
+    // Hover '←' links on each wrapped-view output line.
+    "  function hideAllLineLinks() {",
+    "    document.querySelectorAll('.lineLink').forEach(function(l) { l.style.display = 'none'; });",
+    "  }",
+    "  document.querySelectorAll('.line').forEach(function(el) {",
+    "    var id = el.id || '';",
+    "    var n = id.indexOf('line-') === 0 ? id.slice(5) : '';",
+    "    if (!n) return;",
+    "    var link = document.createElement('a');",
+    "    link.className = 'lineLink';",
+    "    link.href = '#0';",
+    "    link.setAttribute('data-text', n);",
+    "    link.title = 'Code line ' + n;",
+    "    link.textContent = '\\u2190';",
+    "    link.style.display = 'none';",
+    "    link.addEventListener('click', function(e) {",
+    "      e.preventDefault();",
+    // .line elements only exist in the true wrapped view, so this is an output line.
+    "      post(parseInt(n, 10), 'output');",
+    "    });",
+    "    el.appendChild(link);",
+    "    el.addEventListener('mouseenter', function() {",
+    "      hideAllLineLinks();",
+    "      link.style.display = 'inline-block';",
+    "    });",
+    "  });",
+    "  window.addEventListener('scroll', hideAllLineLinks);",
+    "  document.body.addEventListener('mouseleave', hideAllLineLinks);",
+    // Error-summary chips: scroll the preview to the referenced output line.
+    "  document.querySelectorAll('.roundBox').forEach(function(box) {",
+    "    box.addEventListener('click', function() {",
+    "      var line = box.getAttribute('data-line');",
+    "      var target = line && document.getElementById('line-' + line);",
+    "      if (target) target.scrollIntoView({ block: 'start' });",
+    "    });",
+    "  });",
+    "  var scrollToLine = " + scrollTarget + ";",
+    "  if (scrollToLine !== null) {",
+    "    var target = document.getElementById('line-' + scrollToLine);",
+    "    if (target) target.scrollIntoView({ block: 'center' });",
+    "  }",
+    "});",
+  ].join('\n')
+  const script = '<' + 'script>' + body + '</' + 'script>'
+  const bodyCloseIdx = html.lastIndexOf('</body>')
+  if (bodyCloseIdx >= 0) {
+    return html.slice(0, bodyCloseIdx) + script + html.slice(bodyCloseIdx)
+  }
+  return html + script
 }
 
 // Forward iframe console.* + uncaught errors to the parent window via

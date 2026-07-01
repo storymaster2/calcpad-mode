@@ -415,17 +415,53 @@ async function bootstrap(): Promise<void> {
         appInstance.appendOutput('error', `Unhandled rejection: ${e.reason}`);
     });
 
-    // Forward console messages from the preview iframe to the Output panel's
-    // "Preview Console" channel. Patched in App.vue:injectPreviewConsole.
+    // Output line the next unwrapped refresh should scroll to, set by the
+    // wrapped->unwrapped two-step in the 'navigateToLine' handler and consumed
+    // by refreshPreview.
+    let pendingPreviewScrollLine: number | null = null;
+
+    // Messages posted from the preview iframe (App.vue:injectPreviewConsole /
+    // injectLineLinks). Two message types share this listener.
     window.addEventListener('message', (e: MessageEvent) => {
         const data = e.data;
-        if (!data || data.type !== 'previewConsole') return;
-        const level: 'info' | 'warn' | 'error' | 'debug' =
-            data.level === 'warn' ? 'warn'
-            : data.level === 'error' ? 'error'
-            : data.level === 'debug' ? 'debug'
-            : 'info';
-        appInstance.appendOutput(level, String(data.message ?? ''), 'preview');
+        if (!data) return;
+
+        // Forward console.* + uncaught errors to the Output panel's "Preview
+        // Console" channel.
+        if (data.type === 'previewConsole') {
+            const level: 'info' | 'warn' | 'error' | 'debug' =
+                data.level === 'warn' ? 'warn'
+                : data.level === 'error' ? 'error'
+                : data.level === 'debug' ? 'debug'
+                : 'info';
+            appInstance.appendOutput(level, String(data.message ?? ''), 'preview');
+            return;
+        }
+
+        // Preview -> editor navigation. An 'output' line comes from the true
+        // wrapped view; when the document has macros/includes that line only
+        // makes sense in the unwrapped view, so flip the pane to unwrapped
+        // scrolled there (the two-step) — the user then clicks a line number
+        // to reach the true source line. A 'source' line (code-view .line-num
+        // anchors, or a macro-free document) navigates Monaco directly.
+        if (data.type === 'navigateToLine') {
+            const line = Number(data.line);
+            if (!Number.isFinite(line) || line < 1) return;
+            const isOutputLine = data.lineType === 'output';
+            const hasMacros = /^\s*#(def|include)\b/im.test(editor.getValue());
+            if (isOutputLine && appInstance.getPreviewMode() === 'wrapped' && hasMacros) {
+                // Bake the target into the unwrapped refresh (avoids an
+                // iframe-reload postMessage race); setPreviewMode triggers
+                // onPreviewModeChanged -> refreshPreview.
+                pendingPreviewScrollLine = line;
+                appInstance.setPreviewMode('unwrapped');
+            } else {
+                editor.revealLineInCenter(line);
+                editor.setPosition({ lineNumber: line, column: 1 });
+                editor.focus();
+            }
+            return;
+        }
     });
 
     appInstance.appendOutput('info', `CalcPad Web started — server: ${serverUrl}`);
@@ -632,8 +668,15 @@ async function bootstrap(): Promise<void> {
             html = await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath);
         }
 
+        // Consume any pending two-step scroll target: only the unwrapped view it
+        // was set for should honor it, and only once.
+        const scrollToLine = (mode === 'unwrapped' && pendingPreviewScrollLine != null)
+            ? pendingPreviewScrollLine
+            : undefined;
+        pendingPreviewScrollLine = null;
+
         if (typeof html === 'string') {
-            appInstance.setPreviewHtml(html);
+            appInstance.setPreviewHtml(html, scrollToLine);
         }
     }
 

@@ -23,8 +23,11 @@ import { CalcpadServerManager } from './calcpadServerManager';
 import { DotnetRuntimeManager } from './dotnetRuntimeManager';
 import { VSCodeLogger, VSCodeFileSystem } from './adapters';
 
-let activePreviewPanel: vscode.WebviewPanel | unknown = undefined;
-let activePreviewType: 'regular' | 'unwrapped' | undefined = undefined;
+// The wrapped ("regular") and unwrapped previews are independent panels that can
+// coexist: the unwrapped one is stacked directly below the regular one so the
+// error/line-link "two-step" navigation (regular → unwrapped → source) reads top-to-bottom.
+let wrappedPanel: vscode.WebviewPanel | undefined = undefined;
+let unwrappedPanel: vscode.WebviewPanel | undefined = undefined;
 let previewUpdateTimeout: NodeJS.Timeout | unknown = undefined;
 let previewSourceEditor: vscode.TextEditor | undefined = undefined;
 let linter: CalcpadServerLinter;
@@ -341,14 +344,23 @@ function getErrorNavigationScript(): string {
                 // Find all error links with data-text attributes
                 const errorLinks = document.querySelectorAll('a[data-text]');
 
+                // The code view (unwrapped output, or the wrapped view's fallback when
+                // parsing errors occur) renders .line-num anchors whose data-text is
+                // already a source line. The true wrapped view has no .line-num and its
+                // error links carry expanded *output* lines. Tag each click so the
+                // extension only does the output->unwrapped two-step for real output lines.
+                const isCodeView = !!document.querySelector('.line-num');
+
                 errorLinks.forEach(link => {
                     link.addEventListener('click', function(e) {
                         e.preventDefault();
                         const lineNumber = this.getAttribute('data-text');
                         if (lineNumber) {
+                            const lineType = (this.classList.contains('line-num') || isCodeView) ? 'source' : 'output';
                             vscode.postMessage({
                                 type: 'navigateToLine',
-                                line: parseInt(lineNumber, 10)
+                                line: parseInt(lineNumber, 10),
+                                lineType: lineType
                             });
                         }
                     });
@@ -358,7 +370,96 @@ function getErrorNavigationScript(): string {
     `;
 }
 
-async function updatePreviewContent(panel: vscode.WebviewPanel, content: string, sourceFileUri: vscode.Uri, unwrapped: boolean = false) {
+/**
+ * Give the preview a clearly visible vertical scrollbar. VS Code webviews scroll
+ * natively but the default scrollbar is nearly invisible, so we style it to match
+ * the extension's Vue sidebar (calcpad-frontend/src/vue/styles/base.css). Reserving
+ * the gutter with `overflow-y: scroll` keeps the layout from shifting.
+ */
+function getScrollbarStyleScript(): string {
+    return `
+        <style>
+            html { overflow-y: scroll; }
+            ::-webkit-scrollbar { width: 12px; height: 12px; }
+            ::-webkit-scrollbar-track { background: var(--vscode-scrollbar-shadow, transparent); }
+            ::-webkit-scrollbar-thumb {
+                background: var(--vscode-scrollbarSlider-background, rgba(121,121,121,0.4));
+                border-radius: 6px;
+            }
+            ::-webkit-scrollbar-thumb:hover { background: var(--vscode-scrollbarSlider-hoverBackground, rgba(100,100,100,0.7)); }
+            ::-webkit-scrollbar-thumb:active { background: var(--vscode-scrollbarSlider-activeBackground, rgba(85,85,85,0.9)); }
+            ::-webkit-scrollbar-corner { background: transparent; }
+        </style>
+    `;
+}
+
+/**
+ * Inject the line-link behaviour ported from the WPF preview (doc/template.html):
+ *  - each wrapped-view output line (.line) gets a hover "←" link that navigates via
+ *    postMessage('navigateToLine'). Its data-text is the output line; the extension
+ *    resolves output→source (the two-step hop) when the document has macros/includes.
+ *    The unwrapped view isn't decorated here: its .line-num anchors already carry the
+ *    source line and are handled by getErrorNavigationScript's a[data-text] binding.
+ *  - error-summary .roundBox chips scroll the preview to that output line.
+ *  - a 'scrollToLine' target (set by the two-step navigation) is scrolled into
+ *    view on load. Baking the target into the HTML avoids a postMessage race with
+ *    the webview reload.
+ * The arrows are created after DOMContentLoaded (so after getErrorNavigationScript
+ * binds), hence they get their own click handler here.
+ */
+function getLineLinkScript(scrollToLine?: number): string {
+    const scrollTarget = typeof scrollToLine === 'number' ? String(scrollToLine) : 'null';
+    return `
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                function hideAllLineLinks() {
+                    document.querySelectorAll('.lineLink').forEach(function(l) { l.style.display = 'none'; });
+                }
+                document.querySelectorAll('.line').forEach(function(el) {
+                    var id = el.id || '';
+                    var n = id.indexOf('line-') === 0 ? id.slice(5) : '';
+                    if (!n) return;
+                    var link = document.createElement('a');
+                    link.className = 'lineLink';
+                    link.href = '#0';
+                    link.setAttribute('data-text', n);
+                    link.title = 'Code line ' + n;
+                    link.textContent = '\\u2190';
+                    link.style.display = 'none';
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        // .line elements only exist in the true wrapped view, so this is an output line.
+                        vscode.postMessage({ type: 'navigateToLine', line: parseInt(n, 10), lineType: 'output' });
+                    });
+                    el.appendChild(link);
+                    el.addEventListener('mouseenter', function() {
+                        hideAllLineLinks();
+                        link.style.display = 'inline-block';
+                    });
+                });
+                window.addEventListener('scroll', hideAllLineLinks);
+                document.body.addEventListener('mouseleave', hideAllLineLinks);
+
+                // Error-summary chips: scroll the preview to the referenced output line.
+                document.querySelectorAll('.roundBox').forEach(function(box) {
+                    box.addEventListener('click', function() {
+                        var line = box.getAttribute('data-line');
+                        var target = line && document.getElementById('line-' + line);
+                        if (target) target.scrollIntoView({ block: 'start' });
+                    });
+                });
+
+                var scrollToLine = ${scrollTarget};
+                if (scrollToLine !== null) {
+                    var target = document.getElementById('line-' + scrollToLine);
+                    if (target) target.scrollIntoView({ block: 'center' });
+                }
+            });
+        </script>
+    `;
+}
+
+async function updatePreviewContent(panel: vscode.WebviewPanel, content: string, sourceFileUri: vscode.Uri, unwrapped: boolean = false, scrollToLine?: number) {
     const mode = unwrapped ? 'unwrapped' : 'wrapped';
     outputChannel.appendLine(`Starting updatePreviewContent (${mode})...`);
     outputChannel.appendLine(`Content length: ${content.length} characters`);
@@ -473,17 +574,23 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         // Inject JavaScript for error link navigation and console interception
         const errorNavigationScript = getErrorNavigationScript();
 
+        // Visible, styled vertical scrollbar for the preview
+        const scrollbarStyleScript = getScrollbarStyleScript();
+
+        // Hover line links + roundBox scroll + optional scroll-to-line target
+        const lineLinkScript = getLineLinkScript(scrollToLine);
+
         // Override VS Code's injected theme to match the selected preview theme
         const themeOverrideScript = getThemeOverrideScript(theme);
 
         // Sanitize server HTML to escape stray '<' that aren't part of valid tags
         const sanitizedResponse = sanitizeServerHtml(apiResponse);
 
-        // Inject console interception + error nav at end of <head> so it runs before any user scripts in body
+        // Inject console interception + error nav + scrollbar style at end of <head> so it runs before any user scripts in body
         const vsCodeApiInit = getVsCodeApiInitScript();
-        let htmlWithScript = sanitizedResponse.replace('</head>', vsCodeApiInit + errorNavigationScript + '</head>');
-        // Inject image cache + theme override before closing body tag
-        htmlWithScript = htmlWithScript.replace('</body>', imageCacheScript + themeOverrideScript + '</body>');
+        let htmlWithScript = sanitizedResponse.replace('</head>', vsCodeApiInit + errorNavigationScript + scrollbarStyleScript + '</head>');
+        // Inject image cache + theme override + line links before closing body tag
+        htmlWithScript = htmlWithScript.replace('</body>', imageCacheScript + themeOverrideScript + lineLinkScript + '</body>');
 
         panel.webview.html = htmlWithScript;
 
@@ -774,76 +881,61 @@ async function saveDocx() {
     }
 }
 
-async function createHtmlPreview(context: vscode.ExtensionContext) {
-    const activeEditor = vscode.window.activeTextEditor;
-    if (!activeEditor) {
-        vscode.window.showErrorMessage('No active editor found');
-        return;
-    }
-
-    // Store the source editor for navigation
-    previewSourceEditor = activeEditor;
-
-    if (activePreviewPanel) {
-        (activePreviewPanel as vscode.WebviewPanel).reveal(vscode.ViewColumn.Beside);
-        await updatePreviewContent(activePreviewPanel as vscode.WebviewPanel, activeEditor.document.getText(), activeEditor.document.uri);
-        return;
-    }
-
-    const panel = vscode.window.createWebviewPanel(
-        'htmlPreview',
-        'CalcPad Preview',
-        vscode.ViewColumn.Beside,
-        {
-            enableScripts: true,
-            enableFindWidget: true
-        }
-    );
-
-    activePreviewPanel = panel;
-    activePreviewType = 'regular';
-
-    panel.onDidDispose(() => {
-        activePreviewPanel = undefined;
-        activePreviewType = undefined;
-        previewSourceEditor = undefined;
-    });
-
-    // Handle messages from webview
-    panel.webview.onDidReceiveMessage(
-        message => {
-            switch (message.type) {
-                case 'navigateToLine':
-                    const sourceEditor = previewSourceEditor;
-                    if (sourceEditor && message.line) {
-                        // data-text already contains the original source line (1-based)
-                        // Just convert from 1-based to 0-based indexing
-                        const lineIndex = Math.max(0, message.line - 1);
-                        outputChannel.appendLine(`Navigating to source line ${message.line}`);
-
-                        const position = new vscode.Position(lineIndex, 0);
-                        const selection = new vscode.Selection(position, position);
-                        sourceEditor.selection = selection;
-                        sourceEditor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
-                        vscode.window.showTextDocument(sourceEditor.document, vscode.ViewColumn.One);
-                    }
-                    break;
-                case 'consoleMessage':
-                    const timestamp = new Date().toISOString();
-                    const level = message.level.toUpperCase();
-                    calcpadWebviewConsoleChannel.appendLine(`[${timestamp}] [${level}] ${message.message}`);
-                    break;
-                default:
-                    break;
-            }
-        }
-    );
-
-    await updatePreviewContent(panel, activeEditor.document.getText(), activeEditor.document.uri);
+// Detects whether the document uses macros or includes. When it does, the wrapped
+// preview's line/error links point at *expanded output* lines, so we route the user
+// through the unwrapped view (mirrors WPF's `_highlighter.Defined.HasMacros`).
+function documentHasMacros(text: string): boolean {
+    return /^\s*#(def|include)\b/im.test(text);
 }
 
-async function createHtmlPreviewUnwrapped(context: vscode.ExtensionContext) {
-    const activeEditor = vscode.window.activeTextEditor;
+// Jump the source editor to a 1-based line.
+function navigateEditorToLine(sourceEditor: vscode.TextEditor, line: number) {
+    const lineIndex = Math.max(0, line - 1);
+    outputChannel.appendLine(`Navigating to source line ${line}`);
+    const position = new vscode.Position(lineIndex, 0);
+    const selection = new vscode.Selection(position, position);
+    sourceEditor.selection = selection;
+    sourceEditor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
+    vscode.window.showTextDocument(sourceEditor.document, vscode.ViewColumn.One);
+}
+
+function handlePreviewMessage(message: any, kind: 'regular' | 'unwrapped') {
+    switch (message.type) {
+        case 'navigateToLine': {
+            const sourceEditor = previewSourceEditor;
+            if (!sourceEditor || !message.line) break;
+            // An 'output' line comes from the true wrapped view; when the document has
+            // macros/includes that line only makes sense in the unwrapped view, so open
+            // it (below the wrapped one) scrolled there — the user then clicks a line
+            // number to reach the true source line. A 'source' line (code-view .line-num
+            // anchors, or a macro-free document) navigates the editor directly.
+            const isOutputLine = message.lineType === 'output';
+            if (kind === 'regular' && isOutputLine && documentHasMacros(sourceEditor.document.getText())) {
+                void showPreview('unwrapped', message.line);
+            } else {
+                navigateEditorToLine(sourceEditor, message.line);
+            }
+            break;
+        }
+        case 'consoleMessage': {
+            const timestamp = new Date().toISOString();
+            const level = message.level.toUpperCase();
+            calcpadWebviewConsoleChannel.appendLine(`[${timestamp}] [${level}] ${message.message}`);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+// Opens (or reveals) the wrapped or unwrapped preview. The unwrapped preview is
+// stacked directly below the wrapped one so the two-step navigation reads top→bottom.
+// `scrollToLine` (an output line) is baked into the rendered HTML so the unwrapped
+// view scrolls to it on load without a postMessage race.
+async function showPreview(kind: 'regular' | 'unwrapped', scrollToLine?: number) {
+    // When invoked from a preview line-link click the webview is focused, so there is
+    // no active *text* editor — fall back to the editor that spawned the preview.
+    const activeEditor = vscode.window.activeTextEditor ?? previewSourceEditor;
     if (!activeEditor) {
         vscode.window.showErrorMessage('No active editor found');
         return;
@@ -852,9 +944,18 @@ async function createHtmlPreviewUnwrapped(context: vscode.ExtensionContext) {
     // Store the source editor for navigation
     previewSourceEditor = activeEditor;
 
+    const unwrapped = kind === 'unwrapped';
+    const existing = kind === 'regular' ? wrappedPanel : unwrappedPanel;
+
+    if (existing) {
+        existing.reveal(existing.viewColumn ?? vscode.ViewColumn.Beside, true);
+        await updatePreviewContent(existing, activeEditor.document.getText(), activeEditor.document.uri, unwrapped, scrollToLine);
+        return;
+    }
+
     const panel = vscode.window.createWebviewPanel(
-        'htmlPreviewUnwrapped',
-        'CalcPad Preview Unwrapped',
+        unwrapped ? 'htmlPreviewUnwrapped' : 'htmlPreview',
+        unwrapped ? 'CalcPad Preview Unwrapped' : 'CalcPad Preview',
         vscode.ViewColumn.Beside,
         {
             enableScripts: true,
@@ -862,55 +963,38 @@ async function createHtmlPreviewUnwrapped(context: vscode.ExtensionContext) {
         }
     );
 
-    // Update global references for unwrapped preview
-    activePreviewPanel = panel;
-    activePreviewType = 'unwrapped';
+    if (kind === 'regular') {
+        wrappedPanel = panel;
+    } else {
+        unwrappedPanel = panel;
+        // Stack the unwrapped preview below the wrapped one when both are open.
+        if (wrappedPanel) {
+            await vscode.commands.executeCommand('workbench.action.moveEditorToBelowGroup');
+        }
+    }
 
     panel.onDidDispose(() => {
-        activePreviewPanel = undefined;
-        activePreviewType = undefined;
-        previewSourceEditor = undefined;
+        if (kind === 'regular') {
+            wrappedPanel = undefined;
+        } else {
+            unwrappedPanel = undefined;
+        }
+        if (!wrappedPanel && !unwrappedPanel) {
+            previewSourceEditor = undefined;
+        }
     });
 
-    // Handle messages from webview
-    panel.webview.onDidReceiveMessage(
-        message => {
-            switch (message.type) {
-                case 'navigateToLine':
-                    const sourceEditor = previewSourceEditor;
-                    if (sourceEditor && message.line) {
-                        // data-text already contains the original source line (1-based)
-                        // Just convert from 1-based to 0-based indexing
-                        const lineIndex = Math.max(0, message.line - 1);
-                        outputChannel.appendLine(`Navigating to source line ${message.line}`);
+    panel.webview.onDidReceiveMessage(message => handlePreviewMessage(message, kind));
 
-                        const position = new vscode.Position(lineIndex, 0);
-                        const selection = new vscode.Selection(position, position);
-                        sourceEditor.selection = selection;
-                        sourceEditor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
-                        vscode.window.showTextDocument(sourceEditor.document, vscode.ViewColumn.One);
-                    }
-                    break;
-                case 'consoleMessage':
-                    const timestamp = new Date().toISOString();
-                    const level = message.level.toUpperCase();
-                    calcpadWebviewConsoleChannel.appendLine(`[${timestamp}] [${level}] ${message.message}`);
-                    break;
-                default:
-                    break;
-            }
-        }
-    );
-
-    await updatePreviewContent(panel, activeEditor.document.getText(), activeEditor.document.uri, true);
+    await updatePreviewContent(panel, activeEditor.document.getText(), activeEditor.document.uri, unwrapped, scrollToLine);
 }
 
 function schedulePreviewUpdate() {
-    if (!activePreviewPanel) return;
-    
+    if (!wrappedPanel && !unwrappedPanel) return;
+
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) return;
-    
+
     // Only update for .cpd files or plaintext files
     if (activeEditor.document.languageId !== 'calcpad' && activeEditor.document.languageId !== 'plaintext') {
         return;
@@ -921,10 +1005,14 @@ function schedulePreviewUpdate() {
     }
 
     previewUpdateTimeout = setTimeout(async () => {
-        if (activePreviewPanel && activeEditor) {
-            previewSourceEditor = activeEditor;
-            const unwrapped = activePreviewType === 'unwrapped';
-            await updatePreviewContent(activePreviewPanel as vscode.WebviewPanel, activeEditor.document.getText(), activeEditor.document.uri, unwrapped);
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) return;
+        previewSourceEditor = editor;
+        if (wrappedPanel) {
+            await updatePreviewContent(wrappedPanel, editor.document.getText(), editor.document.uri, false);
+        }
+        if (unwrappedPanel) {
+            await updatePreviewContent(unwrappedPanel, editor.document.getText(), editor.document.uri, true);
         }
     }, 500);
 }
@@ -1245,10 +1333,14 @@ export async function activate(context: vscode.ExtensionContext) {
             await processDocument(activeEditor.document);
         }
 
-        // Refresh preview if open
-        if (activePreviewPanel && activeEditor) {
-            const unwrapped = activePreviewType === 'unwrapped';
-            await updatePreviewContent(activePreviewPanel as vscode.WebviewPanel, activeEditor.document.getText(), activeEditor.document.uri, unwrapped);
+        // Refresh preview(s) if open
+        if (activeEditor && (wrappedPanel || unwrappedPanel)) {
+            if (wrappedPanel) {
+                await updatePreviewContent(wrappedPanel, activeEditor.document.getText(), activeEditor.document.uri, false);
+            }
+            if (unwrappedPanel) {
+                await updatePreviewContent(unwrappedPanel, activeEditor.document.getText(), activeEditor.document.uri, true);
+            }
             outputChannel.appendLine('[Settings] Preview refreshed');
         }
 
@@ -1266,11 +1358,11 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     const previewCommand = vscode.commands.registerCommand('vscode-calcpad.previewHtml', () => {
-        createHtmlPreview(context);
+        showPreview('regular');
     });
 
     const previewUnwrappedCommand = vscode.commands.registerCommand('vscode-calcpad.previewUnwrapped', () => {
-        createHtmlPreviewUnwrapped(context);
+        showPreview('unwrapped');
     });
 
     const showInsertCommand = vscode.commands.registerCommand('vscode-calcpad.showInsert', () => {
@@ -1302,11 +1394,12 @@ export async function activate(context: vscode.ExtensionContext) {
     const webviewSourceUri = vscode.Uri.parse(`${webviewSourceScheme}:Webview Source.html`);
 
     const viewWebviewSourceCommand = vscode.commands.registerCommand('vscode-calcpad.viewWebviewSource', async () => {
-        if (!activePreviewPanel) {
+        const inspectPanel = (unwrappedPanel && unwrappedPanel.active ? unwrappedPanel : wrappedPanel) ?? unwrappedPanel;
+        if (!inspectPanel) {
             vscode.window.showWarningMessage('No active CalcPad preview to inspect.');
             return;
         }
-        webviewSourceHtml = (activePreviewPanel as vscode.WebviewPanel).webview.html;
+        webviewSourceHtml = inspectPanel.webview.html;
         webviewSourceProvider.onDidChangeEmitter.fire(webviewSourceUri);
         const doc = await vscode.workspace.openTextDocument(webviewSourceUri);
         await vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside, true);
@@ -1367,8 +1460,9 @@ export async function activate(context: vscode.ExtensionContext) {
                 outputChannel.appendLine(`[Refresh] Server restart failed: ${msg}`);
                 const blocked = /Windows blocked the executable|EACCES|EPERM/i.test(msg);
                 if (blocked) {
+                    const exePath = serverManager.getExecutablePath();
                     vscode.window.showErrorMessage(
-                        'CalcPad: Windows is still blocking Calcpad.Server.exe. ' +
+                        `CalcPad: Windows is still blocking Calcpad.Server.exe.\n${exePath}\n` +
                         'Right-click the file in Windows Explorer → Properties → check "Unblock", ' +
                         'then click refresh again.'
                     );
@@ -1478,8 +1572,8 @@ export async function activate(context: vscode.ExtensionContext) {
     // Update preview and variables when active editor changes
     const onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(editor => {
         if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
-            // Update preview if panel is open
-            if (activePreviewPanel) {
+            // Update preview if any panel is open
+            if (wrappedPanel || unwrappedPanel) {
                 schedulePreviewUpdate();
             }
             // Update Variables tab

@@ -302,6 +302,75 @@ function stripExternalDeps(targetBin) {
     console.log(`[sync-bundled-server] stripped ${stripped} external NuGet DLLs (${(bytes / 1024 / 1024).toFixed(1)} MB) — extension will redownload on first activation`);
 }
 
+/**
+ * Locate signtool.exe (Windows SDK). Honors CALCPAD_SIGNTOOL as an explicit
+ * override, otherwise picks the newest x64 signtool under the Windows Kits
+ * bin folder. Windows-only; returns null elsewhere.
+ */
+function resolveSigntool() {
+    if (process.platform !== 'win32') return null;
+    if (process.env.CALCPAD_SIGNTOOL && existsSync(process.env.CALCPAD_SIGNTOOL)) {
+        return process.env.CALCPAD_SIGNTOOL;
+    }
+    const kitsBin = 'C:/Program Files (x86)/Windows Kits/10/bin';
+    if (!existsSync(kitsBin)) return null;
+    const versions = readdirSync(kitsBin)
+        .filter(v => /^\d+\.\d+\.\d+\.\d+$/.test(v))
+        .sort((a, b) => {
+            const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+            for (let i = 0; i < 4; i++) if (pa[i] !== pb[i]) return pa[i] - pb[i];
+            return 0;
+        })
+        .reverse();
+    for (const v of versions) {
+        const candidate = join(kitsBin, v, 'x64', 'signtool.exe');
+        if (existsSync(candidate)) return candidate;
+    }
+    const flat = join(kitsBin, 'x64', 'signtool.exe');
+    return existsSync(flat) ? flat : null;
+}
+
+/**
+ * Authenticode-sign the bundled apphost (Calcpad.Server.exe). Off by default:
+ * only runs when CALCPAD_SIGN_THUMBPRINT points at a code-signing cert in the
+ * current user's store, so CI and contributors without a cert get an unsigned
+ * (working) bundle. Signing exists to get past Windows Defender / SmartScreen /
+ * corporate EDR reputation blocks, which key off the per-file hash for unsigned
+ * binaries (re-firing on every rebuild) but off the publisher for signed ones.
+ *
+ * The .exe apphost is the only native PE that gets blocked; the managed .dlls
+ * load through it, so signing just the apphost is sufficient.
+ */
+function signApphost(targetBin) {
+    const thumbprint = process.env.CALCPAD_SIGN_THUMBPRINT;
+    if (!thumbprint) return; // signing disabled — no-op
+
+    if (process.platform !== 'win32') {
+        console.log('[sync-bundled-server] CALCPAD_SIGN_THUMBPRINT set but signing is Windows-only — skipping');
+        return;
+    }
+    const exe = join(targetBin, 'Calcpad.Server.exe');
+    if (!existsSync(exe)) {
+        console.log('[sync-bundled-server] no apphost (Calcpad.Server.exe) present — nothing to sign');
+        return;
+    }
+    const signtool = resolveSigntool();
+    if (!signtool) {
+        throw new Error('CALCPAD_SIGN_THUMBPRINT is set but signtool.exe was not found. Install the Windows SDK or set CALCPAD_SIGNTOOL to its full path.');
+    }
+    const ts = process.env.CALCPAD_SIGN_TIMESTAMP_URL || 'http://timestamp.digicert.com';
+    console.log(`[sync-bundled-server] signing apphost with cert ${thumbprint}`);
+    run(`"${signtool}" sign /sha1 ${thumbprint} /fd SHA256 /tr ${ts} /td SHA256 "${exe}"`, targetBin);
+    // Verify is best-effort: a self-signed cert that isn't in the machine trust
+    // store won't chain to a trusted root, so /pa verify fails even though the
+    // signature was applied correctly. Don't fail the build on that.
+    try {
+        execSync(`"${signtool}" verify /pa "${exe}"`, { stdio: 'inherit' });
+    } catch {
+        console.log('[sync-bundled-server] signtool verify failed — expected for a self-signed cert not yet trusted on this machine; signature was still applied');
+    }
+}
+
 function bundleSizeMb(dir) {
     let total = 0;
     function walk(p) {
@@ -342,6 +411,10 @@ function main() {
     if (args.stripExternalDeps) {
         stripExternalDeps(targetBin);
     }
+
+    // Sign the apphost so Defender / SmartScreen / EDR stop blocking it. No-op
+    // unless CALCPAD_SIGN_THUMBPRINT is set (see signApphost).
+    signApphost(targetBin);
 
     // Quick sanity check — the server DLL and its deps manifest must be present,
     // and the apphost needs +x on POSIX.

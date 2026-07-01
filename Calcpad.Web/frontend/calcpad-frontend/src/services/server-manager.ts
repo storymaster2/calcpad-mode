@@ -64,6 +64,16 @@ export class CalcpadServerManager {
     }
 
     /**
+     * Full path to the bundled server executable (the apphost). Surfaced in
+     * "Windows blocked the exe" messages so the user can locate the exact file
+     * to Unblock in Explorer.
+     */
+    public getExecutablePath(): string {
+        const exeName = process.platform === 'win32' ? 'Calcpad.Server.exe' : 'Calcpad.Server';
+        return path.join(this.basePath, 'bin', exeName);
+    }
+
+    /**
      * Check if the bundled server DLL exists.
      */
     public static dllExists(basePath: string): boolean {

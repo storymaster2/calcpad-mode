@@ -95,7 +95,10 @@ namespace Calcpad.Server.Services
                 {
                     try
                     {
-                        var parser = new ExpressionParser { Settings = coreSettings, SourceFilePath = sourceFilePath };
+                        // Debug mode makes Calcpad.Core emit per-line anchors (id="line-N" class="line")
+                        // and the error-summary boxes that the interactive preview uses for line links.
+                        // Keep it off for print/PDF so exported output has no navigation anchors.
+                        var parser = new ExpressionParser { Settings = coreSettings, SourceFilePath = sourceFilePath, Debug = !forPrint };
                         parser.Parse(outputText, true, openXmlExpressions != null);
                         htmlResult = RemoveEmptyParagraphs(parser.HtmlResult);
                         openXmlExpressions?.AddRange(parser.OpenXmlExpressions);
@@ -177,7 +180,10 @@ tan_angle = tan(angle°)";
                 var spaceCount = Math.Max(0, 6 - n);
                 var paddedSpaces = new string(' ', spaceCount).Replace(" ", "&nbsp;");
                 
-                stringBuilder.Append($"<p class=\"line-text\" id=\"line-{lineNumber}\"><span class=\"line-num\" title=\"Source line {sourceLine}\">{paddedSpaces}{lineNumber}</span>&emsp;│&emsp;");
+                // The paragraph id is the (output) line number for in-preview scrolling; the line-num
+                // anchor carries data-text=sourceLine so clicking it navigates the editor to the
+                // original source line (mirrors WPF's CodeToHtml).
+                stringBuilder.Append($"<p class=\"line-text\" id=\"line-{lineNumber}\"><a class=\"line-num\" href=\"#0\" data-text=\"{sourceLine}\" title=\"Source line {sourceLine}\">{paddedSpaces}{lineNumber}</a>&emsp;│&emsp;");
 
                 if (lineText.StartsWith(ErrorString))
                 {
@@ -440,10 +446,12 @@ tan_angle = tan(angle°)";
 
         private string RemoveEmptyParagraphs(string htmlContent)
         {
-            // Remove lines that only contain <p>&nbsp;</p>
+            // Remove blank-line paragraphs (only content is &nbsp;). Debug mode adds
+            // per-line anchors (<p id="line-N" class="line">&nbsp;</p>) so the opening
+            // tag can carry attributes — match those too, not just a bare <p>.
             return System.Text.RegularExpressions.Regex.Replace(
                 htmlContent,
-                @"<p>&nbsp;</p>(\r?\n)?",
+                @"<p\b[^>]*>&nbsp;</p>(\r?\n)?",
                 string.Empty
             );
         }

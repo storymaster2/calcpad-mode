@@ -220,6 +220,87 @@ cd vscode-calcpad && npm run watch
 cd calcpad-web && npm run dev
 ```
 
+### Code Signing (Windows)
+
+The bundled `Calcpad.Server.exe` (and the desktop Neutralino app exe) are native
+executables. A freshly-built, **unsigned** exe has no cloud reputation, so Windows
+Defender / SmartScreen / corporate EDR can block it from running
+("block-at-first-sight"). Reputation is tracked per-file-hash for unsigned binaries
+— so it re-fires on every rebuild — but per-**publisher** for signed ones. Signing
+with a trusted cert makes rebuilds trusted immediately.
+
+Signing is **off by default** (CI and contributors without a cert get a working,
+unsigned build). It turns on when `CALCPAD_SIGN_THUMBPRINT` is set at build time.
+
+| Env var | Purpose |
+|---------|---------|
+| `CALCPAD_SIGN_THUMBPRINT` | SHA1 thumbprint of a code-signing cert in `Cert:\CurrentUser\My`. **Required to enable signing.** |
+| `CALCPAD_SIGNTOOL` | Optional. Explicit path to `signtool.exe` if it isn't auto-discovered under the Windows SDK. |
+| `CALCPAD_SIGN_TIMESTAMP_URL` | Optional. RFC-3161 timestamp URL (default `http://timestamp.digicert.com`). |
+
+What gets signed:
+
+- **Extension** — [`signApphost()`](vscode-calcpad/scripts/sync-bundled-server.mjs) signs `vscode-calcpad/bin/Calcpad.Server.exe` during `npm run sync-server*` / `npm run package*`.
+- **Desktop** — the same sync script signs the embedded server exe; [`sign-file.ps1`](calcpad-desktop/packaging/windows/sign-file.ps1) (called from [`package-portable.ps1`](calcpad-desktop/packaging/windows/package-portable.ps1)) signs the Neutralino app exe.
+
+See also [vscode-calcpad/.env.example](vscode-calcpad/.env.example).
+
+#### Local dev setup (self-signed cert)
+
+For local development you can use a self-signed cert. **This only trusts the binary
+on machines where the cert is imported** — for the shipped `.vsix` / desktop zip that
+end users install, you need a CA-issued (EV) cert or [Azure Trusted Signing](https://learn.microsoft.com/azure/trusted-signing/).
+
+1. **Create a code-signing cert** (normal PowerShell — lands in `Cert:\CurrentUser\My`):
+
+   ```powershell
+   $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=Calcpad Dev Signing' `
+       -KeyUsage DigitalSignature -KeyExportPolicy Exportable `
+       -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddYears(5)
+   Export-Certificate -Cert $cert -FilePath "$HOME\.calcpad-signing\calcpad-dev-signing.cer" -Force
+   $cert.Thumbprint   # use this for CALCPAD_SIGN_THUMBPRINT
+   ```
+
+2. **Trust the cert** so Defender/AppLocker accept anything signed with it
+   (**elevated** PowerShell, one time — import into both stores):
+
+   ```powershell
+   $cer = "$HOME\.calcpad-signing\calcpad-dev-signing.cer"
+   Import-Certificate -FilePath $cer -CertStoreLocation Cert:\LocalMachine\Root
+   Import-Certificate -FilePath $cer -CertStoreLocation Cert:\LocalMachine\TrustedPublisher
+   ```
+
+3. **Exclude the build output from Defender.** `signtool` needs *write* access to embed
+   the signature, but Defender denies write to a blocked unsigned exe — a chicken-and-egg
+   that an exclusion breaks (**elevated** PowerShell). Adjust the repo path:
+
+   ```powershell
+   Add-MpPreference -ExclusionPath `
+     "<repo>\Calcpad.Web\backend\bin", `
+     "<repo>\Calcpad.Web\frontend\vscode-calcpad\bin", `
+     "<repo>\Calcpad.Web\frontend\calcpad-desktop\dist", `
+     "<repo>\Calcpad.Web\frontend\calcpad-desktop\extensions"
+   # or, more simply, exclude the whole repo:
+   #   Add-MpPreference -ExclusionPath "<repo>"
+   ```
+
+   Keep the exclusion in place for the dev loop — every rebuild produces a fresh unsigned
+   exe that needs the write window to sign.
+
+4. **Set the thumbprint and build** (`setx` persists it for future terminals; open a new
+   terminal afterward):
+
+   ```powershell
+   setx CALCPAD_SIGN_THUMBPRINT <thumbprint-from-step-1>
+   # new terminal, then e.g.:
+   cd vscode-calcpad && npm run sync-server:slim
+   ```
+
+> **Managed / corporate machines:** if `Add-MpPreference` errors or the exe stays blocked
+> after signing, Defender is managed by policy (Defender for Endpoint / Intune) and local
+> exclusions are overridden. In that case IT must allowlist the publisher
+> (`CN=Calcpad Dev Signing`) or the build path, or you must sign on an unmanaged machine / CI.
+
 ## Requirements
 
 - **Calcpad.Server** running at configured URL (required)

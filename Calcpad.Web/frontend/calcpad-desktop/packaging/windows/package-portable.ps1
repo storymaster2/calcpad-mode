@@ -28,6 +28,14 @@ if (-not (Test-Path $NeuExe))    { Err "calcpad-desktop-win_x64.exe not found. R
 if (-not (Test-Path $Resources)) { Err "resources.neu not found. Run 'Desktop: Package' first." }
 if (-not (Test-Path $ServerExe)) { Err "Calcpad.Server.exe not found. Run 'Desktop: Build Server + Assets' (Windows) first." }
 
+# Sign the Neutralino app exe (no-op unless CALCPAD_SIGN_THUMBPRINT is set).
+# Signing the dist exe in place means both the directly-run dist binary and the
+# copy staged into the zip below carry the signature. The embedded server
+# apphost (extensions\server\Calcpad.Server.exe) was already signed by
+# build-desktop.ps1 via sync-bundled-server.mjs.
+$SignFile = Join-Path $PSScriptRoot "sign-file.ps1"
+& $SignFile -Path $NeuExe
+
 Info "Staging portable build..."
 
 $StageDir = Join-Path $env:TEMP "calcpad-portable-$(Get-Random)"
