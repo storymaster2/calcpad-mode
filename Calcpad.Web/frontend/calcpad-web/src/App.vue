@@ -409,16 +409,30 @@ function setPreviewHtml(html: string, scrollToLine?: number): void {
 // scrollbar is nearly invisible; reserving the gutter with `overflow-y: scroll`
 // keeps the layout from shifting. The iframe has no VS Code theme variables, so
 // use plain rgba values (mirrors vscode-calcpad's getScrollbarStyleScript).
+// The .code (unwrapped view) rule mirrors this on the code container so the
+// Neutralino webview shows the same scrollbar for long code output.
+// The .lineLink override enlarges the hover arrow so it's easier to click.
 function injectScrollbarStyles(html: string): string {
   const style = [
     '<' + 'style>',
     'html { overflow-y: scroll; }',
+    'body { min-height: 100vh; }',
+    '.code { overflow-y: auto; }',
     '::-webkit-scrollbar { width: 12px; height: 12px; }',
     '::-webkit-scrollbar-track { background: transparent; }',
     '::-webkit-scrollbar-thumb { background: rgba(121,121,121,0.4); border-radius: 6px; }',
     '::-webkit-scrollbar-thumb:hover { background: rgba(100,100,100,0.7); }',
     '::-webkit-scrollbar-thumb:active { background: rgba(85,85,85,0.9); }',
     '::-webkit-scrollbar-corner { background: transparent; }',
+    // Pin the arrow to its own line (position: relative on .line) and extend it
+    // across the body's left margin so the whole gutter is a hover+click target.
+    // Each arrow is always in the DOM at opacity 0 so pointing at the margin
+    // reveals it directly — no need to hover the line text first. The JS still
+    // toggles `display` for scroll-hides, but `!important` keeps the anchor
+    // interactive whenever visible.
+    '.line { position: relative; }',
+    '.lineLink { left: -3em !important; top: 0 !important; bottom: 0 !important; width: 3em !important; height: auto !important; font-size: 16pt !important; padding-right: 4pt !important; box-sizing: border-box !important; display: flex !important; align-items: center !important; justify-content: flex-end !important; opacity: 0 !important; transition: opacity 0.15s !important; }',
+    '.lineLink:hover { opacity: 1 !important; }',
     '</' + 'style>',
   ].join('\n')
   const headIdx = html.indexOf('<head>')
@@ -459,25 +473,30 @@ function injectLineLinks(html: string, scrollToLine?: number): string {
     "      post(parseInt(n, 10), lineType);",
     "    });",
     "  });",
-    // Hover '←' links on each wrapped-view output line.
+    // Hover '←' links on each wrapped-view line. Prefer data-source-line
+    // (set by Calcpad.Core when the line came from a macro/include expansion)
+    // so the arrow navigates the editor straight to the source line and skips
+    // the wrapped->unwrapped two-step. Error links keep the 'output' path.
     "  function hideAllLineLinks() {",
     "    document.querySelectorAll('.lineLink').forEach(function(l) { l.style.display = 'none'; });",
     "  }",
     "  document.querySelectorAll('.line').forEach(function(el) {",
     "    var id = el.id || '';",
     "    var n = id.indexOf('line-') === 0 ? id.slice(5) : '';",
-    "    if (!n) return;",
+    // Loop iterations past the first drop the id (it's the scroll anchor and must
+    // stay unique) but keep data-source-line, so key off the source line here.
+    "    var src = el.getAttribute('data-source-line') || n;",
+    "    if (!src) return;",
     "    var link = document.createElement('a');",
     "    link.className = 'lineLink';",
     "    link.href = '#0';",
-    "    link.setAttribute('data-text', n);",
-    "    link.title = 'Code line ' + n;",
+    "    link.setAttribute('data-text', src);",
+    "    link.title = 'Source line ' + src;",
     "    link.textContent = '\\u2190';",
     "    link.style.display = 'none';",
     "    link.addEventListener('click', function(e) {",
     "      e.preventDefault();",
-    // .line elements only exist in the true wrapped view, so this is an output line.
-    "      post(parseInt(n, 10), 'output');",
+    "      post(parseInt(src, 10), 'source');",
     "    });",
     "    el.appendChild(link);",
     "    el.addEventListener('mouseenter', function() {",
@@ -486,7 +505,6 @@ function injectLineLinks(html: string, scrollToLine?: number): string {
     "    });",
     "  });",
     "  window.addEventListener('scroll', hideAllLineLinks);",
-    "  document.body.addEventListener('mouseleave', hideAllLineLinks);",
     // Error-summary chips: scroll the preview to the referenced output line.
     "  document.querySelectorAll('.roundBox').forEach(function(box) {",
     "    box.addEventListener('click', function() {",

@@ -380,6 +380,8 @@ function getScrollbarStyleScript(): string {
     return `
         <style>
             html { overflow-y: scroll; }
+            body { min-height: 100vh; }
+            .code { overflow-y: auto; }
             ::-webkit-scrollbar { width: 12px; height: 12px; }
             ::-webkit-scrollbar-track { background: var(--vscode-scrollbar-shadow, transparent); }
             ::-webkit-scrollbar-thumb {
@@ -389,6 +391,27 @@ function getScrollbarStyleScript(): string {
             ::-webkit-scrollbar-thumb:hover { background: var(--vscode-scrollbarSlider-hoverBackground, rgba(100,100,100,0.7)); }
             ::-webkit-scrollbar-thumb:active { background: var(--vscode-scrollbarSlider-activeBackground, rgba(85,85,85,0.9)); }
             ::-webkit-scrollbar-corner { background: transparent; }
+            /* Pin the arrow to its own line and extend the anchor across the body's
+               left margin so the whole gutter is a hover+click target. Each arrow is
+               always in the DOM at opacity 0 so pointing at the margin reveals it
+               directly — no need to hover the line text first. */
+            .line { position: relative; }
+            .lineLink {
+                left: -3em !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                width: 3em !important;
+                height: auto !important;
+                font-size: 16pt !important;
+                padding-right: 4pt !important;
+                box-sizing: border-box !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-end !important;
+                opacity: 0 !important;
+                transition: opacity 0.15s !important;
+            }
+            .lineLink:hover { opacity: 1 !important; }
         </style>
     `;
 }
@@ -418,18 +441,23 @@ function getLineLinkScript(scrollToLine?: number): string {
                 document.querySelectorAll('.line').forEach(function(el) {
                     var id = el.id || '';
                     var n = id.indexOf('line-') === 0 ? id.slice(5) : '';
-                    if (!n) return;
+                    // Prefer data-source-line (set by Calcpad.Core when the line came from
+                    // a macro/include expansion) so the arrow navigates straight to the
+                    // source line and skips the wrapped->unwrapped two-step. Loop
+                    // iterations past the first drop the id but keep data-source-line, so
+                    // key off the source line here. Error links keep the 'output' path.
+                    var src = el.getAttribute('data-source-line') || n;
+                    if (!src) return;
                     var link = document.createElement('a');
                     link.className = 'lineLink';
                     link.href = '#0';
-                    link.setAttribute('data-text', n);
-                    link.title = 'Code line ' + n;
+                    link.setAttribute('data-text', src);
+                    link.title = 'Source line ' + src;
                     link.textContent = '\\u2190';
                     link.style.display = 'none';
                     link.addEventListener('click', function(e) {
                         e.preventDefault();
-                        // .line elements only exist in the true wrapped view, so this is an output line.
-                        vscode.postMessage({ type: 'navigateToLine', line: parseInt(n, 10), lineType: 'output' });
+                        vscode.postMessage({ type: 'navigateToLine', line: parseInt(src, 10), lineType: 'source' });
                     });
                     el.appendChild(link);
                     el.addEventListener('mouseenter', function() {
@@ -438,7 +466,6 @@ function getLineLinkScript(scrollToLine?: number): string {
                     });
                 });
                 window.addEventListener('scroll', hideAllLineLinks);
-                document.body.addEventListener('mouseleave', hideAllLineLinks);
 
                 // Error-summary chips: scroll the preview to the referenced output line.
                 document.querySelectorAll('.roundBox').forEach(function(box) {
@@ -953,10 +980,19 @@ async function showPreview(kind: 'regular' | 'unwrapped', scrollToLine?: number)
         return;
     }
 
+    // Focus the wrapped panel first so `moveEditorToBelowGroup` moves the new
+    // unwrapped preview below the *wrapped* group. Without this reveal, when the
+    // click originates from the wrapped webview the "active" group is whatever
+    // ViewColumn.Beside just created — usually a column to the right of the
+    // wrapped preview — and the split lands below that instead of below wrapped.
+    if (unwrapped && wrappedPanel) {
+        wrappedPanel.reveal(wrappedPanel.viewColumn, false);
+    }
+
     const panel = vscode.window.createWebviewPanel(
         unwrapped ? 'htmlPreviewUnwrapped' : 'htmlPreview',
         unwrapped ? 'CalcPad Preview Unwrapped' : 'CalcPad Preview',
-        vscode.ViewColumn.Beside,
+        unwrapped && wrappedPanel ? vscode.ViewColumn.Active : vscode.ViewColumn.Beside,
         {
             enableScripts: true,
             enableFindWidget: true

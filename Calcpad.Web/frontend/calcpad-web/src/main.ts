@@ -9,6 +9,7 @@ import { registerCalcpadLanguage, registerCalcpadTheme, createCalcpadEditor } fr
 import { registerSemanticTokensProvider } from './editor/semantic-tokens';
 import { setupDiagnostics } from './editor/diagnostics';
 import { registerCompletionProvider } from './editor/completions';
+import { registerIncludeCompletionProvider } from './editor/include-completions';
 import { registerHoverProvider } from './editor/hover';
 import {
     registerDefinitionProvider,
@@ -541,6 +542,13 @@ async function bootstrap(): Promise<void> {
         return (sev === 'error' || sev === 'warning') ? sev : 'information';
     }, getFileContext);
     registerCompletionProvider(editorBridge);
+    if (neuBridge) {
+        registerIncludeCompletionProvider({
+            listDirectory: (p) => neuBridge.listDirectory(p),
+            getCurrentFilePath: () => tabs.activeTab?.filePath ?? null,
+            getOpenedFolder: () => neuBridge.getOpenedFolder(),
+        });
+    }
     registerHoverProvider(editorBridge);
     registerDefinitionProvider(editorBridge, getFileContext, openIncludeFile);
     registerReferenceProvider(editorBridge, getFileContext, openIncludeFile);
@@ -631,9 +639,13 @@ async function bootstrap(): Promise<void> {
         editor.focus();
     };
 
-    // Mount the CalcPad Vue sidebar
-    const sidebarApp = createApp(CalcpadAppVue);
-    const sidebarInstance = sidebarApp.mount('#vue-sidebar') as { switchTab?: (id: string) => void };
+    // Mount the CalcPad Vue sidebar. Desktop (Neutralino) shows the Files view
+    // + activity icons; web mode keeps the original single-panel look.
+    const sidebarApp = createApp(CalcpadAppVue, { extraTabs: isNeutralino });
+    const sidebarInstance = sidebarApp.mount('#vue-sidebar') as {
+        switchTab?: (id: string) => void;
+        switchView?: (id: string) => void;
+    };
 
     // HTML preview via convert endpoint (debounced)
     let previewTimer: ReturnType<typeof setTimeout> | null = null;
@@ -761,6 +773,12 @@ async function bootstrap(): Promise<void> {
                 appInstance.appendOutput('error', 'Failed to open file: ' + (err instanceof Error ? err.message : String(err)));
             }
         }
+
+        // Files-tab clicks arrive via a custom event dispatched by the bridge.
+        window.addEventListener('calcpad-open-file', (e: Event) => {
+            const detail = (e as CustomEvent<{ path: string }>).detail;
+            if (detail?.path) void loadFile(detail.path);
+        });
 
         /**
          * Save the active tab. If it has no file path, prompts for one.

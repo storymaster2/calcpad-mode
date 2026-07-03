@@ -15,6 +15,7 @@ import { getActiveEditorContent } from './active-editor';
 
 const SETTINGS_KEY = 'calcpad-settings';
 const RECENT_FILES_KEY = 'calcpad-recent-files';
+const OPENED_FOLDER_KEY = 'calcpad-opened-folder';
 const MAX_RECENT_FILES = 10;
 
 // Browser-compatible path helpers (no Node.js 'path' module available in Neutralino WebView)
@@ -104,6 +105,12 @@ export class NeutralinoMessageBridge {
     private settings: CalcpadSettings;
     private _onInsertText: ((text: string) => void) | null = null;
     private _extraSettings: Record<string, string> = {};
+    /**
+     * Directory used to seed native dialogs' `defaultPath`. Updated after every
+     * Open/Save/Open-Folder interaction so successive dialogs land in the last
+     * place the user was working. Session-scoped only (not persisted).
+     */
+    private _lastDialogDir: string | null = null;
 
     constructor(serverUrl: string) {
         const logger = { appendLine: (msg: string) => console.debug('[CalcPad]', msg) };
@@ -132,6 +139,20 @@ export class NeutralinoMessageBridge {
         return this.settings;
     }
 
+    /** Default path passed to native dialogs. Falls back to the opened
+     *  workspace folder, then to undefined (OS-default). */
+    private getDialogDefaultPath(): string | undefined {
+        if (this._lastDialogDir) return this._lastDialogDir;
+        return undefined;
+    }
+
+    /** Update the remembered dialog directory. Accepts either a file path
+     *  (parent dir is extracted) or a directory path directly. */
+    private rememberDialogDir(pathOrFile: string | null | undefined, isDirectory = false): void {
+        if (!pathOrFile) return;
+        this._lastDialogDir = isDirectory ? pathOrFile : pathDirname(pathOrFile) || pathOrFile;
+    }
+
     /** Read an "extra" preference (commentFormat, formattingHotkeys, quickTyping, …). */
     getExtraSetting(key: string): string | undefined {
         return this._extraSettings[key];
@@ -151,6 +172,7 @@ export class NeutralinoMessageBridge {
 
         if (!dataUri) {
             const entries = await os.showOpenDialog('Insert Image', {
+                defaultPath: this.getDialogDefaultPath(),
                 filters: [
                     { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] },
                     { name: 'All Files', extensions: ['*'] },
@@ -159,6 +181,7 @@ export class NeutralinoMessageBridge {
             if (!entries || entries.length === 0) return;
 
             const filePath = entries[0];
+            this.rememberDialogDir(filePath);
             const buffer = await filesystem.readBinaryFile(filePath);
             const mimeType = mimeFromExtension(filePath);
             dataUri = `data:${mimeType};base64,${bytesToBase64(buffer)}`;
@@ -253,6 +276,21 @@ export class NeutralinoMessageBridge {
                 break;
             case 'debug':
                 break;
+            case 'openFolder':
+                this.handleOpenFolder();
+                break;
+            case 'readDirectory':
+                this.handleReadDirectory(message.path);
+                break;
+            case 'getOpenedFolder':
+                this.handleGetOpenedFolder();
+                break;
+            case 'openFileByPath':
+                this.handleOpenFileByPath(message.path);
+                break;
+            case 'openContainingFolder':
+                this.handleOpenContainingFolder(message.path);
+                break;
         }
     }
 
@@ -341,6 +379,7 @@ export class NeutralinoMessageBridge {
 
     async openFile(): Promise<{ path: string; content: string } | null> {
         const entries = await os.showOpenDialog('Open File', {
+            defaultPath: this.getDialogDefaultPath(),
             filters: [
                 { name: 'CalcPad Files', extensions: ['cpd'] },
                 { name: 'All Files', extensions: ['*'] },
@@ -350,11 +389,13 @@ export class NeutralinoMessageBridge {
         if (!entries || entries.length === 0) return null;
 
         const filePath = entries[0];
+        this.rememberDialogDir(filePath);
         const content = await filesystem.readFile(filePath);
         return { path: filePath, content };
     }
 
     async saveFile(filePath: string, content: string): Promise<void> {
+        this.rememberDialogDir(filePath);
         await filesystem.writeFile(filePath, content);
     }
 
@@ -386,6 +427,7 @@ export class NeutralinoMessageBridge {
 
     async saveFileAs(content: string): Promise<string | null> {
         const filePath = await os.showSaveDialog('Save File', {
+            defaultPath: this.getDialogDefaultPath(),
             filters: [
                 { name: 'CalcPad Files', extensions: ['cpd'] },
                 { name: 'All Files', extensions: ['*'] },
@@ -394,8 +436,99 @@ export class NeutralinoMessageBridge {
 
         if (!filePath) return null;
 
+        this.rememberDialogDir(filePath);
         await filesystem.writeFile(filePath, content);
         return filePath;
+    }
+
+    // ---- Folder browser ----
+
+    /** Return the currently opened workspace folder, or null. Persisted across sessions. */
+    async getOpenedFolder(): Promise<string | null> {
+        try {
+            const raw = await storage.getData(OPENED_FOLDER_KEY);
+            return raw || null;
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * List directory entries as FileNodes; empty on failure.
+     *
+     * File-leaf nodes are frozen so Vue's reactivity system skips wrapping
+     * them in Proxies — a big perf win when a folder contains hundreds of
+     * files. Directory nodes stay mutable because the tree builder assigns
+     * `.children` and `.loaded` to them later.
+     */
+    async listDirectory(dirPath: string): Promise<Array<{ name: string; path: string; isDirectory: boolean }>> {
+        try {
+            const entries = await filesystem.readDirectory(dirPath);
+            const sep = dirPath.includes('\\') ? '\\' : '/';
+            const normalizedDir = dirPath.replace(/[\\/]+$/, '');
+            return entries
+                .filter(e => e.entry !== '.' && e.entry !== '..')
+                .map(e => {
+                    const isDirectory = e.type === 'DIRECTORY';
+                    const node = {
+                        name: e.entry,
+                        path: `${normalizedDir}${sep}${e.entry}`,
+                        isDirectory,
+                    };
+                    return isDirectory ? node : Object.freeze(node);
+                })
+                .sort((a, b) => {
+                    if (a.isDirectory !== b.isDirectory) return a.isDirectory ? -1 : 1;
+                    return a.name.localeCompare(b.name);
+                });
+        } catch {
+            return [];
+        }
+    }
+
+    private async handleOpenFolder(): Promise<void> {
+        const folder = await os.showFolderDialog('Open Folder', {
+            defaultPath: this.getDialogDefaultPath(),
+        });
+        if (!folder) return;
+        this.rememberDialogDir(folder, true);
+        await storage.setData(OPENED_FOLDER_KEY, folder);
+        const entries = await this.listDirectory(folder);
+        this.postToVue({ type: 'folderOpened', path: folder, entries });
+    }
+
+    private async handleReadDirectory(dirPath: string): Promise<void> {
+        if (!dirPath) return;
+        const entries = await this.listDirectory(dirPath);
+        this.postToVue({ type: 'folderContents', path: dirPath, entries });
+    }
+
+    private async handleGetOpenedFolder(): Promise<void> {
+        const folder = await this.getOpenedFolder();
+        if (!folder) {
+            this.postToVue({ type: 'folderOpened', path: null, entries: [] });
+            return;
+        }
+        const entries = await this.listDirectory(folder);
+        this.postToVue({ type: 'folderOpened', path: folder, entries });
+    }
+
+    private async handleOpenFileByPath(filePath: string): Promise<void> {
+        if (!filePath || typeof filePath !== 'string') return;
+        // Delegate to main.ts's loadFile via a bridged event. main.ts already
+        // listens for 'loadFileFromPath' on window.
+        window.dispatchEvent(new CustomEvent('calcpad-open-file', { detail: { path: filePath } }));
+    }
+
+    private async handleOpenContainingFolder(itemPath: string): Promise<void> {
+        if (!itemPath || typeof itemPath !== 'string') return;
+        const parent = pathDirname(itemPath);
+        const target = parent || itemPath;
+        try {
+            await os.open(target);
+        } catch (err) {
+            console.error(`Failed to open containing folder for ${itemPath}:`, err);
+        }
     }
 
     // ---- Internal message handlers ----
@@ -503,9 +636,11 @@ export class NeutralinoMessageBridge {
         const html = await this.apiClient.convert(content, apiSettings, 'html', false, sourceFilePath);
         if (typeof html !== 'string') return;
         const filePath = await os.showSaveDialog('Save HTML', {
+            defaultPath: this.getDialogDefaultPath(),
             filters: [{ name: 'HTML Files', extensions: ['html', 'htm'] }],
         });
         if (!filePath) return;
+        this.rememberDialogDir(filePath);
         await filesystem.writeFile(filePath, html);
     }
 
@@ -516,9 +651,11 @@ export class NeutralinoMessageBridge {
         const buf = await this.apiClient.convertDocx(content, apiSettings, sourceFilePath);
         if (!buf) return;
         const filePath = await os.showSaveDialog('Save Word Document', {
+            defaultPath: this.getDialogDefaultPath(),
             filters: [{ name: 'Word Documents', extensions: ['docx'] }],
         });
         if (!filePath) return;
+        this.rememberDialogDir(filePath);
         await filesystem.writeBinaryFile(filePath, buf);
     }
 

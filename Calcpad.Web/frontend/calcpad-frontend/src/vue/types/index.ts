@@ -100,3 +100,11 @@ export interface TocHeading {
   text: string    // Heading text content (stripped of markup)
   line: number    // 1-indexed line number in the source document
 }
+
+export interface FileNode {
+  name: string
+  path: string
+  isDirectory: boolean
+  children?: FileNode[]
+  loaded?: boolean
+}

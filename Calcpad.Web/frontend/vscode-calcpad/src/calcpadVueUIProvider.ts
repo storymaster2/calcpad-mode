@@ -296,18 +296,6 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     break;
                 }
 
-                case 'getExports':
-                    await this._sendExports(webviewView.webview);
-                    break;
-
-                case 'downloadExport':
-                    await this._downloadExportToWorkspace(data.filename);
-                    break;
-
-                case 'downloadExportZip':
-                    await this._downloadExportZipToWorkspace();
-                    break;
-
                 case 'debug':
                     this._outputChannel.appendLine(`[Vue Debug] ${data.message}`);
                     break;
@@ -379,80 +367,6 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
             this._view.webview.postMessage({ type: 'updateHeadings', headings });
         } else {
             this._view.webview.postMessage({ type: 'updateHeadings', headings: [] });
-        }
-    }
-
-    private _activeSourceFilePath(): string | undefined {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) return undefined;
-        if (editor.document.isUntitled) return undefined;
-        return editor.document.uri.fsPath;
-    }
-
-    private async _sendExports(webview: vscode.Webview): Promise<void> {
-        const apiBaseUrl = this._settingsManager.getServerUrl();
-        const sourceFilePath = this._activeSourceFilePath();
-        try {
-            const url = `${apiBaseUrl}/api/calcpad/exports${sourceFilePath ? '?sourceFilePath=' + encodeURIComponent(sourceFilePath) : ''}`;
-            const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-            const exports = res.ok ? await res.json() : [];
-            webview.postMessage({ type: 'exportsResponse', exports });
-        } catch (err) {
-            this._outputChannel.appendLine(`[Vue UI] Failed to list exports: ${err instanceof Error ? err.message : String(err)}`);
-            webview.postMessage({ type: 'exportsResponse', exports: [] });
-        }
-    }
-
-    private async _downloadExportToWorkspace(filename: string): Promise<void> {
-        if (!filename) return;
-        const apiBaseUrl = this._settingsManager.getServerUrl();
-        const sourceFilePath = this._activeSourceFilePath();
-        const params = new URLSearchParams();
-        if (sourceFilePath) params.set('sourceFilePath', sourceFilePath);
-        params.set('filename', filename);
-
-        try {
-            const res = await fetch(`${apiBaseUrl}/api/calcpad/export?${params.toString()}`, { signal: AbortSignal.timeout(60000) });
-            if (!res.ok) {
-                vscode.window.showErrorMessage(`Failed to download ${filename}: ${res.status}`);
-                return;
-            }
-            const buf = Buffer.from(await res.arrayBuffer());
-            const target = await vscode.window.showSaveDialog({
-                defaultUri: vscode.Uri.file(sourceFilePath ? path.resolve(path.dirname(sourceFilePath), filename) : filename),
-                saveLabel: 'Save export'
-            });
-            if (!target) return;
-            await vscode.workspace.fs.writeFile(target, buf);
-            vscode.window.showInformationMessage(`Saved ${filename}`);
-        } catch (err) {
-            vscode.window.showErrorMessage(`Download failed: ${err instanceof Error ? err.message : String(err)}`);
-        }
-    }
-
-    private async _downloadExportZipToWorkspace(): Promise<void> {
-        const apiBaseUrl = this._settingsManager.getServerUrl();
-        const sourceFilePath = this._activeSourceFilePath();
-        try {
-            const res = await fetch(
-                `${apiBaseUrl}/api/calcpad/exports.zip${sourceFilePath ? '?sourceFilePath=' + encodeURIComponent(sourceFilePath) : ''}`,
-                { signal: AbortSignal.timeout(60000) }
-            );
-            if (!res.ok) {
-                vscode.window.showErrorMessage(`Failed to download exports: ${res.status}`);
-                return;
-            }
-            const buf = Buffer.from(await res.arrayBuffer());
-            const target = await vscode.window.showSaveDialog({
-                defaultUri: vscode.Uri.file(sourceFilePath ? path.resolve(path.dirname(sourceFilePath), 'calcpad-exports.zip') : 'calcpad-exports.zip'),
-                saveLabel: 'Save exports ZIP',
-                filters: { 'ZIP archives': ['zip'] }
-            });
-            if (!target) return;
-            await vscode.workspace.fs.writeFile(target, buf);
-            vscode.window.showInformationMessage('Saved calcpad-exports.zip');
-        } catch (err) {
-            vscode.window.showErrorMessage(`Download failed: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
 
