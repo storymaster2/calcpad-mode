@@ -6,11 +6,11 @@
     </div>
     <template v-else>
       <div class="files-header">
+        <button class="files-icon-btn files-close-btn" @click="$emit('close-folder')" title="Close Folder">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg>
+        </button>
         <span class="files-folder-name" :title="openedFolder">{{ folderBasename }}</span>
         <div class="files-header-actions">
-          <button class="files-icon-btn" @click="expandAll" title="Expand All">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M9 9H4v1h5v5h1v-5h5V9h-5V4H9v5z"/></svg>
-          </button>
           <button class="files-icon-btn" @click="collapseAll" title="Collapse All">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M4 9h11v1H4z"/></svg>
           </button>
@@ -77,6 +77,7 @@ const emit = defineEmits<{
   'open-file': [path: string]
   'expand-folder': [path: string]
   'open-containing-folder': [path: string]
+  'close-folder': []
 }>()
 
 const expandedPaths = ref<string[]>([])
@@ -158,83 +159,7 @@ const handleToggle = (path: string, isExpanding: boolean) => {
   }
 }
 
-const collectDirectoryPaths = (nodes: FileNode[], acc: string[]): void => {
-  for (const n of nodes) {
-    if (n.isDirectory) {
-      acc.push(n.path)
-      if (n.children) collectDirectoryPaths(n.children, acc)
-    }
-  }
-}
-
-// Expand All has to cascade: initially only the root's children are loaded,
-// so expanding once only reveals depth 1. This async loop drives the cascade
-// in the background — it yields between batches so the UI stays responsive
-// even when there are hundreds of nested folders to walk.
-const expandingAll = ref(false)
-const requestedForExpandAll = new Set<string>()
-
-// Small batch size + short delay keeps the bridge from being flooded and
-// gives the browser time to paint between reactive updates.
-const EXPAND_ALL_BATCH = 4
-const EXPAND_ALL_STEP_MS = 20
-const EXPAND_ALL_WAIT_MS = 40
-
-async function cascadeExpandAll(): Promise<void> {
-  requestedForExpandAll.clear()
-
-  while (expandingAll.value) {
-    const dirs: string[] = []
-    collectDirectoryPaths(props.treeRoots, dirs)
-
-    // Mark every known dir as expanded so children render as they arrive.
-    // Only write when the set actually changed — otherwise every tick would
-    // reassign the ref and force a re-render of the whole tree.
-    let changed = false
-    const merged = new Set(expandedPaths.value)
-    for (const p of dirs) {
-      if (!merged.has(p)) { merged.add(p); changed = true }
-    }
-    if (changed) expandedPaths.value = Array.from(merged)
-
-    // Anything we haven't asked for yet?
-    const pending: string[] = []
-    for (const p of dirs) {
-      if (requestedForExpandAll.has(p)) continue
-      const node = findNode(props.treeRoots, p)
-      if (node && !node.loaded) pending.push(p)
-    }
-
-    if (pending.length === 0) {
-      // Nothing new to request — are we waiting on outstanding responses?
-      const stillLoading = dirs.some(p => {
-        const node = findNode(props.treeRoots, p)
-        return node && !node.loaded
-      })
-      if (!stillLoading) {
-        expandingAll.value = false
-        break
-      }
-      await new Promise<void>(r => setTimeout(r, EXPAND_ALL_WAIT_MS))
-      continue
-    }
-
-    for (const p of pending.slice(0, EXPAND_ALL_BATCH)) {
-      requestedForExpandAll.add(p)
-      emit('expand-folder', p)
-    }
-    await new Promise<void>(r => setTimeout(r, EXPAND_ALL_STEP_MS))
-  }
-}
-
-const expandAll = () => {
-  if (expandingAll.value) return
-  expandingAll.value = true
-  void cascadeExpandAll()
-}
-
 const collapseAll = () => {
-  expandingAll.value = false
   expandedPaths.value = []
 }
 
@@ -402,6 +327,11 @@ const onCopyRelativePath = async () => {
 .files-icon-btn:hover {
   background: var(--vscode-toolbar-hoverBackground, rgba(90, 93, 94, 0.31));
   opacity: 1;
+}
+
+.files-close-btn {
+  margin-right: 2px;
+  flex-shrink: 0;
 }
 
 .files-change-btn {

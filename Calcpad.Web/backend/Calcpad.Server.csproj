@@ -25,6 +25,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
+    <!-- Pin Microsoft.OpenApi to a patched version to resolve GHSA-v5pm-xwqc-g5wc,
+         which affects the 2.3.0 pulled in transitively by the two packages above. -->
+    <PackageReference Include="Microsoft.OpenApi" Version="2.9.0" />
     <!-- PDF generation -->
     <PackageReference Include="PuppeteerSharp" Version="21.1.1" />
     <PackageReference Include="PDFsharp" Version="6.2.0" />

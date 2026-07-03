@@ -1,6 +1,6 @@
 import * as monaco from 'monaco-editor';
 import { calcpadLanguage, calcpadLanguageConfiguration } from './language';
-import { calcpadDarkTheme } from './theme';
+import { calcpadDarkTheme, calcpadLightTheme } from './theme';
 
 /**
  * Register the CalcPad language and theme with Monaco.
@@ -14,6 +14,16 @@ export function registerCalcpadLanguage(): void {
 
 export function registerCalcpadTheme(): void {
     monaco.editor.defineTheme('calcpad-dark', calcpadDarkTheme);
+    monaco.editor.defineTheme('calcpad-light', calcpadLightTheme);
+}
+
+/**
+ * Switch Monaco to the matching CalcPad theme. Called by the app-theme
+ * applier whenever the resolved theme (system → light/dark, or an explicit
+ * choice) changes.
+ */
+export function setCalcpadEditorTheme(resolved: 'light' | 'dark'): void {
+    monaco.editor.setTheme(resolved === 'light' ? 'calcpad-light' : 'calcpad-dark');
 }
 
 export interface CalcpadEditorOptions {
@@ -32,7 +42,8 @@ export function createCalcpadEditor(
 ): monaco.editor.IStandaloneCodeEditor {
     const editor = monaco.editor.create(container, {
         language: 'calcpad',
-        theme: 'calcpad-dark',
+        // Theme is set globally by setCalcpadEditorTheme() via the app-theme
+        // applier — omitted here so it doesn't clobber the current selection.
         value: options?.value ?? '',
         readOnly: options?.readOnly ?? false,
         automaticLayout: true,

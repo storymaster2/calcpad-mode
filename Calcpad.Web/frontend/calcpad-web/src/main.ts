@@ -6,6 +6,7 @@ import { initMessaging } from 'calcpad-frontend/vue/services/messaging';
 import { MessageBridge } from './services/message-bridge';
 import { buildApiSettings } from 'calcpad-frontend/types/settings';
 import { registerCalcpadLanguage, registerCalcpadTheme, createCalcpadEditor } from './editor/setup';
+import { setAppTheme, coerceAppTheme } from './editor/app-theme';
 import { registerSemanticTokensProvider } from './editor/semantic-tokens';
 import { setupDiagnostics } from './editor/diagnostics';
 import { registerCompletionProvider } from './editor/completions';
@@ -319,6 +320,13 @@ async function bootstrap(): Promise<void> {
 
     registerCalcpadLanguage();
     registerCalcpadTheme();
+
+    // Apply the persisted app theme before Monaco initializes so the editor
+    // renders with the right theme first paint. The desktop bridge loads its
+    // settings asynchronously, so wait for it; the web bridge is synchronous.
+    if (neuBridge) await neuBridge.ready;
+    setAppTheme(coerceAppTheme(activeBridge.getStoredColorTheme()));
+
     const editor = createCalcpadEditor(editorEl, {
         value: '',
     });
@@ -362,6 +370,14 @@ async function bootstrap(): Promise<void> {
     appInstance.onTabActivate = (id: string) => tabs.activate(id);
     appInstance.onTabCloseRequest = (id: string) => tabs.close(id);
     appInstance.onNewTabRequest = () => { tabs.newUntitled(); };
+    appInstance.onTabCloseOthersRequest = (id: string) => {
+        for (const t of tabs.all) {
+            if (t.id !== id) tabs.close(t.id);
+        }
+    };
+    appInstance.onTabCloseAllRequest = () => {
+        for (const t of tabs.all) tabs.close(t.id);
+    };
 
     // Wire the bridge's insertText handler to Monaco
     activeBridge.onInsertText = (text: string) => {
@@ -547,6 +563,7 @@ async function bootstrap(): Promise<void> {
             listDirectory: (p) => neuBridge.listDirectory(p),
             getCurrentFilePath: () => tabs.activeTab?.filePath ?? null,
             getOpenedFolder: () => neuBridge.getOpenedFolder(),
+            getLibraryPath: () => neuBridge.getLibraryPath(),
         });
     }
     registerHoverProvider(editorBridge);
@@ -627,6 +644,9 @@ async function bootstrap(): Promise<void> {
             void refreshPreview();
         }
         activeBridge.refreshHeadings();
+        // Repopulate the definitions cache for the new tab so hover has
+        // data on files opened via File > Open (no content-change event fires).
+        void refreshDefinitions();
     });
 
     // Handle click-to-navigate from problems panel
@@ -849,6 +869,61 @@ async function bootstrap(): Promise<void> {
         appInstance.onTabActivate = (id: string) => tabs.activate(id);
         appInstance.onTabCloseRequest = (id: string) => { void tryCloseTab(id); };
         appInstance.onNewTabRequest = () => { tabs.newUntitled(); };
+
+        async function tryCloseTabsSequentially(ids: string[]): Promise<void> {
+            for (const id of ids) {
+                const ok = await tryCloseTab(id);
+                if (!ok) return;
+            }
+        }
+
+        appInstance.onTabCloseOthersRequest = (id: string) => {
+            const ids = tabs.all.filter(t => t.id !== id).map(t => t.id);
+            void tryCloseTabsSequentially(ids);
+        };
+        appInstance.onTabCloseAllRequest = () => {
+            const ids = tabs.all.map(t => t.id);
+            void tryCloseTabsSequentially(ids);
+        };
+        appInstance.onTabOpenContainingFolderRequest = (id: string) => {
+            const t = tabs.all.find(t => t.id === id);
+            if (t?.filePath) {
+                neuBridge.handleMessage({ type: 'openContainingFolder', path: t.filePath });
+            }
+        };
+
+        // Clipboard-copy helpers for the tab context menu. Route through
+        // Neutralino's native clipboard so the value ends up on the system
+        // clipboard (the WebView's navigator.clipboard is sandboxed).
+        const writeClipboardText = async (text: string) => {
+            try {
+                const { clipboard } = await import('@neutralinojs/lib');
+                await clipboard.writeText(text);
+            } catch (err) {
+                appInstance.appendOutput('error', `Copy failed: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        };
+
+        appInstance.onTabCopyFullPathRequest = (id: string) => {
+            const t = tabs.all.find(t => t.id === id);
+            if (t?.filePath) void writeClipboardText(t.filePath);
+        };
+        appInstance.onTabCopyRelativePathRequest = async (id: string) => {
+            const t = tabs.all.find(t => t.id === id);
+            if (!t?.filePath) return;
+            const folder = await neuBridge.getOpenedFolder();
+            if (!folder) {
+                void writeClipboardText(t.filePath);
+                return;
+            }
+            const rootNorm = folder.replace(/[\\/]+$/, '');
+            const sep = rootNorm.includes('\\') ? '\\' : '/';
+            const rootWithSep = rootNorm + sep;
+            const rel = t.filePath.startsWith(rootWithSep)
+                ? t.filePath.substring(rootWithSep.length)
+                : t.filePath;
+            void writeClipboardText(rel);
+        };
 
         /**
          * Route a clipboard / edit action from the native menu. On WebKitGTK

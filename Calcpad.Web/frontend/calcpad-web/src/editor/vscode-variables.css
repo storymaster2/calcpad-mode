@@ -1,7 +1,11 @@
 /*
  * CSS variable definitions that map --vscode-* vars for non-VS Code contexts.
- * Vue components from calcpad-frontend use these variables for theming.
- * Values match the dark-mode color rules in the VS Code extension package.json.
+ * Vue components from calcpad-frontend and the app shell use these variables
+ * for theming. Values mirror the VS Code Dark+ / Light+ built-in themes.
+ *
+ * The active app theme is selected via `data-theme` on <html> ("dark" or
+ * "light"). Bare `:root` carries the dark defaults so styles still render
+ * before the theme applier runs on boot.
  */
 :root {
     /* Fonts */
@@ -37,9 +41,16 @@
     --vscode-checkbox-background: #3c3c3c;
     --vscode-checkbox-border: #3c3c3c;
 
+    /* Dropdown */
+    --vscode-dropdown-background: #3c3c3c;
+    --vscode-dropdown-foreground: #cccccc;
+    --vscode-dropdown-border: #3c3c3c;
+    --vscode-dropdown-listBackground: #252526;
+
     /* Lists */
     --vscode-list-hoverBackground: #2a2d2e;
     --vscode-list-inactiveSelectionBackground: #37373d;
+    --vscode-list-activeSelectionBackground: #094771;
 
     /* Sidebar */
     --vscode-sideBar-background: #252526;
@@ -49,15 +60,49 @@
     --vscode-tab-activeBackground: #1e1e1e;
     --vscode-tab-activeForeground: #ffffff;
     --vscode-tab-activeBorder: #007fd4;
+    --vscode-tab-activeBorderTop: #007acc;
+    --vscode-tab-inactiveBackground: #2d2d2d;
     --vscode-tab-inactiveForeground: #969696;
     --vscode-tab-hoverBackground: #2a2d2e;
+    --vscode-tab-hoverForeground: #ffffff;
+    --vscode-tab-border: #252526;
+
+    /* Editor group header */
+    --vscode-editorGroupHeader-tabsBackground: #252526;
+    --vscode-editorGroupHeader-tabsBorder: #1e1e1e;
 
     /* Title bar */
     --vscode-titleBar-activeBackground: #3c3c3c;
 
     /* Widgets */
     --vscode-widget-border: #474747;
+    --vscode-panel-background: #1e1e1e;
     --vscode-panel-border: #474747;
+    --vscode-panelTitle-activeBorder: #e7e7e7;
+    --vscode-panelTitle-activeForeground: #e7e7e7;
+    --vscode-panelTitle-inactiveForeground: #888888;
+    --vscode-editorWidget-background: #252526;
+    --vscode-editorWidget-foreground: #cccccc;
+    --vscode-editorWidget-border: #454545;
+
+    /* Editor severity foregrounds */
+    --vscode-editorWarning-foreground: #cca700;
+    --vscode-editorInfo-foreground: #3794ff;
+
+    /* Toolbar */
+    --vscode-toolbar-hoverBackground: rgba(255, 255, 255, 0.1);
+
+    /* Activity bar */
+    --vscode-activityBar-background: #333333;
+    --vscode-activityBar-foreground: #ffffff;
+    --vscode-activityBar-inactiveForeground: rgba(255, 255, 255, 0.4);
+
+    /* Status bar */
+    --vscode-statusBar-background: #007acc;
+    --vscode-statusBar-foreground: #ffffff;
+    --vscode-statusBar-hoverBackground: #1f8ad2;
+    --vscode-statusBarItem-errorForeground: #ffffff;
+    --vscode-statusBarItem-warningForeground: #ffffff;
 
     /* Badges */
     --vscode-badge-background: #4d4d4d;
@@ -72,4 +117,92 @@
 
     /* Symbol icons */
     --vscode-symbolIcon-variableForeground: #6B9FFF;
+}
+
+/* VS Code Light+ palette. Selected via <html data-theme="light">. */
+:root[data-theme="light"] {
+    --vscode-foreground: #616161;
+    --vscode-descriptionForeground: #717171;
+    --vscode-errorForeground: #a1260d;
+    --vscode-focusBorder: #0090f1;
+
+    --vscode-editor-background: #ffffff;
+    --vscode-editor-foreground: #000000;
+
+    --vscode-input-background: #ffffff;
+    --vscode-input-foreground: #616161;
+    --vscode-input-border: #cecece;
+
+    --vscode-button-background: #007acc;
+    --vscode-button-foreground: #ffffff;
+    --vscode-button-hoverBackground: #0062a3;
+    --vscode-button-border: transparent;
+    --vscode-button-secondaryBackground: #5f6a79;
+    --vscode-button-secondaryForeground: #ffffff;
+    --vscode-button-secondaryHoverBackground: #4c5561;
+
+    --vscode-checkbox-background: #ffffff;
+    --vscode-checkbox-border: #cecece;
+
+    --vscode-dropdown-background: #ffffff;
+    --vscode-dropdown-foreground: #616161;
+    --vscode-dropdown-border: #cecece;
+    --vscode-dropdown-listBackground: #ffffff;
+
+    --vscode-list-hoverBackground: #e8e8e8;
+    --vscode-list-inactiveSelectionBackground: #e4e6f1;
+    --vscode-list-activeSelectionBackground: #0060c0;
+
+    --vscode-sideBar-background: #f3f3f3;
+    --vscode-sideBarSectionHeader-foreground: #6f6f6f;
+
+    --vscode-tab-activeBackground: #ffffff;
+    --vscode-tab-activeForeground: #333333;
+    --vscode-tab-activeBorder: #005fb8;
+    --vscode-tab-activeBorderTop: #005fb8;
+    --vscode-tab-inactiveBackground: #ececec;
+    --vscode-tab-inactiveForeground: #808080;
+    --vscode-tab-hoverBackground: #ffffff;
+    --vscode-tab-hoverForeground: #333333;
+    --vscode-tab-border: #f3f3f3;
+
+    --vscode-editorGroupHeader-tabsBackground: #f3f3f3;
+    --vscode-editorGroupHeader-tabsBorder: #dddddd;
+
+    --vscode-titleBar-activeBackground: #dddddd;
+
+    --vscode-widget-border: #d4d4d4;
+    --vscode-panel-background: #f3f3f3;
+    --vscode-panel-border: #d4d4d4;
+    --vscode-panelTitle-activeBorder: #424242;
+    --vscode-panelTitle-activeForeground: #424242;
+    --vscode-panelTitle-inactiveForeground: #6f6f6f;
+    --vscode-editorWidget-background: #f3f3f3;
+    --vscode-editorWidget-foreground: #616161;
+    --vscode-editorWidget-border: #c8c8c8;
+
+    --vscode-editorWarning-foreground: #bf8803;
+    --vscode-editorInfo-foreground: #1a85ff;
+
+    --vscode-toolbar-hoverBackground: rgba(184, 184, 184, 0.31);
+
+    --vscode-activityBar-background: #f3f3f3;
+    --vscode-activityBar-foreground: #333333;
+    --vscode-activityBar-inactiveForeground: rgba(0, 0, 0, 0.55);
+
+    --vscode-statusBar-background: #007acc;
+    --vscode-statusBar-foreground: #ffffff;
+    --vscode-statusBar-hoverBackground: #1f8ad2;
+    --vscode-statusBarItem-errorForeground: #ffffff;
+    --vscode-statusBarItem-warningForeground: #ffffff;
+
+    --vscode-badge-background: #c4c4c4;
+    --vscode-badge-foreground: #333333;
+
+    --vscode-textCodeBlock-background: #f0f0f0;
+
+    --vscode-gitDecoration-addedResourceForeground: #587c0c;
+    --vscode-gitDecoration-modifiedResourceForeground: #895503;
+
+    --vscode-symbolIcon-variableForeground: #007acc;
 }

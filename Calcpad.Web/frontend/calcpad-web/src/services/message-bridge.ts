@@ -10,9 +10,16 @@ import {
     buildImageCommentLine,
 } from './image-insert';
 import { getActiveEditorContent } from './active-editor';
+import { setAppTheme, coerceAppTheme } from '../editor/app-theme';
 
 const SETTINGS_KEY = 'calcpad-settings';
 const PDF_SETTINGS_KEY = 'calcpad-pdf-settings';
+
+/** Themes the web / desktop apps ship with. Fed to the Color Theme picker. */
+const BUILTIN_THEMES = [
+    { id: 'calcpad-dark',  label: 'Dark',  kind: 'dark'  as const },
+    { id: 'calcpad-light', label: 'Light', kind: 'light' as const },
+];
 
 function triggerBlobDownload(blob: Blob, filename: string): void {
     const url = URL.createObjectURL(blob);
@@ -117,6 +124,11 @@ export class MessageBridge {
                 localStorage.setItem('calcpad-preview-theme', message.theme);
                 break;
 
+            case 'updateColorTheme':
+                localStorage.setItem('calcpad-color-theme', message.theme);
+                setAppTheme(coerceAppTheme(message.theme));
+                break;
+
             case 'updateQuickTyping':
                 localStorage.setItem('calcpad-quick-typing', String(message.enabled));
                 break;
@@ -204,10 +216,17 @@ export class MessageBridge {
             type: 'settingsResponse',
             settings: this.settings,
             previewTheme: localStorage.getItem('calcpad-preview-theme') || 'system',
+            colorTheme: this.getStoredColorTheme(),
+            availableThemes: BUILTIN_THEMES,
             commentFormat: localStorage.getItem('calcpad-comment-format') || 'auto',
             enableFormattingHotkeys: localStorage.getItem('calcpad-formatting-hotkeys') !== 'false',
             linterMinSeverity: localStorage.getItem('calcpad-linter-severity') || 'information',
         });
+    }
+
+    /** The stored Color Theme selection, coerced to a valid label. */
+    getStoredColorTheme(): string {
+        return coerceAppTheme(localStorage.getItem('calcpad-color-theme'));
     }
 
     private handleUpdateSettings(newSettings: any): void {

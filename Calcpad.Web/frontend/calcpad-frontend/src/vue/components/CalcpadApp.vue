@@ -28,6 +28,7 @@
       @open-file="handleOpenFile"
       @expand-folder="handleExpandFolder"
       @open-containing-folder="handleOpenContainingFolder"
+      @close-folder="handleCloseFolder"
     />
 
     <div v-show="!extraTabs || activeView === 'calcpad'" class="calcpad-view">
@@ -210,6 +211,12 @@ const handleExpandFolder = (path: string) => {
 
 const handleOpenContainingFolder = (path: string) => {
   postMessage({ type: 'openContainingFolder', path })
+}
+
+const handleCloseFolder = () => {
+  openedFolder.value = null
+  fileTreeRoots.value = []
+  postMessage({ type: 'closeFolder' })
 }
 
 // Insert children into the tree at the given directory path.

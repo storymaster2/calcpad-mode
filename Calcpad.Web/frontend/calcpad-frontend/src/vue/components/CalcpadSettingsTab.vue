@@ -221,9 +221,10 @@
           @change="updateColorTheme"
         >
           <option
-            v-if="colorTheme && !knownThemeLabels.has(colorTheme)"
+            v-if="colorTheme && !knownThemeLabels.has(colorTheme) && colorTheme !== 'System'"
             :value="colorTheme"
           >{{ colorTheme }}</option>
+          <option value="System">System</option>
           <optgroup v-if="darkThemes.length" label="Dark">
             <option
               v-for="t in darkThemes"

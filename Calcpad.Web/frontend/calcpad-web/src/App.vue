@@ -32,15 +32,9 @@
         <button class="toolbar-btn" @click="togglePreview" title="Preview HTML">
           {{ previewVisible ? 'Hide Preview' : 'Preview' }}
         </button>
-        <span
-          class="server-status"
-          :class="{ connected: serverConnected, disconnected: !serverConnected }"
-        >
-          {{ serverConnected ? 'Connected' : 'Disconnected' }}
-        </span>
       </div>
       <!-- Tab strip (VS Code-style). Hidden until at least one tab is registered. -->
-      <div v-if="tabs.length > 0" class="tab-strip" role="tablist">
+      <div v-if="tabs.length > 0" class="tab-strip" role="tablist" @contextmenu.prevent>
         <div
           v-for="tab in tabs"
           :key="tab.id"
@@ -51,6 +45,7 @@
           :title="tab.filePath || tab.title"
           @mousedown.left="onTabClick(tab.id)"
           @mousedown.middle.prevent="onTabClose(tab.id)"
+          @contextmenu.prevent="onTabContextMenu($event, tab.id)"
         >
           <span class="tab-title">{{ tab.title }}</span>
           <span v-if="tab.dirty" class="tab-dirty-dot" :title="'Unsaved changes'">●</span>
@@ -64,6 +59,37 @@
           </button>
         </div>
         <button class="tab-new" title="New tab (Ctrl+T)" @click="onNewTab">+</button>
+      </div>
+      <!-- Right-click context menu for tabs. Rendered outside .tab-strip so it
+           can be positioned absolutely without being clipped. @mousedown.stop
+           keeps the document-level closer from firing before the button's
+           click handler runs. -->
+      <div
+        v-if="tabContextMenu"
+        class="tab-context-menu"
+        :style="{ left: tabContextMenu.x + 'px', top: tabContextMenu.y + 'px' }"
+        @mousedown.stop
+        @click.stop
+      >
+        <button class="tab-context-item" @click="onContextClose">Close</button>
+        <button
+          class="tab-context-item"
+          :disabled="tabs.length <= 1"
+          @click="onContextCloseOthers"
+        >Close Others</button>
+        <button class="tab-context-item" @click="onContextCloseAll">Close All</button>
+        <template v-if="tabContextMenu.filePath">
+          <div class="tab-context-sep" role="separator"></div>
+          <button class="tab-context-item" @click="onContextOpenContainingFolder">
+            Open Containing Folder
+          </button>
+          <button class="tab-context-item" @click="onContextCopyFullPath">
+            Copy Full Path
+          </button>
+          <button class="tab-context-item" @click="onContextCopyRelativePath">
+            Copy Relative Path
+          </button>
+        </template>
       </div>
       <div ref="editorContainer" class="editor-container"></div>
       <!-- Bottom panel (Problems / Output) -->
@@ -128,13 +154,25 @@
       <!-- Status bar -->
       <div class="status-bar">
         <span class="status-problems" @click="openBottomTab('problems')">
-          <span class="status-icon error">✕</span> {{ errorCount }}
-          <span class="status-icon warning">⚠</span> {{ warningCount }}
-          <span class="status-icon info">ℹ</span> {{ infoCount }}
+          <svg class="status-icon error" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+          </svg> {{ errorCount }}
+          <svg class="status-icon warning" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.891 0 1.44-.99.982-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+          </svg> {{ warningCount }}
+          <svg class="status-icon info" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+          </svg> {{ infoCount }}
         </span>
         <span class="status-output" @click="openBottomTab('output')">Output</span>
         <span class="spacer"></span>
-        <span class="status-text">CalcPad</span>
+        <span
+          class="status-server"
+          :class="{ connected: serverConnected, disconnected: !serverConnected }"
+          :title="serverConnected ? 'Server connected' : 'Server disconnected'"
+        >
+          ● {{ serverConnected ? 'Connected' : 'Disconnected' }}
+        </span>
       </div>
     </div>
     <div v-if="previewVisible" class="preview-pane">
@@ -182,7 +220,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 
 export interface ProblemItem {
   severity: number
@@ -220,6 +258,19 @@ const tabs = ref<TabUiState[]>([])
 const onTabActivate = ref<((id: string) => void) | null>(null)
 const onTabCloseRequest = ref<((id: string) => void) | null>(null)
 const onNewTabRequest = ref<(() => void) | null>(null)
+const onTabCloseOthersRequest = ref<((id: string) => void) | null>(null)
+const onTabCloseAllRequest = ref<(() => void) | null>(null)
+const onTabOpenContainingFolderRequest = ref<((id: string) => void) | null>(null)
+const onTabCopyFullPathRequest = ref<((id: string) => void) | null>(null)
+const onTabCopyRelativePathRequest = ref<((id: string) => void) | null>(null)
+
+interface TabContextMenuState {
+  x: number
+  y: number
+  tabId: string
+  filePath: string | null
+}
+const tabContextMenu = ref<TabContextMenuState | null>(null)
 
 function setTabs(next: TabUiState[]): void {
   tabs.value = next
@@ -235,6 +286,67 @@ function onTabClose(id: string): void {
 
 function onNewTab(): void {
   onNewTabRequest.value?.()
+}
+
+function onTabContextMenu(e: MouseEvent, tabId: string): void {
+  const tab = tabs.value.find(t => t.id === tabId)
+  tabContextMenu.value = {
+    x: e.clientX,
+    y: e.clientY,
+    tabId,
+    filePath: tab?.filePath ?? null,
+  }
+}
+
+function closeTabContextMenu(): void {
+  tabContextMenu.value = null
+}
+
+function onContextClose(): void {
+  const m = tabContextMenu.value
+  if (!m) return
+  onTabCloseRequest.value?.(m.tabId)
+  closeTabContextMenu()
+}
+
+function onContextCloseOthers(): void {
+  const m = tabContextMenu.value
+  if (!m) return
+  onTabCloseOthersRequest.value?.(m.tabId)
+  closeTabContextMenu()
+}
+
+function onContextCloseAll(): void {
+  if (!tabContextMenu.value) return
+  onTabCloseAllRequest.value?.()
+  closeTabContextMenu()
+}
+
+function onContextOpenContainingFolder(): void {
+  const m = tabContextMenu.value
+  if (!m) return
+  onTabOpenContainingFolderRequest.value?.(m.tabId)
+  closeTabContextMenu()
+}
+
+function onContextCopyFullPath(): void {
+  const m = tabContextMenu.value
+  if (!m) return
+  onTabCopyFullPathRequest.value?.(m.tabId)
+  closeTabContextMenu()
+}
+
+function onContextCopyRelativePath(): void {
+  const m = tabContextMenu.value
+  if (!m) return
+  onTabCopyRelativePathRequest.value?.(m.tabId)
+  closeTabContextMenu()
+}
+
+function onDocumentInteractionForTabMenu(e: MouseEvent | KeyboardEvent): void {
+  if (!tabContextMenu.value) return
+  if (e instanceof KeyboardEvent && e.key !== 'Escape') return
+  closeTabContextMenu()
 }
 
 function gotoProblem(problem: ProblemItem): void {
@@ -596,6 +708,14 @@ onMounted(async () => {
 
   setTimeout(checkHealth, 1000)
   setInterval(checkHealth, 30000)
+
+  document.addEventListener('mousedown', onDocumentInteractionForTabMenu)
+  document.addEventListener('keydown', onDocumentInteractionForTabMenu)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', onDocumentInteractionForTabMenu)
+  document.removeEventListener('keydown', onDocumentInteractionForTabMenu)
 })
 
 // ---- In-app confirm dialog ----
@@ -659,5 +779,10 @@ defineExpose({
   onTabActivate,
   onTabCloseRequest,
   onNewTabRequest,
+  onTabCloseOthersRequest,
+  onTabCloseAllRequest,
+  onTabOpenContainingFolderRequest,
+  onTabCopyFullPathRequest,
+  onTabCopyRelativePathRequest,
 })
 </script>

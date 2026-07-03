@@ -1,3 +1,4 @@
+import * as monaco from 'monaco-editor';
 import { filesystem, os, storage } from '@neutralinojs/lib';
 import { CalcpadApiClient } from 'calcpad-frontend/api/client';
 import { CalcpadSnippetService } from 'calcpad-frontend/services/snippets';
@@ -12,6 +13,13 @@ import {
     buildImageCommentLine,
 } from './image-insert';
 import { getActiveEditorContent } from './active-editor';
+import { setAppTheme, coerceAppTheme } from '../editor/app-theme';
+
+/** Themes the desktop app ships with. Fed to the Color Theme picker. */
+const BUILTIN_THEMES = [
+    { id: 'calcpad-dark',  label: 'Dark',  kind: 'dark'  as const },
+    { id: 'calcpad-light', label: 'Light', kind: 'light' as const },
+];
 
 const SETTINGS_KEY = 'calcpad-settings';
 const RECENT_FILES_KEY = 'calcpad-recent-files';
@@ -106,11 +114,24 @@ export class NeutralinoMessageBridge {
     private _onInsertText: ((text: string) => void) | null = null;
     private _extraSettings: Record<string, string> = {};
     /**
+     * Resolves once persisted settings have been read from Neutralino storage.
+     * Anything that needs values from `_extraSettings` (e.g. the boot-time
+     * theme applier) must await this first — the constructor can't be async
+     * so the load runs in the background.
+     */
+    readonly ready: Promise<void>;
+    /**
      * Directory used to seed native dialogs' `defaultPath`. Updated after every
      * Open/Save/Open-Folder interaction so successive dialogs land in the last
      * place the user was working. Session-scoped only (not persisted).
      */
     private _lastDialogDir: string | null = null;
+    /**
+     * Cached absolute library folder after env-var expansion. Invalidated
+     * whenever the raw libraryPath preference changes. `null` means the
+     * user hasn't configured one; `undefined` means "not yet resolved".
+     */
+    private _resolvedLibraryPath: string | null | undefined = undefined;
 
     constructor(serverUrl: string) {
         const logger = { appendLine: (msg: string) => console.debug('[CalcPad]', msg) };
@@ -119,7 +140,7 @@ export class NeutralinoMessageBridge {
         this.definitionsService = new CalcpadDefinitionsService(this.apiClient);
         this.settings = getDefaultSettings();
 
-        this.loadSettingsFromStorage();
+        this.ready = this.loadSettingsFromStorage();
         this.snippetService.loadSnippets();
     }
 
@@ -231,6 +252,10 @@ export class NeutralinoMessageBridge {
             case 'updatePreviewTheme':
                 this.persistSetting('previewTheme', message.theme);
                 break;
+            case 'updateColorTheme':
+                this.persistSetting('colorTheme', message.theme);
+                setAppTheme(coerceAppTheme(message.theme));
+                break;
             case 'updateQuickTyping':
                 this.persistSetting('quickTyping', String(message.enabled));
                 break;
@@ -242,6 +267,25 @@ export class NeutralinoMessageBridge {
                 break;
             case 'updateLinterMinSeverity':
                 this.persistSetting('linterMinSeverity', message.severity);
+                break;
+            case 'updateLibraryPath':
+                this.persistSetting('libraryPath', message.path ?? '');
+                this._resolvedLibraryPath = undefined;
+                break;
+            case 'getPrettifySettings':
+                this.handleGetPrettifySettings();
+                break;
+            case 'updatePrettifyIndentStyle':
+                this.persistSetting('prettifyIndentStyle', message.value);
+                break;
+            case 'updatePrettifyIndentSize':
+                this.persistSetting('prettifyIndentSize', String(message.value));
+                break;
+            case 'updatePrettifyTrim':
+                this.persistSetting('prettifyTrimTrailingWhitespace', String(message.value));
+                break;
+            case 'prettifyDocument':
+                this.handlePrettifyDocument();
                 break;
             case 'getPdfSettings':
                 this.handleGetPdfSettings();
@@ -290,6 +334,9 @@ export class NeutralinoMessageBridge {
                 break;
             case 'openContainingFolder':
                 this.handleOpenContainingFolder(message.path);
+                break;
+            case 'closeFolder':
+                this.handleCloseFolder();
                 break;
         }
     }
@@ -504,7 +551,11 @@ export class NeutralinoMessageBridge {
     }
 
     private async handleGetOpenedFolder(): Promise<void> {
-        const folder = await this.getOpenedFolder();
+        const explicit = await this.getOpenedFolder();
+        // When nothing was explicitly opened (or the user closed the folder),
+        // fall back to the configured library so the Files panel isn't empty
+        // on first launch.
+        const folder = explicit ?? (await this.getLibraryPath());
         if (!folder) {
             this.postToVue({ type: 'folderOpened', path: null, entries: [] });
             return;
@@ -518,6 +569,14 @@ export class NeutralinoMessageBridge {
         // Delegate to main.ts's loadFile via a bridged event. main.ts already
         // listens for 'loadFileFromPath' on window.
         window.dispatchEvent(new CustomEvent('calcpad-open-file', { detail: { path: filePath } }));
+    }
+
+    private async handleCloseFolder(): Promise<void> {
+        try {
+            await storage.setData(OPENED_FOLDER_KEY, '');
+        } catch {
+            // Storage may not be initialized on a first run — nothing to clear.
+        }
     }
 
     private async handleOpenContainingFolder(itemPath: string): Promise<void> {
@@ -556,10 +615,58 @@ export class NeutralinoMessageBridge {
             type: 'settingsResponse',
             settings: this.settings,
             previewTheme: this._extraSettings.previewTheme || 'system',
+            colorTheme: this.getStoredColorTheme(),
+            availableThemes: BUILTIN_THEMES,
             commentFormat: this._extraSettings.commentFormat || 'auto',
             enableFormattingHotkeys: this._extraSettings.formattingHotkeys !== 'false',
             linterMinSeverity: this._extraSettings.linterMinSeverity || 'information',
+            libraryPath: this._extraSettings.libraryPath || '',
         });
+    }
+
+    /** Raw library path as typed by the user (may contain env-var refs). */
+    getLibraryPathRaw(): string {
+        return this._extraSettings.libraryPath || '';
+    }
+
+    /**
+     * Resolve the configured library path to an absolute directory, expanding
+     * `%VAR%` (Windows) and `$VAR` (Unix) references via `os.getEnv`. Returns
+     * null when no library is configured or expansion leaves the path empty.
+     * The resolved value is cached until `libraryPath` changes.
+     */
+    async getLibraryPath(): Promise<string | null> {
+        if (this._resolvedLibraryPath !== undefined) return this._resolvedLibraryPath;
+        const raw = this.getLibraryPathRaw().trim();
+        if (!raw) {
+            this._resolvedLibraryPath = null;
+            return null;
+        }
+        const expanded = await this.expandEnvVars(raw);
+        this._resolvedLibraryPath = expanded ? expanded : null;
+        return this._resolvedLibraryPath;
+    }
+
+    private async expandEnvVars(input: string): Promise<string> {
+        const names = new Set<string>();
+        for (const m of input.matchAll(/%([^%]+)%/g)) names.add(m[1]);
+        for (const m of input.matchAll(/\$([A-Za-z_][A-Za-z0-9_]*)/g)) names.add(m[1]);
+        const values: Record<string, string> = {};
+        for (const name of names) {
+            try {
+                values[name] = (await os.getEnv(name)) || '';
+            } catch {
+                values[name] = '';
+            }
+        }
+        return input
+            .replace(/%([^%]+)%/g, (_, n) => values[n] ?? '')
+            .replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, (_, n) => values[n] ?? '');
+    }
+
+    /** The stored Color Theme selection, coerced to a valid label. */
+    getStoredColorTheme(): string {
+        return coerceAppTheme(this._extraSettings.colorTheme);
     }
 
     private handleUpdateSettings(newSettings: any): void {
@@ -597,6 +704,40 @@ export class NeutralinoMessageBridge {
                 type: 'updateVariables',
                 data: { macros: [], variables: [], functions: [], customUnits: [] },
             });
+        }
+    }
+
+    private handleGetPrettifySettings(): void {
+        const indentStyle = this._extraSettings.prettifyIndentStyle === 'space' ? 'space' : 'tab';
+        const indentSizeRaw = parseInt(this._extraSettings.prettifyIndentSize ?? '', 10);
+        const indentSize = Number.isFinite(indentSizeRaw) && indentSizeRaw >= 1 ? indentSizeRaw : 4;
+        const trimTrailingWhitespace = this._extraSettings.prettifyTrimTrailingWhitespace !== 'false';
+        this.postToVue({ type: 'prettifySettingsResponse', indentStyle, indentSize, trimTrailingWhitespace });
+    }
+
+    private async handlePrettifyDocument(): Promise<void> {
+        const editor = monaco.editor.getEditors()[0];
+        const model = editor?.getModel();
+        if (!editor || !model) {
+            console.warn('[Prettify] No active Monaco editor.');
+            return;
+        }
+
+        const indentStyle = this._extraSettings.prettifyIndentStyle === 'space' ? 'space' : 'tab';
+        const indentSizeRaw = parseInt(this._extraSettings.prettifyIndentSize ?? '', 10);
+        const indentSize = Number.isFinite(indentSizeRaw) && indentSizeRaw >= 1 ? indentSizeRaw : 4;
+        const trim = this._extraSettings.prettifyTrimTrailingWhitespace !== 'false';
+        const indentUnit = indentStyle === 'space' ? ' '.repeat(indentSize) : '\t';
+
+        try {
+            const response = await this.apiClient.prettify(model.getValue(), indentUnit, trim);
+            if (!response?.content) {
+                console.warn('[Prettify] Server returned no content.');
+                return;
+            }
+            editor.executeEdits('prettify', [{ range: model.getFullModelRange(), text: response.content }]);
+        } catch (err) {
+            console.error('[Prettify] Failed:', err);
         }
     }
 
@@ -708,9 +849,11 @@ export class NeutralinoMessageBridge {
             const pdfBytes = await pdfResp.arrayBuffer();
 
             const filePath = await os.showSaveDialog('Export PDF', {
+                defaultPath: this.getDialogDefaultPath(),
                 filters: [{ name: 'PDF Files', extensions: ['pdf'] }],
             });
             if (filePath) {
+                this.rememberDialogDir(filePath);
                 await filesystem.writeBinaryFile(filePath, pdfBytes);
             }
         } catch (err) {

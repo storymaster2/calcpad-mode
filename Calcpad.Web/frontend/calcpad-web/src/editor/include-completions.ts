@@ -79,6 +79,13 @@ export interface IncludeCompletionsContext {
     getCurrentFilePath(): string | null;
     /** Currently-opened workspace folder root, or null. */
     getOpenedFolder(): Promise<string | null>;
+    /**
+     * Configured library folder, or null. Searched at the root level in
+     * addition to the current file's directory and any opened workspace
+     * folder, so shared includes remain reachable regardless of what the
+     * user has open in the Files panel.
+     */
+    getLibraryPath?(): Promise<string | null>;
 }
 
 /**
@@ -115,6 +122,7 @@ export function registerIncludeCompletionProvider(
             const currentFilePath = ctx.getCurrentFilePath();
             const currentDir = currentFilePath ? pathDirname(currentFilePath) : '';
             const openedFolder = await ctx.getOpenedFolder();
+            const libraryFolder = ctx.getLibraryPath ? await ctx.getLibraryPath() : null;
 
             const range: monaco.IRange = {
                 startLineNumber: position.lineNumber,
@@ -156,6 +164,14 @@ export function registerIncludeCompletionProvider(
                         currentFilePath, suggestions, seenAbsolute, 'Workspace'
                     );
                 }
+                if (libraryFolder
+                    && normalize(libraryFolder) !== normalize(currentDir)
+                    && (!openedFolder || normalize(libraryFolder) !== normalize(openedFolder))) {
+                    await addEntries(
+                        ctx, libraryFolder, partialPath, extensions, range,
+                        currentFilePath, suggestions, seenAbsolute, 'Library'
+                    );
+                }
             }
 
             return { suggestions, incomplete: true };
@@ -189,11 +205,11 @@ async function addEntries(
     const entries = await ctx.listDirectory(searchDir);
     if (!entries.length) return;
 
-    // For the opened-folder ("Workspace") source, inserted paths should be
-    // absolute so #include resolves regardless of the current file's location.
-    // For the doc-dir root, insert paths relative (using the same prefix the
-    // user has typed so far).
-    const useAbsolute = sourceLabel === 'Workspace';
+    // For the opened-folder ("Workspace") and library ("Library") sources,
+    // inserted paths are absolute so #include resolves regardless of the
+    // current file's location. For the doc-dir root we insert relative paths
+    // (using the same prefix the user has typed so far).
+    const useAbsolute = sourceLabel === 'Workspace' || sourceLabel === 'Library';
 
     // Folders
     for (const entry of entries) {

@@ -10,11 +10,15 @@ html, body, #app {
     overflow: hidden;
 }
 
-/* Tell the browser the page is dark so native widgets (the <select> popup,
- * scrollbars, form controls) render with the dark OS theme instead of the
- * default light one. CSS alone cannot style the popup of a <select>. */
+/* Tell the browser which color scheme to use so native widgets (the <select>
+ * popup, scrollbars, form controls) render with the matching OS theme instead
+ * of the default. CSS alone cannot style the popup of a <select>. Follows
+ * <html data-theme="…">, which is set by the app-theme applier. */
 html {
     color-scheme: dark;
+}
+html[data-theme="light"] {
+    color-scheme: light;
 }
 
 /* Style every <select> consistently, not just the output channel one.
@@ -67,17 +71,20 @@ select option {
     flex: 1;
 }
 
-.editor-toolbar .server-status {
-    font-size: 11px;
-    color: var(--vscode-descriptionForeground);
+.status-bar .status-server {
+    padding: 1px 8px;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 2px;
+    user-select: none;
 }
 
-.editor-toolbar .server-status.connected {
-    color: var(--vscode-gitDecoration-addedResourceForeground, #57A64A);
+.status-bar .status-server.connected {
+    color: #6bd66b;
 }
 
-.editor-toolbar .server-status.disconnected {
-    color: var(--vscode-errorForeground, #FF5555);
+.status-bar .status-server.disconnected {
+    color: #ff6b6b;
 }
 
 .toolbar-btn {
@@ -206,6 +213,47 @@ select option {
 .tab-new:hover {
     background: var(--vscode-tab-hoverBackground, #2a2d2e);
     color: var(--vscode-tab-hoverForeground, #ffffff);
+}
+
+.tab-context-menu {
+    position: fixed;
+    z-index: 1000;
+    min-width: 200px;
+    padding: 4px 0;
+    background: var(--vscode-menu-background, var(--vscode-editor-background, #252526));
+    color: var(--vscode-menu-foreground, var(--vscode-foreground, #cccccc));
+    border: 1px solid var(--vscode-menu-border, var(--vscode-widget-border, #454545));
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tab-context-item {
+    display: block;
+    width: 100%;
+    padding: 5px 14px;
+    text-align: left;
+    background: transparent;
+    color: inherit;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+}
+
+.tab-context-item:hover:not(:disabled) {
+    background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground, #04395e));
+    color: var(--vscode-menu-selectionForeground, inherit);
+}
+
+.tab-context-item:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.tab-context-sep {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--vscode-menu-separatorBackground, var(--vscode-widget-border, #454545));
 }
 
 .sidebar-pane {
@@ -599,19 +647,22 @@ select option {
 }
 
 .status-icon {
-    font-size: 11px;
+    width: 12px;
+    height: 12px;
+    vertical-align: -2px;
+    fill: currentColor;
 }
 
 .status-icon.error {
-    color: var(--vscode-statusBarItem-errorForeground, #fff);
+    color: #ff8080;
 }
 
 .status-icon.warning {
-    color: var(--vscode-statusBarItem-warningForeground, #fff);
+    color: #ffcc66;
 }
 
 .status-icon.info {
-    opacity: 0.8;
+    color: #cfe8ff;
 }
 
 .status-text {
