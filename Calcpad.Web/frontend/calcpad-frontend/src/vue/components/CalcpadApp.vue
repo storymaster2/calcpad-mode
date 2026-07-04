@@ -68,6 +68,8 @@
         :initial-dark-background="darkBackground"
         :initial-linter-min-severity="linterMinSeverity"
         :initial-library-path="libraryPath"
+        :initial-active-config="activeConfig"
+        :initial-available-configs="availableConfigs"
         @update-settings="handleUpdateSettings"
         @update-preview-theme="handleUpdatePreviewTheme"
         @update-color-theme="handleUpdateColorTheme"
@@ -78,6 +80,9 @@
         @update-linter-min-severity="handleUpdateLinterMinSeverity"
         @update-library-path="handleUpdateLibraryPath"
         @reset-settings="handleResetSettings"
+        @save-named-config="handleSaveNamedConfig"
+        @switch-config="handleSwitchConfig"
+        @open-settings-folder="handleOpenSettingsFolder"
         @open-logs-folder="handleOpenLogsFolder"
       />
       <CalcpadVariablesTab
@@ -164,6 +169,8 @@ const enableFormattingHotkeys = ref(true)
 const darkBackground = ref('#1e1e1e')
 const linterMinSeverity = ref('information')
 const libraryPath = ref('')
+const activeConfig = ref('default')
+const availableConfigs = ref<string[]>(['default'])
 const variablesData = ref<VariablesData>({
   macros: [],
   variables: [],
@@ -331,6 +338,18 @@ const handleResetSettings = () => {
   })
 }
 
+const handleSaveNamedConfig = (name: string) => {
+  postMessage({ type: 'saveNamedConfig', name })
+}
+
+const handleSwitchConfig = (name: string) => {
+  postMessage({ type: 'switchConfig', name })
+}
+
+const handleOpenSettingsFolder = () => {
+  postMessage({ type: 'openSettingsFolder' })
+}
+
 const handleOpenLogsFolder = () => {
   postMessage({
     type: 'openLogsFolder'
@@ -400,6 +419,11 @@ const handleMessage = (event: MessageEvent) => {
       darkBackground.value = message.darkBackground || '#1e1e1e'
       linterMinSeverity.value = message.linterMinSeverity || 'information'
       libraryPath.value = message.libraryPath || ''
+      if (message.activeConfig) activeConfig.value = message.activeConfig
+      if (Array.isArray(message.availableConfigs)) availableConfigs.value = message.availableConfigs
+      break
+    case 'saveNamedConfigError':
+      window.alert(message.message || 'Failed to save settings.')
       break
     case 'settingsReset':
       settings.value = message.settings

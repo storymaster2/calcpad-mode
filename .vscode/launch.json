@@ -99,6 +99,7 @@
             "type": "node",
             "request": "launch",
             "runtimeExecutable": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/dist/calcpad-desktop/calcpad-desktop-linux_x64",
+            "runtimeArgs": ["--window-enable-inspector"],
             "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/dist/calcpad-desktop",
             "env": {
                 "GDK_BACKEND": "x11",
@@ -113,6 +114,7 @@
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/scripts/launch-win.mjs",
+            "args": ["--window-enable-inspector"],
             "console": "integratedTerminal",
             "preLaunchTask": "Desktop: Clean & Rebuild"
         },

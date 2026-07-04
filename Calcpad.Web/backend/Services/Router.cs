@@ -7,6 +7,18 @@ namespace Calcpad.Server.Services
 {
     public static class Router
     {
+        // Shared HttpClient for the process lifetime; per-request timeout comes
+        // from the CancellationTokenSource passed to GetAsync.
+        private static readonly HttpClient _httpClient = CreateHttpClient();
+
+        private static HttpClient CreateHttpClient()
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "Calcpad/1.0");
+            client.DefaultRequestHeaders.Add("Accept", "*/*");
+            return client;
+        }
+
         public static bool IsDirectUrl(string input)
         {
             return input?.StartsWith("http://", StringComparison.OrdinalIgnoreCase) == true ||
@@ -19,28 +31,26 @@ namespace Calcpad.Server.Services
                    input.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
         }
 
-        public static async Task<byte[]> FetchUrlAsync(string url, int timeoutMs)
+        public static async Task<byte[]> FetchUrlAsync(string url, int timeoutMs, CancellationToken cancellationToken = default)
         {
-            using var cts = new CancellationTokenSource(timeoutMs);
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("User-Agent", "Calcpad/1.0");
-            httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
+            using var timeoutCts = new CancellationTokenSource(timeoutMs);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken);
 
             try
             {
-                var response = await httpClient.GetAsync(url, cts.Token).ConfigureAwait(false);
+                var response = await _httpClient.GetAsync(url, linkedCts.Token).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var responseContent = await response.Content.ReadAsStringAsync(cts.Token).ConfigureAwait(false);
+                    var responseContent = await response.Content.ReadAsStringAsync(linkedCts.Token).ConfigureAwait(false);
                     throw new Exception($"HTTP {response.StatusCode}: {response.ReasonPhrase} | URL: {url} | Response: {responseContent}");
                 }
 
-                return await response.Content.ReadAsByteArrayAsync(cts.Token).ConfigureAwait(false);
+                return await response.Content.ReadAsByteArrayAsync(linkedCts.Token).ConfigureAwait(false);
             }
-            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
-                throw new Exception($"Request timeout or cancelled connecting to {url}");
+                throw new Exception($"Request timeout connecting to {url}");
             }
             catch (HttpRequestException ex)
             {

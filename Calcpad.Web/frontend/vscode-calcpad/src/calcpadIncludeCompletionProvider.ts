@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { CalcpadSettingsManager } from './calcpadSettings';
 
 const DIRECTIVES = ['include', 'read', 'write', 'append'] as const;
 type Directive = typeof DIRECTIVES[number];
@@ -127,7 +128,7 @@ export class CalcpadIncludeCompletionProvider implements vscode.CompletionItemPr
         );
 
         // Get library configuration
-        const libraryPath = vscode.workspace.getConfiguration('calcpad').get<string>('libraryPath', '');
+        const libraryPath = CalcpadSettingsManager.getInstance().getExtra('libraryPath', '');
         const libraryPrefix = libraryPath
             ? (libraryPath.endsWith('/') || libraryPath.endsWith('\\') ? libraryPath : libraryPath + '\\')
             : '';

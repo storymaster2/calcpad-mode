@@ -64,49 +64,118 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     vscode.commands.executeCommand('vscode-calcpad.insertImage');
                     break;
 
-                case 'getSettings':
+                case 'getSettings': {
+                    await this._settingsManager.ready;
                     const settings = this._settingsManager.getSettings();
-                    const config = vscode.workspace.getConfiguration('calcpad');
-                    const previewTheme = config.get<string>('previewTheme', 'system');
-                    const commentFormat = config.get<string>('commentFormat', 'auto');
-                    const enableFormattingHotkeys = config.get<boolean>('enableFormattingHotkeys', true);
-                    const darkBackground = config.get<string>('darkBackground', '#1e1e1e');
-                    const linterMinSeverity = config.get<string>('linter.minimumSeverity', 'information');
-                    const libraryPath = config.get<string>('libraryPath', '');
+                    const previewTheme = this._settingsManager.getExtra('previewTheme', 'system');
+                    const commentFormat = this._settingsManager.getExtra('commentFormat', 'auto');
+                    const enableFormattingHotkeys = this._settingsManager.getExtraBool('formattingHotkeys', true);
+                    const darkBackground = this._settingsManager.getExtra('darkBackground', '#1e1e1e');
+                    const linterMinSeverity = this._settingsManager.getExtra('linterMinSeverity', 'information');
+                    const libraryPath = this._settingsManager.getExtra('libraryPath', '');
+                    const activeConfig = this._settingsManager.getActiveConfigName();
+                    const availableConfigs = await this._settingsManager.listConfigs();
 
                     const colorTheme = vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', '');
                     const availableThemes = this._getInstalledThemes();
 
                     webviewView.webview.postMessage({
                         type: 'settingsResponse',
-                        settings: settings,
-                        previewTheme: previewTheme,
-                        colorTheme: colorTheme,
-                        availableThemes: availableThemes,
-                        commentFormat: commentFormat,
-                        enableFormattingHotkeys: enableFormattingHotkeys,
-                        darkBackground: darkBackground,
-                        linterMinSeverity: linterMinSeverity,
-                        libraryPath: libraryPath
+                        settings,
+                        previewTheme,
+                        colorTheme,
+                        availableThemes,
+                        commentFormat,
+                        enableFormattingHotkeys,
+                        darkBackground,
+                        linterMinSeverity,
+                        libraryPath,
+                        activeConfig,
+                        availableConfigs,
                     });
                     break;
+                }
 
                 case 'updateSettings':
                     this._settingsManager.updateSettings(data.settings);
                     break;
 
-                case 'resetSettings':
-                    this._settingsManager.resetSettings();
+                case 'resetSettings': {
+                    await this._settingsManager.resetSettings();
                     const resetSettings = this._settingsManager.getSettings();
                     webviewView.webview.postMessage({
                         type: 'settingsReset',
-                        settings: resetSettings
+                        settings: resetSettings,
                     });
+                    // Push a fresh settingsResponse so activeConfig / extras refresh in the UI.
+                    webviewView.webview.postMessage({
+                        type: 'settingsResponse',
+                        settings: resetSettings,
+                        previewTheme: this._settingsManager.getExtra('previewTheme', 'system'),
+                        colorTheme: vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', ''),
+                        availableThemes: this._getInstalledThemes(),
+                        commentFormat: this._settingsManager.getExtra('commentFormat', 'auto'),
+                        enableFormattingHotkeys: this._settingsManager.getExtraBool('formattingHotkeys', true),
+                        darkBackground: this._settingsManager.getExtra('darkBackground', '#1e1e1e'),
+                        linterMinSeverity: this._settingsManager.getExtra('linterMinSeverity', 'information'),
+                        libraryPath: this._settingsManager.getExtra('libraryPath', ''),
+                        activeConfig: this._settingsManager.getActiveConfigName(),
+                        availableConfigs: await this._settingsManager.listConfigs(),
+                    });
+                    break;
+                }
+
+                case 'saveNamedConfig': {
+                    const result = await this._settingsManager.saveNamedConfig(data.name);
+                    if (!result.ok) {
+                        webviewView.webview.postMessage({
+                            type: 'saveNamedConfigError',
+                            message: result.message,
+                        });
+                    } else {
+                        webviewView.webview.postMessage({
+                            type: 'settingsResponse',
+                            settings: this._settingsManager.getSettings(),
+                            previewTheme: this._settingsManager.getExtra('previewTheme', 'system'),
+                            colorTheme: vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', ''),
+                            availableThemes: this._getInstalledThemes(),
+                            commentFormat: this._settingsManager.getExtra('commentFormat', 'auto'),
+                            enableFormattingHotkeys: this._settingsManager.getExtraBool('formattingHotkeys', true),
+                            darkBackground: this._settingsManager.getExtra('darkBackground', '#1e1e1e'),
+                            linterMinSeverity: this._settingsManager.getExtra('linterMinSeverity', 'information'),
+                            libraryPath: this._settingsManager.getExtra('libraryPath', ''),
+                            activeConfig: this._settingsManager.getActiveConfigName(),
+                            availableConfigs: await this._settingsManager.listConfigs(),
+                        });
+                    }
+                    break;
+                }
+
+                case 'switchConfig': {
+                    await this._settingsManager.switchConfig(data.name);
+                    webviewView.webview.postMessage({
+                        type: 'settingsResponse',
+                        settings: this._settingsManager.getSettings(),
+                        previewTheme: this._settingsManager.getExtra('previewTheme', 'system'),
+                        colorTheme: vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', ''),
+                        availableThemes: this._getInstalledThemes(),
+                        commentFormat: this._settingsManager.getExtra('commentFormat', 'auto'),
+                        enableFormattingHotkeys: this._settingsManager.getExtraBool('formattingHotkeys', true),
+                        darkBackground: this._settingsManager.getExtra('darkBackground', '#1e1e1e'),
+                        linterMinSeverity: this._settingsManager.getExtra('linterMinSeverity', 'information'),
+                        libraryPath: this._settingsManager.getExtra('libraryPath', ''),
+                        activeConfig: this._settingsManager.getActiveConfigName(),
+                        availableConfigs: await this._settingsManager.listConfigs(),
+                    });
+                    break;
+                }
+
+                case 'openSettingsFolder':
+                    await this._settingsManager.openSettingsFolder();
                     break;
 
                 case 'updatePreviewTheme':
-                    const previewConfig = vscode.workspace.getConfiguration('calcpad');
-                    await previewConfig.update('previewTheme', data.theme, vscode.ConfigurationTarget.Global);
+                    this._settingsManager.setExtra('previewTheme', data.theme);
                     break;
 
                 case 'updateColorTheme':
@@ -114,57 +183,44 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     break;
 
                 case 'updateCommentFormat':
-                    const commentFormatConfig = vscode.workspace.getConfiguration('calcpad');
-                    await commentFormatConfig.update('commentFormat', data.format, vscode.ConfigurationTarget.Global);
+                    this._settingsManager.setExtra('commentFormat', data.format);
                     break;
 
                 case 'updateFormattingHotkeys':
-                    const formattingHotkeysConfig = vscode.workspace.getConfiguration('calcpad');
-                    await formattingHotkeysConfig.update('enableFormattingHotkeys', data.enabled, vscode.ConfigurationTarget.Global);
+                    this._settingsManager.setExtra('formattingHotkeys', data.enabled);
+                    break;
+
+                case 'updateQuickTyping':
+                    this._settingsManager.setExtra('quickTyping', data.enabled);
                     break;
 
                 case 'updateDarkBackground':
-                    const darkBgConfig = vscode.workspace.getConfiguration('calcpad');
-                    await darkBgConfig.update('darkBackground', data.color, vscode.ConfigurationTarget.Global);
+                    this._settingsManager.setExtra('darkBackground', data.color);
                     break;
 
                 case 'updateLinterMinSeverity':
-                    const linterConfig = vscode.workspace.getConfiguration('calcpad');
-                    await linterConfig.update('linter.minimumSeverity', data.severity, vscode.ConfigurationTarget.Global);
+                    this._settingsManager.setExtra('linterMinSeverity', data.severity);
                     break;
 
                 case 'updateLibraryPath':
-                    const libraryPathConfig = vscode.workspace.getConfiguration('calcpad');
-                    await libraryPathConfig.update('libraryPath', data.path, vscode.ConfigurationTarget.Global);
+                    this._settingsManager.setExtra('libraryPath', data.path);
                     break;
 
-
-                case 'updatePdfSettings':
-                    const pdfConfig = vscode.workspace.getConfiguration('calcpad');
-                    for (const [key, value] of Object.entries(data.settings)) {
-                        await pdfConfig.update(`pdf.${key}`, value, vscode.ConfigurationTarget.Global);
-                    }
+                case 'updatePdfSettings': {
+                    const current = this._settingsManager.getExtraObject<Record<string, unknown>>('pdfSettings', {});
+                    this._settingsManager.setExtra('pdfSettings', { ...current, ...data.settings });
                     break;
+                }
 
-                case 'resetPdfSettings':
-                    const pdfConfigReset = vscode.workspace.getConfiguration('calcpad');
-                    const pdfKeys = [
-                        'format', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight',
-                        'documentTitle', 'dateTimeFormat'
-                    ];
-
-                    for (const key of pdfKeys) {
-                        await pdfConfigReset.update(`pdf.${key}`, undefined, vscode.ConfigurationTarget.Global);
-                    }
-
-                    // Send back the reset settings
+                case 'resetPdfSettings': {
+                    this._settingsManager.setExtra('pdfSettings', {});
                     const resetPdfSettings = { ...DEFAULT_PDF_SETTINGS };
-
                     webviewView.webview.postMessage({
                         type: 'pdfSettingsReset',
-                        settings: resetPdfSettings
+                        settings: resetPdfSettings,
                     });
                     break;
+                }
 
                 case 'openLogsFolder': {
                     // Resolve the same logs directory the server manager uses.
@@ -183,23 +239,15 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     break;
                 }
 
-                case 'getPdfSettings':
-                    const pdfConfigGet = vscode.workspace.getConfiguration('calcpad');
-                    const pdfSettings = {
-                        format: pdfConfigGet.get<string>('pdf.format', DEFAULT_PDF_SETTINGS.format),
-                        marginTop: pdfConfigGet.get<string>('pdf.marginTop', DEFAULT_PDF_SETTINGS.marginTop),
-                        marginBottom: pdfConfigGet.get<string>('pdf.marginBottom', DEFAULT_PDF_SETTINGS.marginBottom),
-                        marginLeft: pdfConfigGet.get<string>('pdf.marginLeft', DEFAULT_PDF_SETTINGS.marginLeft),
-                        marginRight: pdfConfigGet.get<string>('pdf.marginRight', DEFAULT_PDF_SETTINGS.marginRight),
-                        documentTitle: pdfConfigGet.get<string>('pdf.documentTitle', DEFAULT_PDF_SETTINGS.documentTitle),
-                        dateTimeFormat: pdfConfigGet.get<string>('pdf.dateTimeFormat', DEFAULT_PDF_SETTINGS.dateTimeFormat)
-                    };
-
+                case 'getPdfSettings': {
+                    const stored = this._settingsManager.getExtraObject<Partial<typeof DEFAULT_PDF_SETTINGS>>('pdfSettings', {});
+                    const pdfSettings = { ...DEFAULT_PDF_SETTINGS, ...stored };
                     webviewView.webview.postMessage({
                         type: 'pdfSettingsResponse',
-                        settings: pdfSettings
+                        settings: pdfSettings,
                     });
                     break;
+                }
 
                 case 'generatePdf':
                     vscode.commands.executeCommand('vscode-calcpad.printToPdf');
@@ -268,33 +316,26 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     break;
 
                 case 'getPrettifySettings': {
-                    const cfg = vscode.workspace.getConfiguration('calcpad');
                     webviewView.webview.postMessage({
                         type: 'prettifySettingsResponse',
-                        indentStyle: cfg.get<string>('prettify.indentStyle', 'tab'),
-                        indentSize: cfg.get<number>('prettify.indentSize', 4),
-                        trimTrailingWhitespace: cfg.get<boolean>('prettify.trimTrailingWhitespace', true)
+                        indentStyle: this._settingsManager.getExtra('prettifyIndentStyle', 'tab'),
+                        indentSize: this._settingsManager.getExtraNumber('prettifyIndentSize', 4),
+                        trimTrailingWhitespace: this._settingsManager.getExtraBool('prettifyTrimTrailingWhitespace', true),
                     });
                     break;
                 }
 
-                case 'updatePrettifyIndentStyle': {
-                    const cfg = vscode.workspace.getConfiguration('calcpad');
-                    await cfg.update('prettify.indentStyle', data.value, vscode.ConfigurationTarget.Global);
+                case 'updatePrettifyIndentStyle':
+                    this._settingsManager.setExtra('prettifyIndentStyle', data.value);
                     break;
-                }
 
-                case 'updatePrettifyIndentSize': {
-                    const cfg = vscode.workspace.getConfiguration('calcpad');
-                    await cfg.update('prettify.indentSize', data.value, vscode.ConfigurationTarget.Global);
+                case 'updatePrettifyIndentSize':
+                    this._settingsManager.setExtra('prettifyIndentSize', data.value);
                     break;
-                }
 
-                case 'updatePrettifyTrim': {
-                    const cfg = vscode.workspace.getConfiguration('calcpad');
-                    await cfg.update('prettify.trimTrailingWhitespace', data.value, vscode.ConfigurationTarget.Global);
+                case 'updatePrettifyTrim':
+                    this._settingsManager.setExtra('prettifyTrimTrailingWhitespace', data.value);
                     break;
-                }
 
                 case 'debug':
                     this._outputChannel.appendLine(`[Vue Debug] ${data.message}`);

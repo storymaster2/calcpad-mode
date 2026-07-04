@@ -600,7 +600,7 @@ async function bootstrap(): Promise<void> {
     function markerToSeverityInfo(severity: monaco.MarkerSeverity) {
         switch (severity) {
             case monaco.MarkerSeverity.Error:
-                return { severityClass: 'error', icon: '✕' };
+                return { severityClass: 'lintError', icon: '✕' };
             case monaco.MarkerSeverity.Warning:
                 return { severityClass: 'warning', icon: '⚠' };
             default:

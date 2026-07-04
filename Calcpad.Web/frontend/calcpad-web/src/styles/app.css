@@ -523,7 +523,7 @@ select option {
     font-size: 12px;
 }
 
-.problem-icon.error {
+.problem-icon.lintError {
     color: var(--vscode-errorForeground, #f14c4c);
 }
 
@@ -653,7 +653,7 @@ select option {
     fill: currentColor;
 }
 
-.status-icon.error {
+.status-icon.lintError {
     color: #ff8080;
 }
 

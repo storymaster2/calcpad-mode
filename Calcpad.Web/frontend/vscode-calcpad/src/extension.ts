@@ -22,6 +22,7 @@ import { CommentFormatter } from './commentFormatter';
 import { CalcpadServerManager } from './calcpadServerManager';
 import { DotnetRuntimeManager } from './dotnetRuntimeManager';
 import { VSCodeLogger, VSCodeFileSystem } from './adapters';
+import { installJuliaMonoCommand, maybePromptInstall } from './installFont';
 
 // The wrapped ("regular") and unwrapped previews are independent panels that can
 // coexist: the unwrapped one is stacked directly below the regular one so the
@@ -59,7 +60,8 @@ interface FullPdfSettings extends FrontendPdfSettings {
 
 
 function getPdfSettings(): FullPdfSettings {
-    const config = vscode.workspace.getConfiguration('calcpad');
+    const settingsManager = CalcpadSettingsManager.getInstance();
+    const stored = settingsManager.getExtraObject('pdfSettings', {} as Partial<FullPdfSettings>);
     const activeEditor = vscode.window.activeTextEditor;
 
     const fileName = activeEditor
@@ -68,13 +70,13 @@ function getPdfSettings(): FullPdfSettings {
 
     return {
         // User-configurable settings (defaults from shared module)
-        format: config.get<string>('pdf.format', DEFAULT_PDF_SETTINGS.format),
-        marginTop: config.get<string>('pdf.marginTop', DEFAULT_PDF_SETTINGS.marginTop),
-        marginBottom: config.get<string>('pdf.marginBottom', DEFAULT_PDF_SETTINGS.marginBottom),
-        marginLeft: config.get<string>('pdf.marginLeft', DEFAULT_PDF_SETTINGS.marginLeft),
-        marginRight: config.get<string>('pdf.marginRight', DEFAULT_PDF_SETTINGS.marginRight),
-        documentTitle: config.get<string>('pdf.documentTitle') || fileName,
-        dateTimeFormat: config.get<string>('pdf.dateTimeFormat', DEFAULT_PDF_SETTINGS.dateTimeFormat),
+        format: stored.format ?? DEFAULT_PDF_SETTINGS.format,
+        marginTop: stored.marginTop ?? DEFAULT_PDF_SETTINGS.marginTop,
+        marginBottom: stored.marginBottom ?? DEFAULT_PDF_SETTINGS.marginBottom,
+        marginLeft: stored.marginLeft ?? DEFAULT_PDF_SETTINGS.marginLeft,
+        marginRight: stored.marginRight ?? DEFAULT_PDF_SETTINGS.marginRight,
+        documentTitle: stored.documentTitle || fileName,
+        dateTimeFormat: stored.dateTimeFormat ?? DEFAULT_PDF_SETTINGS.dateTimeFormat,
 
         // Hardcoded defaults (to be re-exposed in UI later)
         enableHeader: true,
@@ -96,8 +98,7 @@ function getPdfSettings(): FullPdfSettings {
 }
 
 function getEffectivePreviewTheme(): 'light' | 'dark' {
-    const config = vscode.workspace.getConfiguration('calcpad');
-    const previewTheme = config.get<string>('previewTheme', 'system');
+    const previewTheme = CalcpadSettingsManager.getInstance().getExtra('previewTheme', 'system');
 
     if (previewTheme === 'light') {
         return 'light';
@@ -225,8 +226,7 @@ function getImageCacheScript(imageCache: Record<string, string>): string {
 function getThemeOverrideScript(previewTheme: 'light' | 'dark'): string {
     const bodyClass = previewTheme === 'light' ? 'vscode-light' : 'vscode-dark';
     const themeKind = previewTheme === 'light' ? 'vscode-light' : 'vscode-dark';
-    const config = vscode.workspace.getConfiguration('calcpad');
-    const darkBg = config.get<string>('darkBackground', '#1e1e1e');
+    const darkBg = CalcpadSettingsManager.getInstance().getExtra('darkBackground', '#1e1e1e');
     const bg = previewTheme === 'light' ? '#ffffff' : darkBg;
     return `
         <script>
@@ -1091,8 +1091,7 @@ export async function activate(context: vscode.ExtensionContext) {
             outputChannel.appendLine(`Bundled apphost exists: ${appHostExists}`);
 
             if (dllExists) {
-                const config = vscode.workspace.getConfiguration('calcpad');
-                const configuredDotnetPath = config.get<string>('server.dotnetPath', 'dotnet');
+                const configuredDotnetPath = settingsManager.getExtra('dotnetPath', 'dotnet');
                 const dotnetManager = new DotnetRuntimeManager(outputChannel);
                 const globalStorage = context.globalStorageUri.fsPath;
 
@@ -1448,6 +1447,14 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
+    const installJuliaMonoDisposable = vscode.commands.registerCommand(
+        'vscode-calcpad.installJuliaMono',
+        () => installJuliaMonoCommand(context)
+    );
+
+    // Fire-and-forget: prompts the user once, skipped if already installed.
+    void maybePromptInstall(context);
+
     const stopServerCommand = vscode.commands.registerCommand('calcpad.stopServer', async () => {
         outputChannel.appendLine('[Stop] Manual server stop triggered');
         if (!serverManager) {
@@ -1548,10 +1555,10 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        const config = vscode.workspace.getConfiguration('calcpad');
-        const indentStyle = config.get<string>('prettify.indentStyle', 'tab');
-        const indentSize = config.get<number>('prettify.indentSize', 4);
-        const trim = config.get<boolean>('prettify.trimTrailingWhitespace', true);
+        const settingsManager = CalcpadSettingsManager.getInstance();
+        const indentStyle = settingsManager.getExtra('prettifyIndentStyle', 'tab');
+        const indentSize = settingsManager.getExtraNumber('prettifyIndentSize', 4);
+        const trim = settingsManager.getExtraBool('prettifyTrimTrailingWhitespace', true);
         const indentUnit = indentStyle === 'space' ? ' '.repeat(Math.max(1, indentSize)) : '\t';
 
         try {
@@ -1668,7 +1675,8 @@ export async function activate(context: vscode.ExtensionContext) {
             hoverProviderDisposable,
             insertManager,
             viewWebviewSourceCommand,
-            webviewSourceRegistration
+            webviewSourceRegistration,
+            installJuliaMonoDisposable
         );
         
         outputChannel.appendLine('CalcPad extension activation completed successfully');

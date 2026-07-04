@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { CalcpadSettingsManager } from './calcpadSettings';
 
 type InlineFormat = 'bold' | 'italic' | 'underline' | 'subscript' | 'superscript';
 type CommentFormat = 'html' | 'markdown';
@@ -62,8 +63,7 @@ export class CommentFormatter {
     }
 
     private getFormat(): CommentFormat {
-        const config = vscode.workspace.getConfiguration('calcpad');
-        const setting = config.get<string>('commentFormat', 'html');
+        const setting = CalcpadSettingsManager.getInstance().getExtra('commentFormat', 'html');
 
         if (setting === 'markdown') {
             return 'markdown';

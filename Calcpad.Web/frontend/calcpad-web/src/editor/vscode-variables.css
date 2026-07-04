@@ -7,11 +7,28 @@
  * "light"). Bare `:root` carries the dark defaults so styles still render
  * before the theme applier runs on boot.
  */
+
+@font-face {
+    font-family: 'JuliaMono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/JuliaMono-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'JuliaMono';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/JuliaMono-Bold.woff2') format('woff2');
+}
+
 :root {
     /* Fonts */
     --vscode-font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --vscode-font-size: 13px;
-    --vscode-editor-font-family: 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
+    --vscode-editor-font-family: 'JuliaMono', 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
 
     /* Core colors */
     --vscode-foreground: #d4d4d4;

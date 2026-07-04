@@ -5,6 +5,8 @@ namespace Calcpad.Server.Services
     /// </summary>
     public static class CalcpadApiService
     {
+        private static readonly HttpClient _healthCheckClient = new();
+
         /// <summary>
         /// Configure the web application builder with all necessary services
         /// </summary>
@@ -85,9 +87,8 @@ namespace Calcpad.Server.Services
         {
             try
             {
-                using var httpClient = new HttpClient();
-                httpClient.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
-                var response = await httpClient.GetAsync($"{serverUrl}/api/calcpad/sample");
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+                var response = await _healthCheckClient.GetAsync($"{serverUrl}/api/calcpad/sample", cts.Token).ConfigureAwait(false);
                 return response.IsSuccessStatusCode;
             }
             catch

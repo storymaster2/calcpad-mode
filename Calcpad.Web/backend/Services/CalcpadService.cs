@@ -17,27 +17,18 @@ namespace Calcpad.Server.Services
         }
 
         /// <summary>
-        /// Creates a synchronous Include delegate for MacroParser.
-        /// Resolves #include targets against disk and direct URLs.
-        /// Core calls this only when File.Exists is true on the resolved path; the delegate
-        /// itself also short-circuits to disk for safety and falls through to URL fetch otherwise.
+        /// Creates the Include delegate for MacroParser. Core only invokes this
+        /// when the resolved path exists on disk, so a bare File.ReadAllText is
+        /// sufficient; any I/O failure surfaces through the catch as a Calcpad
+        /// error comment. URL-hosted includes are not currently supported.
         /// </summary>
-        internal static Func<string, Queue<string>, string> CreateIncludeDelegate(int timeoutMs)
+        internal static Func<string, Queue<string>, string> CreateIncludeDelegate()
         {
             return (fileName, fields) =>
             {
                 try
                 {
-                    if (File.Exists(fileName))
-                        return ProcessIncludedContent(File.ReadAllText(fileName));
-
-                    if (Router.IsDirectUrl(fileName))
-                    {
-                        var bytes = Router.FetchUrlAsync(fileName, timeoutMs).GetAwaiter().GetResult();
-                        return ProcessIncludedContent(System.Text.Encoding.UTF8.GetString(bytes));
-                    }
-
-                    return $"' File not found: {fileName}";
+                    return ProcessIncludedContent(File.ReadAllText(fileName));
                 }
                 catch (Exception ex)
                 {
@@ -47,14 +38,11 @@ namespace Calcpad.Server.Services
             };
         }
 
-        public Task<string> ConvertAsync(string calcpadContent, Settings? settings = null, bool forceUnwrappedCode = false, string theme = "light", string? sourceFilePath = null, bool forPrint = false, List<string>? openXmlExpressions = null) =>
-            Task.FromResult(Convert(calcpadContent, settings, forceUnwrappedCode, theme, sourceFilePath, forPrint, openXmlExpressions));
-
-        private string Convert(string calcpadContent, Settings? settings, bool forceUnwrappedCode, string theme, string? sourceFilePath, bool forPrint, List<string>? openXmlExpressions)
+        public string Convert(string calcpadContent, Settings? settings = null, bool forceUnwrappedCode = false, string theme = "light", string? sourceFilePath = null, bool forPrint = false, List<string>? openXmlExpressions = null)
         {
             if (string.IsNullOrWhiteSpace(calcpadContent))
             {
-                FileLogger.LogWarning("ConvertAsync called with empty content");
+                FileLogger.LogWarning("Convert called with empty content");
                 throw new ArgumentException("Content cannot be null or empty", nameof(calcpadContent));
             }
 
@@ -78,7 +66,7 @@ namespace Calcpad.Server.Services
                 // 2. Parse macros and includes (server reads referenced files from disk).
                 var macroParser = new MacroParser
                 {
-                    Include = CreateIncludeDelegate(timeoutMs: 10000),
+                    Include = CreateIncludeDelegate(),
                     SourceFilePath = sourceFilePath
                 };
 

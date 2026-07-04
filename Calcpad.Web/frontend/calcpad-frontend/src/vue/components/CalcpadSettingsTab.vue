@@ -313,9 +313,51 @@
         <span class="setting-hint">Opens the folder containing server logs and the most recent crash dump.</span>
       </div>
 
-      <button @click="resetSettings" class="reset-button">
-        Reset Settings
-      </button>
+      <h3>Configuration</h3>
+      <div class="setting-group">
+        <label for="activeConfig">Active Config:</label>
+        <select
+          id="activeConfig"
+          :value="activeConfig"
+          @change="switchConfig(($event.target as HTMLSelectElement).value)"
+        >
+          <option
+            v-for="name in availableConfigs"
+            :key="name"
+            :value="name"
+          >{{ name }}</option>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <label for="configName">Save current settings as:</label>
+        <div class="color-input-row">
+          <input
+            id="configName"
+            v-model="newConfigName"
+            type="text"
+            placeholder="e.g. my-config"
+            @keyup.enter="saveNamedConfig"
+          />
+          <button
+            class="reset-inline-btn"
+            :disabled="!newConfigName.trim()"
+            @click="saveNamedConfig"
+          >
+            Save
+          </button>
+        </div>
+        <span v-if="saveError" class="setting-error">{{ saveError }}</span>
+      </div>
+
+      <div class="settings-actions">
+        <button @click="openSettingsFolder" class="reset-button">
+          Open Settings Folder
+        </button>
+        <button @click="resetSettings" class="reset-button">
+          Reset to Default
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -336,6 +378,8 @@ interface Props {
   initialDarkBackground?: string
   initialLinterMinSeverity?: string
   initialLibraryPath?: string
+  initialActiveConfig?: string
+  initialAvailableConfigs?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -374,7 +418,9 @@ const props = withDefaults(defineProps<Props>(), {
   initialEnableFormattingHotkeys: true,
   initialDarkBackground: '#1a1a2e',
   initialLinterMinSeverity: 'information',
-  initialLibraryPath: ''
+  initialLibraryPath: '',
+  initialActiveConfig: 'default',
+  initialAvailableConfigs: () => ['default']
 })
 
 // Emits
@@ -389,6 +435,9 @@ const emit = defineEmits<{
   updateLinterMinSeverity: [severity: string]
   updateLibraryPath: [path: string]
   resetSettings: []
+  saveNamedConfig: [name: string]
+  switchConfig: [name: string]
+  openSettingsFolder: []
   openLogsFolder: []
 }>()
 
@@ -407,6 +456,10 @@ const enableFormattingHotkeys = ref(props.initialEnableFormattingHotkeys)
 const darkBackground = ref(props.initialDarkBackground)
 const linterMinSeverity = ref(props.initialLinterMinSeverity)
 const libraryPath = ref(props.initialLibraryPath)
+const activeConfig = ref(props.initialActiveConfig)
+const availableConfigs = ref<string[]>(props.initialAvailableConfigs)
+const newConfigName = ref('')
+const saveError = ref('')
 
 // Methods
 const updateSettings = () => {
@@ -452,6 +505,27 @@ const updateLibraryPath = () => {
 
 const resetSettings = () => {
   emit('resetSettings')
+}
+
+const saveNamedConfig = () => {
+  const name = newConfigName.value.trim()
+  if (!name) return
+  if (name.toLowerCase() === 'default') {
+    saveError.value = 'The "default" config is protected and cannot be overridden.'
+    return
+  }
+  saveError.value = ''
+  emit('saveNamedConfig', name)
+  newConfigName.value = ''
+}
+
+const switchConfig = (name: string) => {
+  if (!name) return
+  emit('switchConfig', name)
+}
+
+const openSettingsFolder = () => {
+  emit('openSettingsFolder')
 }
 
 const openLogsFolder = () => {
@@ -529,6 +603,20 @@ watch(
   () => props.initialLibraryPath,
   (newValue) => {
     libraryPath.value = newValue
+  }
+)
+
+watch(
+  () => props.initialActiveConfig,
+  (newValue) => {
+    activeConfig.value = newValue
+  }
+)
+
+watch(
+  () => props.initialAvailableConfigs,
+  (newValue) => {
+    availableConfigs.value = newValue
   }
 )
 
@@ -626,6 +714,29 @@ watch(
   margin-top: 4px;
   font-size: 11px;
   color: var(--vscode-descriptionForeground);
+}
+
+.setting-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--vscode-errorForeground, #f48771);
+}
+
+.reset-inline-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.settings-actions .reset-button {
+  flex: 1;
+  margin-top: 0;
 }
 
 .reset-button {

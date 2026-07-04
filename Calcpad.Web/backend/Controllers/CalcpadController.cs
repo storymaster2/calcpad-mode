@@ -29,7 +29,7 @@ namespace Calcpad.Server.Controllers
         }
 
         [HttpPost("convert")]
-        public async Task<IActionResult> ConvertToHtml([FromBody] CalcpadRequest request)
+        public IActionResult ConvertToHtml([FromBody] CalcpadRequest request)
         {
             try
             {
@@ -38,7 +38,7 @@ namespace Calcpad.Server.Controllers
                     return BadRequest("Content is required");
                 }
 
-                var htmlResult = await _calcpadService.ConvertAsync(request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, request.ForPrint);
+                var htmlResult = _calcpadService.Convert(request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, request.ForPrint);
 
                 return Content(htmlResult, "text/html");
             }
@@ -50,7 +50,7 @@ namespace Calcpad.Server.Controllers
         }
 
         [HttpPost("convert-unwrapped")]
-        public async Task<IActionResult> ConvertToUnwrappedHtml([FromBody] CalcpadRequest request)
+        public IActionResult ConvertToUnwrappedHtml([FromBody] CalcpadRequest request)
         {
             try
             {
@@ -59,7 +59,7 @@ namespace Calcpad.Server.Controllers
                     return BadRequest("Content is required");
                 }
 
-                var result = await _calcpadService.ConvertAsync(request.Content, request.Settings, forceUnwrappedCode: true, request.Theme, request.SourceFilePath, request.ForPrint);
+                var result = _calcpadService.Convert(request.Content, request.Settings, forceUnwrappedCode: true, request.Theme, request.SourceFilePath, request.ForPrint);
 
                 // Process data-text links to make them functional
                 var processedResult = ProcessDataTextLinks(result);
@@ -204,7 +204,7 @@ namespace Calcpad.Server.Controllers
                 // openXmlExpressions list signals the parser to emit OMML so
                 // equations render as native Word math instead of empty <m:oMath/>.
                 var openXmlExpressions = new List<string>();
-                var html = await _calcpadService.ConvertAsync(
+                var html = _calcpadService.Convert(
                     request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, forPrint: true, openXmlExpressions: openXmlExpressions);
 
                 using var ms = new MemoryStream();

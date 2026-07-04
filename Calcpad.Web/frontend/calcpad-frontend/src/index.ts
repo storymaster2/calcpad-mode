@@ -30,9 +30,13 @@ export type { ILogger, IFileSystem } from './types/interfaces';
 export type { PdfSettings } from './types/pdf-settings';
 export { DEFAULT_PDF_SETTINGS } from './types/pdf-settings';
 
-export type { CalcpadSettings } from './types/settings';
+export type { CalcpadSettings, CalcpadExtras, CalcpadSettingsBlob } from './types/settings';
 export {
     getDefaultSettings,
+    getDefaultExtras,
+    getDefaultSettingsBlob,
+    deserializeSettingsBlob,
+    serializeSettingsBlob,
     colorScaleToEnum,
     lightDirectionToEnum,
     buildApiSettings,

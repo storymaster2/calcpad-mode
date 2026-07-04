@@ -4,8 +4,15 @@ import { CalcpadApiClient } from 'calcpad-frontend/api/client';
 import { CalcpadSnippetService } from 'calcpad-frontend/services/snippets';
 import { CalcpadDefinitionsService } from 'calcpad-frontend/services/definitions';
 import { parseHeadings } from 'calcpad-frontend/services/headings';
-import { getDefaultSettings, buildApiSettings } from 'calcpad-frontend/types/settings';
-import type { CalcpadSettings } from 'calcpad-frontend/types/settings';
+import {
+    getDefaultSettings,
+    getDefaultExtras,
+    getDefaultSettingsBlob,
+    deserializeSettingsBlob,
+    serializeSettingsBlob,
+    buildApiSettings,
+} from 'calcpad-frontend/types/settings';
+import type { CalcpadSettings, CalcpadExtras } from 'calcpad-frontend/types/settings';
 import {
     readImageFromClipboard,
     bytesToBase64,
@@ -21,7 +28,9 @@ const BUILTIN_THEMES = [
     { id: 'calcpad-light', label: 'Light', kind: 'light' as const },
 ];
 
-const SETTINGS_KEY = 'calcpad-settings';
+const SETTINGS_DIR_NAME = 'settings';
+const DEFAULT_CONFIG_NAME = 'default';
+const ACTIVE_CONFIG_KEY = 'calcpad-active-settings';
 const RECENT_FILES_KEY = 'calcpad-recent-files';
 const OPENED_FOLDER_KEY = 'calcpad-opened-folder';
 const MAX_RECENT_FILES = 10;
@@ -112,7 +121,7 @@ export class NeutralinoMessageBridge {
     private definitionsService: CalcpadDefinitionsService;
     private settings: CalcpadSettings;
     private _onInsertText: ((text: string) => void) | null = null;
-    private _extraSettings: Record<string, string> = {};
+    private _extraSettings: CalcpadExtras = getDefaultExtras();
     /**
      * Resolves once persisted settings have been read from Neutralino storage.
      * Anything that needs values from `_extraSettings` (e.g. the boot-time
@@ -237,6 +246,15 @@ export class NeutralinoMessageBridge {
                 break;
             case 'resetSettings':
                 this.handleResetSettings();
+                break;
+            case 'saveNamedConfig':
+                this.handleSaveNamedConfig(message.name);
+                break;
+            case 'switchConfig':
+                this.handleSwitchConfig(message.name);
+                break;
+            case 'openSettingsFolder':
+                this.handleOpenSettingsFolder();
                 break;
             case 'getVariables':
                 this.handleGetVariables();
@@ -610,7 +628,8 @@ export class NeutralinoMessageBridge {
         }
     }
 
-    private handleGetSettings(): void {
+    private async handleGetSettings(): Promise<void> {
+        const availableConfigs = await this.listConfigs();
         this.postToVue({
             type: 'settingsResponse',
             settings: this.settings,
@@ -621,6 +640,8 @@ export class NeutralinoMessageBridge {
             enableFormattingHotkeys: this._extraSettings.formattingHotkeys !== 'false',
             linterMinSeverity: this._extraSettings.linterMinSeverity || 'information',
             libraryPath: this._extraSettings.libraryPath || '',
+            activeConfig: this._activeConfigName,
+            availableConfigs,
         });
     }
 
@@ -671,17 +692,22 @@ export class NeutralinoMessageBridge {
 
     private handleUpdateSettings(newSettings: any): void {
         this.settings = { ...this.settings, ...newSettings };
-        this.saveSettingsToStorage();
+        void this.saveSettingsToStorage();
 
         if (newSettings.server?.url) {
             this.apiClient.setBaseUrl(newSettings.server.url);
         }
     }
 
-    private handleResetSettings(): void {
-        this.settings = getDefaultSettings();
-        this.saveSettingsToStorage();
+    private async handleResetSettings(): Promise<void> {
+        // Switch active back to the pristine default.json, which is refreshed
+        // from the bundled defaults on every boot. Named user configs are
+        // left untouched.
+        await this.setActiveConfigName(DEFAULT_CONFIG_NAME);
+        await this.loadConfigFile(DEFAULT_CONFIG_NAME);
+        this._resolvedLibraryPath = undefined;
         this.postToVue({ type: 'settingsReset', settings: this.settings });
+        this.handleGetSettings();
     }
 
     private async handleGetVariables(): Promise<void> {
@@ -1019,32 +1045,175 @@ export class NeutralinoMessageBridge {
         return 'unknown';
     }
 
-    // ---- Settings persistence via Neutralino.storage ----
+    // ---- Settings persistence via filesystem JSON ----
+    //
+    // Layout under NL_PATH/settings/:
+    //   default.json      — refreshed from bundled defaults on every boot
+    //   <name>.json       — user-created named configs
+    //
+    // The active config name lives in Neutralino storage under
+    // ACTIVE_CONFIG_KEY so it persists across sessions. Every setting change
+    // auto-writes to the active config file. "default" is reserved: attempting
+    // to save under that name errors.
 
-    private async loadSettingsFromStorage(): Promise<void> {
-        try {
-            const raw = await storage.getData(SETTINGS_KEY);
-            const data = JSON.parse(raw);
-            if (data.calcpadSettings) {
-                this.settings = data.calcpadSettings;
+    private _activeConfigName: string = DEFAULT_CONFIG_NAME;
+
+    private getSettingsDir(): string | null {
+        const raw = (window as Window & { NL_PATH?: string }).NL_PATH;
+        if (!raw) return null;
+        const nlPath = raw.replace(/\\/g, '/').replace(/\/+$/, '');
+        return `${nlPath}/${SETTINGS_DIR_NAME}`;
+    }
+
+    private getConfigPath(name: string): string | null {
+        const dir = this.getSettingsDir();
+        return dir ? `${dir}/${name}.json` : null;
+    }
+
+    /**
+     * Ensure the settings folder exists and default.json is fresh from the
+     * bundled defaults. Runs on boot so `default` always represents pristine
+     * defaults even if the user edited it in a previous session.
+     */
+    private async ensureSettingsFolder(): Promise<void> {
+        const dir = this.getSettingsDir();
+        if (!dir) return;
+        try { await filesystem.createDirectory(dir); } catch { /* already exists */ }
+        const defaultPath = this.getConfigPath(DEFAULT_CONFIG_NAME);
+        if (defaultPath) {
+            const blob = getDefaultSettingsBlob();
+            try {
+                await filesystem.writeFile(defaultPath, JSON.stringify(blob, null, 4));
+            } catch {
+                // Non-writable filesystem — proceed; loads will fall back to
+                // in-memory defaults.
             }
-            if (data.extraSettings) {
-                this._extraSettings = data.extraSettings;
-            }
-        } catch {
-            // No stored settings yet — use defaults
         }
     }
 
-    private saveSettingsToStorage(): void {
-        storage.setData(SETTINGS_KEY, JSON.stringify({
-            calcpadSettings: this.settings,
-            extraSettings: this._extraSettings,
-        }));
+    private async loadActiveConfigName(): Promise<string> {
+        try {
+            const raw = await storage.getData(ACTIVE_CONFIG_KEY);
+            const name = (raw ?? '').trim();
+            return name || DEFAULT_CONFIG_NAME;
+        } catch {
+            return DEFAULT_CONFIG_NAME;
+        }
+    }
+
+    private async setActiveConfigName(name: string): Promise<void> {
+        this._activeConfigName = name;
+        try { await storage.setData(ACTIVE_CONFIG_KEY, name); } catch { /* best effort */ }
+    }
+
+    /**
+     * List available named configs (basenames without .json), sorted with
+     * `default` first.
+     */
+    private async listConfigs(): Promise<string[]> {
+        const dir = this.getSettingsDir();
+        if (!dir) return [DEFAULT_CONFIG_NAME];
+        try {
+            const entries = await filesystem.readDirectory(dir);
+            const names = entries
+                .filter(e => e.type === 'FILE' && e.entry.toLowerCase().endsWith('.json'))
+                .map(e => e.entry.slice(0, -'.json'.length));
+            const rest = names.filter(n => n !== DEFAULT_CONFIG_NAME).sort();
+            return [DEFAULT_CONFIG_NAME, ...rest];
+        } catch {
+            return [DEFAULT_CONFIG_NAME];
+        }
+    }
+
+    /**
+     * Boot-time settings load. Ensures the folder + default.json exist,
+     * resolves the persisted active config name, and loads that config
+     * (falling back to in-memory defaults if the file can't be read).
+     */
+    private async loadSettingsFromStorage(): Promise<void> {
+        await this.ensureSettingsFolder();
+        this._activeConfigName = await this.loadActiveConfigName();
+        await this.loadConfigFile(this._activeConfigName);
+    }
+
+    private async loadConfigFile(name: string): Promise<void> {
+        const path = this.getConfigPath(name);
+        if (!path) return;
+        try {
+            const raw = await filesystem.readFile(path);
+            const parsed = JSON.parse(raw);
+            const { settings, extras } = deserializeSettingsBlob(parsed);
+            this.settings = settings;
+            this._extraSettings = extras;
+        } catch {
+            // Config file missing/unreadable — reset in-memory to defaults so
+            // the active config is at least usable.
+            this.settings = getDefaultSettings();
+            this._extraSettings = getDefaultExtras();
+        }
+    }
+
+    /**
+     * Write the current settings + extras to the active config file. Called
+     * on every setting change; also used by save-as-name after switching the
+     * active pointer.
+     */
+    private async saveSettingsToStorage(): Promise<void> {
+        const path = this.getConfigPath(this._activeConfigName);
+        if (!path) return;
+        const blob = serializeSettingsBlob(this.settings, this._extraSettings);
+        await filesystem.writeFile(path, JSON.stringify(blob, null, 4));
     }
 
     private persistSetting(key: string, value: string): void {
         this._extraSettings[key] = value;
-        this.saveSettingsToStorage();
+        void this.saveSettingsToStorage();
+    }
+
+    /**
+     * Save the current in-memory settings under a user-supplied name and
+     * switch active to it. Rejects the reserved "default" name.
+     */
+    private async handleSaveNamedConfig(rawName: string): Promise<void> {
+        const name = (rawName ?? '').trim();
+        if (!name) return;
+        if (name.toLowerCase() === DEFAULT_CONFIG_NAME) {
+            this.postToVue({
+                type: 'saveNamedConfigError',
+                message: 'The "default" config is protected and cannot be overridden.',
+            });
+            return;
+        }
+        // Basic filename sanitization — reject path separators / control chars.
+        if (/[\\/:*?"<>|\x00-\x1f]/.test(name)) {
+            this.postToVue({
+                type: 'saveNamedConfigError',
+                message: 'Config name contains invalid characters.',
+            });
+            return;
+        }
+        await this.setActiveConfigName(name);
+        await this.saveSettingsToStorage();
+        this.handleGetSettings();
+    }
+
+    private async handleSwitchConfig(name: string): Promise<void> {
+        if (!name) return;
+        await this.setActiveConfigName(name);
+        await this.loadConfigFile(name);
+        this._resolvedLibraryPath = undefined;
+        if (this.settings.server?.url) {
+            this.apiClient.setBaseUrl(this.settings.server.url);
+        }
+        this.handleGetSettings();
+    }
+
+    private async handleOpenSettingsFolder(): Promise<void> {
+        const dir = this.getSettingsDir();
+        if (!dir) return;
+        try { await os.open(dir); }
+        catch (err) {
+            console.error('Failed to open settings folder:', err);
+        }
     }
 }

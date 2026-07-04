@@ -49,7 +49,7 @@ export function createCalcpadEditor(
         automaticLayout: true,
         minimap: { enabled: false },
         fontSize: options?.fontSize ?? 14,
-        fontFamily: "'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace",
+        fontFamily: "'JuliaMono', 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace",
         lineNumbers: 'on',
         renderWhitespace: 'none',
         scrollBeyondLastLine: false,

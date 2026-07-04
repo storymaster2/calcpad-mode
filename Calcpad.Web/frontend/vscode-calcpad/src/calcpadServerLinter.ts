@@ -6,6 +6,7 @@ import {
     LintDiagnostic,
 } from 'calcpad-frontend';
 import { VSCodeLogger } from './adapters';
+import { CalcpadSettingsManager } from './calcpadSettings';
 
 /**
  * VS Code wrapper around CalcpadLintService from calcpad-frontend.
@@ -50,8 +51,7 @@ export class CalcpadServerLinter {
     }
 
     private getMinimumSeverity(): vscode.DiagnosticSeverity {
-        const config = vscode.workspace.getConfiguration('calcpad');
-        const level = config.get<string>('linter.minimumSeverity', 'information');
+        const level = CalcpadSettingsManager.getInstance().getExtra('linterMinSeverity', 'information');
         switch (level) {
             case 'error': return vscode.DiagnosticSeverity.Error;
             case 'warning': return vscode.DiagnosticSeverity.Warning;

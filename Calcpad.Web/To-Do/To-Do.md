@@ -54,6 +54,8 @@
 
 -   Write/Append: prompt a download (ZIP for multiple files) when running under the Linux build instead of writing to the local filepath. Add a setting in Calcpad.Core to control whether write/append output is cached for download or applied directly to disk.
 -   Add support for other languages, especially Chinese as there is a large Chinese community.
+-   Add #UI features to main branch
+-   Make update do var name is not default #UI id, but {varName:varRepeatNumber} is the id to handle repetitions of the same variable name.
 
 > Hosted-mode items (DDoS hardening, file-size/rate limits, CalcpadAuth SSO, S3 backend, Docker config, OAuth, Cloudflare tunnel, `<service:endpoint>` routing, token management) live on `calcpad-experimental`.
 
@@ -65,8 +67,8 @@
 
 ## Calcpad.Web Desktop App
 
--   save settings in json file at root when they are changed from default. then have reset settings button set this file back to the default. add option to export settings which prompts to save-as the JSON file.
--   Add JuliaMono as default font for all Calcpad.Web frontends, ship with app as a resource for each build.
+-   Have `calcpad-web` (pure browser build) mirror the desktop settings scheme in localStorage — same JSON shape, active-config pointer, named configs — with export/import via browser file up/download. Not urgent; pure web build isn't the active target.
+- switching settings dropdown in VS Code/calcpad-desktop doesn't change active settings
 
 
 ## Calcpad.Highlighter
@@ -75,7 +77,6 @@
 -   Add linting for HTML/markdown mode
 -   Add information check for re-defining a variable as a different type
 -   There is an issue with tokenization of global variables in macro #def statements. You need to get global scopes and properly tokenize them if it gets defined later in the file.
--   Go To Definition and Find All References is broken across include and macros
 -   Improve HTML/JS/CSS/SVG tokenization to use JS library. Use the node instance in vscode (also this is only needed as a vs code feature).
 -   Add HTML/JS/CSS/SVG linting using a JS library (also this is only needed as a vs code feature). This is done using the HTML preview, but I need to add a plugin config to make all of these work to the docs.
 -   Add undefined macro linter check
