@@ -390,3 +390,9 @@ package-lock.json
 
 # Installer output
 Calcpad.Wpf/Installer/Output/
+
+# Node
+*.node
+
+# Tauri
+*src-tauri
