@@ -2,7 +2,7 @@ import * as net from 'net';
 import * as path from 'path';
 import * as fs from 'fs';
 import { spawn, execSync, ChildProcess } from 'child_process';
-import type { ILogger } from '../types/interfaces';
+import type { ILogger } from 'calcpad-frontend';
 
 interface LockFileContents {
     pid: number;
@@ -21,7 +21,7 @@ interface LockFileContents {
  * the spawning process — it only exits via the `calcpad.stopServer` command
  * or an OS-level signal.
  */
-export class CalcpadServerManager {
+export class BaseServerManager {
     private static readonly MAX_RESTARTS = 3;
 
     private serverProcess: ChildProcess | null = null;
@@ -361,8 +361,8 @@ export class CalcpadServerManager {
             // (during startup, waitForReady will detect the exit and report the error)
             if (!this._disposed && !this._startingUp && code !== 0) {
                 this._restartCount++;
-                if (this._restartCount < CalcpadServerManager.MAX_RESTARTS) {
-                    this.log(`Unexpected exit — attempting restart ${this._restartCount}/${CalcpadServerManager.MAX_RESTARTS} in 2 seconds...`);
+                if (this._restartCount < BaseServerManager.MAX_RESTARTS) {
+                    this.log(`Unexpected exit — attempting restart ${this._restartCount}/${BaseServerManager.MAX_RESTARTS} in 2 seconds...`);
                     setTimeout(() => {
                         if (!this._disposed) {
                             this.start().catch(err => {

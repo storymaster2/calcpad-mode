@@ -37,6 +37,10 @@ export {
     getDefaultSettingsBlob,
     deserializeSettingsBlob,
     serializeSettingsBlob,
+    getExtraString,
+    getExtraBool,
+    getExtraNumber,
+    getExtraObject,
     colorScaleToEnum,
     lightDirectionToEnum,
     buildApiSettings,
@@ -55,7 +59,6 @@ export type {
 export { CalcpadApiClient } from './api/client';
 
 // --- Services ----------------------------------------------------------------
-export { CalcpadServerManager } from './services/server-manager';
 export { CalcpadLintService } from './services/linter';
 export { CalcpadDefinitionsService } from './services/definitions';
 export { CalcpadSnippetService } from './services/snippets';
@@ -67,6 +70,20 @@ export {
 
 // --- Base64 Truncation -------------------------------------------------------
 export { truncateBase64Content } from './services/base64-truncate';
+
+// --- Image Utilities ---------------------------------------------------------
+export {
+    IMAGE_EXTENSIONS,
+    IMAGE_MIME_TYPES,
+    mimeFromExtension,
+    isImageExtension,
+    buildImageCommentLine,
+    bytesToBase64,
+} from './services/image-utils';
+
+// --- Message Bridge (base class) --------------------------------------------
+export { BaseMessageBridge } from './services/message-bridge/base';
+export type { ExportRequest } from './services/message-bridge/base';
 
 // --- Headings / TOC ----------------------------------------------------------
 export type { TocHeading } from './services/headings';

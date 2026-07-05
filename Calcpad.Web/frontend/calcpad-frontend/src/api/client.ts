@@ -148,7 +148,7 @@ export class CalcpadApiClient {
         settings: unknown,
         sourceFilePath?: string,
     ): Promise<string | null> {
-        const url = this.baseUrl + '/api/calcpad/convert-unwrapped';
+        const url = this.baseUrl + '/api/calcpad/convert?unwrap=true';
         try {
             const response = await fetch(url, {
                 method: 'POST',

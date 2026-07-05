@@ -29,7 +29,7 @@ namespace Calcpad.Server.Controllers
         }
 
         [HttpPost("convert")]
-        public IActionResult ConvertToHtml([FromBody] CalcpadRequest request)
+        public IActionResult ConvertToHtml([FromBody] CalcpadRequest request, [FromQuery] bool unwrap = false)
         {
             try
             {
@@ -38,7 +38,12 @@ namespace Calcpad.Server.Controllers
                     return BadRequest("Content is required");
                 }
 
-                var htmlResult = _calcpadService.Convert(request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, request.ForPrint);
+                var forceUnwrapped = unwrap || request.ForceUnwrappedCode;
+                var (htmlResult, _) = _calcpadService.Convert(request.Content, request.Settings, forceUnwrapped, request.Theme, request.SourceFilePath, request.ForPrint);
+                if (unwrap)
+                {
+                    htmlResult = ProcessDataTextLinks(htmlResult);
+                }
 
                 return Content(htmlResult, "text/html");
             }
@@ -49,27 +54,20 @@ namespace Calcpad.Server.Controllers
             }
         }
 
-        [HttpPost("convert-unwrapped")]
-        public IActionResult ConvertToUnwrappedHtml([FromBody] CalcpadRequest request)
+        private static HighlightResponse MapTokensToResponse(IEnumerable<Token> tokens, bool includeText)
         {
-            try
+            return new HighlightResponse
             {
-                if (string.IsNullOrWhiteSpace(request.Content))
+                Tokens = tokens.Select(t => new HighlightToken
                 {
-                    return BadRequest("Content is required");
-                }
-
-                var result = _calcpadService.Convert(request.Content, request.Settings, forceUnwrappedCode: true, request.Theme, request.SourceFilePath, request.ForPrint);
-
-                // Process data-text links to make them functional
-                var processedResult = ProcessDataTextLinks(result);
-
-                return Content(processedResult, "text/html");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error processing Calcpad content: {ex.Message}");
-            }
+                    Line = t.Line,
+                    Column = t.Column,
+                    Length = t.Length,
+                    Type = t.Type.ToString(),
+                    TypeId = (int)t.Type,
+                    Text = includeText ? t.Text : null
+                }).ToList()
+            };
         }
 
         private string ProcessDataTextLinks(string html)
@@ -200,15 +198,14 @@ namespace Calcpad.Server.Controllers
                     return BadRequest(new { error = "Content is required" });
 
                 // forPrint=true so the HTML is the printable / unwrapped form,
-                // matching what the OpenXmlWriter expects. Passing a non-null
-                // openXmlExpressions list signals the parser to emit OMML so
-                // equations render as native Word math instead of empty <m:oMath/>.
-                var openXmlExpressions = new List<string>();
-                var html = _calcpadService.Convert(
-                    request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, forPrint: true, openXmlExpressions: openXmlExpressions);
+                // matching what the OpenXmlWriter expects. captureOpenXml=true tells
+                // the parser to emit OMML so equations render as native Word math
+                // instead of empty <m:oMath/>.
+                var (html, openXmlExpressions) = _calcpadService.Convert(
+                    request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, forPrint: true, captureOpenXml: true);
 
                 using var ms = new MemoryStream();
-                var writer = new OpenXmlWriter(openXmlExpressions);
+                var writer = new OpenXmlWriter(openXmlExpressions.ToList());
                 writer.Convert(html, ms);
                 var bytes = ms.ToArray();
 
@@ -254,22 +251,7 @@ namespace Calcpad.Server.Controllers
                 }
 
                 var result = tokenizer.Tokenize(request.Content);
-
-                // Convert to response format
-                var response = new HighlightResponse
-                {
-                    Tokens = result.Tokens.Select(t => new HighlightToken
-                    {
-                        Line = t.Line,
-                        Column = t.Column,
-                        Length = t.Length,
-                        Type = t.Type.ToString(),
-                        TypeId = (int)t.Type,
-                        Text = request.IncludeText ? t.Text : null
-                    }).ToList()
-                };
-
-                return Ok(response);
+                return Ok(MapTokensToResponse(result.Tokens, request.IncludeText));
             }
             catch (Exception ex)
             {
@@ -291,21 +273,7 @@ namespace Calcpad.Server.Controllers
 
                 var tokenizer = new CalcpadTokenizer();
                 var result = tokenizer.TokenizeSingleLine(request.Line, request.LineNumber);
-
-                var response = new HighlightResponse
-                {
-                    Tokens = result.Tokens.Select(t => new HighlightToken
-                    {
-                        Line = t.Line,
-                        Column = t.Column,
-                        Length = t.Length,
-                        Type = t.Type.ToString(),
-                        TypeId = (int)t.Type,
-                        Text = request.IncludeText ? t.Text : null
-                    }).ToList()
-                };
-
-                return Ok(response);
+                return Ok(MapTokensToResponse(result.Tokens, request.IncludeText));
             }
             catch (Exception ex)
             {

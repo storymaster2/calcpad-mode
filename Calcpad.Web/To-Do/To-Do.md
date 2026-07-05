@@ -57,8 +57,6 @@
 -   Add #UI features to main branch
 -   Make update do var name is not default #UI id, but {varName:varRepeatNumber} is the id to handle repetitions of the same variable name.
 
-> Hosted-mode items (DDoS hardening, file-size/rate limits, CalcpadAuth SSO, S3 backend, Docker config, OAuth, Cloudflare tunnel, `<service:endpoint>` routing, token management) live on `calcpad-experimental`.
-
 ### Bugs
 
 ### Testing
@@ -67,9 +65,12 @@
 
 ## Calcpad.Web Desktop App
 
--   Have `calcpad-web` (pure browser build) mirror the desktop settings scheme in localStorage — same JSON shape, active-config pointer, named configs — with export/import via browser file up/download. Not urgent; pure web build isn't the active target.
-- switching settings dropdown in VS Code/calcpad-desktop doesn't change active settings
+- updating preview theme setting doesn't change what the webview uses
 
+
+## Calcpad.Web Browser
+-   Have `calcpad-web` (pure browser build) mirror the desktop settings scheme in localStorage — same JSON shape, active-config pointer, named configs — with export/import via browser file up/download. Not urgent; pure web build isn't the active target.
+> Hosted-mode items (DDoS hardening, file-size/rate limits, CalcpadAuth SSO, S3 backend, Docker config, OAuth, Cloudflare tunnel, `<service:endpoint>` routing, token management) live on `calcpad-experimental`.
 
 ## Calcpad.Highlighter
 

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { execSync } from 'child_process';
-import { CalcpadServerManager as BaseServerManager } from 'calcpad-frontend';
+import { BaseServerManager } from './baseServerManager';
 import { VSCodeLogger } from './adapters';
 
 const SKIASHARP_VERSION = '3.119.1';

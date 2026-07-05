@@ -1,36 +1,33 @@
 import * as monaco from 'monaco-editor';
 import { filesystem, os, storage } from '@neutralinojs/lib';
-import { CalcpadApiClient } from 'calcpad-frontend/api/client';
-import { CalcpadSnippetService } from 'calcpad-frontend/services/snippets';
-import { CalcpadDefinitionsService } from 'calcpad-frontend/services/definitions';
-import { parseHeadings } from 'calcpad-frontend/services/headings';
+import { BaseMessageBridge, type ExportRequest } from 'calcpad-frontend/services/message-bridge/base';
 import {
     getDefaultSettings,
     getDefaultExtras,
     getDefaultSettingsBlob,
     deserializeSettingsBlob,
     serializeSettingsBlob,
-    buildApiSettings,
+    getExtraBool,
+    getExtraNumber,
+    getExtraObject,
 } from 'calcpad-frontend/types/settings';
 import type { CalcpadSettings, CalcpadExtras } from 'calcpad-frontend/types/settings';
+import { readImageFromClipboard } from './image-insert';
 import {
-    readImageFromClipboard,
+    IMAGE_EXTENSIONS,
     bytesToBase64,
+    isImageExtension,
     mimeFromExtension,
-    buildImageCommentLine,
-} from './image-insert';
-import { getActiveEditorContent } from './active-editor';
+} from 'calcpad-frontend';
 import { setAppTheme, coerceAppTheme } from '../editor/app-theme';
 
-/** Themes the desktop app ships with. Fed to the Color Theme picker. */
-const BUILTIN_THEMES = [
-    { id: 'calcpad-dark',  label: 'Dark',  kind: 'dark'  as const },
-    { id: 'calcpad-light', label: 'Light', kind: 'light' as const },
-];
-
 const SETTINGS_DIR_NAME = 'settings';
-const DEFAULT_CONFIG_NAME = 'default';
-const ACTIVE_CONFIG_KEY = 'calcpad-active-settings';
+const DEFAULT_PRESET_NAME = 'default';
+// The single file that reflects live user state. Written on every edit,
+// read at boot. Preset files (default.json, <name>.json) are read-only
+// source-of-truth snapshots — the settings editor never writes to them.
+const ACTIVE_SETTINGS_FILE = 'active-settings.json';
+const ACTIVE_PRESET_KEY = 'calcpad-active-preset';
 const RECENT_FILES_KEY = 'calcpad-recent-files';
 const OPENED_FOLDER_KEY = 'calcpad-opened-folder';
 const MAX_RECENT_FILES = 10;
@@ -60,20 +57,11 @@ function pathResolve(dir: string, file: string): string {
     return sep === '\\' ? joined.replace(/\//g, '\\') : joined;
 }
 
-const IMAGE_MIME_MAP: Record<string, string> = {
-    png: 'image/png',
-    jpg: 'image/jpeg',
-    jpeg: 'image/jpeg',
-    gif: 'image/gif',
-    webp: 'image/webp',
-    svg: 'image/svg+xml',
-};
-
 /**
  * Replace `<img src="local/path">` references in `html` with base64 data URIs
- * by reading each image off disk via Neutralino's filesystem API. Mirrors the
- * VS Code extension's buildImageCache + applyImageCache so plot images render
- * inside the headless Chromium that produces the PDF.
+ * by reading each image off disk via Neutralino's filesystem API. The headless
+ * Chromium that renders the PDF has no access to the user's filesystem, so
+ * without inlining, plot images render as broken icons.
  */
 async function inlineLocalImages(html: string, documentDir: string): Promise<string> {
     const cache: Record<string, string> = {};
@@ -87,8 +75,8 @@ async function inlineLocalImages(html: string, documentDir: string): Promise<str
         if (src.startsWith('data:') || /^https?:\/\//i.test(src)) continue;
 
         const ext = (src.split('.').pop() ?? '').toLowerCase();
-        const mime = IMAGE_MIME_MAP[ext];
-        if (!mime) continue;
+        if (!isImageExtension(ext)) continue;
+        const mime = mimeFromExtension(ext);
 
         const absolute = src.startsWith('/') || /^[a-zA-Z]:[\\/]/.test(src)
             ? src
@@ -111,22 +99,16 @@ async function inlineLocalImages(html: string, documentDir: string): Promise<str
 }
 
 /**
- * Message bridge for the Neutralino.js desktop platform.
- * Same role as the web MessageBridge, but uses Neutralino APIs for native
- * file dialogs, filesystem access, and persistent storage.
+ * Message bridge for the Neutralino.js desktop platform. Persists settings to
+ * JSON files under `NL_PATH/settings/` and uses native OS dialogs for file
+ * open/save/pick.
  */
-export class NeutralinoMessageBridge {
-    private apiClient: CalcpadApiClient;
-    private snippetService: CalcpadSnippetService;
-    private definitionsService: CalcpadDefinitionsService;
-    private settings: CalcpadSettings;
-    private _onInsertText: ((text: string) => void) | null = null;
+export class NeutralinoMessageBridge extends BaseMessageBridge {
     private _extraSettings: CalcpadExtras = getDefaultExtras();
     /**
-     * Resolves once persisted settings have been read from Neutralino storage.
-     * Anything that needs values from `_extraSettings` (e.g. the boot-time
-     * theme applier) must await this first — the constructor can't be async
-     * so the load runs in the background.
+     * Resolves once persisted settings have been read from disk. Anything that
+     * needs values from `_extraSettings` (e.g. the boot-time theme applier)
+     * must await this — the constructor can't be async.
      */
     readonly ready: Promise<void>;
     /**
@@ -137,43 +119,222 @@ export class NeutralinoMessageBridge {
     private _lastDialogDir: string | null = null;
     /**
      * Cached absolute library folder after env-var expansion. Invalidated
-     * whenever the raw libraryPath preference changes. `null` means the
-     * user hasn't configured one; `undefined` means "not yet resolved".
+     * whenever the raw libraryPath preference changes. `null` means the user
+     * hasn't configured one; `undefined` means "not yet resolved".
      */
     private _resolvedLibraryPath: string | null | undefined = undefined;
+    private _activePresetName: string = DEFAULT_PRESET_NAME;
 
     constructor(serverUrl: string) {
-        const logger = { appendLine: (msg: string) => console.debug('[CalcPad]', msg) };
-        this.apiClient = new CalcpadApiClient(serverUrl, logger);
-        this.snippetService = new CalcpadSnippetService(this.apiClient, logger);
-        this.definitionsService = new CalcpadDefinitionsService(this.apiClient);
-        this.settings = getDefaultSettings();
-
+        super(serverUrl);
         this.ready = this.loadSettingsFromStorage();
-        this.snippetService.loadSnippets();
     }
 
-    get api(): CalcpadApiClient {
-        return this.apiClient;
+    // ---- Extras storage (in-memory dict, async-persisted to JSON) ----
+
+    getExtraSetting(key: string): string | undefined {
+        return this._extraSettings[key];
     }
 
-    get snippets(): CalcpadSnippetService {
-        return this.snippetService;
+    setExtraSetting(key: string, value: string): void {
+        this.persistSetting(key, value);
+        if (key === 'libraryPath') this._resolvedLibraryPath = undefined;
     }
 
-    get definitions(): CalcpadDefinitionsService {
-        return this.definitionsService;
+    private persistSetting(key: string, value: string): void {
+        this._extraSettings[key] = value;
+        void this.saveActiveSettings();
     }
 
-    getSettings(): CalcpadSettings {
-        return this.settings;
+    // ---- BaseMessageBridge hooks ----
+
+    protected async persistSettings(_settings: CalcpadSettings): Promise<void> {
+        await this.saveActiveSettings();
     }
 
-    /** Default path passed to native dialogs. Falls back to the opened
-     *  workspace folder, then to undefined (OS-default). */
+    protected async resetSettingsBackend(): Promise<void> {
+        // Load the pristine bundled defaults into active-settings.json.
+        // Preset files (default.json, <name>.json) are untouched.
+        await this.readPresetInto(DEFAULT_PRESET_NAME);
+        await this.setActivePresetName(DEFAULT_PRESET_NAME);
+        await this.saveActiveSettings();
+        this._resolvedLibraryPath = undefined;
+    }
+
+    protected async afterResetSettings(): Promise<void> {
+        await this.handleGetSettings();
+    }
+
+    protected coerceColorTheme(raw: string | undefined | null): string {
+        return coerceAppTheme(raw);
+    }
+
+    protected applyColorTheme(theme: string): void {
+        setAppTheme(coerceAppTheme(theme));
+    }
+
+    protected async pickImage(): Promise<string | null> {
+        const fromClipboard = await readImageFromClipboard();
+        if (fromClipboard) return fromClipboard;
+
+        const entries = await os.showOpenDialog('Insert Image', {
+            defaultPath: this.getDialogDefaultPath(),
+            filters: [
+                { name: 'Images', extensions: [...IMAGE_EXTENSIONS] },
+                { name: 'All Files', extensions: ['*'] },
+            ],
+        });
+        if (!entries || entries.length === 0) return null;
+
+        const filePath = entries[0];
+        this.rememberDialogDir(filePath);
+        const buffer = await filesystem.readBinaryFile(filePath);
+        return `data:${mimeFromExtension(filePath)};base64,${bytesToBase64(buffer)}`;
+    }
+
+    protected async saveExportedFile(req: ExportRequest): Promise<void> {
+        const filePath = await os.showSaveDialog(req.dialogTitle, {
+            defaultPath: this.getDialogDefaultPath(),
+            filters: [{ name: `${req.dialogTitle} Files`, extensions: req.extensions }],
+        });
+        if (!filePath) return;
+        this.rememberDialogDir(filePath);
+        if (typeof req.data === 'string') {
+            await filesystem.writeFile(filePath, req.data);
+        } else {
+            await filesystem.writeBinaryFile(filePath, req.data);
+        }
+    }
+
+    protected async buildFileContext(_content: string): Promise<{ sourceFilePath?: string }> {
+        const sourceFilePath = this.activeTabFilePath() || undefined;
+        return { sourceFilePath };
+    }
+
+    protected getVariablesOrigin(): string {
+        return 'desktop-editor';
+    }
+
+    protected async buildSettingsResponseExtras(): Promise<Record<string, unknown>> {
+        return {
+            libraryPath: this._extraSettings.libraryPath || '',
+            activeConfig: this._activePresetName,
+            availableConfigs: await this.listPresets(),
+        };
+    }
+
+    protected async runPdfPreflight(): Promise<boolean> {
+        if (await this.browserMissing()) {
+            await this.warnBrowserMissing();
+            return false;
+        }
+        return true;
+    }
+
+    protected async generatePdfBytes(
+        content: string,
+        apiSettings: unknown,
+        sourceFilePath: string | undefined,
+    ): Promise<ArrayBuffer | null> {
+        // Step 1: source → HTML. The /convert endpoint always returns HTML;
+        // supplying outputFormat='pdf' here is ignored, which is why the prior
+        // single-call approach silently failed.
+        const baseUrl = this.apiClient.getBaseUrl();
+        const htmlResp = await fetch(`${baseUrl}/api/calcpad/convert`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content, settings: apiSettings, forPrint: true, sourceFilePath }),
+            signal: AbortSignal.timeout(30000),
+        });
+        if (!htmlResp.ok) throw new Error(`HTML convert returned ${htmlResp.status}`);
+        let html = await htmlResp.text();
+
+        // Step 2: inline local <img src="..."> as base64 data URIs.
+        html = await inlineLocalImages(html, this.activeTabDirectory());
+
+        // Step 3: render the inlined HTML via /api/calcpad/pdf.
+        const pdfResp = await fetch(`${baseUrl}/api/calcpad/pdf`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ html, options: this.getPdfOptions() }),
+            signal: AbortSignal.timeout(60000),
+        });
+        if (!pdfResp.ok) throw new Error(`PDF endpoint returned ${pdfResp.status}`);
+        return await pdfResp.arrayBuffer();
+    }
+
+    protected async onPdfError(err: unknown): Promise<void> {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.postToVue({ type: 'pdfError', message: `PDF export failed: ${msg}` });
+        this.handleGetServerLog();
+        if (await this.browserMissing()) {
+            await this.warnBrowserMissing();
+        }
+    }
+
+    protected onOpenLogsFolder(): void {
+        void this.handleOpenLogsFolder();
+    }
+
+    protected handlePlatformMessage(message: any): boolean {
+        switch (message.type) {
+            case 'saveNamedConfig':
+                this.handleSavePreset(message.name);
+                return true;
+            case 'switchConfig':
+                this.handleLoadPreset(message.name);
+                return true;
+            case 'openSettingsFolder':
+                this.handleOpenSettingsFolder();
+                return true;
+            case 'updateLibraryPath':
+                this.setExtraSetting('libraryPath', message.path ?? '');
+                return true;
+            case 'getPrettifySettings':
+                this.handleGetPrettifySettings();
+                return true;
+            case 'updatePrettifyIndentStyle':
+                this.persistSetting('prettifyIndentStyle', message.value);
+                return true;
+            case 'updatePrettifyIndentSize':
+                this.persistSetting('prettifyIndentSize', String(message.value));
+                return true;
+            case 'updatePrettifyTrim':
+                this.persistSetting('prettifyTrimTrailingWhitespace', String(message.value));
+                return true;
+            case 'prettifyDocument':
+                this.handlePrettifyDocument();
+                return true;
+            case 'getServerLog':
+                this.handleGetServerLog();
+                return true;
+            case 'openFolder':
+                this.handleOpenFolder();
+                return true;
+            case 'readDirectory':
+                this.handleReadDirectory(message.path);
+                return true;
+            case 'getOpenedFolder':
+                this.handleGetOpenedFolder();
+                return true;
+            case 'openFileByPath':
+                this.handleOpenFileByPath(message.path);
+                return true;
+            case 'openContainingFolder':
+                this.handleOpenContainingFolder(message.path);
+                return true;
+            case 'closeFolder':
+                this.handleCloseFolder();
+                return true;
+        }
+        return false;
+    }
+
+    // ---- Native dialog helpers ----
+
+    /** Default path passed to native dialogs. Falls back to undefined (OS-default). */
     private getDialogDefaultPath(): string | undefined {
-        if (this._lastDialogDir) return this._lastDialogDir;
-        return undefined;
+        return this._lastDialogDir ?? undefined;
     }
 
     /** Update the remembered dialog directory. Accepts either a file path
@@ -181,263 +342,6 @@ export class NeutralinoMessageBridge {
     private rememberDialogDir(pathOrFile: string | null | undefined, isDirectory = false): void {
         if (!pathOrFile) return;
         this._lastDialogDir = isDirectory ? pathOrFile : pathDirname(pathOrFile) || pathOrFile;
-    }
-
-    /** Read an "extra" preference (commentFormat, formattingHotkeys, quickTyping, …). */
-    getExtraSetting(key: string): string | undefined {
-        return this._extraSettings[key];
-    }
-
-    /** Persist an arbitrary extra preference. */
-    setExtraSetting(key: string, value: string): void {
-        this.persistSetting(key, value);
-    }
-
-    /**
-     * Insert an image into the editor. Tries the system clipboard first;
-     * if no image is present, falls back to a native file picker.
-     */
-    private async handleInsertImage(): Promise<void> {
-        let dataUri = await readImageFromClipboard();
-
-        if (!dataUri) {
-            const entries = await os.showOpenDialog('Insert Image', {
-                defaultPath: this.getDialogDefaultPath(),
-                filters: [
-                    { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] },
-                    { name: 'All Files', extensions: ['*'] },
-                ],
-            });
-            if (!entries || entries.length === 0) return;
-
-            const filePath = entries[0];
-            this.rememberDialogDir(filePath);
-            const buffer = await filesystem.readBinaryFile(filePath);
-            const mimeType = mimeFromExtension(filePath);
-            dataUri = `data:${mimeType};base64,${bytesToBase64(buffer)}`;
-        }
-
-        if (this._onInsertText) {
-            this._onInsertText(buildImageCommentLine(dataUri));
-        }
-    }
-
-    /** Send updated TOC headings to the Vue sidebar. */
-    public refreshHeadings(): void {
-        const content = getActiveEditorContent();
-        const headings = parseHeadings(content);
-        this.postToVue({ type: 'updateHeadings', headings });
-    }
-
-    set onInsertText(handler: (text: string) => void) {
-        this._onInsertText = handler;
-    }
-
-    handleMessage(message: any): void {
-        switch (message.type) {
-            case 'getInsertData':
-                this.handleGetInsertData();
-                break;
-            case 'getSettings':
-                this.handleGetSettings();
-                break;
-            case 'updateSettings':
-                this.handleUpdateSettings(message.settings);
-                break;
-            case 'resetSettings':
-                this.handleResetSettings();
-                break;
-            case 'saveNamedConfig':
-                this.handleSaveNamedConfig(message.name);
-                break;
-            case 'switchConfig':
-                this.handleSwitchConfig(message.name);
-                break;
-            case 'openSettingsFolder':
-                this.handleOpenSettingsFolder();
-                break;
-            case 'getVariables':
-                this.handleGetVariables();
-                break;
-            case 'insertText':
-                if (this._onInsertText) {
-                    this._onInsertText(message.text);
-                }
-                break;
-            case 'insertImage':
-                this.handleInsertImage();
-                break;
-            case 'updatePreviewTheme':
-                this.persistSetting('previewTheme', message.theme);
-                break;
-            case 'updateColorTheme':
-                this.persistSetting('colorTheme', message.theme);
-                setAppTheme(coerceAppTheme(message.theme));
-                break;
-            case 'updateQuickTyping':
-                this.persistSetting('quickTyping', String(message.enabled));
-                break;
-            case 'updateCommentFormat':
-                this.persistSetting('commentFormat', message.format);
-                break;
-            case 'updateFormattingHotkeys':
-                this.persistSetting('formattingHotkeys', String(message.enabled));
-                break;
-            case 'updateLinterMinSeverity':
-                this.persistSetting('linterMinSeverity', message.severity);
-                break;
-            case 'updateLibraryPath':
-                this.persistSetting('libraryPath', message.path ?? '');
-                this._resolvedLibraryPath = undefined;
-                break;
-            case 'getPrettifySettings':
-                this.handleGetPrettifySettings();
-                break;
-            case 'updatePrettifyIndentStyle':
-                this.persistSetting('prettifyIndentStyle', message.value);
-                break;
-            case 'updatePrettifyIndentSize':
-                this.persistSetting('prettifyIndentSize', String(message.value));
-                break;
-            case 'updatePrettifyTrim':
-                this.persistSetting('prettifyTrimTrailingWhitespace', String(message.value));
-                break;
-            case 'prettifyDocument':
-                this.handlePrettifyDocument();
-                break;
-            case 'getPdfSettings':
-                this.handleGetPdfSettings();
-                break;
-            case 'updatePdfSettings':
-                this.persistSetting('pdfSettings', JSON.stringify(message.settings));
-                break;
-            case 'resetPdfSettings':
-                this.persistSetting('pdfSettings', '');
-                this.handleGetPdfSettings();
-                break;
-            case 'generatePdf':
-                this.handleGeneratePdf();
-                break;
-            case 'saveSourceHtml':
-                this.handleSaveSourceHtml();
-                break;
-            case 'saveDocx':
-                this.handleSaveDocx();
-                break;
-            case 'getServerLog':
-                this.handleGetServerLog();
-                break;
-            case 'openLogsFolder':
-                this.handleOpenLogsFolder();
-                break;
-            case 'getHeadings':
-                this.refreshHeadings();
-                break;
-            case 'goToLine':
-                this.handleGoToLine(message.line);
-                break;
-            case 'debug':
-                break;
-            case 'openFolder':
-                this.handleOpenFolder();
-                break;
-            case 'readDirectory':
-                this.handleReadDirectory(message.path);
-                break;
-            case 'getOpenedFolder':
-                this.handleGetOpenedFolder();
-                break;
-            case 'openFileByPath':
-                this.handleOpenFileByPath(message.path);
-                break;
-            case 'openContainingFolder':
-                this.handleOpenContainingFolder(message.path);
-                break;
-            case 'closeFolder':
-                this.handleCloseFolder();
-                break;
-        }
-    }
-
-    private handleGoToLine(line: number): void {
-        if (typeof line !== 'number') return;
-        const editors = (window as Window & { monaco?: typeof import('monaco-editor') }).monaco?.editor?.getEditors?.();
-        const editor = editors?.[0];
-        if (editor) {
-            editor.revealLineInCenter(line);
-            editor.setPosition({ lineNumber: line, column: 1 });
-            editor.focus();
-        }
-    }
-
-    /**
-     * Read the captured server stderr log written by start-server.sh and
-     * push it to the UI's Output panel. Mirrors how the VS Code extension
-     * pipes stderr from the spawned dotnet process into its Output channel.
-     */
-    private async handleGetServerLog(): Promise<void> {
-        const path = this.getServerLogPath();
-        if (!path) {
-            this.postToVue({
-                type: 'serverLogResponse',
-                path: '',
-                content: '',
-                error: 'NL_PATH not available — server log only exists in the desktop build.',
-            });
-            return;
-        }
-        try {
-            const raw = await filesystem.readFile(path);
-            // Cap to the last 200 lines so the panel stays usable on long-running sessions.
-            const lines = raw.split('\n');
-            const tail = lines.length > 200 ? lines.slice(-200) : lines;
-            this.postToVue({
-                type: 'serverLogResponse',
-                path,
-                content: tail.join('\n'),
-            });
-        } catch (err) {
-            this.postToVue({
-                type: 'serverLogResponse',
-                path,
-                content: '',
-                error: err instanceof Error ? err.message : String(err),
-            });
-        }
-    }
-
-    private getServerLogPath(): string | null {
-        const dir = this.getServerLogDir();
-        return dir ? `${dir}/server-stderr.log` : null;
-    }
-
-    private getServerLogDir(): string | null {
-        const raw = (window as Window & { NL_PATH?: string }).NL_PATH;
-        if (!raw) return null;
-        // Normalize backslashes — on Windows NL_PATH uses native separators
-        const NL_PATH = raw.replace(/\\/g, '/');
-        return `${NL_PATH}/extensions/server/logs`;
-    }
-
-    /**
-     * Open the server-extension logs directory in the OS file explorer.
-     * The folder may not exist on a fresh install — createDirectory is
-     * best-effort so the explorer always has something to open.
-     */
-    private async handleOpenLogsFolder(): Promise<void> {
-        const dir = this.getServerLogDir();
-        if (!dir) {
-            console.warn('Open Logs Folder: NL_PATH unavailable — desktop-only feature.');
-            return;
-        }
-        try { await filesystem.createDirectory(dir); } catch { /* already exists */ }
-        try {
-            await os.open(dir);
-            console.info(`Opened logs folder: ${dir}`);
-        } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            console.error(`Failed to open logs folder (${dir}): ${msg}`);
-        }
     }
 
     // ---- File operations (exposed for menu actions) ----
@@ -450,7 +354,6 @@ export class NeutralinoMessageBridge {
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
-
         if (!entries || entries.length === 0) return null;
 
         const filePath = entries[0];
@@ -498,9 +401,7 @@ export class NeutralinoMessageBridge {
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
-
         if (!filePath) return null;
-
         this.rememberDialogDir(filePath);
         await filesystem.writeFile(filePath, content);
         return filePath;
@@ -584,8 +485,7 @@ export class NeutralinoMessageBridge {
 
     private async handleOpenFileByPath(filePath: string): Promise<void> {
         if (!filePath || typeof filePath !== 'string') return;
-        // Delegate to main.ts's loadFile via a bridged event. main.ts already
-        // listens for 'loadFileFromPath' on window.
+        // Delegate to main.ts's loadFile via a bridged event.
         window.dispatchEvent(new CustomEvent('calcpad-open-file', { detail: { path: filePath } }));
     }
 
@@ -608,42 +508,7 @@ export class NeutralinoMessageBridge {
         }
     }
 
-    // ---- Internal message handlers ----
-
-    private postToVue(message: unknown): void {
-        window.dispatchEvent(new MessageEvent('message', { data: message }));
-    }
-
-    private async handleGetInsertData(): Promise<void> {
-        const items = this.snippetService.getAllItems();
-        if (items.length > 0) {
-            this.postToVue({ type: 'insertDataResponse', items });
-        } else {
-            this.snippetService.onSnippetsLoaded(() => {
-                this.postToVue({
-                    type: 'insertDataResponse',
-                    items: this.snippetService.getAllItems(),
-                });
-            });
-        }
-    }
-
-    private async handleGetSettings(): Promise<void> {
-        const availableConfigs = await this.listConfigs();
-        this.postToVue({
-            type: 'settingsResponse',
-            settings: this.settings,
-            previewTheme: this._extraSettings.previewTheme || 'system',
-            colorTheme: this.getStoredColorTheme(),
-            availableThemes: BUILTIN_THEMES,
-            commentFormat: this._extraSettings.commentFormat || 'auto',
-            enableFormattingHotkeys: this._extraSettings.formattingHotkeys !== 'false',
-            linterMinSeverity: this._extraSettings.linterMinSeverity || 'information',
-            libraryPath: this._extraSettings.libraryPath || '',
-            activeConfig: this._activeConfigName,
-            availableConfigs,
-        });
-    }
+    // ---- Library path resolution ----
 
     /** Raw library path as typed by the user (may contain env-var refs). */
     getLibraryPathRaw(): string {
@@ -685,211 +550,12 @@ export class NeutralinoMessageBridge {
             .replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, (_, n) => values[n] ?? '');
     }
 
-    /** The stored Color Theme selection, coerced to a valid label. */
-    getStoredColorTheme(): string {
-        return coerceAppTheme(this._extraSettings.colorTheme);
-    }
-
-    private handleUpdateSettings(newSettings: any): void {
-        this.settings = { ...this.settings, ...newSettings };
-        void this.saveSettingsToStorage();
-
-        if (newSettings.server?.url) {
-            this.apiClient.setBaseUrl(newSettings.server.url);
-        }
-    }
-
-    private async handleResetSettings(): Promise<void> {
-        // Switch active back to the pristine default.json, which is refreshed
-        // from the bundled defaults on every boot. Named user configs are
-        // left untouched.
-        await this.setActiveConfigName(DEFAULT_CONFIG_NAME);
-        await this.loadConfigFile(DEFAULT_CONFIG_NAME);
-        this._resolvedLibraryPath = undefined;
-        this.postToVue({ type: 'settingsReset', settings: this.settings });
-        this.handleGetSettings();
-    }
-
-    private async handleGetVariables(): Promise<void> {
-        const content = getActiveEditorContent();
-        const { sourceFilePath } = await this.buildFileContext(content);
-
-        const response = await this.definitionsService.refreshDefinitions(content, 'desktop-editor', sourceFilePath);
-        if (response) {
-            this.postToVue({
-                type: 'updateVariables',
-                data: {
-                    macros: response.macros || [],
-                    variables: response.variables || [],
-                    functions: response.functions || [],
-                    customUnits: response.customUnits || [],
-                },
-            });
-        } else {
-            this.postToVue({
-                type: 'updateVariables',
-                data: { macros: [], variables: [], functions: [], customUnits: [] },
-            });
-        }
-    }
-
-    private handleGetPrettifySettings(): void {
-        const indentStyle = this._extraSettings.prettifyIndentStyle === 'space' ? 'space' : 'tab';
-        const indentSizeRaw = parseInt(this._extraSettings.prettifyIndentSize ?? '', 10);
-        const indentSize = Number.isFinite(indentSizeRaw) && indentSizeRaw >= 1 ? indentSizeRaw : 4;
-        const trimTrailingWhitespace = this._extraSettings.prettifyTrimTrailingWhitespace !== 'false';
-        this.postToVue({ type: 'prettifySettingsResponse', indentStyle, indentSize, trimTrailingWhitespace });
-    }
-
-    private async handlePrettifyDocument(): Promise<void> {
-        const editor = monaco.editor.getEditors()[0];
-        const model = editor?.getModel();
-        if (!editor || !model) {
-            console.warn('[Prettify] No active Monaco editor.');
-            return;
-        }
-
-        const indentStyle = this._extraSettings.prettifyIndentStyle === 'space' ? 'space' : 'tab';
-        const indentSizeRaw = parseInt(this._extraSettings.prettifyIndentSize ?? '', 10);
-        const indentSize = Number.isFinite(indentSizeRaw) && indentSizeRaw >= 1 ? indentSizeRaw : 4;
-        const trim = this._extraSettings.prettifyTrimTrailingWhitespace !== 'false';
-        const indentUnit = indentStyle === 'space' ? ' '.repeat(indentSize) : '\t';
-
-        try {
-            const response = await this.apiClient.prettify(model.getValue(), indentUnit, trim);
-            if (!response?.content) {
-                console.warn('[Prettify] Server returned no content.');
-                return;
-            }
-            editor.executeEdits('prettify', [{ range: model.getFullModelRange(), text: response.content }]);
-        } catch (err) {
-            console.error('[Prettify] Failed:', err);
-        }
-    }
-
-    private handleGetPdfSettings(): void {
-        const stored = this._extraSettings.pdfSettings;
-        const settings = stored ? JSON.parse(stored) : {
-            enableHeader: true,
-            documentTitle: '',
-            documentSubtitle: '',
-            headerCenter: '',
-            author: '',
-            enableFooter: true,
-            footerCenter: '',
-            company: '',
-            project: '',
-            showPageNumbers: true,
-            format: 'A4',
-            orientation: 'portrait',
-            marginTop: '2cm',
-            marginBottom: '2cm',
-            marginLeft: '1.5cm',
-            marginRight: '1.5cm',
-            printBackground: true,
-            scale: 1.0,
-        };
-        this.postToVue({ type: 'pdfSettingsResponse', settings });
-    }
-
     /**
-     * Save the rendered HTML for the active document via a native save dialog.
-     * Defaults the filename to the active tab's basename when available.
+     * Resolve an `#include` filename (raw text from the directive) to an
+     * absolute path, using the active tab's directory as the base.
      */
-    private async handleSaveSourceHtml(): Promise<void> {
-        const content = getActiveEditorContent();
-        const apiSettings = buildApiSettings(this.settings);
-        const { sourceFilePath } = await this.buildFileContext(content);
-        const html = await this.apiClient.convert(content, apiSettings, 'html', false, sourceFilePath);
-        if (typeof html !== 'string') return;
-        const filePath = await os.showSaveDialog('Save HTML', {
-            defaultPath: this.getDialogDefaultPath(),
-            filters: [{ name: 'HTML Files', extensions: ['html', 'htm'] }],
-        });
-        if (!filePath) return;
-        this.rememberDialogDir(filePath);
-        await filesystem.writeFile(filePath, html);
-    }
-
-    private async handleSaveDocx(): Promise<void> {
-        const content = getActiveEditorContent();
-        const apiSettings = buildApiSettings(this.settings);
-        const { sourceFilePath } = await this.buildFileContext(content);
-        const buf = await this.apiClient.convertDocx(content, apiSettings, sourceFilePath);
-        if (!buf) return;
-        const filePath = await os.showSaveDialog('Save Word Document', {
-            defaultPath: this.getDialogDefaultPath(),
-            filters: [{ name: 'Word Documents', extensions: ['docx'] }],
-        });
-        if (!filePath) return;
-        this.rememberDialogDir(filePath);
-        await filesystem.writeBinaryFile(filePath, buf);
-    }
-
-    private async handleGeneratePdf(): Promise<void> {
-        // Pre-flight: if the bundled launcher couldn't find a Chromium-family
-        // browser, tell the user *before* they sit through a 10-second
-        // PuppeteerSharp timeout. The launcher writes its detection result to
-        // server-stderr.log on startup ("WARNING: no Chromium..." or
-        // "Using browser: ..."), so a quick read tells us whether to abort.
-        if (await this.browserMissing()) {
-            await this.warnBrowserMissing();
-            return;
-        }
-
-        const content = getActiveEditorContent();
-        const apiSettings = buildApiSettings(this.settings);
-        const baseUrl = this.apiClient.getBaseUrl();
-        const { sourceFilePath } = await this.buildFileContext(content);
-
-        try {
-            // Step 1 — convert calcpad source → HTML (forPrint: true).
-            // The /convert endpoint always returns HTML; an outputFormat hint
-            // here is ignored, which is why the prior single-call approach
-            // silently failed.
-            const htmlResp = await fetch(`${baseUrl}/api/calcpad/convert`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings: apiSettings, forPrint: true, sourceFilePath }),
-                signal: AbortSignal.timeout(30000),
-            });
-            if (!htmlResp.ok) throw new Error(`HTML convert returned ${htmlResp.status}`);
-            let html = await htmlResp.text();
-
-            // Step 2 — inline local <img src="..."> as base64 data URIs.
-            // The headless Chromium running on the server has no access to the
-            // user's filesystem; without inlining, plot images and other local
-            // references render as broken icons. Resolved relative to the
-            // active tab's directory when one exists.
-            const documentDir = this.activeTabDirectory();
-            html = await inlineLocalImages(html, documentDir);
-
-            // Step 3 — render the inlined HTML to PDF via /api/calcpad/pdf.
-            const pdfResp = await fetch(`${baseUrl}/api/calcpad/pdf`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ html, options: this.getPdfOptions() }),
-                signal: AbortSignal.timeout(60000),
-            });
-            if (!pdfResp.ok) throw new Error(`PDF endpoint returned ${pdfResp.status}`);
-            const pdfBytes = await pdfResp.arrayBuffer();
-
-            const filePath = await os.showSaveDialog('Export PDF', {
-                defaultPath: this.getDialogDefaultPath(),
-                filters: [{ name: 'PDF Files', extensions: ['pdf'] }],
-            });
-            if (filePath) {
-                this.rememberDialogDir(filePath);
-                await filesystem.writeBinaryFile(filePath, pdfBytes);
-            }
-        } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            this.postToVue({ type: 'pdfError', message: `PDF export failed: ${msg}` });
-            this.handleGetServerLog();
-            if (await this.browserMissing()) {
-                await this.warnBrowserMissing();
-            }
-        }
+    public resolveIncludePath(rawFileName: string): string {
+        return pathResolve(this.activeTabSourceDir(), rawFileName);
     }
 
     /** Returns the full path of the active tab's file, or '' if untitled. */
@@ -904,27 +570,8 @@ export class NeutralinoMessageBridge {
     }
 
     /**
-     * Builds the source path needed to resolve #include directives.
-     * Called from the preview renderer and export handlers before any convert call.
-     */
-    public async buildFileContext(_content: string): Promise<{ sourceFilePath?: string }> {
-        const sourceFilePath = this.activeTabFilePath() || undefined;
-        return { sourceFilePath };
-    }
-
-    /**
-     * Resolve an `#include` filename (raw text from the directive) to an
-     * absolute path, using the active tab's directory as the base. Mirrors
-     * the resolution rules the backend uses for include lookup.
-     */
-    public resolveIncludePath(rawFileName: string): string {
-        return pathResolve(this.activeTabSourceDir(), rawFileName);
-    }
-
-    /**
-     * Returns the directory to use as the base for resolving #include paths.
-     * Falls back to the Neutralino install directory (NL_PATH) for untitled tabs
-     * so that includes placed alongside the app still resolve.
+     * Base for resolving #include paths. Falls back to NL_PATH for untitled
+     * tabs so includes placed alongside the app still resolve.
      */
     private activeTabSourceDir(): string {
         const dir = this.activeTabDirectory();
@@ -932,10 +579,122 @@ export class NeutralinoMessageBridge {
         return (window as Window & { NL_PATH?: string }).NL_PATH ?? '';
     }
 
+    // ---- Prettify ----
+
+    private handleGetPrettifySettings(): void {
+        const { indentStyle, indentSize, trim } = this.getPrettifyOptions();
+        this.postToVue({
+            type: 'prettifySettingsResponse',
+            indentStyle,
+            indentSize,
+            trimTrailingWhitespace: trim,
+        });
+    }
+
+    private getPrettifyOptions(): { indentStyle: 'space' | 'tab'; indentSize: number; trim: boolean } {
+        const indentStyle = this._extraSettings.prettifyIndentStyle === 'space' ? 'space' : 'tab';
+        const rawSize = getExtraNumber(this._extraSettings, 'prettifyIndentSize', 4);
+        const indentSize = rawSize >= 1 ? rawSize : 4;
+        const trim = getExtraBool(this._extraSettings, 'prettifyTrimTrailingWhitespace', true);
+        return { indentStyle, indentSize, trim };
+    }
+
+    private async handlePrettifyDocument(): Promise<void> {
+        const editor = monaco.editor.getEditors()[0];
+        const model = editor?.getModel();
+        if (!editor || !model) {
+            console.warn('[Prettify] No active Monaco editor.');
+            return;
+        }
+
+        const { indentStyle, indentSize, trim } = this.getPrettifyOptions();
+        const indentUnit = indentStyle === 'space' ? ' '.repeat(indentSize) : '\t';
+
+        try {
+            const response = await this.apiClient.prettify(model.getValue(), indentUnit, trim);
+            if (!response?.content) {
+                console.warn('[Prettify] Server returned no content.');
+                return;
+            }
+            editor.executeEdits('prettify', [{ range: model.getFullModelRange(), text: response.content }]);
+        } catch (err) {
+            console.error('[Prettify] Failed:', err);
+        }
+    }
+
+    // ---- Server log + browser-missing warning ----
+
     /** Resolves stored PDF settings for the /pdf endpoint. */
     private getPdfOptions(): unknown {
-        const stored = this._extraSettings.pdfSettings;
-        return stored ? JSON.parse(stored) : {};
+        return getExtraObject<Record<string, unknown>>(this._extraSettings, 'pdfSettings', {});
+    }
+
+    /**
+     * Read the captured server stderr log written by start-server.sh and
+     * push it to the UI's Output panel. Mirrors how the VS Code extension
+     * pipes stderr from the spawned dotnet process into its Output channel.
+     */
+    private async handleGetServerLog(): Promise<void> {
+        const path = this.getServerLogPath();
+        if (!path) {
+            this.postToVue({
+                type: 'serverLogResponse',
+                path: '',
+                content: '',
+                error: 'NL_PATH not available — server log only exists in the desktop build.',
+            });
+            return;
+        }
+        try {
+            const raw = await filesystem.readFile(path);
+            const lines = raw.split('\n');
+            const tail = lines.length > 200 ? lines.slice(-200) : lines;
+            this.postToVue({
+                type: 'serverLogResponse',
+                path,
+                content: tail.join('\n'),
+            });
+        } catch (err) {
+            this.postToVue({
+                type: 'serverLogResponse',
+                path,
+                content: '',
+                error: err instanceof Error ? err.message : String(err),
+            });
+        }
+    }
+
+    private getServerLogPath(): string | null {
+        const dir = this.getServerLogDir();
+        return dir ? `${dir}/server-stderr.log` : null;
+    }
+
+    private getServerLogDir(): string | null {
+        const raw = (window as Window & { NL_PATH?: string }).NL_PATH;
+        if (!raw) return null;
+        const NL_PATH = raw.replace(/\\/g, '/');
+        return `${NL_PATH}/extensions/server/logs`;
+    }
+
+    /**
+     * Open the server-extension logs directory in the OS file explorer.
+     * The folder may not exist on a fresh install — createDirectory is
+     * best-effort so the explorer always has something to open.
+     */
+    private async handleOpenLogsFolder(): Promise<void> {
+        const dir = this.getServerLogDir();
+        if (!dir) {
+            console.warn('Open Logs Folder: NL_PATH unavailable — desktop-only feature.');
+            return;
+        }
+        try { await filesystem.createDirectory(dir); } catch { /* already exists */ }
+        try {
+            await os.open(dir);
+            console.info(`Opened logs folder: ${dir}`);
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            console.error(`Failed to open logs folder (${dir}): ${msg}`);
+        }
     }
 
     /** True iff start-server.sh logged a "no browser found" warning. */
@@ -991,7 +750,6 @@ export class NeutralinoMessageBridge {
                 + 'or via Homebrew:\n'
                 + '    brew install --cask google-chrome';
         }
-        // Linux / FreeBSD / Unknown
         const distro = await this.detectLinuxDistro();
         switch (distro) {
             case 'arch':
@@ -1048,15 +806,13 @@ export class NeutralinoMessageBridge {
     // ---- Settings persistence via filesystem JSON ----
     //
     // Layout under NL_PATH/settings/:
-    //   default.json      — refreshed from bundled defaults on every boot
-    //   <name>.json       — user-created named configs
+    //   active-settings.json — live state, written on every edit
+    //   default.json         — pristine defaults, refreshed on every boot
+    //   <name>.json          — user-created presets, never written by the editor
     //
-    // The active config name lives in Neutralino storage under
-    // ACTIVE_CONFIG_KEY so it persists across sessions. Every setting change
-    // auto-writes to the active config file. "default" is reserved: attempting
-    // to save under that name errors.
-
-    private _activeConfigName: string = DEFAULT_CONFIG_NAME;
+    // The "active preset" name is remembered in Neutralino storage purely
+    // for the dropdown label — it does NOT gate writes. Any edit lands in
+    // active-settings.json regardless of which preset was last loaded.
 
     private getSettingsDir(): string | null {
         const raw = (window as Window & { NL_PATH?: string }).NL_PATH;
@@ -1065,21 +821,26 @@ export class NeutralinoMessageBridge {
         return `${nlPath}/${SETTINGS_DIR_NAME}`;
     }
 
-    private getConfigPath(name: string): string | null {
+    private getPresetPath(name: string): string | null {
         const dir = this.getSettingsDir();
         return dir ? `${dir}/${name}.json` : null;
+    }
+
+    private getActiveSettingsPath(): string | null {
+        const dir = this.getSettingsDir();
+        return dir ? `${dir}/${ACTIVE_SETTINGS_FILE}` : null;
     }
 
     /**
      * Ensure the settings folder exists and default.json is fresh from the
      * bundled defaults. Runs on boot so `default` always represents pristine
-     * defaults even if the user edited it in a previous session.
+     * defaults. Never touches active-settings.json.
      */
     private async ensureSettingsFolder(): Promise<void> {
         const dir = this.getSettingsDir();
         if (!dir) return;
         try { await filesystem.createDirectory(dir); } catch { /* already exists */ }
-        const defaultPath = this.getConfigPath(DEFAULT_CONFIG_NAME);
+        const defaultPath = this.getPresetPath(DEFAULT_PRESET_NAME);
         if (defaultPath) {
             const blob = getDefaultSettingsBlob();
             try {
@@ -1091,53 +852,95 @@ export class NeutralinoMessageBridge {
         }
     }
 
-    private async loadActiveConfigName(): Promise<string> {
+    private async loadActivePresetName(): Promise<string> {
         try {
-            const raw = await storage.getData(ACTIVE_CONFIG_KEY);
+            const raw = await storage.getData(ACTIVE_PRESET_KEY);
             const name = (raw ?? '').trim();
-            return name || DEFAULT_CONFIG_NAME;
+            return name || DEFAULT_PRESET_NAME;
         } catch {
-            return DEFAULT_CONFIG_NAME;
+            return DEFAULT_PRESET_NAME;
         }
     }
 
-    private async setActiveConfigName(name: string): Promise<void> {
-        this._activeConfigName = name;
-        try { await storage.setData(ACTIVE_CONFIG_KEY, name); } catch { /* best effort */ }
+    private async setActivePresetName(name: string): Promise<void> {
+        this._activePresetName = name;
+        try { await storage.setData(ACTIVE_PRESET_KEY, name); } catch { /* best effort */ }
     }
 
     /**
-     * List available named configs (basenames without .json), sorted with
-     * `default` first.
+     * List available presets (basenames without .json), sorted with
+     * `default` first. `active-settings` is not a preset and is excluded.
      */
-    private async listConfigs(): Promise<string[]> {
+    private async listPresets(): Promise<string[]> {
         const dir = this.getSettingsDir();
-        if (!dir) return [DEFAULT_CONFIG_NAME];
+        if (!dir) return [DEFAULT_PRESET_NAME];
         try {
             const entries = await filesystem.readDirectory(dir);
+            const activeBasename = ACTIVE_SETTINGS_FILE.replace(/\.json$/i, '');
             const names = entries
                 .filter(e => e.type === 'FILE' && e.entry.toLowerCase().endsWith('.json'))
-                .map(e => e.entry.slice(0, -'.json'.length));
-            const rest = names.filter(n => n !== DEFAULT_CONFIG_NAME).sort();
-            return [DEFAULT_CONFIG_NAME, ...rest];
+                .map(e => e.entry.slice(0, -'.json'.length))
+                .filter(n => n !== activeBasename);
+            const rest = names.filter(n => n !== DEFAULT_PRESET_NAME).sort();
+            return [DEFAULT_PRESET_NAME, ...rest];
         } catch {
-            return [DEFAULT_CONFIG_NAME];
+            return [DEFAULT_PRESET_NAME];
         }
     }
 
     /**
-     * Boot-time settings load. Ensures the folder + default.json exist,
-     * resolves the persisted active config name, and loads that config
-     * (falling back to in-memory defaults if the file can't be read).
+     * Boot-time load:
+     *   1. Refresh default.json from bundled defaults.
+     *   2. Read active-settings.json into memory. If missing, seed it from
+     *      the last-active preset (or default) and write it out.
+     *   3. Restore active-preset label from Neutralino storage.
      */
     private async loadSettingsFromStorage(): Promise<void> {
         await this.ensureSettingsFolder();
-        this._activeConfigName = await this.loadActiveConfigName();
-        await this.loadConfigFile(this._activeConfigName);
+        this._activePresetName = await this.loadActivePresetName();
+
+        const loaded = await this.readActiveSettings();
+        if (!loaded) {
+            // First run (or the file was deleted): seed from the last-active
+            // preset, then write it back so subsequent boots skip the seed.
+            await this.readPresetInto(this._activePresetName);
+            await this.saveActiveSettings();
+        }
     }
 
-    private async loadConfigFile(name: string): Promise<void> {
-        const path = this.getConfigPath(name);
+    /**
+     * Read active-settings.json into memory. Returns false when the file
+     * doesn't exist / is unreadable so the caller can decide how to seed it.
+     */
+    private async readActiveSettings(): Promise<boolean> {
+        const path = this.getActiveSettingsPath();
+        if (!path) return false;
+        try {
+            const raw = await filesystem.readFile(path);
+            const parsed = JSON.parse(raw);
+            const { settings, extras } = deserializeSettingsBlob(parsed);
+            this.settings = settings;
+            this._extraSettings = extras;
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Load a preset file (or bundled defaults for "default") into memory.
+     * Does NOT write active-settings.json — callers that need the change
+     * persisted must call saveActiveSettings afterward.
+     */
+    private async readPresetInto(name: string): Promise<void> {
+        // "default" always reflects the bundled defaults; skip the disk read
+        // so a corrupted default.json can't wedge us at boot.
+        if (name === DEFAULT_PRESET_NAME) {
+            this.settings = getDefaultSettings();
+            this._extraSettings = getDefaultExtras();
+            return;
+        }
+        const path = this.getPresetPath(name);
         if (!path) return;
         try {
             const raw = await filesystem.readFile(path);
@@ -1146,41 +949,31 @@ export class NeutralinoMessageBridge {
             this.settings = settings;
             this._extraSettings = extras;
         } catch {
-            // Config file missing/unreadable — reset in-memory to defaults so
-            // the active config is at least usable.
             this.settings = getDefaultSettings();
             this._extraSettings = getDefaultExtras();
         }
     }
 
-    /**
-     * Write the current settings + extras to the active config file. Called
-     * on every setting change; also used by save-as-name after switching the
-     * active pointer.
-     */
-    private async saveSettingsToStorage(): Promise<void> {
-        const path = this.getConfigPath(this._activeConfigName);
+    /** Write in-memory state to active-settings.json. */
+    private async saveActiveSettings(): Promise<void> {
+        const path = this.getActiveSettingsPath();
         if (!path) return;
         const blob = serializeSettingsBlob(this.settings, this._extraSettings);
         await filesystem.writeFile(path, JSON.stringify(blob, null, 4));
     }
 
-    private persistSetting(key: string, value: string): void {
-        this._extraSettings[key] = value;
-        void this.saveSettingsToStorage();
-    }
-
     /**
-     * Save the current in-memory settings under a user-supplied name and
-     * switch active to it. Rejects the reserved "default" name.
+     * Save current in-memory settings as a preset. Rejects the reserved
+     * "default" name and filename-illegal characters. Also updates the
+     * active-preset label to the saved name.
      */
-    private async handleSaveNamedConfig(rawName: string): Promise<void> {
+    private async handleSavePreset(rawName: string): Promise<void> {
         const name = (rawName ?? '').trim();
         if (!name) return;
-        if (name.toLowerCase() === DEFAULT_CONFIG_NAME) {
+        if (name.toLowerCase() === DEFAULT_PRESET_NAME) {
             this.postToVue({
                 type: 'saveNamedConfigError',
-                message: 'The "default" config is protected and cannot be overridden.',
+                message: 'The "default" preset is protected and cannot be overridden.',
             });
             return;
         }
@@ -1192,15 +985,33 @@ export class NeutralinoMessageBridge {
             });
             return;
         }
-        await this.setActiveConfigName(name);
-        await this.saveSettingsToStorage();
+        const presetPath = this.getPresetPath(name);
+        if (!presetPath) return;
+        const blob = serializeSettingsBlob(this.settings, this._extraSettings);
+        try {
+            await filesystem.writeFile(presetPath, JSON.stringify(blob, null, 4));
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.postToVue({
+                type: 'saveNamedConfigError',
+                message: `Failed to write preset: ${msg}`,
+            });
+            return;
+        }
+        await this.setActivePresetName(name);
         this.handleGetSettings();
     }
 
-    private async handleSwitchConfig(name: string): Promise<void> {
+    /**
+     * Load a preset into live active-settings state. Writes the preset's
+     * contents to active-settings.json so the preset file itself stays
+     * untouched.
+     */
+    private async handleLoadPreset(name: string): Promise<void> {
         if (!name) return;
-        await this.setActiveConfigName(name);
-        await this.loadConfigFile(name);
+        await this.readPresetInto(name);
+        await this.setActivePresetName(name);
+        await this.saveActiveSettings();
         this._resolvedLibraryPath = undefined;
         if (this.settings.server?.url) {
             this.apiClient.setBaseUrl(this.settings.server.url);

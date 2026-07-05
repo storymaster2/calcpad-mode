@@ -1,18 +1,16 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import {
+    IMAGE_EXTENSIONS,
+    IMAGE_MIME_TYPES,
+    buildImageCommentLine,
+    mimeFromExtension,
+} from 'calcpad-frontend';
 
 type ImageStorageMode = 'base64' | 'imagesFolder' | 'customPath';
 
-const IMAGE_MIME_TYPES = [
-    'image/png',
-    'image/jpeg',
-    'image/gif',
-    'image/webp',
-    'image/svg+xml'
-];
-
 const IMAGE_FILE_FILTERS: Record<string, string[]> = {
-    'Images': ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg']
+    'Images': [...IMAGE_EXTENSIONS],
 };
 
 /**
@@ -77,7 +75,7 @@ export class ImageInserter {
         const fileUri = fileUris[0];
         const imageData = await vscode.workspace.fs.readFile(fileUri);
         const ext = path.extname(fileUri.fsPath).toLowerCase().replace('.', '');
-        const mimeType = this.getMimeTypeFromExtension(ext);
+        const mimeType = mimeFromExtension(ext);
         const filename = path.basename(fileUri.fsPath);
 
         this.outputChannel.appendLine(`[IMAGE INSERT] Selected file: ${fileUri.fsPath} (${mimeType})`);
@@ -251,7 +249,7 @@ export class ImageInserter {
      * Format: '<img src="...">
      */
     private async insertImageComment(editor: vscode.TextEditor, srcValue: string): Promise<void> {
-        const commentLine = `'<img src="${srcValue}">`;
+        const commentLine = buildImageCommentLine(srcValue);
         const position = editor.selection.active;
 
         await editor.edit(editBuilder => {
@@ -291,20 +289,6 @@ export class ImageInserter {
         }
     }
 
-    /**
-     * Get MIME type from file extension
-     */
-    private getMimeTypeFromExtension(ext: string): string {
-        const mimeMap: Record<string, string> = {
-            'png': 'image/png',
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg',
-            'gif': 'image/gif',
-            'webp': 'image/webp',
-            'svg': 'image/svg+xml'
-        };
-        return mimeMap[ext] || 'image/png';
-    }
 }
 
 /**

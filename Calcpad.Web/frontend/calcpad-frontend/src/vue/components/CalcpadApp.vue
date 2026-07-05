@@ -416,6 +416,7 @@ const handleMessage = (event: MessageEvent) => {
       availableThemes.value = message.availableThemes || []
       commentFormat.value = message.commentFormat || 'auto'
       enableFormattingHotkeys.value = message.enableFormattingHotkeys !== false
+      if (typeof message.enableQuickTyping === 'boolean') enableQuickTyping.value = message.enableQuickTyping
       darkBackground.value = message.darkBackground || '#1e1e1e'
       linterMinSeverity.value = message.linterMinSeverity || 'information'
       libraryPath.value = message.libraryPath || ''

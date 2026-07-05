@@ -38,7 +38,14 @@ namespace Calcpad.Server.Services
             };
         }
 
-        public string Convert(string calcpadContent, Settings? settings = null, bool forceUnwrappedCode = false, string theme = "light", string? sourceFilePath = null, bool forPrint = false, List<string>? openXmlExpressions = null)
+        public (string Html, IReadOnlyList<string> OpenXmlExpressions) Convert(
+            string calcpadContent,
+            Settings? settings = null,
+            bool forceUnwrappedCode = false,
+            string theme = "light",
+            string? sourceFilePath = null,
+            bool forPrint = false,
+            bool captureOpenXml = false)
         {
             if (string.IsNullOrWhiteSpace(calcpadContent))
             {
@@ -74,6 +81,7 @@ namespace Calcpad.Server.Services
                 var hasMacroErrors = macroParser.Parse(calcpadContent, out outputText, null, 0, true);
 
                 string htmlResult;
+                IReadOnlyList<string> openXmlExpressions = Array.Empty<string>();
 
                 if (hasMacroErrors || forceUnwrappedCode)
                 {
@@ -87,9 +95,10 @@ namespace Calcpad.Server.Services
                         // and the error-summary boxes that the interactive preview uses for line links.
                         // Keep it off for print/PDF so exported output has no navigation anchors.
                         var parser = new ExpressionParser { Settings = coreSettings, SourceFilePath = sourceFilePath, Debug = !forPrint };
-                        parser.Parse(outputText, true, openXmlExpressions != null);
+                        parser.Parse(outputText, true, captureOpenXml);
                         htmlResult = RemoveEmptyParagraphs(parser.HtmlResult);
-                        openXmlExpressions?.AddRange(parser.OpenXmlExpressions);
+                        if (captureOpenXml)
+                            openXmlExpressions = parser.OpenXmlExpressions.ToList();
                     }
                     catch (Exception parseEx)
                     {
@@ -102,7 +111,7 @@ namespace Calcpad.Server.Services
                 var finalHtml = WrapHtmlResult(htmlResult, theme);
                 FileLogger.LogInfo("Conversion completed successfully", $"Output length: {finalHtml.Length}");
 
-                return finalHtml;
+                return (finalHtml, openXmlExpressions);
             }
             catch (MathParserException ex)
             {

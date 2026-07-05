@@ -60,7 +60,7 @@ namespace Calcpad.Server.Services
             options ??= new CalcpadPdfOptions();
 
             // Step 1: Generate basic PDF with PuppeteerSharp
-            var basicPdf = await GenerateBasicPdfAsync(html, options, browserPath);
+            var basicPdf = await GenerateBasicPdfAsync(html, options, browserPath).ConfigureAwait(false);
 
             // Step 2: Enhance with PDFsharp (headers, footers, backgrounds)
             if (options.EnableHeader || options.EnableFooter || !string.IsNullOrEmpty(options.BackgroundPdf))
@@ -73,8 +73,8 @@ namespace Calcpad.Server.Services
 
         private async Task<byte[]> GenerateBasicPdfAsync(string html, CalcpadPdfOptions options, string? browserPath)
         {
-            var browser = await GetOrCreateBrowserAsync(browserPath);
-            var page = await browser.NewPageAsync();
+            var browser = await GetOrCreateBrowserAsync(browserPath).ConfigureAwait(false);
+            var page = await browser.NewPageAsync().ConfigureAwait(false);
 
             try
             {
@@ -82,7 +82,7 @@ namespace Calcpad.Server.Services
                 // PdfStreamAsync, so do it explicitly — otherwise @media print
                 // rules in the page CSS won't apply (e.g. the body max-width
                 // override that lets content fill the print area).
-                await page.EmulateMediaTypeAsync(MediaType.Print);
+                await page.EmulateMediaTypeAsync(MediaType.Print).ConfigureAwait(false);
 
                 // Bumped from the 30 s default because large documents (multi-MB
                 // HTML with many script tags) can need more time to reach
@@ -91,7 +91,7 @@ namespace Calcpad.Server.Services
                 {
                     WaitUntil = [WaitUntilNavigation.Networkidle0],
                     Timeout = 120_000
-                });
+                }).ConfigureAwait(false);
 
                 // Inject PDF-specific styles
                 await page.AddStyleTagAsync(new AddTagOptions
@@ -105,7 +105,7 @@ namespace Calcpad.Server.Services
                             background-color: LightYellow !important;
                         }
                     "
-                });
+                }).ConfigureAwait(false);
 
                 // Replace <input> elements with underlined text (matches WPF PDF output),
                 // then fit datagrid tables to page width with text wrapping
@@ -153,9 +153,9 @@ namespace Calcpad.Server.Services
                             cell.style.fontSize = '10pt';
                         });
                     });
-                }");
+                }").ConfigureAwait(false);
 
-                await WaitForAsyncContentAsync(page);
+                await WaitForAsyncContentAsync(page).ConfigureAwait(false);
 
                 var pdfOptions = new PuppeteerSharp.PdfOptions
                 {
@@ -177,14 +177,21 @@ namespace Calcpad.Server.Services
                 // one CDP message. The single-message path hits a buffer cap in the
                 // DevTools transport (see puppeteer/puppeteer#11720) which produces
                 // a silent blank PDF on large documents.
-                await using var pdfStream = await page.PdfStreamAsync(pdfOptions);
-                using var ms = new MemoryStream();
-                await pdfStream.CopyToAsync(ms);
-                return ms.ToArray();
+                var pdfStream = await page.PdfStreamAsync(pdfOptions).ConfigureAwait(false);
+                try
+                {
+                    using var ms = new MemoryStream();
+                    await pdfStream.CopyToAsync(ms).ConfigureAwait(false);
+                    return ms.ToArray();
+                }
+                finally
+                {
+                    await pdfStream.DisposeAsync().ConfigureAwait(false);
+                }
             }
             finally
             {
-                await page.CloseAsync();
+                await page.CloseAsync().ConfigureAwait(false);
             }
         }
 
@@ -211,7 +218,7 @@ namespace Calcpad.Server.Services
                         if (!img.src && !img.currentSrc) return false;
                         return img.complete && img.naturalWidth > 0;
                     });
-                }", new WaitForFunctionOptions { Timeout = 30000, PollingInterval = 100 });
+                }", new WaitForFunctionOptions { Timeout = 30000, PollingInterval = 100 }).ConfigureAwait(false);
             }
             catch (WaitTaskTimeoutException)
             {
@@ -223,7 +230,7 @@ namespace Calcpad.Server.Services
             try
             {
                 await page.EvaluateFunctionAsync(@"() => new Promise(resolve =>
-                    requestAnimationFrame(() => requestAnimationFrame(resolve)))");
+                    requestAnimationFrame(() => requestAnimationFrame(resolve)))").ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -236,7 +243,7 @@ namespace Calcpad.Server.Services
             if (_browser is { IsClosed: false })
                 return _browser;
 
-            await _browserLock.WaitAsync();
+            await _browserLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 if (_browser is { IsClosed: false })
@@ -245,11 +252,11 @@ namespace Calcpad.Server.Services
                 // Clean up stale browser
                 if (_browser != null)
                 {
-                    try { await _browser.CloseAsync(); } catch { }
+                    try { await _browser.CloseAsync().ConfigureAwait(false); } catch { }
                     _browser = null;
                 }
 
-                var executablePath = await ResolveBrowserPathAsync(browserPath);
+                var executablePath = await ResolveBrowserPathAsync(browserPath).ConfigureAwait(false);
                 FileLogger.LogInfo("Launching browser", executablePath);
 
                 try
@@ -259,18 +266,18 @@ namespace Calcpad.Server.Services
                         Headless = true,
                         ExecutablePath = executablePath,
                         Args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage"]
-                    });
+                    }).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
                     FileLogger.LogWarning("Browser launch failed, falling back to ChromeHeadlessShell download", ex.Message);
-                    var fallbackPath = await DownloadChromiumAsync();
+                    var fallbackPath = await DownloadChromiumAsync().ConfigureAwait(false);
                     _browser = await Puppeteer.LaunchAsync(new LaunchOptions
                     {
                         Headless = true,
                         ExecutablePath = fallbackPath,
                         Args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage"]
-                    });
+                    }).ConfigureAwait(false);
                 }
 
                 return _browser;
@@ -306,7 +313,7 @@ namespace Calcpad.Server.Services
             }
 
             // 3. Fallback: download ChromeHeadlessShell
-            return await DownloadChromiumAsync();
+            return await DownloadChromiumAsync().ConfigureAwait(false);
         }
 
         private static string? FindSystemBrowser()
@@ -382,7 +389,7 @@ namespace Calcpad.Server.Services
             var installed = fetcher.GetInstalledBrowsers().FirstOrDefault();
             if (installed == null)
             {
-                installed = await fetcher.DownloadAsync();
+                installed = await fetcher.DownloadAsync().ConfigureAwait(false);
                 FileLogger.LogInfo("ChromeHeadlessShell download complete", installed.GetExecutablePath());
             }
 
@@ -443,22 +450,28 @@ namespace Calcpad.Server.Services
             return outputStream.ToArray();
         }
 
+        private readonly record struct HeaderFooterContext(double Margin, XPen LinePen, XSolidBrush GrayBrush);
+
+        private static HeaderFooterContext SetupHeaderFooterContext() => new(
+            Margin: 20,
+            LinePen: new XPen(XColor.FromArgb(179, 179, 179), 0.5),
+            GrayBrush: new XSolidBrush(XColor.FromArgb(77, 77, 77)));
+
         private void DrawHeader(XGraphics gfx, double width, double height, CalcpadPdfOptions options)
         {
+            var ctx = SetupHeaderFooterContext();
             var font = new XFont("Helvetica", 10);
             var boldFont = new XFont("Helvetica", 12, XFontStyleEx.Bold);
             var smallFont = new XFont("Helvetica", 8);
             var darkBrush = XBrushes.Black;
-            var grayBrush = new XSolidBrush(XColor.FromArgb(77, 77, 77));
             var lightGrayBrush = new XSolidBrush(XColor.FromArgb(128, 128, 128));
-            var linePen = new XPen(XColor.FromArgb(179, 179, 179), 0.5);
 
-            const double margin = 20;
+            double margin = ctx.Margin;
             double headerY = margin;
 
             // Separator line below header text
             double lineY = headerY + 25;
-            gfx.DrawLine(linePen, margin, lineY, width - margin, lineY);
+            gfx.DrawLine(ctx.LinePen, margin, lineY, width - margin, lineY);
 
             // Document title (top-left, bold)
             if (!string.IsNullOrEmpty(options.DocumentTitle))
@@ -469,7 +482,7 @@ namespace Calcpad.Server.Services
                 // Subtitle
                 if (!string.IsNullOrEmpty(options.DocumentSubtitle))
                 {
-                    gfx.DrawString(options.DocumentSubtitle, font, grayBrush,
+                    gfx.DrawString(options.DocumentSubtitle, font, ctx.GrayBrush,
                         new XPoint(margin, headerY + 23));
                 }
             }
@@ -478,7 +491,7 @@ namespace Calcpad.Server.Services
             if (!string.IsNullOrEmpty(options.HeaderCenter))
             {
                 var size = gfx.MeasureString(options.HeaderCenter, font);
-                gfx.DrawString(options.HeaderCenter, font, grayBrush,
+                gfx.DrawString(options.HeaderCenter, font, ctx.GrayBrush,
                     new XPoint((width - size.Width) / 2, headerY + 12));
             }
 
@@ -493,29 +506,28 @@ namespace Calcpad.Server.Services
         private void DrawFooter(XGraphics gfx, double width, double height,
             int pageNumber, int totalPages, CalcpadPdfOptions options)
         {
+            var ctx = SetupHeaderFooterContext();
             var font = new XFont("Helvetica", 8);
             var centerFont = new XFont("Helvetica", 10);
-            var grayBrush = new XSolidBrush(XColor.FromArgb(77, 77, 77));
-            var linePen = new XPen(XColor.FromArgb(179, 179, 179), 0.5);
 
-            const double margin = 20;
+            double margin = ctx.Margin;
             double footerY = height - margin - 20;
 
             // Separator line above footer
             double lineY = footerY - 5;
-            gfx.DrawLine(linePen, margin, lineY, width - margin, lineY);
+            gfx.DrawLine(ctx.LinePen, margin, lineY, width - margin, lineY);
 
             // Left side: Author / Company
             double leftY = footerY + 8;
             if (!string.IsNullOrEmpty(options.Author))
             {
-                gfx.DrawString($"Author: {options.Author}", font, grayBrush,
+                gfx.DrawString($"Author: {options.Author}", font, ctx.GrayBrush,
                     new XPoint(margin, leftY));
                 leftY += 10;
             }
             if (!string.IsNullOrEmpty(options.Company))
             {
-                gfx.DrawString(options.Company, font, grayBrush,
+                gfx.DrawString(options.Company, font, ctx.GrayBrush,
                     new XPoint(margin, leftY));
             }
 
@@ -523,7 +535,7 @@ namespace Calcpad.Server.Services
             if (!string.IsNullOrEmpty(options.FooterCenter))
             {
                 var size = gfx.MeasureString(options.FooterCenter, centerFont);
-                gfx.DrawString(options.FooterCenter, centerFont, grayBrush,
+                gfx.DrawString(options.FooterCenter, centerFont, ctx.GrayBrush,
                     new XPoint((width - size.Width) / 2, footerY + 8));
             }
 
@@ -531,7 +543,7 @@ namespace Calcpad.Server.Services
             var pageText = $"Page {pageNumber} of {totalPages}";
             var pageSize = gfx.MeasureString(pageText, font);
             double rightY = footerY + 8;
-            gfx.DrawString(pageText, font, grayBrush,
+            gfx.DrawString(pageText, font, ctx.GrayBrush,
                 new XPoint(width - margin - pageSize.Width, rightY));
 
             if (!string.IsNullOrEmpty(options.Project))
@@ -539,7 +551,7 @@ namespace Calcpad.Server.Services
                 rightY += 10;
                 var projectText = $"Project: {options.Project}";
                 var projectSize = gfx.MeasureString(projectText, font);
-                gfx.DrawString(projectText, font, grayBrush,
+                gfx.DrawString(projectText, font, ctx.GrayBrush,
                     new XPoint(width - margin - projectSize.Width, rightY));
             }
         }
@@ -572,7 +584,7 @@ namespace Calcpad.Server.Services
                 try
                 {
                     var process = _browser.Process;
-                    await _browser.CloseAsync();
+                    await _browser.CloseAsync().ConfigureAwait(false);
                     // Ensure the browser process is fully terminated so it doesn't hold file locks
                     if (process is { HasExited: false })
                     {

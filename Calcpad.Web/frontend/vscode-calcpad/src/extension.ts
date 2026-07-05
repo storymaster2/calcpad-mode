@@ -559,8 +559,7 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         outputChannel.appendLine(`Server URL: ${apiBaseUrl}`);
         outputChannel.appendLine(`Settings retrieved: ${JSON.stringify(settings)}`);
 
-        // Select API endpoint based on unwrapped parameter
-        const endpoint = unwrapped ? '/api/calcpad/convert-unwrapped' : '/api/calcpad/convert';
+        const endpoint = unwrapped ? '/api/calcpad/convert?unwrap=true' : '/api/calcpad/convert';
         outputChannel.appendLine(`Making API call to ${endpoint}...`);
 
         const theme = getEffectivePreviewTheme();
@@ -627,7 +626,7 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         outputChannel.appendLine(`ERROR in updatePreviewContent: ${error instanceof Error ? error.message : 'Unknown error'}`);
         const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
         const errorApiBaseUrl = settingsManager.getServerUrl();
-        const endpoint = unwrapped ? 'convert-unwrapped' : 'convert';
+        const endpoint = unwrapped ? 'convert?unwrap=true' : 'convert';
         const errorHtml = `
             <!DOCTYPE html>
             <html>

@@ -1,4 +1,9 @@
 /**
+ * Browser-only image helpers (Clipboard API + FileReader). Pure/cross-platform
+ * helpers live in `calcpad-frontend/services/image-utils`.
+ */
+
+/**
  * Read an image from the system clipboard via the standard Clipboard API and return
  * a `data:` URI suitable for an HTML `<img src>`. Returns null if the clipboard has
  * no image, the API isn't available, or permission was denied.
@@ -27,33 +32,4 @@ export function blobToDataUri(blob: Blob): Promise<string> {
         reader.onerror = () => reject(reader.error);
         reader.readAsDataURL(blob);
     });
-}
-
-export function bytesToBase64(bytes: ArrayBuffer | Uint8Array): string {
-    const view = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-    let binary = '';
-    const chunkSize = 0x8000;
-    for (let i = 0; i < view.length; i += chunkSize) {
-        const chunk = view.subarray(i, Math.min(i + chunkSize, view.length));
-        binary += String.fromCharCode.apply(null, Array.from(chunk));
-    }
-    return btoa(binary);
-}
-
-export function mimeFromExtension(filename: string): string {
-    const ext = filename.toLowerCase().split('.').pop() ?? '';
-    switch (ext) {
-        case 'png':  return 'image/png';
-        case 'jpg':
-        case 'jpeg': return 'image/jpeg';
-        case 'gif':  return 'image/gif';
-        case 'webp': return 'image/webp';
-        case 'svg':  return 'image/svg+xml';
-        default:     return 'image/png';
-    }
-}
-
-/** Build the CalcPad comment-line wrapping an image src — `'<img src="...">`. */
-export function buildImageCommentLine(srcValue: string): string {
-    return `'<img src="${srcValue}">`;
 }

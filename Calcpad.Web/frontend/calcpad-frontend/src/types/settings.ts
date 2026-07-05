@@ -167,6 +167,53 @@ export function lightDirectionToEnum(direction: string): number {
     return LIGHT_DIRECTION_MAP[direction] ?? 0;
 }
 
+// ---- Extras runtime accessors ----
+// Extras are stored as `Record<string, string>` at runtime; these helpers do
+// the type coercion callers need on read. Kept as free functions so both the
+// VS Code settings manager and the Neutralino bridge can share them.
+
+export function getExtraString(
+    extras: CalcpadExtras,
+    key: string,
+    defaultValue: string = '',
+): string {
+    const v = extras[key];
+    return v === undefined || v === '' ? defaultValue : v;
+}
+
+export function getExtraBool(
+    extras: CalcpadExtras,
+    key: string,
+    defaultValue: boolean,
+): boolean {
+    const v = extras[key];
+    if (v === undefined) return defaultValue;
+    if (v === 'true') return true;
+    if (v === 'false') return false;
+    return defaultValue;
+}
+
+export function getExtraNumber(
+    extras: CalcpadExtras,
+    key: string,
+    defaultValue: number,
+): number {
+    const v = extras[key];
+    if (v === undefined || v === '') return defaultValue;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : defaultValue;
+}
+
+export function getExtraObject<T>(
+    extras: CalcpadExtras,
+    key: string,
+    defaultValue: T,
+): T {
+    const v = extras[key];
+    if (!v) return defaultValue;
+    try { return JSON.parse(v) as T; } catch { return defaultValue; }
+}
+
 export function buildApiSettings(settings: CalcpadSettings): unknown {
     return {
         math: { ...settings.math },

@@ -64,111 +64,41 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     vscode.commands.executeCommand('vscode-calcpad.insertImage');
                     break;
 
-                case 'getSettings': {
+                case 'getSettings':
                     await this._settingsManager.ready;
-                    const settings = this._settingsManager.getSettings();
-                    const previewTheme = this._settingsManager.getExtra('previewTheme', 'system');
-                    const commentFormat = this._settingsManager.getExtra('commentFormat', 'auto');
-                    const enableFormattingHotkeys = this._settingsManager.getExtraBool('formattingHotkeys', true);
-                    const darkBackground = this._settingsManager.getExtra('darkBackground', '#1e1e1e');
-                    const linterMinSeverity = this._settingsManager.getExtra('linterMinSeverity', 'information');
-                    const libraryPath = this._settingsManager.getExtra('libraryPath', '');
-                    const activeConfig = this._settingsManager.getActiveConfigName();
-                    const availableConfigs = await this._settingsManager.listConfigs();
-
-                    const colorTheme = vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', '');
-                    const availableThemes = this._getInstalledThemes();
-
-                    webviewView.webview.postMessage({
-                        type: 'settingsResponse',
-                        settings,
-                        previewTheme,
-                        colorTheme,
-                        availableThemes,
-                        commentFormat,
-                        enableFormattingHotkeys,
-                        darkBackground,
-                        linterMinSeverity,
-                        libraryPath,
-                        activeConfig,
-                        availableConfigs,
-                    });
+                    webviewView.webview.postMessage(await this._buildSettingsResponse());
                     break;
-                }
 
                 case 'updateSettings':
                     this._settingsManager.updateSettings(data.settings);
                     break;
 
-                case 'resetSettings': {
+                case 'resetSettings':
                     await this._settingsManager.resetSettings();
-                    const resetSettings = this._settingsManager.getSettings();
                     webviewView.webview.postMessage({
                         type: 'settingsReset',
-                        settings: resetSettings,
+                        settings: this._settingsManager.getSettings(),
                     });
-                    // Push a fresh settingsResponse so activeConfig / extras refresh in the UI.
-                    webviewView.webview.postMessage({
-                        type: 'settingsResponse',
-                        settings: resetSettings,
-                        previewTheme: this._settingsManager.getExtra('previewTheme', 'system'),
-                        colorTheme: vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', ''),
-                        availableThemes: this._getInstalledThemes(),
-                        commentFormat: this._settingsManager.getExtra('commentFormat', 'auto'),
-                        enableFormattingHotkeys: this._settingsManager.getExtraBool('formattingHotkeys', true),
-                        darkBackground: this._settingsManager.getExtra('darkBackground', '#1e1e1e'),
-                        linterMinSeverity: this._settingsManager.getExtra('linterMinSeverity', 'information'),
-                        libraryPath: this._settingsManager.getExtra('libraryPath', ''),
-                        activeConfig: this._settingsManager.getActiveConfigName(),
-                        availableConfigs: await this._settingsManager.listConfigs(),
-                    });
+                    webviewView.webview.postMessage(await this._buildSettingsResponse());
                     break;
-                }
 
                 case 'saveNamedConfig': {
-                    const result = await this._settingsManager.saveNamedConfig(data.name);
+                    const result = await this._settingsManager.savePreset(data.name);
                     if (!result.ok) {
                         webviewView.webview.postMessage({
                             type: 'saveNamedConfigError',
                             message: result.message,
                         });
                     } else {
-                        webviewView.webview.postMessage({
-                            type: 'settingsResponse',
-                            settings: this._settingsManager.getSettings(),
-                            previewTheme: this._settingsManager.getExtra('previewTheme', 'system'),
-                            colorTheme: vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', ''),
-                            availableThemes: this._getInstalledThemes(),
-                            commentFormat: this._settingsManager.getExtra('commentFormat', 'auto'),
-                            enableFormattingHotkeys: this._settingsManager.getExtraBool('formattingHotkeys', true),
-                            darkBackground: this._settingsManager.getExtra('darkBackground', '#1e1e1e'),
-                            linterMinSeverity: this._settingsManager.getExtra('linterMinSeverity', 'information'),
-                            libraryPath: this._settingsManager.getExtra('libraryPath', ''),
-                            activeConfig: this._settingsManager.getActiveConfigName(),
-                            availableConfigs: await this._settingsManager.listConfigs(),
-                        });
+                        webviewView.webview.postMessage(await this._buildSettingsResponse());
                     }
                     break;
                 }
 
-                case 'switchConfig': {
-                    await this._settingsManager.switchConfig(data.name);
-                    webviewView.webview.postMessage({
-                        type: 'settingsResponse',
-                        settings: this._settingsManager.getSettings(),
-                        previewTheme: this._settingsManager.getExtra('previewTheme', 'system'),
-                        colorTheme: vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', ''),
-                        availableThemes: this._getInstalledThemes(),
-                        commentFormat: this._settingsManager.getExtra('commentFormat', 'auto'),
-                        enableFormattingHotkeys: this._settingsManager.getExtraBool('formattingHotkeys', true),
-                        darkBackground: this._settingsManager.getExtra('darkBackground', '#1e1e1e'),
-                        linterMinSeverity: this._settingsManager.getExtra('linterMinSeverity', 'information'),
-                        libraryPath: this._settingsManager.getExtra('libraryPath', ''),
-                        activeConfig: this._settingsManager.getActiveConfigName(),
-                        availableConfigs: await this._settingsManager.listConfigs(),
-                    });
+                case 'switchConfig':
+                    await this._settingsManager.loadPreset(data.name);
+                    webviewView.webview.postMessage(await this._buildSettingsResponse());
                     break;
-                }
 
                 case 'openSettingsFolder':
                     await this._settingsManager.openSettingsFolder();
@@ -397,6 +327,30 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
             type: 'insertDataResponse',
             items: insertItems
         });
+    }
+
+    /**
+     * Build the payload used by `settingsResponse` messages. Single source of
+     * truth for the getSettings/resetSettings/saveNamedConfig/switchConfig
+     * handlers so their payloads can't drift out of sync.
+     */
+    private async _buildSettingsResponse(): Promise<Record<string, unknown>> {
+        const sm = this._settingsManager;
+        return {
+            type: 'settingsResponse',
+            settings: sm.getSettings(),
+            previewTheme: sm.getExtra('previewTheme', 'system'),
+            colorTheme: vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', ''),
+            availableThemes: this._getInstalledThemes(),
+            commentFormat: sm.getExtra('commentFormat', 'auto'),
+            enableFormattingHotkeys: sm.getExtraBool('formattingHotkeys', true),
+            enableQuickTyping: sm.getExtraBool('quickTyping', true),
+            darkBackground: sm.getExtra('darkBackground', '#1e1e1e'),
+            linterMinSeverity: sm.getExtra('linterMinSeverity', 'information'),
+            libraryPath: sm.getExtra('libraryPath', ''),
+            activeConfig: sm.getActivePresetName(),
+            availableConfigs: await sm.listPresets(),
+        };
     }
 
     private _sendHeadings() {
