@@ -63,7 +63,7 @@ namespace Calcpad.Core
                 {
                     var j = _order[i];
                     var s = arguments[j];
-                    if (s[0] == ' ' && s.Length > 1)
+                    if (s.Length > 1 && s[0] == ' ')
                         sb.Replace(_parameters[j], s[1..]);
                     else
                         sb.Replace(_parameters[j], s);
@@ -452,7 +452,7 @@ namespace Calcpad.Core
                     if (c == ';' && bracketCount == 1 || c == ')' && bracketCount == 0)
                     {
                         var s = ApplyMacros(textSpan.Cut(), currentlyExpanding);
-                        macroArguments.Add(s);
+                        macroArguments.Add(string.IsNullOrWhiteSpace(s) ? string.Empty : s);
                         textSpan.Reset(i + 1);
                         if ((macroArguments.Count == macro.ParameterCount) != (c == ')'))
                             throw Exceptions.InvalidNumberOfArguments();
