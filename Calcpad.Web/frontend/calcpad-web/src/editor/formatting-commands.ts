@@ -1,24 +1,15 @@
 import * as monaco from 'monaco-editor';
 import type { EditorBridge } from './bridge';
-
-type InlineFormat = 'bold' | 'italic' | 'underline' | 'subscript' | 'superscript';
-type CommentFormat = 'html' | 'markdown';
-
-const HTML_INLINE: Record<InlineFormat, [string, string]> = {
-    bold: ['<strong>', '</strong>'],
-    italic: ['<em>', '</em>'],
-    underline: ['<ins>', '</ins>'],
-    subscript: ['<sub>', '</sub>'],
-    superscript: ['<sup>', '</sup>'],
-};
-
-const MARKDOWN_INLINE: Record<InlineFormat, [string, string]> = {
-    bold: ['**', '**'],
-    italic: ['*', '*'],
-    underline: ['++', '++'],
-    subscript: ['~', '~'],
-    superscript: ['^', '^'],
-};
+import {
+    HTML_INLINE,
+    MARKDOWN_INLINE,
+    getCommentPrefixInsertColumn,
+    buildHeadingLine,
+    buildParagraphLine,
+    buildListLines,
+    type InlineFormat,
+    type CommentFormat,
+} from 'calcpad-frontend';
 
 /**
  * Register the 18 CalcPad text-formatting commands plus their keybindings on the editor.
@@ -98,15 +89,28 @@ function detectFormatAtCursor(editor: monaco.editor.IStandaloneCodeEditor): Comm
     return mdActive ? 'markdown' : 'html';
 }
 
-function stripCommentPrefix(lineText: string): [string, string, string] {
-    if (lineText.startsWith("'")) {
-        const inner = lineText.substring(1);
-        if (inner.endsWith("'")) {
-            return ["'", inner.slice(0, -1), "'"];
-        }
-        return ["'", inner, ''];
+/**
+ * Insert a comment quote on every given line that's missing one, right after
+ * its indentation (same rule headings use). Returns the 1-based column each
+ * quote was inserted at, keyed by line number, for shifting selections.
+ */
+function ensureCommentPrefixes(
+    model: monaco.editor.ITextModel,
+    lineNumbers: Iterable<number>,
+    edits: monaco.editor.IIdentifiedSingleEditOperation[],
+): Map<number, number> {
+    const insertedAt = new Map<number, number>();
+    for (const lineNumber of new Set(lineNumbers)) {
+        const insertCol = getCommentPrefixInsertColumn(model.getLineContent(lineNumber));
+        if (insertCol === null) continue;
+        edits.push({
+            range: new monaco.Range(lineNumber, insertCol, lineNumber, insertCol),
+            text: "'",
+            forceMoveMarkers: true,
+        });
+        insertedAt.set(lineNumber, insertCol);
     }
-    return ['', lineText, ''];
+    return insertedAt;
 }
 
 function wrapInline(
@@ -122,24 +126,30 @@ function wrapInline(
     if (selections.length === 0) return;
 
     const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];
+    // Bold/italic/etc. need the line wrapped in a comment for the HTML tags
+    // to render, same as headings — add one if missing.
+    const insertedAt = ensureCommentPrefixes(model, selections.map(s => s.startLineNumber), edits);
+
     const newSelections: monaco.Selection[] = [];
 
     for (const sel of selections) {
+        const shift = insertedAt.has(sel.startLineNumber) ? 1 : 0;
+        const startCol = sel.startColumn + shift;
+        const endShift = sel.endLineNumber === sel.startLineNumber ? shift : 0;
         const isEmpty = sel.isEmpty();
         if (isEmpty) {
             const text = prefix + suffix;
             edits.push({ range: sel, text, forceMoveMarkers: true });
             // After insert, cursor sits between prefix and suffix.
-            // Insert is at sel.getStartPosition(); after insert the cursor will be after the inserted text;
-            // we want it before suffix.
-            const start = sel.getStartPosition();
-            // Translate: column advances by prefix.length, then we want it there.
-            const placedCol = start.column + prefix.length;
-            newSelections.push(new monaco.Selection(start.lineNumber, placedCol, start.lineNumber, placedCol));
+            const placedCol = startCol + prefix.length;
+            newSelections.push(new monaco.Selection(sel.startLineNumber, placedCol, sel.startLineNumber, placedCol));
         } else {
             const selectedText = model.getValueInRange(sel);
             edits.push({ range: sel, text: prefix + selectedText + suffix, forceMoveMarkers: true });
-            newSelections.push(new monaco.Selection(sel.startLineNumber, sel.startColumn, sel.endLineNumber, sel.endColumn + prefix.length + suffix.length));
+            newSelections.push(new monaco.Selection(
+                sel.startLineNumber, startCol,
+                sel.endLineNumber, sel.endColumn + endShift + prefix.length + suffix.length,
+            ));
         }
     }
 
@@ -160,23 +170,9 @@ function insertHeading(
     for (const sel of selections) {
         const lineNumber = sel.positionLineNumber;
         const lineText = model.getLineContent(lineNumber);
-        let [, content, trailingQuote] = stripCommentPrefix(lineText);
-
-        const htmlMatch = content.match(/^<h[1-6]>(.*)<\/h[1-6]>$/);
-        if (htmlMatch) content = htmlMatch[1];
-        const mdMatch = content.match(/^(#{1,6})\s+(.*)$/);
-        if (mdMatch) content = mdMatch[2];
-
-        let newLine: string;
-        if (format === 'html') {
-            newLine = `'<h${level}>${content}</h${level}>${trailingQuote}`;
-        } else {
-            newLine = `'${'#'.repeat(level)} ${content}${trailingQuote}`;
-        }
-
         edits.push({
             range: new monaco.Range(lineNumber, 1, lineNumber, lineText.length + 1),
-            text: newLine,
+            text: buildHeadingLine(lineText, level, format),
             forceMoveMarkers: true,
         });
     }
@@ -192,10 +188,9 @@ function insertParagraph(editor: monaco.editor.IStandaloneCodeEditor): void {
     for (const sel of selections) {
         const lineNumber = sel.positionLineNumber;
         const lineText = model.getLineContent(lineNumber);
-        const [, content, trailingQuote] = stripCommentPrefix(lineText);
         edits.push({
             range: new monaco.Range(lineNumber, 1, lineNumber, lineText.length + 1),
-            text: `'<p>${content}</p>${trailingQuote}`,
+            text: buildParagraphLine(lineText),
             forceMoveMarkers: true,
         });
     }
@@ -224,20 +219,9 @@ function insertBulletedList(
     const startLine = sel.startLineNumber;
     const endLine = sel.endLineNumber;
 
-    const lines: string[] = [];
-    if (format === 'html') {
-        lines.push("'<ul>");
-        for (let i = startLine; i <= endLine; i++) {
-            const [, content, tq] = stripCommentPrefix(model.getLineContent(i));
-            lines.push(`'<li>${content}</li>${tq}`);
-        }
-        lines.push("'</ul>");
-    } else {
-        for (let i = startLine; i <= endLine; i++) {
-            const [, content, tq] = stripCommentPrefix(model.getLineContent(i));
-            lines.push(`'- ${content}${tq}`);
-        }
-    }
+    const lineTexts: string[] = [];
+    for (let i = startLine; i <= endLine; i++) lineTexts.push(model.getLineContent(i));
+    const lines = buildListLines(lineTexts, format, false);
 
     editor.executeEdits('calcpad-format-ul', [{
         range: new monaco.Range(startLine, 1, endLine, model.getLineLength(endLine) + 1),
@@ -258,22 +242,9 @@ function insertNumberedList(
     const startLine = sel.startLineNumber;
     const endLine = sel.endLineNumber;
 
-    const lines: string[] = [];
-    if (format === 'html') {
-        lines.push("'<ol>");
-        for (let i = startLine; i <= endLine; i++) {
-            const [, content, tq] = stripCommentPrefix(model.getLineContent(i));
-            lines.push(`'<li>${content}</li>${tq}`);
-        }
-        lines.push("'</ol>");
-    } else {
-        let num = 1;
-        for (let i = startLine; i <= endLine; i++) {
-            const [, content, tq] = stripCommentPrefix(model.getLineContent(i));
-            lines.push(`'${num}. ${content}${tq}`);
-            num++;
-        }
-    }
+    const lineTexts: string[] = [];
+    for (let i = startLine; i <= endLine; i++) lineTexts.push(model.getLineContent(i));
+    const lines = buildListLines(lineTexts, format, true);
 
     editor.executeEdits('calcpad-format-ol', [{
         range: new monaco.Range(startLine, 1, endLine, model.getLineLength(endLine) + 1),

@@ -1,25 +1,18 @@
 import * as vscode from 'vscode';
 import { CalcpadSettingsManager } from './calcpadSettings';
+import {
+    HTML_INLINE,
+    MARKDOWN_INLINE,
+    stripCommentPrefix,
+    getCommentPrefixInsertColumn,
+    buildHeadingLine,
+    buildParagraphLine,
+    buildListLines,
+    type InlineFormat,
+    type CommentFormat,
+} from 'calcpad-frontend';
 
-type InlineFormat = 'bold' | 'italic' | 'underline' | 'subscript' | 'superscript';
-type CommentFormat = 'html' | 'markdown';
 type CommentFormatSetting = 'html' | 'markdown' | 'auto';
-
-const HTML_INLINE: Record<InlineFormat, [string, string]> = {
-    bold: ['<strong>', '</strong>'],
-    italic: ['<em>', '</em>'],
-    underline: ['<ins>', '</ins>'],
-    subscript: ['<sub>', '</sub>'],
-    superscript: ['<sup>', '</sup>']
-};
-
-const MARKDOWN_INLINE: Record<InlineFormat, [string, string]> = {
-    bold: ['**', '**'],
-    italic: ['*', '*'],
-    underline: ['++', '++'],
-    subscript: ['~', '~'],
-    superscript: ['^', '^']
-};
 
 /**
  * Handles text formatting hotkeys for Calcpad comment lines.
@@ -101,30 +94,29 @@ export class CommentFormatter {
     }
 
     /**
-     * Strip the leading comment prefix (') from a line, returning [prefix, content].
-     */
-    /**
-     * Strip the leading comment prefix (') and trailing auto-bracket (') from a line.
-     * Returns [prefix, content, trailingQuote].
-     */
-    private stripCommentPrefix(lineText: string): [string, string, string] {
-        if (lineText.startsWith("'")) {
-            const inner = lineText.substring(1);
-            if (inner.endsWith("'")) {
-                return ["'", inner.slice(0, -1), "'"];
-            }
-            return ["'", inner, ''];
-        }
-        return ['', lineText, ''];
-    }
-
-    /**
-     * Wrap selected text with inline formatting tags.
-     * Works within comment lines — wraps the selection in place.
+     * Wrap selected text with inline formatting tags. Also ensures every
+     * touched line starts with a comment quote right after its indentation
+     * (same rule headings use) — bold/italic/etc. tags only render as HTML
+     * inside a comment. Run as its own edit first so VS Code auto-adjusts
+     * `editor.selections` before the wrap edit reads them.
      */
     private async wrapInline(editor: vscode.TextEditor, type: InlineFormat): Promise<void> {
         const format = this.getFormat();
         const [prefix, suffix] = format === 'html' ? HTML_INLINE[type] : MARKDOWN_INLINE[type];
+
+        const linesNeedingPrefix = new Set(editor.selections.map(s => s.start.line));
+        const prefixInserts: Array<[line: number, col: number]> = [];
+        for (const line of linesNeedingPrefix) {
+            const insertCol = getCommentPrefixInsertColumn(editor.document.lineAt(line).text);
+            if (insertCol !== null) prefixInserts.push([line, insertCol - 1]);
+        }
+        if (prefixInserts.length > 0) {
+            await editor.edit(editBuilder => {
+                for (const [line, col] of prefixInserts) {
+                    editBuilder.insert(new vscode.Position(line, col), "'");
+                }
+            });
+        }
 
         const wasEmpty = editor.selections.map(s => s.isEmpty);
 
@@ -164,32 +156,13 @@ export class CommentFormatter {
         await editor.edit(editBuilder => {
             for (const selection of editor.selections) {
                 const line = editor.document.lineAt(selection.active.line);
-                const lineRange = line.range;
-                let [commentPrefix, content, trailingQuote] = this.stripCommentPrefix(line.text);
+                const [, content] = stripCommentPrefix(line.text);
+                const strippedContent = content
+                    .replace(/^<h[1-6]>(.*)<\/h[1-6]>$/, '$1')
+                    .replace(/^#{1,6}\s+(.*)$/, '$1');
+                contentWasEmpty.push(strippedContent.trim().length === 0);
 
-                // Strip existing HTML heading tags
-                const htmlHeadingMatch = content.match(/^<h[1-6]>(.*)<\/h[1-6]>$/);
-                if (htmlHeadingMatch) {
-                    content = htmlHeadingMatch[1];
-                }
-
-                // Strip existing markdown headings
-                const mdHeadingMatch = content.match(/^(#{1,6})\s+(.*)$/);
-                if (mdHeadingMatch) {
-                    content = mdHeadingMatch[2];
-                }
-
-                contentWasEmpty.push(content.trim().length === 0);
-
-                let newLine: string;
-                if (format === 'html') {
-                    newLine = `'<h${level}>${content}</h${level}>${trailingQuote}`;
-                } else {
-                    const hashes = '#'.repeat(level);
-                    newLine = `'${hashes} ${content}${trailingQuote}`;
-                }
-
-                editBuilder.replace(lineRange, newLine);
+                editBuilder.replace(line.range, buildHeadingLine(line.text, level, format));
             }
         });
 
@@ -218,10 +191,7 @@ export class CommentFormatter {
         await editor.edit(editBuilder => {
             for (const selection of editor.selections) {
                 const line = editor.document.lineAt(selection.active.line);
-                const lineRange = line.range;
-                const [, content, trailingQuote] = this.stripCommentPrefix(line.text);
-
-                editBuilder.replace(lineRange, `'<p>${content}</p>${trailingQuote}`);
+                editBuilder.replace(line.range, buildParagraphLine(line.text));
             }
         });
     }
@@ -246,27 +216,14 @@ export class CommentFormatter {
         await editor.edit(editBuilder => {
             const startLine = editor.selection.start.line;
             const endLine = editor.selection.end.line;
-            const lines: string[] = [];
-
-            if (format === 'html') {
-                lines.push("'<ul>");
-                for (let i = startLine; i <= endLine; i++) {
-                    const [, content, tq] = this.stripCommentPrefix(editor.document.lineAt(i).text);
-                    lines.push(`'<li>${content}</li>${tq}`);
-                }
-                lines.push("'</ul>");
-            } else {
-                for (let i = startLine; i <= endLine; i++) {
-                    const [, content, tq] = this.stripCommentPrefix(editor.document.lineAt(i).text);
-                    lines.push(`'- ${content}${tq}`);
-                }
-            }
+            const lineTexts: string[] = [];
+            for (let i = startLine; i <= endLine; i++) lineTexts.push(editor.document.lineAt(i).text);
 
             const fullRange = new vscode.Range(
                 editor.document.lineAt(startLine).range.start,
                 editor.document.lineAt(endLine).range.end
             );
-            editBuilder.replace(fullRange, lines.join('\n'));
+            editBuilder.replace(fullRange, buildListLines(lineTexts, format, false).join('\n'));
         });
     }
 
@@ -279,29 +236,14 @@ export class CommentFormatter {
         await editor.edit(editBuilder => {
             const startLine = editor.selection.start.line;
             const endLine = editor.selection.end.line;
-            const lines: string[] = [];
-
-            if (format === 'html') {
-                lines.push("'<ol>");
-                for (let i = startLine; i <= endLine; i++) {
-                    const [, content, tq] = this.stripCommentPrefix(editor.document.lineAt(i).text);
-                    lines.push(`'<li>${content}</li>${tq}`);
-                }
-                lines.push("'</ol>");
-            } else {
-                let num = 1;
-                for (let i = startLine; i <= endLine; i++) {
-                    const [, content, tq] = this.stripCommentPrefix(editor.document.lineAt(i).text);
-                    lines.push(`'${num}. ${content}${tq}`);
-                    num++;
-                }
-            }
+            const lineTexts: string[] = [];
+            for (let i = startLine; i <= endLine; i++) lineTexts.push(editor.document.lineAt(i).text);
 
             const fullRange = new vscode.Range(
                 editor.document.lineAt(startLine).range.start,
                 editor.document.lineAt(endLine).range.end
             );
-            editBuilder.replace(fullRange, lines.join('\n'));
+            editBuilder.replace(fullRange, buildListLines(lineTexts, format, true).join('\n'));
         });
     }
 

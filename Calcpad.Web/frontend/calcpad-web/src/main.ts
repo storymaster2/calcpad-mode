@@ -155,6 +155,9 @@ async function bootstrap(): Promise<void> {
     // Server-manager log lines that arrive before the Output panel mounts
     // get buffered here, then flushed when appInstance is ready.
     const pendingServerLogs: string[] = [];
+    // Raw stdout/stderr lines from the Calcpad.Server sidecar (Rust's
+    // `server-log` event), buffered the same way for the same reason.
+    const pendingServerRawLogs: { line: string; stream: 'stdout' | 'stderr' }[] = [];
 
     if (isTauri) {
         // Tauri desktop: the Rust layer owns the Calcpad.Server sidecar
@@ -164,6 +167,9 @@ async function bootstrap(): Promise<void> {
         serverManager = new TauriServerManager({
             appendLine: (msg: string) => pendingServerLogs.push(msg),
         });
+        serverManager.onServerLog = (line: string, stream: 'stdout' | 'stderr') => {
+            pendingServerRawLogs.push({ line, stream });
+        };
 
         serverManager.onStartupBlocked = (details: string) => {
             pendingServerLogs.push(`Server did not start — ${details}`);
@@ -386,10 +392,17 @@ async function bootstrap(): Promise<void> {
     // then redirect future ones straight into the panel.
     for (const msg of pendingServerLogs) appInstance.appendOutput('info', msg);
     pendingServerLogs.length = 0;
+    for (const { line, stream } of pendingServerRawLogs) {
+        appInstance.appendOutput(stream === 'stderr' ? 'error' : 'info', line, 'server');
+    }
+    pendingServerRawLogs.length = 0;
     if (serverManager) {
         serverManager.setLogger({
             appendLine: (msg: string) => appInstance.appendOutput('info', msg),
         });
+        serverManager.onServerLog = (line: string, stream: 'stdout' | 'stderr') => {
+            appInstance.appendOutput(stream === 'stderr' ? 'error' : 'info', line, 'server');
+        };
         serverManager.onUrlChanged = (newUrl: string) => {
             activeBridge.api.setBaseUrl(newUrl);
             appInstance.appendOutput('info', `Server URL updated: ${newUrl}`);

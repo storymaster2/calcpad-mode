@@ -125,3 +125,16 @@ export {
     couldCompleteDedentKeyword,
     calculateExpectedIndent,
 } from './text/auto-indent';
+export type { InlineFormat, CommentFormat } from './text/comment-formatting';
+export {
+    HTML_INLINE,
+    MARKDOWN_INLINE,
+    getIndentLength,
+    splitIndent,
+    stripCommentPrefix,
+    lineHasCommentPrefix,
+    getCommentPrefixInsertColumn,
+    buildHeadingLine,
+    buildParagraphLine,
+    buildListLines,
+} from './text/comment-formatting';
