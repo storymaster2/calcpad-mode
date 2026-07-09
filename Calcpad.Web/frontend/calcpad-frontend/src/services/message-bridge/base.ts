@@ -22,7 +22,7 @@ const BUILTIN_THEMES = [
 ];
 
 /**
- * Shared message routing and handlers for the web and Neutralino bridges.
+ * Shared message routing and handlers for the web and Tauri bridges.
  *
  * Subclasses inject platform-specific behavior via the abstract hooks
  * (settings storage, file save/pick, image pick, source-file resolution)
@@ -99,6 +99,7 @@ export abstract class BaseMessageBridge {
                 break;
             case 'updatePreviewTheme':
                 this.setExtraSetting('previewTheme', message.theme);
+                this.postToVue({ type: 'previewThemeChanged', theme: message.theme });
                 break;
             case 'updateColorTheme':
                 this.setExtraSetting('colorTheme', message.theme);

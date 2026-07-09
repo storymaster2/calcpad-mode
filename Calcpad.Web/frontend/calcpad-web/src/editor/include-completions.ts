@@ -73,7 +73,7 @@ function normalize(p: string): string {
 }
 
 export interface IncludeCompletionsContext {
-    /** Directory-listing service (usually neuBridge.listDirectory). */
+    /** Directory-listing service (usually tauriBridge.listDirectory). */
     listDirectory(dirPath: string): Promise<Array<{ name: string; path: string; isDirectory: boolean }>>;
     /** Absolute path of the file being edited, or null (untitled). */
     getCurrentFilePath(): string | null;

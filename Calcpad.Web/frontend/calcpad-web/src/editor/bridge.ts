@@ -4,7 +4,7 @@ import type { CalcpadSnippetService } from 'calcpad-frontend/services/snippets';
 import type { CalcpadSettings } from 'calcpad-frontend/types/settings';
 
 /**
- * Shape both `MessageBridge` (web) and `NeutralinoMessageBridge` (desktop) must satisfy
+ * Shape both `MessageBridge` (web) and `TauriMessageBridge` (desktop) must satisfy
  * so editor providers can be written once and consume either.
  */
 export interface EditorBridge {

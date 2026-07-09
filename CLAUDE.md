@@ -1,0 +1,1 @@
+- Do not use long code comments unless you are doing something abnormal. You can use shorter comments as needed, but only include them where it actually explains something that is hard to determine from just reading the code.

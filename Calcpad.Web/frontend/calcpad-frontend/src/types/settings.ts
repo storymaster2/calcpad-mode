@@ -170,7 +170,7 @@ export function lightDirectionToEnum(direction: string): number {
 // ---- Extras runtime accessors ----
 // Extras are stored as `Record<string, string>` at runtime; these helpers do
 // the type coercion callers need on read. Kept as free functions so both the
-// VS Code settings manager and the Neutralino bridge can share them.
+// VS Code settings manager and the Tauri bridge can share them.
 
 export function getExtraString(
     extras: CalcpadExtras,

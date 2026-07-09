@@ -244,7 +244,7 @@ export class BaseServerManager {
             DOTNET_DbgMiniDumpName: path.join(dumpDir, 'last-crash.dmp'),
             DOTNET_EnableCrashReport: '1',
             // The server defaults to "exit when stdin EOFs" so the
-            // Neutralino desktop doesn't leak orphan processes. The VS Code
+            // Tauri desktop doesn't leak orphan processes. The VS Code
             // extension shares one server across multiple windows via the
             // lock file, so it must explicitly opt out — without this,
             // closing the spawning window would kill the server even if

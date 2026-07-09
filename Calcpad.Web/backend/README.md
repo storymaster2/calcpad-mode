@@ -2,7 +2,7 @@
 
 > **Localhost-only build.** This branch (`calcpad-web`) only supports running the server bound to a loopback address. The startup loopback guard in [Program.cs](Program.cs) throws `InvalidOperationException` if the resolved bind URL is anything other than `localhost`, `127.0.0.0/8`, or `::1`. Multi-user / hosted / Docker deployment, auth, file storage, and per-user caching live on the `calcpad-experimental` branch.
 
-The Calcpad.Web backend is an ASP.NET Core Web API that powers the standalone web editor, the VS Code extension, and the Neutralino desktop wrapper. It exposes conversion, linting, highlighting, definitions, find-references, snippet, and PDF endpoints over a single local HTTP listener.
+The Calcpad.Web backend is an ASP.NET Core Web API that powers the standalone web editor, the VS Code extension, and the Tauri desktop wrapper. It exposes conversion, linting, highlighting, definitions, find-references, snippet, and PDF endpoints over a single local HTTP listener.
 
 ## Running
 

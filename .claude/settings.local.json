@@ -8,7 +8,11 @@
       "Bash(git log --diff-filter=D --summary)",
       "WebSearch",
       "Bash(find /c/Users/IsaiahMartin/source/repos/CalcpadCE/Calcpad.Core -name \"*.cs\" -exec grep -l \"class Input\\\\|struct Input\" {} \\\\;)",
-      "Bash(git ls-tree *)"
+      "Bash(git ls-tree *)",
+      "WebFetch(domain:v2.tauri.app)",
+      "WebFetch(domain:github.com)",
+      "Bash(export PATH=\"$HOME/.cargo/bin:$PATH\")",
+      "Bash(cargo check *)"
     ]
   }
 }

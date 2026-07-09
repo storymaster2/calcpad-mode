@@ -23,11 +23,6 @@
     ></div>
     <div class="editor-pane">
       <div class="editor-toolbar">
-        <template v-if="isNeutralino">
-          <span class="file-name">{{ fileName || 'Untitled' }}</span>
-          <span v-if="isDirty" class="dirty-indicator">*</span>
-        </template>
-        <span v-else>CalcPad Web</span>
         <span class="spacer"></span>
         <button class="toolbar-btn" @click="togglePreview" title="Preview HTML">
           {{ previewVisible ? 'Hide Preview' : 'Preview' }}
@@ -203,8 +198,8 @@
       <iframe ref="previewFrame" class="preview-frame" sandbox="allow-same-origin allow-scripts"></iframe>
     </div>
 
-    <!-- Confirm dialog (used in place of Neutralino's GTK dialog, which has
-         a button-mapping bug where YES_NO_CANCEL → "No" returns "CANCEL"). -->
+    <!-- Confirm dialog. HTML modal instead of a native dialog for cross-platform
+         consistency between web and desktop. -->
     <div v-if="confirmState" class="modal-backdrop" @click.self="resolveConfirm('cancel')">
       <div class="modal-card" role="dialog" aria-modal="true">
         <div class="modal-title">{{ confirmState.title }}</div>
@@ -233,10 +228,6 @@ export interface ProblemItem {
   endLineNumber: number
   endColumn: number
 }
-
-defineProps<{
-  isNeutralino?: boolean
-}>()
 
 export type PreviewMode = 'wrapped' | 'unwrapped'
 
@@ -356,8 +347,6 @@ function gotoProblem(problem: ProblemItem): void {
 const editorContainer = ref<HTMLElement | null>(null)
 const previewFrame = ref<HTMLIFrameElement | null>(null)
 const serverConnected = ref(false)
-const fileName = ref('')
-const isDirty = ref(false)
 const sidebarVisible = ref(true)
 const previewVisible = ref(false)
 const bottomPanelOpen = ref(false)
@@ -408,16 +397,23 @@ function appendOutput(
   const now = new Date()
   const time = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
   const labels: Record<string, string> = { info: 'INFO', warn: 'WARN', error: 'ERROR', debug: 'DEBUG' }
+  // Sample scroll position BEFORE mutating outputLines so the new line's
+  // height doesn't inflate scrollHeight and mask a user-initiated scroll-up.
+  // If the user is pinned to (or within a few px of) the bottom, keep
+  // auto-scrolling; otherwise leave the viewport alone so they can read/copy.
+  const el = outputList.value
+  const wasAtBottom = el
+    ? (el.scrollHeight - el.scrollTop - el.clientHeight) <= 4
+    : true
   outputLines.value.push({ time, level, label: labels[level] ?? level, message, channel })
   // Cap at 1000 lines (across all channels combined)
   if (outputLines.value.length > 1000) {
     outputLines.value.splice(0, outputLines.value.length - 1000)
   }
-  // Auto-scroll only when the active channel matches
-  if (channel === activeOutputChannel.value) {
+  if (wasAtBottom && channel === activeOutputChannel.value) {
     nextTick(() => {
-      const el = outputList.value
-      if (el) el.scrollTop = el.scrollHeight
+      const target = outputList.value
+      if (target) target.scrollTop = target.scrollHeight
     })
   }
 }
@@ -425,18 +421,6 @@ function appendOutput(
 function clearOutput(): void {
   // Only clear the currently visible channel — match VS Code's per-channel clear.
   outputLines.value = outputLines.value.filter(l => l.channel !== activeOutputChannel.value)
-}
-
-function setFileName(name: string): void {
-  fileName.value = name
-}
-
-function setDirty(dirty: boolean): void {
-  isDirty.value = dirty
-}
-
-function getIsDirty(): boolean {
-  return isDirty.value
 }
 
 function toggleSidebar(): void {
@@ -522,7 +506,7 @@ function setPreviewHtml(html: string, scrollToLine?: number): void {
 // keeps the layout from shifting. The iframe has no VS Code theme variables, so
 // use plain rgba values (mirrors vscode-calcpad's getScrollbarStyleScript).
 // The .code (unwrapped view) rule mirrors this on the code container so the
-// Neutralino webview shows the same scrollbar for long code output.
+// Tauri webview shows the same scrollbar for long code output.
 // The .lineLink override enlarges the hover arrow so it's easier to click.
 function injectScrollbarStyles(html: string): string {
   const style = [
@@ -759,9 +743,6 @@ function resolveConfirm(choice: ConfirmChoice): void {
 
 defineExpose({
   editorContainer,
-  setFileName,
-  setDirty,
-  isDirty: getIsDirty,
   toggleSidebar,
   togglePreview,
   isPreviewVisible,

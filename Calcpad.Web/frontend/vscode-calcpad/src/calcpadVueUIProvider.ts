@@ -10,6 +10,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
     private _view?: vscode.WebviewView;
     private _outputChannel: vscode.OutputChannel;
+    public onPreviewThemeChanged?: () => void | Promise<void>;
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
@@ -106,6 +107,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
                 case 'updatePreviewTheme':
                     this._settingsManager.setExtra('previewTheme', data.theme);
+                    void this.onPreviewThemeChanged?.();
                     break;
 
                 case 'updateColorTheme':

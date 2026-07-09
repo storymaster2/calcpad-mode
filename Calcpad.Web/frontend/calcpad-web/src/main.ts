@@ -32,8 +32,8 @@ import './styles/app.css';
 // Monaco worker setup — must run before editor creation
 import './editor/workers';
 
-/** Runtime check: are we running inside a Neutralino window? */
-const isNeutralino = typeof (window as any).NL_TOKEN !== 'undefined';
+/** Runtime check: are we running inside a Tauri webview? */
+const isTauri = typeof (window as any).__TAURI_INTERNALS__ !== 'undefined';
 
 // Determine server URL:
 // 1. ?server= query param
@@ -105,195 +105,66 @@ c = √(a² + b²)
 }
 
 /**
- * Locate the server binary's directory inside the Neutralino install
- * (where the lock + port files live, and where Calcpad.Server[.exe] sits).
+ * Native message box shown when the calculation server never becomes ready.
+ * The editor itself keeps working; only server-backed features (preview,
+ * linting, export) need it.
  */
-function getServerDir(): string {
-    const NL_PATH = ((window as Window & { NL_PATH?: string }).NL_PATH ?? '').replace(/\\/g, '/');
-    return `${NL_PATH}/extensions/server`;
-}
-
-/**
- * Native message box shown when the calculation server is spawned but never
- * becomes ready — on Windows this almost always means SmartScreen / Microsoft
- * Defender blocked the unsigned Calcpad.Server.exe (the "Windows protected
- * your PC" modal). Mirrors the VS Code extension's spawn-block guidance: tell
- * the user to unblock the file, then restart the server from the menu. The
- * editor itself keeps working; only server-backed features (preview, linting,
- * export) need it. Non-Windows platforms get generic wording since the
- * unblock-via-Properties flow is Windows-specific.
- */
-async function showServerBlockedDialog(exePath: string, nlOs: string): Promise<void> {
-    const { os } = await import('@neutralinojs/lib');
-    // exePath comes through with native separators; show the folder the user
-    // needs to open, normalized to backslashes on Windows for copy-paste.
-    const folder = exePath.replace(/[\\/][^\\/]+$/, '');
-    const displayFolder = nlOs === 'Windows' ? folder.replace(/\//g, '\\') : folder;
-
-    const steps = nlOs === 'Windows'
-        ? 'To unblock it:\n'
-            + `  1. Open this folder:\n     ${displayFolder}\n`
-            + '  2. Right-click Calcpad.Server.exe → Properties\n'
-            + '  3. Tick "Unblock" near the bottom, then click OK\n'
-            + '  4. Back in CalcPad, choose Server → Restart Server'
-        : 'Make sure the server executable is present and executable, then\n'
-            + 'choose Server → Restart Server in CalcPad.';
-
-    const message =
-        'CalcPad\'s calculation server started but never became ready.\n\n'
-        + (nlOs === 'Windows'
-            ? 'Windows appears to be blocking Calcpad.Server.exe (SmartScreen / '
-              + 'Microsoft Defender). '
-            : '')
+async function showServerBlockedDialog(details: string): Promise<void> {
+    const { message: dialogMessage } = await import('@tauri-apps/plugin-dialog');
+    const body =
+        "CalcPad's calculation server started but never became ready.\n\n"
         + 'The editor still works, but preview, linting, and PDF/Word export '
-        + 'need the server.\n\n'
-        + steps;
-
+        + 'need the server. Choose Server → Restart Server to try again.\n\n'
+        + `Details: ${details}`;
     try {
-        await os.showMessageBox(
-            'CalcPad server blocked',
-            message,
-            'OK' as any,
-            'WARNING' as any,
-        );
+        await dialogMessage(body, {
+            title: 'CalcPad server unavailable',
+            kind: 'warning',
+            okLabel: 'OK',
+        });
     } catch {
-        // showMessageBox can throw if the runtime is tearing down — the
-        // buffered log line in the Output panel is the fallback.
+        // dialog can throw if the runtime is tearing down — the buffered log
+        // line in the Output panel is the fallback.
     }
-}
-
-/**
- * Set up the Neutralino native menu bar. The recents submenu is rebuilt
- * each time this function is called.
- */
-async function setupNeutralinoMenu(recents: string[], previewMode: PreviewMode): Promise<void> {
-    const { window: nWindow } = await import('@neutralinojs/lib');
-
-    const sep = { id: '-', text: '-' };
-    const recentItems: any[] = recents.length === 0
-        ? [{ id: 'recent-empty', text: '(no recent files)' }]
-        : recents.map((p, i) => ({ id: `recent:${i}`, text: shortenPath(p) }));
-    if (recents.length > 0) {
-        recentItems.push(sep);
-        recentItems.push({ id: 'recent-clear', text: 'Clear Recently Opened' });
-    }
-
-    const previewModeItems: any[] = [
-        { id: 'preview-mode:wrapped',    text: previewMode === 'wrapped'    ? '✓ Wrapped'    : '  Wrapped' },
-        { id: 'preview-mode:unwrapped',  text: previewMode === 'unwrapped'  ? '✓ Unwrapped'  : '  Unwrapped' },
-    ];
-
-    await nWindow.setMainMenu([
-        {
-            id: 'file',
-            text: 'File',
-            menuItems: [
-                { id: 'new', text: 'New Tab', shortcut: 'Ctrl+N' },
-                { id: 'open', text: 'Open...', shortcut: 'Ctrl+O' },
-                { id: 'open-recent', text: 'Open Recent', menuItems: recentItems },
-                sep,
-                { id: 'save', text: 'Save', shortcut: 'Ctrl+S' },
-                { id: 'save-as', text: 'Save As...', shortcut: 'Ctrl+Shift+S' },
-                sep,
-                { id: 'close-tab', text: 'Close Tab', shortcut: 'Ctrl+W' },
-                sep,
-                { id: 'export-pdf', text: 'Export PDF...' },
-                sep,
-                { id: 'quit', text: 'Quit' },
-            ],
-        },
-        {
-            id: 'edit',
-            text: 'Edit',
-            menuItems: [
-                { id: 'undo', text: 'Undo', shortcut: 'Ctrl+Z' },
-                { id: 'redo', text: 'Redo', shortcut: 'Ctrl+Shift+Z' },
-                sep,
-                { id: 'cut', text: 'Cut', shortcut: 'Ctrl+X' },
-                { id: 'copy', text: 'Copy', shortcut: 'Ctrl+C' },
-                { id: 'paste', text: 'Paste', shortcut: 'Ctrl+V' },
-                sep,
-                { id: 'select-all', text: 'Select All', shortcut: 'Ctrl+A' },
-                { id: 'find', text: 'Find', shortcut: 'Ctrl+F' },
-                { id: 'replace', text: 'Replace', shortcut: 'Ctrl+H' },
-            ],
-        },
-        {
-            id: 'view',
-            text: 'View',
-            menuItems: [
-                { id: 'toggle-sidebar', text: 'Toggle Sidebar', shortcut: 'Ctrl+Shift+B' },
-                { id: 'toggle-preview', text: 'Toggle Preview', shortcut: 'Ctrl+P' },
-                { id: 'preview-mode', text: 'Preview Mode', menuItems: previewModeItems },
-            ],
-        },
-        {
-            id: 'server',
-            text: 'Server',
-            menuItems: [
-                { id: 'refresh', text: 'Refresh', shortcut: 'F5' },
-                { id: 'show-server-log', text: 'Show Server Log' },
-                { id: 'stop-server', text: 'Stop Server' },
-                { id: 'restart-server', text: 'Restart Server' },
-                { id: 'restart-app', text: 'Restart App' },
-            ],
-        },
-    ]);
 }
 
 type PreviewMode = 'wrapped' | 'unwrapped';
 
-function shortenPath(path: string, max = 60): string {
-    if (path.length <= max) return path;
-    const parts = path.split(/[\\/]/);
-    const name = parts.pop() ?? path;
-    return '…' + (path.length - name.length > 0 ? path.slice(-(max - name.length - 1)) : name);
-}
-
 async function bootstrap(): Promise<void> {
     let serverUrl: string;
     let bridge: MessageBridge | null = null;
-    let neuBridge: any = null;
-    let serverManager: import('./services/server-manager').NeutralinoServerManager | null = null;
+    let tauriBridge: import('./services/tauri-bridge').TauriMessageBridge | null = null;
+    let serverManager: import('./services/server-manager').TauriServerManager | null = null;
     // Server-manager log lines that arrive before the Output panel mounts
     // get buffered here, then flushed when appInstance is ready.
     const pendingServerLogs: string[] = [];
 
-    if (isNeutralino) {
-        // Neutralino desktop: own the server lifecycle ourselves (spawn,
-        // health-check, crash-restart) rather than relying on Neutralino's
-        // extensions[] — Neutralino has no API to stop/restart an extension
-        // and no auto-restart on crash.
-        const { init } = await import('@neutralinojs/lib');
-        init();
+    if (isTauri) {
+        // Tauri desktop: the Rust layer owns the Calcpad.Server sidecar
+        // (spawn, kill on exit, port discovery). This manager just tracks
+        // its URL and surfaces crashes to the Output panel.
+        const { TauriServerManager } = await import('./services/server-manager');
+        serverManager = new TauriServerManager({
+            appendLine: (msg: string) => pendingServerLogs.push(msg),
+        });
 
-        const { NeutralinoServerManager } = await import('./services/server-manager');
-        const NL_OS = (window as Window & { NL_OS?: string }).NL_OS ?? 'Unknown';
-        serverManager = new NeutralinoServerManager(getServerDir(), {
-            // Buffered into a top-level array, drained into the Output panel
-            // once the Vue app mounts. The panel doesn't exist yet here.
-            appendLine: (msg) => pendingServerLogs.push(msg),
-        }, NL_OS);
-
-        // Wire the "Windows blocked the exe" handler BEFORE the first start()
-        // so the guidance dialog fires on the very first launch — the Vue app
-        // (and its Output panel) hasn't mounted yet at this point, so the log
-        // line is buffered and the message box is shown directly via Neutralino.
-        serverManager.onStartupBlocked = (exePath: string) => {
-            pendingServerLogs.push(`Server did not start — Windows may be blocking ${exePath}`);
-            void showServerBlockedDialog(exePath, NL_OS);
+        serverManager.onStartupBlocked = (details: string) => {
+            pendingServerLogs.push(`Server did not start — ${details}`);
+            void showServerBlockedDialog(details);
         };
 
         try {
             await serverManager.start();
         } catch (err) {
+            const msg = err instanceof Error ? (err.stack ?? err.message) : String(err);
+            pendingServerLogs.push(`[bootstrap] Server failed to start: ${msg}`);
             console.error('[bootstrap] Server failed to start:', err);
         }
         serverUrl = serverManager.getBaseUrl() || '';
 
-        const { NeutralinoMessageBridge } = await import('./services/neutralino-bridge');
-        neuBridge = new NeutralinoMessageBridge(serverUrl);
-        (window as any).calcpadBridge = neuBridge;
+        const { TauriMessageBridge } = await import('./services/tauri-bridge');
+        tauriBridge = new TauriMessageBridge(serverUrl);
+        (window as any).calcpadBridge = tauriBridge;
     } else {
         // Pure web: use in-process web bridge
         serverUrl = getServerUrl();
@@ -301,13 +172,13 @@ async function bootstrap(): Promise<void> {
         (window as any).calcpadBridge = bridge;
     }
 
-    const activeBridge = neuBridge ?? bridge!;
+    const activeBridge = tauriBridge ?? bridge!;
 
     // Initialize the platform messaging (reads VITE_PLATFORM='web')
     initMessaging();
 
     // Mount the main app layout
-    const app = createApp(App, { isNeutralino });
+    const app = createApp(App);
     const appInstance = app.mount('#app') as any;
 
     // Wait for DOM to render, then set up Monaco editor
@@ -324,7 +195,7 @@ async function bootstrap(): Promise<void> {
     // Apply the persisted app theme before Monaco initializes so the editor
     // renders with the right theme first paint. The desktop bridge loads its
     // settings asynchronously, so wait for it; the web bridge is synchronous.
-    if (neuBridge) await neuBridge.ready;
+    if (tauriBridge) await tauriBridge.ready;
     setAppTheme(coerceAppTheme(activeBridge.getStoredColorTheme()));
 
     const editor = createCalcpadEditor(editorEl, {
@@ -349,22 +220,13 @@ async function bootstrap(): Promise<void> {
     // Registered BEFORE the seed tab so the strip is populated on first render.
     tabs.onTabsChanged((snapshots) => {
         appInstance.setTabs(snapshots);
-        // Keep the legacy single-file-name display in sync with the active tab.
-        const active = snapshots.find(t => t.isActive);
-        if (active) {
-            appInstance.setFileName(active.title);
-            appInstance.setDirty(active.dirty);
-        } else {
-            appInstance.setFileName('');
-            appInstance.setDirty(false);
-        }
     });
 
     // Seed the first tab. On web we put the sample in it; on desktop it's
     // an empty Untitled-1 ready to receive an Open or paste.
-    tabs.newUntitled(isNeutralino ? '' : getSampleContent());
+    tabs.newUntitled(isTauri ? '' : getSampleContent());
 
-    // Universal tab-strip callbacks. The Neutralino branch overrides the
+    // Universal tab-strip callbacks. The Tauri branch overrides the
     // close handler with a save-prompt-aware version; on web there's
     // nothing to save, so a plain close is correct.
     appInstance.onTabActivate = (id: string) => tabs.activate(id);
@@ -461,6 +323,11 @@ async function bootstrap(): Promise<void> {
         // scrolled there (the two-step) — the user then clicks a line number
         // to reach the true source line. A 'source' line (code-view .line-num
         // anchors, or a macro-free document) navigates Monaco directly.
+        if (data.type === 'previewThemeChanged') {
+            void refreshPreview();
+            return;
+        }
+
         if (data.type === 'navigateToLine') {
             const line = Number(data.line);
             if (!Number.isFinite(line) || line < 1) return;
@@ -510,17 +377,17 @@ async function bootstrap(): Promise<void> {
         : undefined;
 
     // Cross-file Go-to-Definition / Find All References needs to read include
-    // files off disk. Only wire the opener up on Neutralino desktop, where we
+    // files off disk. Only wire the opener up on Tauri desktop, where we
     // have filesystem access; in the pure-web build the providers silently
     // skip include locations. See `IncludeFileOpener` for the browser/remote
     // follow-up.
-    const openIncludeFile: IncludeFileOpener | undefined = neuBridge
+    const openIncludeFile: IncludeFileOpener | undefined = tauriBridge
         ? async (rawFileName: string, navigateTo?: { line: number; column: number }) => {
             try {
-                const absPath = neuBridge.resolveIncludePath(rawFileName);
+                const absPath = tauriBridge.resolveIncludePath(rawFileName);
                 let model = tabs.findModelByPath(absPath);
                 if (!model) {
-                    const content = await neuBridge.readFile(absPath);
+                    const content = await tauriBridge.readFile(absPath);
                     const tabId = tabs.openFile(absPath, content);
                     model = tabs.findModelByPath(absPath);
                     if (!model) {
@@ -558,12 +425,12 @@ async function bootstrap(): Promise<void> {
         return (sev === 'error' || sev === 'warning') ? sev : 'information';
     }, getFileContext);
     registerCompletionProvider(editorBridge);
-    if (neuBridge) {
+    if (tauriBridge) {
         registerIncludeCompletionProvider({
-            listDirectory: (p) => neuBridge.listDirectory(p),
+            listDirectory: (p) => tauriBridge.listDirectory(p),
             getCurrentFilePath: () => tabs.activeTab?.filePath ?? null,
-            getOpenedFolder: () => neuBridge.getOpenedFolder(),
-            getLibraryPath: () => neuBridge.getLibraryPath(),
+            getOpenedFolder: () => tauriBridge.getOpenedFolder(),
+            getLibraryPath: () => tauriBridge.getLibraryPath(),
         });
     }
     registerHoverProvider(editorBridge);
@@ -659,9 +526,9 @@ async function bootstrap(): Promise<void> {
         editor.focus();
     };
 
-    // Mount the CalcPad Vue sidebar. Desktop (Neutralino) shows the Files view
+    // Mount the CalcPad Vue sidebar. Desktop (Tauri) shows the Files view
     // + activity icons; web mode keeps the original single-panel look.
-    const sidebarApp = createApp(CalcpadAppVue, { extraTabs: isNeutralino });
+    const sidebarApp = createApp(CalcpadAppVue, { extraTabs: isTauri });
     const sidebarInstance = sidebarApp.mount('#vue-sidebar') as {
         switchTab?: (id: string) => void;
         switchView?: (id: string) => void;
@@ -672,10 +539,16 @@ async function bootstrap(): Promise<void> {
     // TOC headings refresh (debounced)
     let tocTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Initialize preview mode from saved extra setting (Neutralino) or localStorage (web).
+    // Initialize preview mode from saved extra setting (Tauri) or localStorage (web).
     const savedMode = (editorBridge.getExtraSetting('previewMode') as 'wrapped' | 'unwrapped' | undefined);
     if (savedMode === 'wrapped' || savedMode === 'unwrapped') {
         appInstance.setPreviewMode(savedMode);
+    }
+
+    function resolvePreviewTheme(): 'light' | 'dark' {
+        const stored = editorBridge.getExtraSetting('previewTheme') ?? 'system';
+        if (stored === 'light' || stored === 'dark') return stored;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
     async function refreshPreview(): Promise<void> {
@@ -685,6 +558,7 @@ async function bootstrap(): Promise<void> {
         const settings = activeBridge.getSettings();
         const apiSettings = buildApiSettings(settings);
         const mode = appInstance.getPreviewMode() as 'wrapped' | 'unwrapped';
+        const theme = resolvePreviewTheme();
 
         if (!content.trim()) {
             appInstance.setPreviewHtml(getEmptyPreviewHtml());
@@ -695,9 +569,9 @@ async function bootstrap(): Promise<void> {
 
         let html: string | ArrayBuffer | null;
         if (mode === 'unwrapped') {
-            html = await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath);
+            html = await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath, theme);
         } else {
-            html = await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath);
+            html = await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath, theme);
         }
 
         // Consume any pending two-step scroll target: only the unwrapped view it
@@ -728,15 +602,9 @@ async function bootstrap(): Promise<void> {
         }
     }
 
-    // Stub overwritten in the Neutralino branch below; harmless on web.
-    let rebuildMenu: (mode: PreviewMode) => Promise<void> = async () => { /* no-op */ };
-
     appInstance.onPreviewModeChanged = (mode: 'wrapped' | 'unwrapped') => {
         editorBridge.setExtraSetting('previewMode', mode);
         refreshPreview();
-        if (isNeutralino) {
-            void rebuildMenu(mode);
-        }
     };
 
     editor.onDidChangeModelContent(() => {
@@ -756,21 +624,24 @@ async function bootstrap(): Promise<void> {
         }
     };
 
-    // Neutralino-specific: native menu + file operations
-    if (isNeutralino && neuBridge) {
-        const { events: neuEvents, app: neuApp, clipboard: neuClipboard } = await import('@neutralinojs/lib');
+    // Tauri-specific: native menu clicks + file operations
+    if (isTauri && tauriBridge) {
+        const [
+            { listen: tauriListen },
+            { getCurrentWindow },
+            { exit: processExit, relaunch: processRelaunch },
+            tauriClipboard,
+        ] = await Promise.all([
+            import('@tauri-apps/api/event'),
+            import('@tauri-apps/api/window'),
+            import('@tauri-apps/plugin-process'),
+            import('@tauri-apps/plugin-clipboard-manager'),
+        ]);
 
-        let recents: string[] = await neuBridge.getRecentFiles();
-        let menuPreviewMode: PreviewMode =
-            (appInstance.getPreviewMode() as PreviewMode) ?? 'wrapped';
-
-        rebuildMenu = async (mode: PreviewMode) => {
-            menuPreviewMode = mode;
-            recents = await neuBridge.getRecentFiles();
-            await setupNeutralinoMenu(recents, menuPreviewMode);
-        };
-
-        await setupNeutralinoMenu(recents, menuPreviewMode);
+        // Menu is built in Rust (src-tauri/src/lib.rs:build_menu). The frontend
+        // just tracks recents in the plugin-store; there is no dynamic menu
+        // rebuild. Recent files remain accessible via the sidebar's Files tab.
+        void tauriBridge.getRecentFiles();
 
         /**
          * Open `path` in a tab. If a tab already holds that file, focuses it
@@ -785,10 +656,10 @@ async function bootstrap(): Promise<void> {
                 return;
             }
             try {
-                const content = await neuBridge!.readFile(path);
+                const content = await tauriBridge!.readFile(path);
                 tabs.openFile(path, content);
-                await neuBridge!.addRecentFile(path);
-                await rebuildMenu(menuPreviewMode);
+                await tauriBridge!.addRecentFile(path);
+                // Menu is static under Tauri — no rebuild needed.
             } catch (err) {
                 appInstance.appendOutput('error', 'Failed to open file: ' + (err instanceof Error ? err.message : String(err)));
             }
@@ -810,25 +681,23 @@ async function bootstrap(): Promise<void> {
             if (!active) return false;
             const content = tabs.activeModel?.getValue() ?? '';
             if (active.filePath) {
-                await neuBridge!.saveFile(active.filePath, content);
+                await tauriBridge!.saveFile(active.filePath, content);
                 tabs.markActiveSaved();
                 return true;
             }
-            const newPath = await neuBridge!.saveFileAs(content);
+            const newPath = await tauriBridge!.saveFileAs(content);
             if (!newPath) return false;
             tabs.markActiveSaved({ filePath: newPath });
-            await neuBridge!.addRecentFile(newPath);
-            await rebuildMenu(menuPreviewMode);
+            await tauriBridge!.addRecentFile(newPath);
             return true;
         }
 
         async function saveAsActive(): Promise<boolean> {
             const content = tabs.activeModel?.getValue() ?? '';
-            const newPath = await neuBridge!.saveFileAs(content);
+            const newPath = await tauriBridge!.saveFileAs(content);
             if (!newPath) return false;
             tabs.markActiveSaved({ filePath: newPath });
-            await neuBridge!.addRecentFile(newPath);
-            await rebuildMenu(menuPreviewMode);
+            await tauriBridge!.addRecentFile(newPath);
             return true;
         }
 
@@ -888,17 +757,16 @@ async function bootstrap(): Promise<void> {
         appInstance.onTabOpenContainingFolderRequest = (id: string) => {
             const t = tabs.all.find(t => t.id === id);
             if (t?.filePath) {
-                neuBridge.handleMessage({ type: 'openContainingFolder', path: t.filePath });
+                tauriBridge.handleMessage({ type: 'openContainingFolder', path: t.filePath });
             }
         };
 
         // Clipboard-copy helpers for the tab context menu. Route through
-        // Neutralino's native clipboard so the value ends up on the system
+        // Tauri's native clipboard so the value ends up on the system
         // clipboard (the WebView's navigator.clipboard is sandboxed).
         const writeClipboardText = async (text: string) => {
             try {
-                const { clipboard } = await import('@neutralinojs/lib');
-                await clipboard.writeText(text);
+                await tauriClipboard.writeText(text);
             } catch (err) {
                 appInstance.appendOutput('error', `Copy failed: ${err instanceof Error ? err.message : String(err)}`);
             }
@@ -911,7 +779,7 @@ async function bootstrap(): Promise<void> {
         appInstance.onTabCopyRelativePathRequest = async (id: string) => {
             const t = tabs.all.find(t => t.id === id);
             if (!t?.filePath) return;
-            const folder = await neuBridge.getOpenedFolder();
+            const folder = await tauriBridge.getOpenedFolder();
             if (!folder) {
                 void writeClipboardText(t.filePath);
                 return;
@@ -927,11 +795,11 @@ async function bootstrap(): Promise<void> {
 
         /**
          * Route a clipboard / edit action from the native menu. On WebKitGTK
-         * (Linux Neutralino) Ctrl+C/X/V are not bound to native clipboard ops
+         * (Linux Tauri) Ctrl+C/X/V are not bound to native clipboard ops
          * inside the WebView, so the menu accelerator is the only way to fire
          * them. We dispatch to Monaco when it has focus (which is true 99% of
          * the time in this app), and fall back for non-editor focus (sidebar
-         * text fields). Copy/cut/paste go through Neutralino's native clipboard
+         * text fields). Copy/cut/paste go through Tauri's native clipboard
          * API so the editor can exchange text with other applications — the
          * WebView's navigator.clipboard only sees content the page itself put
          * on the system clipboard.
@@ -950,7 +818,7 @@ async function bootstrap(): Promise<void> {
                         // Monaco's default. Cut removes the line including its newline.
                         const line = sel.startLineNumber;
                         const text = model.getLineContent(line) + '\n';
-                        try { await neuClipboard.writeText(text); } catch { /* ignored */ }
+                        try { await tauriClipboard.writeText(text); } catch { /* ignored */ }
                         if (action === 'cut') {
                             const lineCount = model.getLineCount();
                             const range = line < lineCount
@@ -960,7 +828,7 @@ async function bootstrap(): Promise<void> {
                         }
                     } else {
                         const text = model.getValueInRange(sel);
-                        try { await neuClipboard.writeText(text); } catch { /* ignored */ }
+                        try { await tauriClipboard.writeText(text); } catch { /* ignored */ }
                         if (action === 'cut') {
                             editor.executeEdits('menu-cut', [{ range: sel, text: '', forceMoveMarkers: true }]);
                         }
@@ -969,7 +837,7 @@ async function bootstrap(): Promise<void> {
                 }
                 if (action === 'paste') {
                     let text = '';
-                    try { text = await neuClipboard.readText(); } catch { /* ignored */ }
+                    try { text = await tauriClipboard.readText(); } catch { /* ignored */ }
                     if (!text) return;
                     const sel = editor.getSelection();
                     if (!sel) return;
@@ -992,7 +860,7 @@ async function bootstrap(): Promise<void> {
             const el = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
             if (action === 'paste') {
                 let text = '';
-                try { text = await neuClipboard.readText(); } catch { /* ignored */ }
+                try { text = await tauriClipboard.readText(); } catch { /* ignored */ }
                 if (!text) return;
                 if (el && 'setRangeText' in el) {
                     const start = el.selectionStart ?? el.value.length;
@@ -1008,7 +876,7 @@ async function bootstrap(): Promise<void> {
                     const end = el.selectionEnd ?? start;
                     if (end > start) {
                         const text = el.value.substring(start, end);
-                        try { await neuClipboard.writeText(text); } catch { /* ignored */ }
+                        try { await tauriClipboard.writeText(text); } catch { /* ignored */ }
                         if (action === 'cut') {
                             el.setRangeText('', start, end, 'end');
                             el.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1027,25 +895,11 @@ async function bootstrap(): Promise<void> {
             }
         }
 
-        // Single mainMenuItemClicked listener — handles static + dynamic IDs.
-        neuEvents.on('mainMenuItemClicked', async (evt: any) => {
-            const id: string = evt.detail.id;
+        // Native menu clicks arrive as Tauri events emitted by the Rust menu handler.
+        await tauriListen<{ id: string }>('menu-click', async (evt) => {
+            const id: string = evt.payload.id;
 
-            // Recent file shortcut
-            if (id.startsWith('recent:')) {
-                const idx = parseInt(id.split(':')[1], 10);
-                const path = recents[idx];
-                if (path) await loadFile(path);
-                return;
-            }
-            if (id === 'recent-clear') {
-                await neuBridge.clearRecentFiles();
-                await rebuildMenu(menuPreviewMode);
-                return;
-            }
-            if (id === 'recent-empty') return;
-
-            // Preview mode picker
+            // Preview mode picker (View → Preview Mode: Wrapped/Unwrapped)
             if (id.startsWith('preview-mode:')) {
                 const mode = id.split(':')[1] as PreviewMode;
                 appInstance.setPreviewMode(mode);
@@ -1064,7 +918,7 @@ async function bootstrap(): Promise<void> {
                 }
 
                 case 'open': {
-                    const result = await neuBridge.openFile();
+                    const result = await tauriBridge.openFile();
                     if (result) await loadFile(result.path);
                     break;
                 }
@@ -1078,7 +932,7 @@ async function bootstrap(): Promise<void> {
                     break;
 
                 case 'export-pdf':
-                    neuBridge.handleMessage({ type: 'generatePdf' });
+                    tauriBridge.handleMessage({ type: 'generatePdf' });
                     break;
 
                 case 'toggle-sidebar':
@@ -1099,7 +953,7 @@ async function bootstrap(): Promise<void> {
 
                 case 'show-server-log':
                     appInstance.appendOutput('info', 'Fetching server log…');
-                    neuBridge.handleMessage({ type: 'getServerLog' });
+                    tauriBridge.handleMessage({ type: 'getServerLog' });
                     break;
 
                 case 'stop-server':
@@ -1127,7 +981,7 @@ async function bootstrap(): Promise<void> {
                     break;
 
                 case 'restart-app':
-                    await neuApp.restartProcess();
+                    await processRelaunch();
                     break;
 
                 case 'undo':
@@ -1187,9 +1041,6 @@ async function bootstrap(): Promise<void> {
             }
         });
 
-        // (Per-tab dirty tracking is handled by TabManager; the legacy
-        // single-document setDirty(true)-on-edit hook is removed.)
-
         // ---- Drag-drop file open ----
         // Each dropped file opens (or focuses) its own tab.
         const dropTarget = document.querySelector('.editor-container') as HTMLElement | null;
@@ -1203,12 +1054,10 @@ async function bootstrap(): Promise<void> {
                 const files = e.dataTransfer?.files;
                 if (!files || files.length === 0) return;
                 for (const file of Array.from(files)) {
-                    // Neutralino exposes the OS path on `File.path` (Chromium extension).
                     const dropped = file as File & { path?: string };
                     if (dropped.path) {
                         await loadFile(dropped.path);
                     } else {
-                        // No OS path (web-style drop) — open as untitled.
                         const text = await dropped.text();
                         tabs.newUntitled(text);
                     }
@@ -1221,7 +1070,7 @@ async function bootstrap(): Promise<void> {
         // the menu accelerators above; this catches them when the focus is
         // outside the menu's scope (e.g. preview iframe).
         // Monaco swallows several Ctrl+ keys as internal commands, so the
-        // Neutralino menu accelerators never fire while the editor has focus.
+        // Tauri menu accelerators never fire while the editor has focus.
         // Bind the file-management ones directly on the editor.
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
             void saveActive();
@@ -1231,7 +1080,7 @@ async function bootstrap(): Promise<void> {
             () => { void saveAsActive(); },
         );
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyO, async () => {
-            const result = await neuBridge.openFile();
+            const result = await tauriBridge.openFile();
             if (result) await loadFile(result.path);
         });
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyN, () => {
@@ -1249,7 +1098,7 @@ async function bootstrap(): Promise<void> {
         // Monaco's built-in clipboard actions route through navigator.clipboard
         // and document.execCommand, neither of which sees content written by
         // other applications on WebKitGTK. Override Ctrl+C/X/V so all three
-        // operations go through Neutralino's native clipboard API.
+        // operations go through Tauri's native clipboard API.
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyC, () => {
             void runClipboardAction('copy');
         });
@@ -1279,7 +1128,7 @@ async function bootstrap(): Promise<void> {
             if ((e.key === 'o' || e.key === 'O') && !e.shiftKey && !e.altKey) {
                 e.preventDefault();
                 void (async () => {
-                    const result = await neuBridge.openFile();
+                    const result = await tauriBridge.openFile();
                     if (result) await loadFile(result.path);
                 })();
                 return;
@@ -1358,30 +1207,25 @@ async function bootstrap(): Promise<void> {
                 }
             } finally {
                 if (isExiting) {
-                    // Kill our spawned server before the Neutralino runtime tears
-                    // down — once neuApp.exit() returns, the WebView is gone and
-                    // we lose the chance to clean up. dispose() is best-effort and
-                    // returns within ~100ms; killProcess() fires after 500ms
-                    // regardless, so a slow dispose can't strand the user.
+                    // Rust owns sidecar shutdown (kill-on-exit hook). This
+                    // dispose only tears down TS event listeners.
                     if (serverManager) {
                         try { await serverManager.dispose(); }
                         catch (e) { appInstance.appendOutput('debug', `serverManager.dispose() rejected: ${e}`); }
                     }
-                    appInstance.appendOutput('debug', 'Exit path: calling neuApp.exit()');
-                    neuApp.exit()
-                        .then(() => appInstance.appendOutput('debug', 'neuApp.exit() resolved'))
-                        .catch((e) => appInstance.appendOutput('debug', `neuApp.exit() rejected: ${e?.code || e?.message || e}`));
-                    setTimeout(() => {
-                        appInstance.appendOutput('debug', 'Exit path: calling neuApp.killProcess() fallback');
-                        neuApp.killProcess()
-                            .then(() => appInstance.appendOutput('debug', 'killProcess resolved'))
-                            .catch((e) => appInstance.appendOutput('debug', `killProcess rejected: ${e?.code || e?.message || e}`));
-                    }, 500);
+                    appInstance.appendOutput('debug', 'Exit path: calling process.exit()');
+                    void processExit(0);
                 }
             }
         }
 
-        neuEvents.on('windowClose', () => { void tryExit(); });
+        // Intercept the window close button so unsaved tabs get their save prompt
+        // before Tauri tears down the webview. tryExit() calls processExit() on
+        // confirmation; if the user cancels, the window stays open.
+        await getCurrentWindow().onCloseRequested(async (event) => {
+            event.preventDefault();
+            void tryExit();
+        });
     }
 }
 

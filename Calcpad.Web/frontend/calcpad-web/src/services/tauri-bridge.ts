@@ -1,5 +1,19 @@
 import * as monaco from 'monaco-editor';
-import { filesystem, os, storage } from '@neutralinojs/lib';
+import { invoke } from '@tauri-apps/api/core';
+import { appDataDir } from '@tauri-apps/api/path';
+import {
+    readTextFile,
+    writeTextFile,
+    readFile as fsReadFile,
+    writeFile as fsWriteFile,
+    readDir,
+    mkdir,
+    exists,
+} from '@tauri-apps/plugin-fs';
+import { open as dialogOpen, save as dialogSave, message as dialogMessage } from '@tauri-apps/plugin-dialog';
+import { openPath } from '@tauri-apps/plugin-opener';
+import { Store } from '@tauri-apps/plugin-store';
+import { platform } from '@tauri-apps/plugin-os';
 import { BaseMessageBridge, type ExportRequest } from 'calcpad-frontend/services/message-bridge/base';
 import {
     getDefaultSettings,
@@ -23,16 +37,13 @@ import { setAppTheme, coerceAppTheme } from '../editor/app-theme';
 
 const SETTINGS_DIR_NAME = 'settings';
 const DEFAULT_PRESET_NAME = 'default';
-// The single file that reflects live user state. Written on every edit,
-// read at boot. Preset files (default.json, <name>.json) are read-only
-// source-of-truth snapshots — the settings editor never writes to them.
 const ACTIVE_SETTINGS_FILE = 'active-settings.json';
+const STORE_FILE = 'storage.json';
 const ACTIVE_PRESET_KEY = 'calcpad-active-preset';
 const RECENT_FILES_KEY = 'calcpad-recent-files';
 const OPENED_FOLDER_KEY = 'calcpad-opened-folder';
 const MAX_RECENT_FILES = 10;
 
-// Browser-compatible path helpers (no Node.js 'path' module available in Neutralino WebView)
 function pathDirname(p: string): string {
     const idx = Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\'));
     return idx > 0 ? p.slice(0, idx) : '';
@@ -59,9 +70,8 @@ function pathResolve(dir: string, file: string): string {
 
 /**
  * Replace `<img src="local/path">` references in `html` with base64 data URIs
- * by reading each image off disk via Neutralino's filesystem API. The headless
- * Chromium that renders the PDF has no access to the user's filesystem, so
- * without inlining, plot images render as broken icons.
+ * so PuppeteerSharp's headless Chromium — which has no local-filesystem
+ * access — can render user-supplied images inside exported PDFs.
  */
 async function inlineLocalImages(html: string, documentDir: string): Promise<string> {
     const cache: Record<string, string> = {};
@@ -78,15 +88,15 @@ async function inlineLocalImages(html: string, documentDir: string): Promise<str
         if (!isImageExtension(ext)) continue;
         const mime = mimeFromExtension(ext);
 
-        const absolute = src.startsWith('/') || /^[a-zA-Z]:[\\/]/.test(src)
+        const absolute = pathIsAbsolute(src)
             ? src
             : (documentDir ? `${documentDir}/${src}` : src);
 
         try {
-            const bytes = await filesystem.readBinaryFile(absolute);
-            cache[src] = `data:${mime};base64,${bytesToBase64(new Uint8Array(bytes))}`;
+            const bytes = await fsReadFile(absolute);
+            cache[src] = `data:${mime};base64,${bytesToBase64(bytes)}`;
         } catch {
-            // missing file or permission error → leave the src untouched
+            // missing file or permission error → leave src untouched
         }
     }
 
@@ -99,38 +109,40 @@ async function inlineLocalImages(html: string, documentDir: string): Promise<str
 }
 
 /**
- * Message bridge for the Neutralino.js desktop platform. Persists settings to
- * JSON files under `NL_PATH/settings/` and uses native OS dialogs for file
- * open/save/pick.
+ * Message bridge for the Tauri desktop platform. Settings JSON files live
+ * under `$APPDATA/settings/`; recent files and the opened folder live in a
+ * plugin-store JSON. Native dialogs, filesystem, and clipboard flow through
+ * the Tauri JS API plugins.
  */
-export class NeutralinoMessageBridge extends BaseMessageBridge {
+export class TauriMessageBridge extends BaseMessageBridge {
     private _extraSettings: CalcpadExtras = getDefaultExtras();
-    /**
-     * Resolves once persisted settings have been read from disk. Anything that
-     * needs values from `_extraSettings` (e.g. the boot-time theme applier)
-     * must await this — the constructor can't be async.
-     */
     readonly ready: Promise<void>;
-    /**
-     * Directory used to seed native dialogs' `defaultPath`. Updated after every
-     * Open/Save/Open-Folder interaction so successive dialogs land in the last
-     * place the user was working. Session-scoped only (not persisted).
-     */
     private _lastDialogDir: string | null = null;
-    /**
-     * Cached absolute library folder after env-var expansion. Invalidated
-     * whenever the raw libraryPath preference changes. `null` means the user
-     * hasn't configured one; `undefined` means "not yet resolved".
-     */
     private _resolvedLibraryPath: string | null | undefined = undefined;
     private _activePresetName: string = DEFAULT_PRESET_NAME;
+    private _appDataDir: string = '';
+    private _settingsDir: string = '';
+    private _serverDir: string = '';
+    private _platform: string = 'linux';
+    private _store: Store | null = null;
 
     constructor(serverUrl: string) {
         super(serverUrl);
-        this.ready = this.loadSettingsFromStorage();
+        this.ready = this.initialize();
     }
 
-    // ---- Extras storage (in-memory dict, async-persisted to JSON) ----
+    private async initialize(): Promise<void> {
+        this._platform = await platform();
+        this._appDataDir = (await appDataDir()).replace(/[\\/]+$/, '');
+        this._settingsDir = `${this._appDataDir}/${SETTINGS_DIR_NAME}`;
+        try {
+            this._serverDir = (await invoke<string>('server_dir')).replace(/[\\/]+$/, '');
+        } catch {
+            this._serverDir = '';
+        }
+        this._store = await Store.load(STORE_FILE);
+        await this.loadSettingsFromStorage();
+    }
 
     getExtraSetting(key: string): string | undefined {
         return this._extraSettings[key];
@@ -153,8 +165,6 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
     }
 
     protected async resetSettingsBackend(): Promise<void> {
-        // Load the pristine bundled defaults into active-settings.json.
-        // Preset files (default.json, <name>.json) are untouched.
         await this.readPresetInto(DEFAULT_PRESET_NAME);
         await this.setActivePresetName(DEFAULT_PRESET_NAME);
         await this.saveActiveSettings();
@@ -177,32 +187,36 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         const fromClipboard = await readImageFromClipboard();
         if (fromClipboard) return fromClipboard;
 
-        const entries = await os.showOpenDialog('Insert Image', {
+        const selected = await dialogOpen({
+            title: 'Insert Image',
+            multiple: false,
             defaultPath: this.getDialogDefaultPath(),
             filters: [
                 { name: 'Images', extensions: [...IMAGE_EXTENSIONS] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
-        if (!entries || entries.length === 0) return null;
-
-        const filePath = entries[0];
-        this.rememberDialogDir(filePath);
-        const buffer = await filesystem.readBinaryFile(filePath);
-        return `data:${mimeFromExtension(filePath)};base64,${bytesToBase64(buffer)}`;
+        if (!selected || Array.isArray(selected)) return null;
+        this.rememberDialogDir(selected);
+        const buffer = await fsReadFile(selected);
+        return `data:${mimeFromExtension(selected)};base64,${bytesToBase64(buffer)}`;
     }
 
     protected async saveExportedFile(req: ExportRequest): Promise<void> {
-        const filePath = await os.showSaveDialog(req.dialogTitle, {
+        const filePath = await dialogSave({
+            title: req.dialogTitle,
             defaultPath: this.getDialogDefaultPath(),
             filters: [{ name: `${req.dialogTitle} Files`, extensions: req.extensions }],
         });
         if (!filePath) return;
         this.rememberDialogDir(filePath);
         if (typeof req.data === 'string') {
-            await filesystem.writeFile(filePath, req.data);
+            await writeTextFile(filePath, req.data);
         } else {
-            await filesystem.writeBinaryFile(filePath, req.data);
+            const bytes = req.data instanceof Uint8Array
+                ? req.data
+                : new Uint8Array(req.data as ArrayBuffer);
+            await fsWriteFile(filePath, bytes);
         }
     }
 
@@ -236,9 +250,6 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         apiSettings: unknown,
         sourceFilePath: string | undefined,
     ): Promise<ArrayBuffer | null> {
-        // Step 1: source → HTML. The /convert endpoint always returns HTML;
-        // supplying outputFormat='pdf' here is ignored, which is why the prior
-        // single-call approach silently failed.
         const baseUrl = this.apiClient.getBaseUrl();
         const htmlResp = await fetch(`${baseUrl}/api/calcpad/convert`, {
             method: 'POST',
@@ -249,10 +260,8 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         if (!htmlResp.ok) throw new Error(`HTML convert returned ${htmlResp.status}`);
         let html = await htmlResp.text();
 
-        // Step 2: inline local <img src="..."> as base64 data URIs.
         html = await inlineLocalImages(html, this.activeTabDirectory());
 
-        // Step 3: render the inlined HTML via /api/calcpad/pdf.
         const pdfResp = await fetch(`${baseUrl}/api/calcpad/pdf`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -330,15 +339,12 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         return false;
     }
 
-    // ---- Native dialog helpers ----
+    // ---- Dialog defaults ----
 
-    /** Default path passed to native dialogs. Falls back to undefined (OS-default). */
     private getDialogDefaultPath(): string | undefined {
         return this._lastDialogDir ?? undefined;
     }
 
-    /** Update the remembered dialog directory. Accepts either a file path
-     *  (parent dir is extracted) or a directory path directly. */
     private rememberDialogDir(pathOrFile: string | null | undefined, isDirectory = false): void {
         if (!pathOrFile) return;
         this._lastDialogDir = isDirectory ? pathOrFile : pathDirname(pathOrFile) || pathOrFile;
@@ -347,34 +353,33 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
     // ---- File operations (exposed for menu actions) ----
 
     async openFile(): Promise<{ path: string; content: string } | null> {
-        const entries = await os.showOpenDialog('Open File', {
+        const selected = await dialogOpen({
+            title: 'Open File',
+            multiple: false,
             defaultPath: this.getDialogDefaultPath(),
             filters: [
                 { name: 'CalcPad Files', extensions: ['cpd'] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
-        if (!entries || entries.length === 0) return null;
-
-        const filePath = entries[0];
-        this.rememberDialogDir(filePath);
-        const content = await filesystem.readFile(filePath);
-        return { path: filePath, content };
+        if (!selected || Array.isArray(selected)) return null;
+        this.rememberDialogDir(selected);
+        const content = await readTextFile(selected);
+        return { path: selected, content };
     }
 
     async saveFile(filePath: string, content: string): Promise<void> {
         this.rememberDialogDir(filePath);
-        await filesystem.writeFile(filePath, content);
+        await writeTextFile(filePath, content);
     }
 
     async readFile(filePath: string): Promise<string> {
-        return filesystem.readFile(filePath);
+        return readTextFile(filePath);
     }
 
     async getRecentFiles(): Promise<string[]> {
         try {
-            const raw = await storage.getData(RECENT_FILES_KEY);
-            const list = JSON.parse(raw);
+            const list = await this._store?.get<string[]>(RECENT_FILES_KEY);
             return Array.isArray(list) ? list : [];
         } catch {
             return [];
@@ -386,15 +391,22 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         const filtered = list.filter(p => p !== path);
         filtered.unshift(path);
         const trimmed = filtered.slice(0, MAX_RECENT_FILES);
-        await storage.setData(RECENT_FILES_KEY, JSON.stringify(trimmed));
+        if (this._store) {
+            await this._store.set(RECENT_FILES_KEY, trimmed);
+            await this._store.save();
+        }
     }
 
     async clearRecentFiles(): Promise<void> {
-        await storage.setData(RECENT_FILES_KEY, JSON.stringify([]));
+        if (this._store) {
+            await this._store.set(RECENT_FILES_KEY, []);
+            await this._store.save();
+        }
     }
 
     async saveFileAs(content: string): Promise<string | null> {
-        const filePath = await os.showSaveDialog('Save File', {
+        const filePath = await dialogSave({
+            title: 'Save File',
             defaultPath: this.getDialogDefaultPath(),
             filters: [
                 { name: 'CalcPad Files', extensions: ['cpd'] },
@@ -403,45 +415,35 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         });
         if (!filePath) return null;
         this.rememberDialogDir(filePath);
-        await filesystem.writeFile(filePath, content);
+        await writeTextFile(filePath, content);
         return filePath;
     }
 
     // ---- Folder browser ----
 
-    /** Return the currently opened workspace folder, or null. Persisted across sessions. */
     async getOpenedFolder(): Promise<string | null> {
         try {
-            const raw = await storage.getData(OPENED_FOLDER_KEY);
-            return raw || null;
+            const raw = await this._store?.get<string>(OPENED_FOLDER_KEY);
+            return (raw ?? '').trim() || null;
         } catch {
             return null;
         }
     }
 
-    /**
-     * List directory entries as FileNodes; empty on failure.
-     *
-     * File-leaf nodes are frozen so Vue's reactivity system skips wrapping
-     * them in Proxies — a big perf win when a folder contains hundreds of
-     * files. Directory nodes stay mutable because the tree builder assigns
-     * `.children` and `.loaded` to them later.
-     */
     async listDirectory(dirPath: string): Promise<Array<{ name: string; path: string; isDirectory: boolean }>> {
         try {
-            const entries = await filesystem.readDirectory(dirPath);
+            const entries = await readDir(dirPath);
             const sep = dirPath.includes('\\') ? '\\' : '/';
             const normalizedDir = dirPath.replace(/[\\/]+$/, '');
             return entries
-                .filter(e => e.entry !== '.' && e.entry !== '..')
+                .filter(e => e.name !== '.' && e.name !== '..')
                 .map(e => {
-                    const isDirectory = e.type === 'DIRECTORY';
                     const node = {
-                        name: e.entry,
-                        path: `${normalizedDir}${sep}${e.entry}`,
-                        isDirectory,
+                        name: e.name,
+                        path: `${normalizedDir}${sep}${e.name}`,
+                        isDirectory: !!e.isDirectory,
                     };
-                    return isDirectory ? node : Object.freeze(node);
+                    return node.isDirectory ? node : Object.freeze(node);
                 })
                 .sort((a, b) => {
                     if (a.isDirectory !== b.isDirectory) return a.isDirectory ? -1 : 1;
@@ -453,12 +455,18 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
     }
 
     private async handleOpenFolder(): Promise<void> {
-        const folder = await os.showFolderDialog('Open Folder', {
+        const folder = await dialogOpen({
+            title: 'Open Folder',
+            directory: true,
+            multiple: false,
             defaultPath: this.getDialogDefaultPath(),
         });
-        if (!folder) return;
+        if (!folder || Array.isArray(folder)) return;
         this.rememberDialogDir(folder, true);
-        await storage.setData(OPENED_FOLDER_KEY, folder);
+        if (this._store) {
+            await this._store.set(OPENED_FOLDER_KEY, folder);
+            await this._store.save();
+        }
         const entries = await this.listDirectory(folder);
         this.postToVue({ type: 'folderOpened', path: folder, entries });
     }
@@ -471,9 +479,6 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
 
     private async handleGetOpenedFolder(): Promise<void> {
         const explicit = await this.getOpenedFolder();
-        // When nothing was explicitly opened (or the user closed the folder),
-        // fall back to the configured library so the Files panel isn't empty
-        // on first launch.
         const folder = explicit ?? (await this.getLibraryPath());
         if (!folder) {
             this.postToVue({ type: 'folderOpened', path: null, entries: [] });
@@ -485,15 +490,17 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
 
     private async handleOpenFileByPath(filePath: string): Promise<void> {
         if (!filePath || typeof filePath !== 'string') return;
-        // Delegate to main.ts's loadFile via a bridged event.
         window.dispatchEvent(new CustomEvent('calcpad-open-file', { detail: { path: filePath } }));
     }
 
     private async handleCloseFolder(): Promise<void> {
         try {
-            await storage.setData(OPENED_FOLDER_KEY, '');
+            if (this._store) {
+                await this._store.set(OPENED_FOLDER_KEY, '');
+                await this._store.save();
+            }
         } catch {
-            // Storage may not be initialized on a first run — nothing to clear.
+            /* nothing persisted yet */
         }
     }
 
@@ -502,7 +509,7 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         const parent = pathDirname(itemPath);
         const target = parent || itemPath;
         try {
-            await os.open(target);
+            await openPath(target);
         } catch (err) {
             console.error(`Failed to open containing folder for ${itemPath}:`, err);
         }
@@ -510,17 +517,10 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
 
     // ---- Library path resolution ----
 
-    /** Raw library path as typed by the user (may contain env-var refs). */
     getLibraryPathRaw(): string {
         return this._extraSettings.libraryPath || '';
     }
 
-    /**
-     * Resolve the configured library path to an absolute directory, expanding
-     * `%VAR%` (Windows) and `$VAR` (Unix) references via `os.getEnv`. Returns
-     * null when no library is configured or expansion leaves the path empty.
-     * The resolved value is cached until `libraryPath` changes.
-     */
     async getLibraryPath(): Promise<string | null> {
         if (this._resolvedLibraryPath !== undefined) return this._resolvedLibraryPath;
         const raw = this.getLibraryPathRaw().trim();
@@ -540,7 +540,7 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         const values: Record<string, string> = {};
         for (const name of names) {
             try {
-                values[name] = (await os.getEnv(name)) || '';
+                values[name] = (await invoke<string | null>('get_env', { name })) ?? '';
             } catch {
                 values[name] = '';
             }
@@ -550,33 +550,23 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
             .replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, (_, n) => values[n] ?? '');
     }
 
-    /**
-     * Resolve an `#include` filename (raw text from the directive) to an
-     * absolute path, using the active tab's directory as the base.
-     */
     public resolveIncludePath(rawFileName: string): string {
         return pathResolve(this.activeTabSourceDir(), rawFileName);
     }
 
-    /** Returns the full path of the active tab's file, or '' if untitled. */
     private activeTabFilePath(): string {
         const tabs = (window as any).calcpadTabs;
         return tabs?.activeTab?.filePath ?? '';
     }
 
-    /** Returns the directory of the active tab's file, or '' if untitled. */
     private activeTabDirectory(): string {
         return pathDirname(this.activeTabFilePath());
     }
 
-    /**
-     * Base for resolving #include paths. Falls back to NL_PATH for untitled
-     * tabs so includes placed alongside the app still resolve.
-     */
     private activeTabSourceDir(): string {
         const dir = this.activeTabDirectory();
         if (dir) return dir;
-        return (window as Window & { NL_PATH?: string }).NL_PATH ?? '';
+        return this._serverDir || this._appDataDir;
     }
 
     // ---- Prettify ----
@@ -624,16 +614,10 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
 
     // ---- Server log + browser-missing warning ----
 
-    /** Resolves stored PDF settings for the /pdf endpoint. */
     private getPdfOptions(): unknown {
         return getExtraObject<Record<string, unknown>>(this._extraSettings, 'pdfSettings', {});
     }
 
-    /**
-     * Read the captured server stderr log written by start-server.sh and
-     * push it to the UI's Output panel. Mirrors how the VS Code extension
-     * pipes stderr from the spawned dotnet process into its Output channel.
-     */
     private async handleGetServerLog(): Promise<void> {
         const path = this.getServerLogPath();
         if (!path) {
@@ -641,12 +625,12 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
                 type: 'serverLogResponse',
                 path: '',
                 content: '',
-                error: 'NL_PATH not available — server log only exists in the desktop build.',
+                error: 'Server directory not resolved — server log only available in the desktop build.',
             });
             return;
         }
         try {
-            const raw = await filesystem.readFile(path);
+            const raw = await readTextFile(path);
             const lines = raw.split('\n');
             const tail = lines.length > 200 ? lines.slice(-200) : lines;
             this.postToVue({
@@ -670,26 +654,18 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
     }
 
     private getServerLogDir(): string | null {
-        const raw = (window as Window & { NL_PATH?: string }).NL_PATH;
-        if (!raw) return null;
-        const NL_PATH = raw.replace(/\\/g, '/');
-        return `${NL_PATH}/extensions/server/logs`;
+        return this._serverDir ? `${this._serverDir}/logs` : null;
     }
 
-    /**
-     * Open the server-extension logs directory in the OS file explorer.
-     * The folder may not exist on a fresh install — createDirectory is
-     * best-effort so the explorer always has something to open.
-     */
     private async handleOpenLogsFolder(): Promise<void> {
         const dir = this.getServerLogDir();
         if (!dir) {
-            console.warn('Open Logs Folder: NL_PATH unavailable — desktop-only feature.');
+            console.warn('Open Logs Folder: server directory unresolved.');
             return;
         }
-        try { await filesystem.createDirectory(dir); } catch { /* already exists */ }
+        try { await mkdir(dir, { recursive: true }); } catch { /* already exists */ }
         try {
-            await os.open(dir);
+            await openPath(dir);
             console.info(`Opened logs folder: ${dir}`);
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
@@ -697,12 +673,11 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         }
     }
 
-    /** True iff start-server.sh logged a "no browser found" warning. */
     private async browserMissing(): Promise<boolean> {
         const path = this.getServerLogPath();
         if (!path) return false;
         try {
-            const raw = await filesystem.readFile(path);
+            const raw = await readTextFile(path);
             return /WARNING: no Chromium-family browser/i.test(raw)
                 || /Could not find browser revision|Failed to launch the browser/i.test(raw);
         } catch {
@@ -710,10 +685,6 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         }
     }
 
-    /**
-     * Show a native message box explaining how to install a Chromium browser
-     * for PDF export, tailored to the current OS / distro.
-     */
     private async warnBrowserMissing(): Promise<void> {
         const advice = await this.browserInstallAdvice();
         const message =
@@ -721,31 +692,22 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
             + advice
             + '\n\nAfter installing, restart CalcPad (Server → Restart App) and try again.';
         try {
-            await os.showMessageBox(
-                'Chromium browser required for PDF export',
-                message,
-                'OK' as any,
-                'WARNING' as any,
-            );
+            await dialogMessage(message, {
+                title: 'Chromium browser required for PDF export',
+                kind: 'warning',
+                okLabel: 'OK',
+            });
         } catch {
-            // showMessageBox can throw if the runtime tears down — fall back
-            // to surfacing the message in the Output panel.
             this.postToVue({ type: 'pdfError', message });
         }
     }
 
-    /**
-     * Per-platform install instructions. Linux additionally branches on
-     * /etc/os-release ID / ID_LIKE so Arch users get pacman/AUR commands,
-     * Debian/Ubuntu users get apt, Fedora users get dnf, etc.
-     */
     private async browserInstallAdvice(): Promise<string> {
-        const NL_OS = (window as Window & { NL_OS?: string }).NL_OS;
-        if (NL_OS === 'Windows') {
+        if (this._platform === 'windows') {
             return 'Install Microsoft Edge (preinstalled on recent Windows) or Google Chrome,\n'
                 + 'then set BROWSER_PATH in extensions/server/appsettings.json if it is not on PATH.';
         }
-        if (NL_OS === 'Darwin') {
+        if (this._platform === 'macos') {
             return 'Install Google Chrome from https://www.google.com/chrome/\n'
                 + 'or via Homebrew:\n'
                 + '    brew install --cask google-chrome';
@@ -779,7 +741,7 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
 
     private async detectLinuxDistro(): Promise<string> {
         try {
-            const text = await filesystem.readFile('/etc/os-release');
+            const text = await readTextFile('/etc/os-release');
             const fields: Record<string, string> = {};
             for (const line of text.split('\n')) {
                 const eq = line.indexOf('=');
@@ -798,63 +760,36 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
             if (/\bopensuse\b|\bsuse\b/.test(all)) return 'opensuse';
             if (/\balpine\b/.test(all)) return 'alpine';
         } catch {
-            // /etc/os-release missing or unreadable — fall through to generic advice
+            /* /etc/os-release missing */
         }
         return 'unknown';
     }
 
     // ---- Settings persistence via filesystem JSON ----
     //
-    // Layout under NL_PATH/settings/:
+    // Layout under $APPDATA/settings/:
     //   active-settings.json — live state, written on every edit
     //   default.json         — pristine defaults, refreshed on every boot
     //   <name>.json          — user-created presets, never written by the editor
-    //
-    // The "active preset" name is remembered in Neutralino storage purely
-    // for the dropdown label — it does NOT gate writes. Any edit lands in
-    // active-settings.json regardless of which preset was last loaded.
 
-    private getSettingsDir(): string | null {
-        const raw = (window as Window & { NL_PATH?: string }).NL_PATH;
-        if (!raw) return null;
-        const nlPath = raw.replace(/\\/g, '/').replace(/\/+$/, '');
-        return `${nlPath}/${SETTINGS_DIR_NAME}`;
-    }
+    private getSettingsDir(): string { return this._settingsDir; }
+    private getPresetPath(name: string): string { return `${this._settingsDir}/${name}.json`; }
+    private getActiveSettingsPath(): string { return `${this._settingsDir}/${ACTIVE_SETTINGS_FILE}`; }
 
-    private getPresetPath(name: string): string | null {
-        const dir = this.getSettingsDir();
-        return dir ? `${dir}/${name}.json` : null;
-    }
-
-    private getActiveSettingsPath(): string | null {
-        const dir = this.getSettingsDir();
-        return dir ? `${dir}/${ACTIVE_SETTINGS_FILE}` : null;
-    }
-
-    /**
-     * Ensure the settings folder exists and default.json is fresh from the
-     * bundled defaults. Runs on boot so `default` always represents pristine
-     * defaults. Never touches active-settings.json.
-     */
     private async ensureSettingsFolder(): Promise<void> {
-        const dir = this.getSettingsDir();
-        if (!dir) return;
-        try { await filesystem.createDirectory(dir); } catch { /* already exists */ }
+        try { await mkdir(this._settingsDir, { recursive: true }); } catch { /* exists */ }
         const defaultPath = this.getPresetPath(DEFAULT_PRESET_NAME);
-        if (defaultPath) {
-            const blob = getDefaultSettingsBlob();
-            try {
-                await filesystem.writeFile(defaultPath, JSON.stringify(blob, null, 4));
-            } catch {
-                // Non-writable filesystem — proceed; loads will fall back to
-                // in-memory defaults.
-            }
+        const blob = getDefaultSettingsBlob();
+        try {
+            await writeTextFile(defaultPath, JSON.stringify(blob, null, 4));
+        } catch {
+            /* non-writable — fall back to in-memory defaults */
         }
     }
 
     private async loadActivePresetName(): Promise<string> {
         try {
-            const raw = await storage.getData(ACTIVE_PRESET_KEY);
+            const raw = await this._store?.get<string>(ACTIVE_PRESET_KEY);
             const name = (raw ?? '').trim();
             return name || DEFAULT_PRESET_NAME;
         } catch {
@@ -864,22 +799,21 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
 
     private async setActivePresetName(name: string): Promise<void> {
         this._activePresetName = name;
-        try { await storage.setData(ACTIVE_PRESET_KEY, name); } catch { /* best effort */ }
+        try {
+            if (this._store) {
+                await this._store.set(ACTIVE_PRESET_KEY, name);
+                await this._store.save();
+            }
+        } catch { /* best-effort */ }
     }
 
-    /**
-     * List available presets (basenames without .json), sorted with
-     * `default` first. `active-settings` is not a preset and is excluded.
-     */
     private async listPresets(): Promise<string[]> {
-        const dir = this.getSettingsDir();
-        if (!dir) return [DEFAULT_PRESET_NAME];
         try {
-            const entries = await filesystem.readDirectory(dir);
+            const entries = await readDir(this._settingsDir);
             const activeBasename = ACTIVE_SETTINGS_FILE.replace(/\.json$/i, '');
             const names = entries
-                .filter(e => e.type === 'FILE' && e.entry.toLowerCase().endsWith('.json'))
-                .map(e => e.entry.slice(0, -'.json'.length))
+                .filter(e => e.isFile && e.name.toLowerCase().endsWith('.json'))
+                .map(e => e.name.slice(0, -'.json'.length))
                 .filter(n => n !== activeBasename);
             const rest = names.filter(n => n !== DEFAULT_PRESET_NAME).sort();
             return [DEFAULT_PRESET_NAME, ...rest];
@@ -888,35 +822,22 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         }
     }
 
-    /**
-     * Boot-time load:
-     *   1. Refresh default.json from bundled defaults.
-     *   2. Read active-settings.json into memory. If missing, seed it from
-     *      the last-active preset (or default) and write it out.
-     *   3. Restore active-preset label from Neutralino storage.
-     */
     private async loadSettingsFromStorage(): Promise<void> {
         await this.ensureSettingsFolder();
         this._activePresetName = await this.loadActivePresetName();
 
         const loaded = await this.readActiveSettings();
         if (!loaded) {
-            // First run (or the file was deleted): seed from the last-active
-            // preset, then write it back so subsequent boots skip the seed.
             await this.readPresetInto(this._activePresetName);
             await this.saveActiveSettings();
         }
     }
 
-    /**
-     * Read active-settings.json into memory. Returns false when the file
-     * doesn't exist / is unreadable so the caller can decide how to seed it.
-     */
     private async readActiveSettings(): Promise<boolean> {
         const path = this.getActiveSettingsPath();
-        if (!path) return false;
         try {
-            const raw = await filesystem.readFile(path);
+            if (!(await exists(path))) return false;
+            const raw = await readTextFile(path);
             const parsed = JSON.parse(raw);
             const { settings, extras } = deserializeSettingsBlob(parsed);
             this.settings = settings;
@@ -927,23 +848,15 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         }
     }
 
-    /**
-     * Load a preset file (or bundled defaults for "default") into memory.
-     * Does NOT write active-settings.json — callers that need the change
-     * persisted must call saveActiveSettings afterward.
-     */
     private async readPresetInto(name: string): Promise<void> {
-        // "default" always reflects the bundled defaults; skip the disk read
-        // so a corrupted default.json can't wedge us at boot.
         if (name === DEFAULT_PRESET_NAME) {
             this.settings = getDefaultSettings();
             this._extraSettings = getDefaultExtras();
             return;
         }
         const path = this.getPresetPath(name);
-        if (!path) return;
         try {
-            const raw = await filesystem.readFile(path);
+            const raw = await readTextFile(path);
             const parsed = JSON.parse(raw);
             const { settings, extras } = deserializeSettingsBlob(parsed);
             this.settings = settings;
@@ -954,19 +867,12 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         }
     }
 
-    /** Write in-memory state to active-settings.json. */
     private async saveActiveSettings(): Promise<void> {
         const path = this.getActiveSettingsPath();
-        if (!path) return;
         const blob = serializeSettingsBlob(this.settings, this._extraSettings);
-        await filesystem.writeFile(path, JSON.stringify(blob, null, 4));
+        await writeTextFile(path, JSON.stringify(blob, null, 4));
     }
 
-    /**
-     * Save current in-memory settings as a preset. Rejects the reserved
-     * "default" name and filename-illegal characters. Also updates the
-     * active-preset label to the saved name.
-     */
     private async handleSavePreset(rawName: string): Promise<void> {
         const name = (rawName ?? '').trim();
         if (!name) return;
@@ -977,7 +883,6 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
             });
             return;
         }
-        // Basic filename sanitization — reject path separators / control chars.
         if (/[\\/:*?"<>|\x00-\x1f]/.test(name)) {
             this.postToVue({
                 type: 'saveNamedConfigError',
@@ -986,10 +891,9 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
             return;
         }
         const presetPath = this.getPresetPath(name);
-        if (!presetPath) return;
         const blob = serializeSettingsBlob(this.settings, this._extraSettings);
         try {
-            await filesystem.writeFile(presetPath, JSON.stringify(blob, null, 4));
+            await writeTextFile(presetPath, JSON.stringify(blob, null, 4));
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             this.postToVue({
@@ -1002,11 +906,6 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
         this.handleGetSettings();
     }
 
-    /**
-     * Load a preset into live active-settings state. Writes the preset's
-     * contents to active-settings.json so the preset file itself stays
-     * untouched.
-     */
     private async handleLoadPreset(name: string): Promise<void> {
         if (!name) return;
         await this.readPresetInto(name);
@@ -1020,9 +919,8 @@ export class NeutralinoMessageBridge extends BaseMessageBridge {
     }
 
     private async handleOpenSettingsFolder(): Promise<void> {
-        const dir = this.getSettingsDir();
-        if (!dir) return;
-        try { await os.open(dir); }
+        try { await mkdir(this._settingsDir, { recursive: true }); } catch { /* exists */ }
+        try { await openPath(this._settingsDir); }
         catch (err) {
             console.error('Failed to open settings folder:', err);
         }

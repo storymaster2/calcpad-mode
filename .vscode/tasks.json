@@ -161,9 +161,64 @@
             }
         },
 
-        // ── Desktop (Neutralino) ────────────────────────────────────────
+        // ── Desktop (Tauri) ─────────────────────────────────────────────
+        // Publishes Calcpad.Server for the host RID and stages the apphost as
+        // src-tauri/binaries/calcpad-server-<target-triple>[.exe] so that
+        // tauri.conf.json's `bundle.externalBin` sidecar lookup resolves. Run
+        // before `tauri dev` — tauri build handles staging on its own via
+        // build-desktop.sh.
         {
-            "label": "Desktop: Build Server + Assets",
+            "label": "Desktop: Stage Sidecar",
+            "type": "shell",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "linux": {
+                "command": "bash",
+                "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/stage-sidecar.sh"]
+            },
+            "osx": {
+                "command": "bash",
+                "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/stage-sidecar.sh"]
+            },
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop\\stage-sidecar.ps1"
+                ]
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Desktop: Dev",
+            "type": "shell",
+            "command": "npx",
+            "args": ["tauri", "dev"],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
+            },
+            "group": "build",
+            "isBackground": true,
+            "dependsOn": "Desktop: Stage Sidecar",
+            "problemMatcher": {
+                "pattern": { "regexp": "^$" },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^\\s*(Compiling|Info|Running)",
+                    "endsPattern": "^\\s*(Finished|App listening|Running BeforeDevCommand)"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "desktop"
+            }
+        },
+        {
+            "label": "Desktop: Bundle",
             "type": "shell",
             "group": "build",
             "linux": {
@@ -187,75 +242,24 @@
             }
         },
         {
-            "label": "Desktop: Dev Mode",
-            "type": "shell",
-            "command": "npx",
-            "args": ["neu", "run"],
-            "options": {
-                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
-            },
-            "group": "build",
-            "isBackground": true,
-            "dependsOn": "Server: Start Dev",
-            "problemMatcher": {
-                "pattern": { "regexp": "^$" },
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": "^neu:",
-                    "endsPattern": "CLI connected"
-                }
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-                "group": "desktop"
-            }
-        },
-        {
-            "label": "Desktop: Package",
-            "type": "shell",
-            "command": "npx",
-            "args": ["neu", "build"],
-            "options": {
-                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
-            },
-            "group": "build",
-            "dependsOn": "Desktop: Build Server + Assets",
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated"
-            }
-        },
-        {
-            "label": "Desktop: Package Windows Portable",
+            "label": "Desktop: Bundle Windows (cross)",
             "type": "shell",
             "group": "build",
-            // On Linux/macOS: cross-compile win-x64 server → neu build → zip
             "linux": {
                 "command": "bash",
                 "args": [
-                    "-c",
-                    "bash build-desktop.sh --rid=win-x64 && npx neu build && bash packaging/windows/package-portable.sh"
-                ],
-                "options": { "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop" }
+                    "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh",
+                    "--rid=win-x64",
+                    "--target=x86_64-pc-windows-msvc"
+                ]
             },
             "osx": {
                 "command": "bash",
                 "args": [
-                    "-c",
-                    "bash build-desktop.sh --rid=win-x64 && npx neu build && bash packaging/windows/package-portable.sh"
-                ],
-                "options": { "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop" }
-            },
-            // On Windows: native build → neu build → zip
-            "windows": {
-                "command": "powershell",
-                "args": [
-                    "-NoProfile", "-ExecutionPolicy", "Bypass",
-                    "-Command",
-                    ".\\build-desktop.ps1; if ($LASTEXITCODE) { exit 1 }; npx neu build; if ($LASTEXITCODE) { exit 1 }; .\\packaging\\windows\\package-portable.ps1"
-                ],
-                "options": { "cwd": "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop" }
+                    "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh",
+                    "--rid=win-x64",
+                    "--target=x86_64-pc-windows-msvc"
+                ]
             },
             "presentation": {
                 "reveal": "always",
@@ -264,21 +268,14 @@
             "problemMatcher": []
         },
         {
-            "label": "Desktop: Build Web Installer (Windows)",
+            "label": "Desktop: Build Portable (Windows)",
             "type": "shell",
-            "windows": {
-                "command": "powershell",
-                "args": [
-                    "-NoProfile", "-ExecutionPolicy", "Bypass",
-                    "-Command",
-                    "New-Item -ItemType Directory -Path Output -Force | Out-Null; & \"${env:ProgramFiles(x86)}\\NSIS\\makensis.exe\" CalcpadCEWeb.nsi"
-                ],
-                "options": {
-                    "cwd": "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop\\Installer"
-                }
-            },
+            "command": "powershell",
+            "args": [
+                "-NoProfile", "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop\\build-portable.ps1"
+            ],
             "group": "build",
-            "dependsOn": "Desktop: Package",
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"
@@ -289,22 +286,22 @@
             "label": "Desktop: Clean & Rebuild",
             "type": "shell",
             "group": "build",
-            "dependsOn": "Desktop: Build Server + Assets",
             "linux": {
                 "command": "bash",
-                "args": ["-c", "rm -rf dist resources && ([ -f bin/neutralino-linux_x64 ] || npx neu update) && npx neu build"],
+                "args": ["-c", "rm -rf src-tauri/target/release/bundle && bash build-desktop.sh"],
                 "options": { "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop" }
             },
             "osx": {
                 "command": "bash",
-                "args": ["-c", "rm -rf dist resources && ([ -f bin/neutralino-mac_x64 ] || [ -f bin/neutralino-mac_universal ] || npx neu update) && npx neu build"],
+                "args": ["-c", "rm -rf src-tauri/target/release/bundle && bash build-desktop.sh"],
                 "options": { "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop" }
             },
             "windows": {
                 "command": "powershell",
                 "args": [
-                    "-NoProfile", "-Command",
-                    "Remove-Item -Recurse -Force dist,resources -ErrorAction SilentlyContinue; if (-not (Test-Path bin\\neutralino-win_x64.exe)) { npx neu update }; Push-Location ..\\calcpad-web; npm run build:desktop; Pop-Location; npx neu build"
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-Command",
+                    "Remove-Item -Recurse -Force src-tauri\\target\\release\\bundle -ErrorAction SilentlyContinue; .\\build-desktop.ps1"
                 ],
                 "options": { "cwd": "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop" }
             },
@@ -313,43 +310,6 @@
                 "panel": "dedicated"
             }
         },
-        {
-            "label": "Desktop: Build AppImage (Linux)",
-            "type": "shell",
-            "command": "bash",
-            "args": [
-                "-c",
-                "bash build-desktop.sh && npx neu build && bash packaging/appimage/build-appimage.sh"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
-            },
-            "group": "build",
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated"
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Desktop: Install via pacman (Arch)",
-            "type": "shell",
-            "command": "bash",
-            "args": [
-                "-c",
-                "rm -f *.pkg.tar.zst && makepkg -sif && sudo pacman -U --noconfirm calcpad-ce-*.pkg.tar.zst"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/packaging/arch"
-            },
-            "group": "build",
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated"
-            },
-            "problemMatcher": []
-        },
-
         // ── Server → Extension DLL sync (dev builds) ──────────────────
         {
             "label": "Server: Build & Deploy to Extension",

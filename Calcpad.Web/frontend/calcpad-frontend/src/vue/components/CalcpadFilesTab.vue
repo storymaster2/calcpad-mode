@@ -212,7 +212,7 @@ const writeClipboard = async (text: string) => {
     await navigator.clipboard.writeText(text)
   } catch {
     // Fallback: legacy execCommand path. The webview should support the
-    // Clipboard API in Neutralino, so this is a safety net only.
+    // Clipboard API in Tauri, so this is a safety net only.
     const ta = document.createElement('textarea')
     ta.value = text
     ta.style.position = 'fixed'

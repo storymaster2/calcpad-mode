@@ -1,0 +1,18 @@
+{
+  "build": {
+    "beforeDevCommand": "./local-npm.sh --prefix ../calcpad-web run build:watch",
+    "beforeBuildCommand": "./local-npm.sh --prefix ../calcpad-web run build"
+  },
+  "bundle": {
+    "targets": ["deb", "appimage"],
+    "resources": {
+      "binaries/*.so": "./",
+      "binaries/Calcpad.Server": "./"
+    },
+    "linux": {
+      "deb": {
+        "depends": []
+      }
+    }
+  }
+}

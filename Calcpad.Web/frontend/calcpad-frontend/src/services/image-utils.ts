@@ -1,5 +1,5 @@
 /**
- * Pure, cross-platform image helpers shared by the web bridge, the Neutralino
+ * Pure, cross-platform image helpers shared by the web bridge, the Tauri
  * bridge, and the VS Code extension. No DOM/Node/VS Code imports — anything
  * platform-specific (clipboard access, file dialogs) lives in the consumer.
  */

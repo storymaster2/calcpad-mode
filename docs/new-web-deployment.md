@@ -4,7 +4,7 @@
 
 > Calcpad.Web only. The WPF desktop application is unaffected.
 
-The web backend ([Calcpad.Web/backend](../Calcpad.Web/backend)) is an ASP.NET Core Web API that drives the web editor, the VS Code extension, and the Neutralino desktop wrapper. It replaces the former `Calcpad.Server` project with clearer separation of concerns and an explicit endpoint catalog — in this branch, scoped to a single local user.
+The web backend ([Calcpad.Web/backend](../Calcpad.Web/backend)) is an ASP.NET Core Web API that drives the web editor, the VS Code extension, and the Tauri desktop wrapper. It replaces the former `Calcpad.Server` project with clearer separation of concerns and an explicit endpoint catalog — in this branch, scoped to a single local user.
 
 ## Running
 

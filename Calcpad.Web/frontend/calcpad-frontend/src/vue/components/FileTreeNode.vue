@@ -62,7 +62,7 @@ const handleClick = () => {
 }
 
 const handleContextMenu = (e: MouseEvent) => {
-  // Preventing the default menu is what stops the Neutralino/webkit segfault
+  // Preventing the default menu avoids the WebKitGTK context-menu segfault
   // on Linux — the native GTK context menu doesn't play well with the
   // embedded webview process.
   emit('context-menu', { node: props.node, x: e.clientX, y: e.clientY })

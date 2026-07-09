@@ -61,9 +61,9 @@ The VS Code extension scans generated HTML for `<img src="…">` and, for each l
 5. **macOS** — Chrome, Edge, Chromium in `/Applications`
 6. **Fallback** — auto-download `ChromeHeadlessShell` via `BrowserFetcher` into `{AppContext.BaseDirectory}/chromium`
 
-## Desktop pre-flight check (Calcpad-Desktop)
+## Desktop browser-missing warning (Calcpad-Desktop)
 
-The Neutralino desktop launcher (`extensions/server/start-server.sh`) probes for a Chromium binary on `PATH` at startup and writes the result to `extensions/server/logs/server-stderr.log`. Before issuing a PDF request, the desktop UI scans that log; if the launcher reported "no Chromium-family browser found" (or PuppeteerSharp logged a launch failure on a previous attempt), the user gets a native message box with **per-distribution install instructions** instead of waiting for a 10-second timeout:
+Under Tauri the server runs as a sidecar binary and writes stderr to `<serverDir>/logs/server-stderr.log`. Before issuing a PDF request, the desktop UI scans that log; if PuppeteerSharp logged a launch failure on a previous attempt ("Could not find browser revision" / "Failed to launch the browser"), the user gets a native message box with **per-distribution install instructions** instead of waiting for a 10-second timeout:
 
 - **Arch / CachyOS / Manjaro / EndeavourOS / Garuda** — `yay -S ungoogled-chromium-bin` (or `sudo pacman -S chromium`)
 - **Debian / Ubuntu / Mint** — `sudo apt install chromium`

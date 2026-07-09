@@ -5,19 +5,25 @@ namespace Calcpad.Server.Services
 {
     /// <summary>
     /// Loads font files bundled with the backend (filesystem Fonts/ folder or
-    /// embedded resources under <c>Calcpad.Server.Fonts.*</c>) and exposes them
-    /// to the rendered page via <c>window.__calcpadFonts</c>. Client-side
-    /// scripts (e.g. the DXF render module) read from that dict and only fall
-    /// back to a CDN URL when no bundled font is available — i.e. live preview
-    /// outside the Calcpad backend.
-    ///
-    /// Drop a .woff / .woff2 / .ttf / .otf file into the Fonts/ directory and
-    /// it gets picked up automatically; the dict is keyed by filename.
+    /// embedded resources under <c>Calcpad.Server.Fonts.*</c>) and generates
+    /// @font-face rules plus a <c>window.__calcpadFonts</c> dict for the
+    /// rendered page. Drop a .woff / .woff2 / .ttf / .otf file into the Fonts/
+    /// directory and it gets picked up automatically.
     /// </summary>
     internal static class BundledFonts
     {
+        // Filename -> CSS font-family name(s) it should be registered as via @font-face.
+        // Files bundled but not listed here still land in window.__calcpadFonts, just without a rule.
+        private static readonly Dictionary<string, string[]> FontFamilyNames =
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Jost-100-Hairline.otf"] = ["Jost* Hairline"],
+                ["Jost-200-Thin.otf"] = ["Jost* Thin"],
+            };
+
         private static IReadOnlyDictionary<string, string>? _cachedDataUrls;
         private static string? _cachedScriptTag;
+        private static string? _cachedFontFaceStyleTag;
         private static readonly object _lock = new();
 
         public static IReadOnlyDictionary<string, string> GetDataUrls()
@@ -67,6 +73,44 @@ namespace Calcpad.Server.Services
             _cachedScriptTag = sb.ToString();
             return _cachedScriptTag;
         }
+
+        /// <summary>
+        /// Returns a <c>&lt;style&gt;</c> tag with an <c>@font-face</c> rule for
+        /// every bundled font listed in <see cref="FontFamilyNames"/>, or an
+        /// empty string if none apply.
+        /// </summary>
+        public static string GetFontFaceStyleTag()
+        {
+            if (_cachedFontFaceStyleTag != null) return _cachedFontFaceStyleTag;
+
+            var fonts = GetDataUrls();
+            var sb = new StringBuilder();
+            foreach (var (fileName, dataUrl) in fonts)
+            {
+                if (!FontFamilyNames.TryGetValue(fileName, out var familyNames)) continue;
+                var format = FormatForFont(fileName);
+                foreach (var familyName in familyNames)
+                {
+                    sb.Append("@font-face{font-family:\"").Append(CssEscape(familyName))
+                      .Append("\";src:url(").Append(dataUrl).Append(") format(\"").Append(format).Append("\");}");
+                }
+            }
+
+            _cachedFontFaceStyleTag = sb.Length == 0 ? string.Empty : $"<style>{sb}</style>";
+            return _cachedFontFaceStyleTag;
+        }
+
+        private static string FormatForFont(string path) =>
+            Path.GetExtension(path).ToLowerInvariant() switch
+            {
+                ".woff" => "woff",
+                ".woff2" => "woff2",
+                ".ttf" => "truetype",
+                ".otf" => "opentype",
+                _ => "opentype"
+            };
+
+        private static string CssEscape(string s) => s.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
         private static void LoadFromFilesystem(Dictionary<string, string> map)
         {

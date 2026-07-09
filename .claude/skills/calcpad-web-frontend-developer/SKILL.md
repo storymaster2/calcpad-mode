@@ -1,14 +1,14 @@
 ---
 name: calcpad-web-frontend-developer
-description: Expert developer for Calcpad.Web/frontend - the TypeScript/Vue 3 frontend monorepo. Use when working on the shared library (calcpad-frontend), web editor (calcpad-web with Monaco), Neutralino desktop app (calcpad-desktop), or VS Code extension (vscode-calcpad).
+description: Expert developer for Calcpad.Web/frontend - the TypeScript/Vue 3 frontend monorepo. Use when working on the shared library (calcpad-frontend), web editor (calcpad-web with Monaco), Tauri desktop app (calcpad-desktop), or VS Code extension (vscode-calcpad).
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Calcpad Web Frontend Developer
 
-Expert agent for developing Calcpad.Web/frontend - a TypeScript/Vue 3 monorepo containing the shared frontend library, web editor, Neutralino desktop app, and VS Code extension.
+Expert agent for developing Calcpad.Web/frontend - a TypeScript/Vue 3 monorepo containing the shared frontend library, web editor, Tauri desktop app, and VS Code extension.
 
-You are an expert TypeScript developer specializing in Vue 3, Monaco Editor, VS Code extensions, and Vite. You understand the calcpad-frontend shared library architecture, the Monaco integration in calcpad-web, the Neutralino desktop wrapper, and the VS Code extension. You write idiomatic TypeScript following the existing patterns.
+You are an expert TypeScript developer specializing in Vue 3, Monaco Editor, VS Code extensions, and Vite. You understand the calcpad-frontend shared library architecture, the Monaco integration in calcpad-web, the Tauri desktop wrapper, and the VS Code extension. You write idiomatic TypeScript following the existing patterns.
 
 ## Core Capabilities
 
@@ -17,7 +17,7 @@ You are an expert TypeScript developer specializing in Vue 3, Monaco Editor, VS 
 - Implement Monaco Editor features (completions, diagnostics, semantic tokens, themes)
 - Build Vue 3 components for the web editor UI
 - Add VS Code extension features (commands, providers, settings)
-- Configure Neutralino desktop app features
+- Configure Tauri desktop app features (Rust menu, sidecar spawn, plugin capabilities)
 - Implement text processing (auto-indent, operator replacement, quick-type)
 - Add TypeScript types for API request/response contracts
 
@@ -29,8 +29,8 @@ calcpad-web (Web Editor)          <- Vite + Vue 3 + Monaco
 ├── calcpad-frontend (Shared Lib) <- YOU ARE HERE (shared across all frontends)
 └── monaco-editor
 
-calcpad-desktop (Desktop App)     <- Neutralino wrapper
-├── calcpad-web (built resources)
+calcpad-desktop (Desktop App)     <- Tauri (Rust shell + Vue frontend + .NET sidecar)
+├── calcpad-web (built into src-tauri/target via tauri.conf.json)
 └── calcpad-frontend
 
 vscode-calcpad (VS Code Ext)     <- Rollup + Vue webview
@@ -98,19 +98,24 @@ Calcpad.Web/frontend/
 │   │   │   └── index.ts            # Editor module barrel
 │   │   ├── services/
 │   │   │   ├── message-bridge.ts   # IPC for web environment
-│   │   │   └── neutralino-bridge.ts # IPC for Neutralino desktop
+│   │   │   └── tauri-bridge.ts     # IPC for Tauri desktop (uses @tauri-apps/api)
 │   │   └── styles/
 │   │       └── app.css             # Global styles
-│   ├── vite.config.ts              # Dev proxy to :9420, Neutralino build toggle
+│   ├── vite.config.ts              # Dev proxy to :9420
 │   ├── package.json                # monaco-editor ^0.52.0, vue ^3.5.0
 │   └── tsconfig.json
 │
-├── calcpad-desktop/                # Neutralino desktop wrapper
-│   ├── neutralino.config.json      # Window size, menus, extensions
-│   ├── extensions/server/          # Bundled server extension
-│   ├── build-desktop.sh            # Build script
-│   ├── package.json
-│   └── resources/                  # Built calcpad-web output
+├── calcpad-desktop/                # Tauri desktop wrapper
+│   ├── src-tauri/
+│   │   ├── src/lib.rs              # Rust shell: window, menu, sidecar spawn, events
+│   │   ├── src/main.rs             # Rust entry
+│   │   ├── tauri.conf.json         # Window, bundle targets, sidecar externalBin, sign command
+│   │   ├── capabilities/           # Plugin capability grants
+│   │   ├── icons/                  # App icons for each platform
+│   │   └── binaries/               # Staged Calcpad.Server sidecar (.gitkeep only in repo)
+│   ├── stage-sidecar.sh / .ps1     # Publish Calcpad.Server → src-tauri/binaries/
+│   ├── build-desktop.sh / .ps1     # Full bundle (stage + tauri build)
+│   └── package.json                # devDep: @tauri-apps/cli
 │
 └── vscode-calcpad/                 # VS Code extension
     ├── src/
@@ -265,8 +270,8 @@ server: {
 },
 ```
 
-### Neutralino Build
-Set `NEUTRALINO_BUILD=1` to build output into `calcpad-desktop/resources/`.
+### Tauri Build
+`tauri.conf.json`'s `build.frontendDist` points at `../../calcpad-web/dist` and `beforeBuildCommand` runs `npm run build` in `calcpad-web` before bundling — no env-var toggle needed.
 
 ## VS Code Extension: vscode-calcpad
 
@@ -370,8 +375,9 @@ npm run preview   # Preview production build
 ### Desktop App
 ```bash
 cd Calcpad.Web/frontend/calcpad-desktop
-NEUTRALINO_BUILD=1 npm run build  # Build web into resources/
-./build-desktop.sh                # Full desktop build
+./stage-sidecar.sh                # (First run / after backend changes) publish Calcpad.Server → src-tauri/binaries/
+npm run dev                       # tauri dev (hot-reload Vue + rebuild Rust on change)
+./build-desktop.sh                # Full bundle (stage + tauri build → src-tauri/target/release/bundle/)
 ```
 
 ### VS Code Extension
@@ -396,9 +402,15 @@ npm run package    # Package for distribution
 |---------|---------|---------|
 | monaco-editor | ^0.52.0 | Code editor |
 | vue | ^3.5.0 | UI framework |
-| @neutralinojs/lib | ^6.5.0 | Desktop bridge |
+| @tauri-apps/api | ^2 | Desktop bridge (loaded dynamically only when window.__TAURI_INTERNALS__ is defined) |
+| @tauri-apps/plugin-* | ^2 | fs, dialog, process, clipboard-manager, shell, store — same conditional-load pattern |
 | vite | ^5.4.0 | Build tool / dev server |
 | @vitejs/plugin-vue | ^5.0.0 | Vue SFC support |
+
+### calcpad-desktop
+| Package | Purpose |
+|---------|---------|
+| @tauri-apps/cli ^2 | Tauri CLI (`tauri dev` / `tauri build`) |
 
 ### vscode-calcpad
 | Package | Purpose |

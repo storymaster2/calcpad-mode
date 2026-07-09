@@ -459,15 +459,16 @@ tan_angle = tan(angle°)";
             var themeClass = theme.ToLower() == "dark" ? " class=\"dark-theme\"" : "";
             var templateWithTheme = _htmlTemplate.Replace("<body>", $"<body{themeClass}>");
 
-            // Expose bundled fonts as window.__calcpadFonts so client scripts
-            // (e.g. the DXF render module) can use them instead of hitting a CDN.
+            // Register @font-face rules for fonts referenced by name in the
+            // template CSS (e.g. Jost*), so they don't depend on OS installation,
+            // and expose window.__calcpadFonts for any other client-side use.
             // Injected before </head> so it runs before any module scripts in body.
-            var fontScript = BundledFonts.GetInjectionScript();
-            if (!string.IsNullOrEmpty(fontScript))
+            var fontMarkup = BundledFonts.GetFontFaceStyleTag() + BundledFonts.GetInjectionScript();
+            if (!string.IsNullOrEmpty(fontMarkup))
             {
                 var headCloseIdx = templateWithTheme.IndexOf("</head>", StringComparison.OrdinalIgnoreCase);
                 if (headCloseIdx >= 0)
-                    templateWithTheme = templateWithTheme.Insert(headCloseIdx, fontScript);
+                    templateWithTheme = templateWithTheme.Insert(headCloseIdx, fontMarkup);
             }
 
             return templateWithTheme.Replace("{{CONTENT}}", htmlContent);

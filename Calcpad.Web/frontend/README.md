@@ -11,7 +11,7 @@ A monorepo containing all frontend projects for CalcPad: a VS Code extension, a 
 | [calcpad-frontend/](calcpad-frontend/) | Shared TypeScript library (API client, services, Vue components) |
 | [vscode-calcpad/](vscode-calcpad/) | VS Code extension with live preview and full language support |
 | [calcpad-web/](calcpad-web/) | Standalone web editor built with Monaco Editor + Vue |
-| [calcpad-desktop/](calcpad-desktop/) | Desktop application via Neutralino.js wrapping the web editor |
+| [calcpad-desktop/](calcpad-desktop/) | Desktop application via Tauri wrapping the web editor |
 
 All projects depend on **Calcpad.Server** (the .NET backend at `../backend/`) for computation, linting, and rendering via REST API.
 
@@ -56,8 +56,10 @@ npm run dev        # Start dev server
 ```bash
 cd calcpad-desktop
 npm install
-npm run dev        # Start Neutralino dev mode
+npm run dev        # Start Tauri dev mode (hot-reloads the Vue frontend, rebuilds the Rust shell on change)
 ```
+
+> **Note:** Running `tauri dev` requires the Calcpad.Server sidecar to be staged into `src-tauri/binaries/`. Use the `Desktop: Stage Sidecar` VS Code task, or run `stage-sidecar.sh` / `stage-sidecar.ps1` before the first dev launch.
 
 ---
 
@@ -79,8 +81,12 @@ calcpad-web/               Web editor
     ├── src/editor/        Monaco Editor setup, language, themes, completions
     └── src/services/      Message bridge between Monaco and Vue sidebar
 
-calcpad-desktop/           Neutralino.js desktop wrapper
-    └── extensions/server/ Placeholder for embedded Calcpad.Server
+calcpad-desktop/           Tauri desktop wrapper
+    ├── src-tauri/         Rust shell (window, menu, sidecar spawn) + tauri.conf.json
+    ├── stage-sidecar.sh   Publishes Calcpad.Server for the host RID and stages the
+    │   stage-sidecar.ps1  apphost as src-tauri/binaries/calcpad-server-<triple>[.exe]
+    └── build-desktop.sh   Full bundle: sidecar → `tauri build` → msi/nsis/deb/appimage/dmg
+        build-desktop.ps1
 ```
 
 All frontends import `calcpad-frontend` as a local dependency and communicate with Calcpad.Server via the REST API documented in [API_SCHEMA.md](API_SCHEMA.md).
@@ -161,7 +167,9 @@ Set the server URL via the `VITE_SERVER_URL` environment variable or through the
 
 ## Desktop App Details
 
-The desktop application wraps the web editor using Neutralino.js, providing native window management and optional embedded server support. Supports macOS, Windows, and Linux.
+The desktop application wraps the web editor using [Tauri](https://tauri.app/), providing native window management, a native menu bar, and an embedded Calcpad.Server sidecar. Supports macOS, Windows, and Linux.
+
+Calcpad.Server is published as a framework-independent apphost renamed to Tauri's target-triple sidecar format (`calcpad-server-<target-triple>[.exe]`) and staged into `src-tauri/binaries/` before `tauri dev` / `tauri build` runs. `tauri.conf.json`'s `bundle.externalBin` picks it up and includes it in the packaged installer. See [`build-desktop.sh`](calcpad-desktop/build-desktop.sh) / [`build-desktop.ps1`](calcpad-desktop/build-desktop.ps1) and the `stage-sidecar` scripts.
 
 ---
 
@@ -203,8 +211,8 @@ cd vscode-calcpad && npm install && npm run package
 # Web editor
 cd calcpad-web && npm install && npm run build
 
-# Desktop app
-cd calcpad-desktop && npm install && npm run build
+# Desktop app (produces installers via `tauri build` under src-tauri/target/release/bundle)
+cd calcpad-desktop && npm install && bash build-desktop.sh
 ```
 
 ### Watching for Changes
@@ -222,7 +230,7 @@ cd calcpad-web && npm run dev
 
 ### Code Signing (Windows)
 
-The bundled `Calcpad.Server.exe` (and the desktop Neutralino app exe) are native
+The bundled `Calcpad.Server.exe` (and the desktop Tauri app exe / installer) are native
 executables. A freshly-built, **unsigned** exe has no cloud reputation, so Windows
 Defender / SmartScreen / corporate EDR can block it from running
 ("block-at-first-sight"). Reputation is tracked per-file-hash for unsigned binaries
@@ -241,7 +249,7 @@ unsigned build). It turns on when `CALCPAD_SIGN_THUMBPRINT` is set at build time
 What gets signed:
 
 - **Extension** — [`signApphost()`](vscode-calcpad/scripts/sync-bundled-server.mjs) signs `vscode-calcpad/bin/Calcpad.Server.exe` during `npm run sync-server*` / `npm run package*`.
-- **Desktop** — the same sync script signs the embedded server exe; [`sign-file.ps1`](calcpad-desktop/packaging/windows/sign-file.ps1) (called from [`package-portable.ps1`](calcpad-desktop/packaging/windows/package-portable.ps1)) signs the Neutralino app exe.
+- **Desktop** — Tauri signs the bundled app exe and installers via the `bundle.windows.signCommand` block in [tauri.conf.json](calcpad-desktop/src-tauri/tauri.conf.json), which shells out to `signtool` when `CALCPAD_SIGN_THUMBPRINT` is set. The embedded server exe is signed by the same `signApphost()` script before it's staged into `src-tauri/binaries/`.
 
 See also [vscode-calcpad/.env.example](vscode-calcpad/.env.example).
 
@@ -278,8 +286,8 @@ end users install, you need a CA-issued (EV) cert or [Azure Trusted Signing](htt
    Add-MpPreference -ExclusionPath `
      "<repo>\Calcpad.Web\backend\bin", `
      "<repo>\Calcpad.Web\frontend\vscode-calcpad\bin", `
-     "<repo>\Calcpad.Web\frontend\calcpad-desktop\dist", `
-     "<repo>\Calcpad.Web\frontend\calcpad-desktop\extensions"
+     "<repo>\Calcpad.Web\frontend\calcpad-desktop\src-tauri\binaries", `
+     "<repo>\Calcpad.Web\frontend\calcpad-desktop\src-tauri\target"
    # or, more simply, exclude the whole repo:
    #   Add-MpPreference -ExclusionPath "<repo>"
    ```

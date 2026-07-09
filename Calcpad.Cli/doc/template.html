@@ -756,183 +756,197 @@
         var contextMenu = false;
         function getVerticalPosition(line) { return document.querySelector("[data-text='" + line + "']").getBoundingClientRect().top; }
         function isNumeric(s) { return s.match(/^-?\d+(?:\.\d+)?$/); }
-        if (window.jQuery) {
-            function getHtmlWithInput() {
-                $("input[type=text]").each(function () {
-                    $(this).attr("value", $(this).val());
+        function getHtmlWithInput() {
+            document.querySelectorAll('input[type="text"], input[type="hidden"]').forEach(el => {
+                el.setAttribute("value", el.value);
+            });
+            document.querySelectorAll("textarea").forEach(el => {
+                el.innerHTML = el.value;
+            });
+            document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(el => {
+                if (el.checked) el.setAttribute("checked", "checked");
+                else el.removeAttribute("checked");
+            });
+            document.querySelectorAll("select option").forEach(el => {
+                if (el.selected) el.setAttribute("selected", "true");
+                else el.removeAttribute("selected");
+            });
+            return document.body.outerHTML;
+        }
+
+        function getTargetId(element) {
+            var id = element.getAttribute("name");
+            if (id != null && id.length > 0)
+                return id;
+
+            return element.dataset.target;
+        }
+
+        function getValue(id, source) {
+            var value = "";
+            var container = document.getElementById(id);
+            var inputs = container ? container.querySelectorAll("input") : [];
+            if (inputs.length === 0) {
+                var us = container ? container.querySelectorAll(".eq u") : [];
+                us.forEach(el => { value += el.textContent + ";"; });
+                source.disabled = true;
+            }
+            else {
+                inputs.forEach(el => { value += el.value + ";"; });
+            }
+            if (value.length > 1) {
+                value = value.slice(0, -1);
+            }
+            return value;
+        }
+
+        function onDomReady() {
+
+            document.querySelectorAll(".dvcs:has(.block) > :first-child").forEach(el => {
+                el.innerHTML = "&hairsp;";
+            });
+
+            var unitsEl = document.getElementById("Units");
+            if (unitsEl) {
+                unitsEl.addEventListener("change", function () {
+                    document.querySelectorAll(".Units").forEach(el => { el.textContent = unitsEl.value; });
                 });
-                $("input[type=hidden]").each(function () {
-                    $(this).attr("value", $(this).val());
-                });
-                $("textarea").each(function () {
-                    $(this).html($(this).val());
-                });
-                $("input[type=radio]").each(function () {
-                    if (this.checked)
-                        $(this).attr("checked", "checked");
-                    else
-                        $(this).removeAttr("checked");
-                });
-                $("input[type=checkbox]").each(function () {
-                    if (this.checked)
-                        $(this).attr("checked", "checked");
-                    else
-                        $(this).removeAttr("checked");
-                });
-                $("select option").each(function () {
-                    if (this.selected) {
-                        $(this).attr("selected", "true");
-                    }
-                    else
-                        $(this).removeAttr("selected");
-                });
-                return document.body.outerHTML;
             }
 
-            function getTargetId(element) {
-                var id = $(element).attr("name");
-                if (id != null && id.length > 0)
-                    return id;
-
-                return $(element).data("target");
-            }
-
-            function getValue(id, source) {
-                var value = "";
-                var target = $("#" + id + " input");
-                var domObj = target.get(0);
-                if (domObj == null || domObj.Length == 0) {
-                    target = $("#" + id + " .eq u");
-                    target.each(function () {
-                        value += $(this).text() + ";";
-                    });
-                    $(source).prop('disabled', true);
-                }
-                else {
-                    target.each(function () {
-                        value += $(this).val() + ";";
-                    });
-                }
-                if (value.length > 1) {
-                    value = value.slice(0, -1);
-                }
-                return value;
-            }
-
-            $(document).ready(function () {
-
-                $(".dvcs:has(.block) > :first-child").html("&hairsp;");
-
-                $("#Units").change(function () { $(".Units").text($(this).val()); });
-
-                $(".fold > :first-child").click(function () {
-                    if ($(this).parent().hasClass("fold")) {
-                        $(this).parent().removeClass("fold").addClass("unfold");
+            document.querySelectorAll(".fold > :first-child").forEach(el => {
+                el.addEventListener("click", function () {
+                    var parent = this.parentElement;
+                    if (parent.classList.contains("fold")) {
+                        parent.classList.remove("fold");
+                        parent.classList.add("unfold");
                     }
                     else {
-                        $(this).parent().removeClass("unfold").addClass("fold");
+                        parent.classList.remove("unfold");
+                        parent.classList.add("fold");
                     }
                 });
+            });
 
-                $("select").each(function (index) {
-                    if ($(this).prop("id") != "Units") {
-                        var id = getTargetId(this);
-                        if (id != null && id.length > 0) {
-                            var value = getValue(id, this);
-                            $(this).val(value);
-                        }
+            document.querySelectorAll("select").forEach(function (el) {
+                if (el.id !== "Units") {
+                    var id = getTargetId(el);
+                    if (id != null && id.length > 0) {
+                        el.value = getValue(id, el);
                     }
+                }
+            });
 
-                });
-
-                $("select").change(function () {
+            document.querySelectorAll("select").forEach(function (el) {
+                el.addEventListener("change", function () {
                     var id = getTargetId(this);
                     if (id != null && id.length > 0) {
-                        var target = $("#" + id + " input");
-                        if (target != null) {
-                            var values = $(this).val().split(";");
-                            target.each(function (index) {
-                                $(this).val(values[index]);
+                        var container = document.getElementById(id);
+                        if (container) {
+                            var values = this.value.split(";");
+                            container.querySelectorAll("input").forEach(function (t, i) {
+                                t.value = values[i];
                             });
                         }
                     }
                 });
+            });
 
-                $("input:radio, input:checkbox").each(function (index) {
+            document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(function (el) {
+                var id = getTargetId(el);
+                if (id != null && id.length > 0) {
+                    var value = getValue(id, el);
+                    el.checked = (el.value == value);
+                }
+            });
+
+            document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(function (el) {
+                el.addEventListener("change", function () {
                     var id = getTargetId(this);
                     if (id != null && id.length > 0) {
-                        var value = getValue(id, this);
-                        $(this).prop("checked", $(this).val() == value);
-                    }
-                });
-
-                $("input:radio, input:checkbox").change(function () {
-                    var id = getTargetId(this);
-                    if (id != null && id.length > 0) {
-                        var target = $("#" + id + " input");
-                        if (target != null) {
-                            if ($(this).prop("checked")) {
-                                var values = $(this).val().split(";");
-                                target.each(function (index) {
-                                    $(this).val(values[index]);
-                                });
+                        var container = document.getElementById(id);
+                        if (container) {
+                            var targets = container.querySelectorAll("input");
+                            if (this.checked) {
+                                var values = this.value.split(";");
+                                targets.forEach(function (t, i) { t.value = values[i]; });
                             }
-                            else if ($(this).prop("type") == "checkbox") {
-                                target.each(function () {
-                                    $(this).val("0");
-                                });
+                            else if (this.type === "checkbox") {
+                                targets.forEach(function (t) { t.value = "0"; });
                             }
                         }
                     }
                 });
+            });
 
-                $(".line:not(style, script)").each(function () {
-                    var line = $(this).prop("id").split("-")[1];
-                    var $lineLink = $('<a class="lineLink" href="#0" data-text="' + line + '" title="Code line ' + line + '">&larr;</a>');
-                    $(this).append($lineLink);
-                    $lineLink.hide();
-                    $(this).hover(function () {
-                        $(".lineLink").hide();
-                        $lineLink.show();
-                    });
-                    $(window).scroll(function () {
-                        $lineLink.hide();
-                    });
-                });
+            document.querySelectorAll(".line").forEach(function (el) {
+                if (el.tagName === "STYLE" || el.tagName === "SCRIPT") return;
+                var line = el.id.split("-")[1];
+                var lineLink = document.createElement("a");
+                lineLink.className = "lineLink";
+                lineLink.href = "#0";
+                lineLink.dataset.text = line;
+                lineLink.title = "Code line " + line;
+                lineLink.innerHTML = "&larr;";
+                lineLink.style.display = "none";
+                el.appendChild(lineLink);
+                var show = function () {
+                    document.querySelectorAll(".lineLink").forEach(l => l.style.display = "none");
+                    lineLink.style.display = "";
+                };
+                el.addEventListener("mouseenter", show);
+                el.addEventListener("mouseleave", show);
+                window.addEventListener("scroll", function () { lineLink.style.display = "none"; });
+            });
 
-                $("body").mouseleave(function () {
-                    $(".lineLink").hide();
-                });
+            document.body.addEventListener("mouseleave", function () {
+                document.querySelectorAll(".lineLink").forEach(l => l.style.display = "none");
+            });
 
-                $(".roundBox").click(function () {
-                    var line = $(this).data("line");
-                    var e = document.getElementById("line-" + line);
-                    if (e) {
-                        window.scrollTo(0, e.offsetTop - $(this).outerHeight() - 20);
+            document.querySelectorAll(".roundBox").forEach(function (el) {
+                el.addEventListener("click", function () {
+                    var line = this.dataset.line;
+                    var target = document.getElementById("line-" + line);
+                    if (target) {
+                        window.scrollTo(0, target.offsetTop - this.offsetHeight - 20);
                     }
-                });
-                $(".money").each(function () { $(this).text(Number(($(this).text())).toFixed(2)); });
-
-                $("input").change(function() {
-                    var e = $(this);
-                    var s = e.val();
-                    if (isNumeric(s)) {
-                        e.css("color", "black");
-                        e.removeAttr("title");
-                    } else {
-                        e.css("color", "red");
-                        e.attr("title", "Invalid number");
-                    }
-                });
-
-                $("a").click(function () {
-                    chrome.webview.postMessage('clicked');
-                });
-
-                window.addEventListener('click', () => {
-                    chrome.webview.postMessage('focused');
                 });
             });
+
+            document.querySelectorAll(".money").forEach(el => {
+                el.textContent = Number(el.textContent).toFixed(2);
+            });
+
+            document.querySelectorAll("input").forEach(el => {
+                el.addEventListener("change", function () {
+                    if (isNumeric(this.value)) {
+                        this.style.color = "black";
+                        this.removeAttribute("title");
+                    } else {
+                        this.style.color = "red";
+                        this.title = "Invalid number";
+                    }
+                });
+            });
+
+            document.querySelectorAll("a").forEach(el => {
+                el.addEventListener("click", function () {
+                    if (window.chrome && window.chrome.webview) {
+                        chrome.webview.postMessage('clicked');
+                    }
+                });
+            });
+
+            window.addEventListener('click', () => {
+                if (window.chrome && window.chrome.webview) {
+                    chrome.webview.postMessage('focused');
+                }
+            });
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", onDomReady);
+        } else {
+            onDomReady();
         }
         document.oncontextmenu = function () { contextMenu = true; };
         document.onmousedown = function () { contextMenu = false; };

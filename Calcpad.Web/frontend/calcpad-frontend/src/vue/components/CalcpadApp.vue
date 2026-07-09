@@ -1,5 +1,5 @@
 <template>
-  <!-- @contextmenu.prevent on the whole panel: on Linux, Neutralino's GTK-webkit
+  <!-- @contextmenu.prevent on the whole panel: on Linux, the WebKitGTK
        hosting can segfault when the native context menu tries to render inside
        the embedded webview. Blocking the default menu everywhere is safer than
        relying on children to opt in. -->

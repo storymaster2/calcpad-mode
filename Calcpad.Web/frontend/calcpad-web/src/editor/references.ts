@@ -12,7 +12,7 @@ import type { FileContextProvider } from './diagnostics';
  * standalone go-to-definition action doesn't reliably reapply the selection
  * after a provider swaps the active model out from under it.
  *
- * Only available on platforms with disk access (Neutralino desktop, VS Code).
+ * Only available on platforms with disk access (Tauri desktop, VS Code).
  * Returns null if the file cannot be opened.
  *
  * TODO(web/remote): When running in a browser tab or against a remote server,

@@ -1,0 +1,29 @@
+{
+  "build": {
+    "beforeDevCommand": "powershell -ExecutionPolicy Bypass -File local-npm.ps1 --prefix ../calcpad-web run build:watch",
+    "beforeBuildCommand": "powershell -ExecutionPolicy Bypass -File local-npm.ps1 --prefix ../calcpad-web run build"
+  },
+  "bundle": {
+    "targets": ["msi", "nsis"],
+    "resources": {
+      "binaries/*.dll": "./",
+      "binaries/Calcpad.Server.exe": "./"
+    },
+    "windows": {
+      "wix": {
+        "language": "en-US"
+      },
+      "nsis": {
+        "installMode": "perMachine"
+      },
+      "signCommand": {
+        "cmd": "powershell",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "if ($env:CALCPAD_SIGN_THUMBPRINT) { signtool sign /sha1 $env:CALCPAD_SIGN_THUMBPRINT /fd sha256 /tr http://timestamp.digicert.com /td sha256 '{{ %1 }}' }"
+        ]
+      }
+    }
+  }
+}

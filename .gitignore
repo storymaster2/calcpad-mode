@@ -394,5 +394,3 @@ Calcpad.Wpf/Installer/Output/
 # Node
 *.node
 
-# Tauri
-*src-tauri

@@ -1382,6 +1382,16 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     const vueUiProvider = new CalcpadVueUIProvider(context.extensionUri, context, settingsManager, insertManager);
+    vueUiProvider.onPreviewThemeChanged = async () => {
+        const activeEditor = vscode.window.activeTextEditor;
+        if (!activeEditor) return;
+        if (wrappedPanel) {
+            await updatePreviewContent(wrappedPanel, activeEditor.document.getText(), activeEditor.document.uri, false);
+        }
+        if (unwrappedPanel) {
+            await updatePreviewContent(unwrappedPanel, activeEditor.document.getText(), activeEditor.document.uri, true);
+        }
+    };
     const vueUiProviderDisposable = vscode.window.registerWebviewViewProvider(
         CalcpadVueUIProvider.viewType,
         vueUiProvider

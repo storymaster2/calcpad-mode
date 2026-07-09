@@ -47,7 +47,7 @@
             "preLaunchTask": "Extension + Server: Compile & Start"
         },
         {
-            "name": "Extension + Bundled Server (Linux x64)",
+            "name": "Extension + Bundled Server",
             "type": "extensionHost",
             "request": "launch",
             "args": [
@@ -59,80 +59,38 @@
             "preLaunchTask": "Extension: Compile + Deploy Bundle"
         },
         {
-            "name": "Extension + Bundled Server (Fedora x64)",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
-            ],
-            "preLaunchTask": "Extension: Compile + Deploy Bundle"
-        },
-        {
-            "name": "Extension + Bundled Server (Debian x64)",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
-            ],
-            "preLaunchTask": "Extension: Compile + Deploy Bundle"
-        },
-        {
-            "name": "Extension + Bundled Server (Windows x64)",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
-            ],
-            "preLaunchTask": "Extension: Compile + Deploy Bundle"
-        },
-        {
-            "name": "Desktop: Run Local Build (Linux x64)",
+            // `tauri dev` hot-reloads the Vue frontend and rebuilds the Rust
+            // shell on change. Sidecar staging runs via preLaunchTask so the
+            // ShellExt lookup in lib.rs resolves.
+            "name": "Desktop: Dev (Tauri)",
             "type": "node",
             "request": "launch",
-            "runtimeExecutable": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/dist/calcpad-desktop/calcpad-desktop-linux_x64",
-            "runtimeArgs": ["--window-enable-inspector"],
-            "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/dist/calcpad-desktop",
-            "env": {
-                "GDK_BACKEND": "x11",
-                "WEBKIT_DISABLE_DMABUF_RENDERER": "1",
-                "BROWSER_PATH": "/usr/bin/chromium"
-            },
+            "runtimeExecutable": "npx",
+            "runtimeArgs": ["tauri", "dev"],
+            "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop",
             "console": "integratedTerminal",
-            "preLaunchTask": "Desktop: Clean & Rebuild"
+            "preLaunchTask": "Desktop: Stage Sidecar"
         },
         {
-            "name": "Desktop: Run Local Build (Windows x64)",
+            // Runs the bundled release binary produced by build-desktop.sh.
+            // Linux only — Tauri's release binary lives at
+            // src-tauri/target/release/<crate-name>.
+            "name": "Desktop: Run Release Build (Linux)",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/scripts/launch-win.mjs",
-            "args": ["--window-enable-inspector"],
+            "runtimeExecutable": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/src-tauri/target/release/calcpad-desktop",
+            "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop",
             "console": "integratedTerminal",
-            "preLaunchTask": "Desktop: Clean & Rebuild"
+            "preLaunchTask": "Desktop: Bundle"
         },
         {
-            "name": "Desktop: Run Installed (Arch pacman)",
+            "name": "Desktop: Run Release Build (Windows)",
             "type": "node",
             "request": "launch",
-            "runtimeExecutable": "/usr/bin/calcpad-ce",
+            "runtimeExecutable": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/src-tauri/target/release/calcpad-desktop.exe",
+            "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop",
             "console": "integratedTerminal",
-            "preLaunchTask": "Desktop: Install via pacman (Arch)"
-        },
-        {
-            "name": "Desktop: Run AppImage (Linux x64)",
-            "type": "node",
-            "request": "launch",
-            "runtimeExecutable": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/packaging/appimage/out/CalcpadCE-0.2.0-x86_64.AppImage",
-            "console": "integratedTerminal",
-            "preLaunchTask": "Desktop: Build AppImage (Linux)"
+            "preLaunchTask": "Desktop: Bundle"
         }
     ]
 }

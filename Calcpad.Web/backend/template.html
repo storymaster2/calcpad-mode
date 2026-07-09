@@ -205,6 +205,37 @@
                 border-bottom: solid 1pt black;
             }
 
+        .block {
+            display: inline-block;
+            vertical-align: middle;
+            padding-left: 4pt;
+            margin-left: -1pt;
+            border-left: solid 1pt #80b0e8;
+            background: linear-gradient(to right, rgba(0, 192, 255, 0.06), rgba(0, 192, 255, 0.03));
+        }
+
+            .block .block {
+                background: linear-gradient(to right, rgba(0, 192, 255, 0.04), rgba(0, 192, 255, 0.02));
+            }
+
+        .dvcs:has(.block):not(.block *) {
+            display: inline-block;
+            border-left: solid 1pt #80b0e8;
+            padding-left: 0;
+            margin-left: 3pt;
+        }
+
+            .dvcs:has(.block):not(.block *)::before {
+                content: " 🞀";
+                font-size: 9pt;
+                color: #90c4f0;
+                margin-left: -4.5pt;
+            }
+
+        .arr {
+            color: #90c4f0;
+        }
+
         .r0, .r1, .r2, .r3,
         .o0, .o1, .o2, .o3,
         .b1, .b2, .b3,
@@ -862,6 +893,13 @@
             color: #569cd6; /* Light blue on hover in dark mode */
         }
     </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".dvcs:has(.block) > :first-child").forEach(function (el) {
+                el.innerHTML = "&hairsp;";
+            });
+        });
+    </script>
 </head>
 <body>
     {{CONTENT}}

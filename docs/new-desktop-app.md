@@ -2,7 +2,7 @@
 
 > Calcpad.Web only. The WPF desktop application is unaffected.
 
-The Calcpad desktop app (`Calcpad.Web/frontend/calcpad-desktop`) is a Neutralino-packaged build of the same web editor that runs in the browser, bundled with the .NET server as a sidecar extension. It exists to give users a native filesystem + native menu / save-dialog experience without giving up the Monaco editor stack.
+The Calcpad desktop app (`Calcpad.Web/frontend/calcpad-desktop`) is a [Tauri](https://tauri.app/)-packaged build of the same web editor that runs in the browser, bundled with the .NET server as a sidecar binary. It exists to give users a native filesystem + native menu / save-dialog experience without giving up the Monaco editor stack.
 
 ## Multi-tab editing
 
@@ -40,8 +40,8 @@ The sidebar's **Export** tab now has three actions in addition to the existing p
 
 | Button | Behaviour (desktop) | Behaviour (web) |
 |--------|---------------------|------------------|
-| **Save HTML…** | Native save dialog → writes `.html` via `filesystem.writeFile` | Browser blob download (`calcpad-output.html`) |
-| **Save Word…** | Native save dialog → writes `.docx` via `filesystem.writeBinaryFile` | Browser blob download (`calcpad-output.docx`) |
+| **Save HTML…** | Native save dialog → writes `.html` via Tauri's `plugin-fs` | Browser blob download (`calcpad-output.html`) |
+| **Save Word…** | Native save dialog → writes `.docx` via Tauri's `plugin-fs` | Browser blob download (`calcpad-output.docx`) |
 | **Download all (.zip)** | Existing zipped `#write`/`#append` exports | Same |
 
 Both new actions go through the same backend pipeline:
@@ -54,23 +54,25 @@ The same buttons fire on the VS Code sidebar's Export tab, where they execute th
 
 ## Embedded server lifecycle
 
-The `.NET` server runs as a Neutralino extension launched at app start.
+The `.NET` server runs as a Tauri sidecar spawned by the Rust shell at app start (see `spawn_sidecar` in [src-tauri/src/lib.rs](../Calcpad.Web/frontend/calcpad-desktop/src-tauri/src/lib.rs)). The apphost is a framework-independent `Calcpad.Server` published for the host RID and renamed to Tauri's target-triple sidecar format (`calcpad-server-<target-triple>[.exe]`), staged into `src-tauri/binaries/` by `stage-sidecar.sh` / `stage-sidecar.ps1` before dev, and picked up by `tauri.conf.json`'s `bundle.externalBin` at build time.
 
-- **Linux launcher** — `extensions/server/start-server.sh` probes for a Chromium-family browser, sets `BROWSER_PATH`, exports `CALCPAD_PORT=9420`, then `exec`s `Calcpad.Server` with stderr tee'd into `extensions/server/logs/server-stderr.log`.
-- **Windows / macOS** — the apphost binary is launched directly (`CalcpadServer.exe` / `CalcpadServer`).
-- **Server URL** — the frontend defaults to `http://localhost:9420`; the launcher binds to whatever the `CALCPAD_PORT` environment variable says.
+- **Startup args** — the shell passes `--no-exit-on-stdin-close`, `--parent-pid`, and `--port-file <temp>` so the server writes its bound port to a temp file and exits cleanly when the parent Tauri process dies. Rust polls the port file for readiness (faster than parsing Kestrel's stdout, which ASP.NET Core's ConsoleLogger can buffer for hundreds of ms).
+- **CWD** — set to the apphost's directory so .NET's dependency resolver finds the sibling DLLs regardless of where Tauri was launched from.
+- **Server URL** — the frontend reads the bound port from the port file. Default port is `9420` when unbound.
+- **Stderr / logs** — captured into `<serverDir>/logs/server-stderr.log`; the `Server → Show Server Log` menu item opens this file.
 
-See [PDF export](new-pdf-export.md) for the desktop-specific browser pre-flight check and the recommended Chromium packages per distribution.
+See [PDF export](new-pdf-export.md) for how the desktop detects a missing Chromium browser and the recommended Chromium packages per distribution.
 
 ## Native menu
 
-Built via Neutralino's `setMainMenu` API. Roughly mirrors the VS Code menu surface:
+Built in Rust via Tauri's `MenuBuilder` (see `build_menu` in [src-tauri/src/lib.rs](../Calcpad.Web/frontend/calcpad-desktop/src-tauri/src/lib.rs)). Menu-item ids are dispatched to the frontend as Tauri events; the corresponding TypeScript listeners live in the Tauri bridge. Menu surface:
 
-- **File** — New Tab · Open… · Open Recent · Save · Save As… · Close Tab · Export PDF… · Quit
-- **View** — Toggle Sidebar · Toggle Preview · Preview Mode (Wrapped / Unwrapped / Interactive)
-- **Server** — Refresh · Show Server Log · Restart App
+- **File** — New Tab · Open… · Save · Save As… · Close Tab · Export PDF… · Quit
+- **Edit** — Undo · Redo · Cut · Copy · Paste · Select All · Find · Replace
+- **View** — Toggle Sidebar · Toggle Preview · Preview Mode: Wrapped / Unwrapped
+- **Server** — Refresh · Show Server Log · Stop Server · Restart Server · Restart App
 
-The Recent submenu is rebuilt every time a file opens, capped at the most recent 10 entries.
+Recent files are tracked by the frontend via Tauri's `plugin-store`.
 
 ## Drag-and-drop
 
@@ -78,5 +80,12 @@ Dropping one or more files on the editor opens each in its own tab. Native files
 
 ## Packaging
 
-- **Arch** — `packaging/arch/PKGBUILD` builds with `npm`, `dotnet-sdk>=10.0`, and `imagemagick`. Runtime depends on `webkit2gtk-4.1` + `gtk3`. Optional dependencies cover the supported Chromium variants for PDF export, with `ungoogled-chromium-bin` listed as the preferred prebuilt option.
-- The packaged tree lays out `/opt/calcpad-ce/calcpad-desktop`, `/opt/calcpad-ce/resources.neu`, the bundled `extensions/server/` tree, a `/usr/bin/calcpad-ce` shim, and a desktop entry under `/usr/share/applications/`.
+Tauri's own bundler produces per-platform installers via `tauri build`. Configured targets (see [tauri.conf.json](../Calcpad.Web/frontend/calcpad-desktop/src-tauri/tauri.conf.json) `bundle.targets`):
+
+| Platform | Formats | Notes |
+|----------|---------|-------|
+| Windows | `msi`, `nsis` | `nsis` uses `installMode: perMachine`. WiX language `en-US`. |
+| macOS   | `app`, `dmg` | `minimumSystemVersion: 11.0`. |
+| Linux   | `deb`, `appimage` | The AppImage bundles the WebKitGTK dependency implicitly; the `.deb` package's `depends` list is left empty (WebKitGTK is expected on the host). |
+
+The Calcpad.Server sidecar and its fonts / template resources are staged into `src-tauri/binaries/` and included via `bundle.resources`. Cross-compilation for Windows from Linux is wired up through the `Desktop: Bundle Windows (cross)` VS Code task (calls `build-desktop.sh --rid=win-x64 --target=x86_64-pc-windows-msvc`).
