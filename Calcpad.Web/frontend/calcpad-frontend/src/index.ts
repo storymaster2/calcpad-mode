@@ -80,6 +80,7 @@ export {
     buildImageCommentLine,
     bytesToBase64,
 } from './services/image-utils';
+export type { ImageStorageMode, PickedImage } from './services/image-utils';
 
 // --- Message Bridge (base class) --------------------------------------------
 export { BaseMessageBridge } from './services/message-bridge/base';

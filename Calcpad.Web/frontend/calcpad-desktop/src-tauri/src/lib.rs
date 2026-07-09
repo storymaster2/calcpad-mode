@@ -1,4 +1,5 @@
 use std::process::Stdio;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -24,13 +25,23 @@ struct ServerState {
     // Child and calls start_kill()+wait() when it receives.
     kill_tx: Mutex<Option<mpsc::Sender<()>>>,
     url: Mutex<Option<String>>,
-    intentional_stop: Mutex<bool>,
+    // Bumped on every spawn. Each wait task captures the generation it belongs
+    // to and only mutates shared state if it's still current — otherwise a
+    // dying old sidecar (e.g. during restart) would clobber the freshly spawned
+    // one's url/kill_tx.
+    generation: AtomicU64,
 }
 
 #[derive(Clone, Serialize)]
 struct ServerCrashPayload {
     code: Option<i32>,
     tail: String,
+}
+
+#[derive(Clone, Serialize)]
+struct ServerLogLine {
+    stream: &'static str,
+    line: String,
 }
 
 #[derive(Clone, Serialize)]
@@ -96,7 +107,7 @@ fn server_dir(app: AppHandle) -> Result<String, String> {
 /// (macOS notarization + externalBin bugs).
 async fn spawn_sidecar(app: &AppHandle) -> Result<String, String> {
     let state: State<'_, ServerState> = app.state();
-    *state.intentional_stop.lock().unwrap() = false;
+    let my_gen = state.generation.fetch_add(1, Ordering::SeqCst) + 1;
 
     let parent_pid = std::process::id().to_string();
     // Explicit port-file path in temp so we don't depend on the child's CWD.
@@ -250,6 +261,13 @@ async fn spawn_sidecar(app: &AppHandle) -> Result<String, String> {
                             append_tail(&mut t, &line);
                             append_tail(&mut t, "\n");
                         }
+                        let _ = app.emit(
+                            "server-log",
+                            ServerLogLine {
+                                stream: label,
+                                line: line.clone(),
+                            },
+                        );
                         if let Some(url) = extract_listening_url(&line) {
                             let state: State<'_, ServerState> = app.state();
                             if let Ok(mut g) = state.url.lock() {
@@ -297,26 +315,34 @@ async fn spawn_sidecar(app: &AppHandle) -> Result<String, String> {
         let tx_url = tx_url.clone();
         let tail = tail.clone();
         tauri::async_runtime::spawn(async move {
+            // `killed` distinguishes an explicit stop (kill_rx fired — restart,
+            // menu Stop, window close) from an unexpected exit. We must NOT
+            // infer this from a shared `intentional_stop` flag: a concurrent
+            // spawn during restart resets any such flag before the old process
+            // finishes dying, so its intentional kill gets misreported as a
+            // crash (start_kill exits with code 1 on Windows), which triggers a
+            // JS auto-restart storm. The branch that fired is the ground truth.
+            let mut killed = false;
             let exit_code: Option<i32> = tokio::select! {
                 r = child.wait() => r.ok().and_then(|s| s.code()),
                 _ = kill_rx.recv() => {
+                    killed = true;
                     let _ = child.start_kill();
                     child.wait().await.ok().and_then(|s| s.code())
                 }
             };
+            // Only clear shared state if a newer spawn hasn't superseded us.
             let state: State<'_, ServerState> = app_for_wait.state();
-            if let Ok(mut g) = state.url.lock() {
-                *g = None;
+            let is_current = state.generation.load(Ordering::SeqCst) == my_gen;
+            if is_current {
+                if let Ok(mut g) = state.url.lock() {
+                    *g = None;
+                }
+                if let Ok(mut g) = state.kill_tx.lock() {
+                    *g = None;
+                }
             }
-            if let Ok(mut g) = state.kill_tx.lock() {
-                *g = None;
-            }
-            let intentional = state
-                .intentional_stop
-                .lock()
-                .map(|g| *g)
-                .unwrap_or(false);
-            if !intentional {
+            if !killed {
                 let tail_snapshot = tail
                     .lock()
                     .ok()
@@ -347,11 +373,9 @@ async fn spawn_sidecar(app: &AppHandle) -> Result<String, String> {
 
 fn stop_sidecar(app: &AppHandle) {
     let state: State<'_, ServerState> = app.state();
-    // Mark BEFORE signalling kill so the wait task's post-exit branch reads
-    // the correct value and skips the `server-crashed` emit for this shutdown.
-    if let Ok(mut g) = state.intentional_stop.lock() {
-        *g = true;
-    }
+    // The wait task recognizes this shutdown by the kill signal itself (its
+    // kill_rx branch), so it skips the `server-crashed` emit without any
+    // shared flag. See the wait task in spawn_sidecar.
     if let Ok(mut g) = state.url.lock() {
         *g = None;
     }
@@ -394,7 +418,7 @@ fn assign_to_job_object(pid: u32) {
     use windows_sys::Win32::Foundation::{CloseHandle, HANDLE};
     use windows_sys::Win32::System::JobObjects::{
         AssignProcessToJobObject, CreateJobObjectW, SetInformationJobObject,
-        JobObjectExtendedLimitInformation, JOBOBJECT_BASIC_LIMIT_INFORMATION,
+        JobObjectExtendedLimitInformation,
         JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
     };
     use windows_sys::Win32::System::Threading::{OpenProcess, PROCESS_ALL_ACCESS};

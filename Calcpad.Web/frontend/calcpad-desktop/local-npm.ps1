@@ -4,5 +4,7 @@
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $env:PATH = "$ScriptDir\.node;$env:PATH"
-& npm @args
+# Call npm.cmd, not the bare `npm` (which PowerShell resolves to npm.ps1).
+# Splatting the automatic $args into the .ps1 shim silently drops every arg.
+& npm.cmd @args
 exit $LASTEXITCODE

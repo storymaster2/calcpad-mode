@@ -211,6 +211,29 @@
         </div>
       </div>
     </div>
+
+    <!-- Quick-pick dialog. A single-select list modal (VS Code QuickPick
+         analog) used e.g. by the image-storage prompt. -->
+    <div v-if="quickPickState" class="modal-backdrop" @click.self="resolveQuickPick(null)">
+      <div class="modal-card quick-pick-card" role="dialog" aria-modal="true">
+        <div class="modal-title">{{ quickPickState.title }}</div>
+        <div v-if="quickPickState.placeholder" class="modal-message">{{ quickPickState.placeholder }}</div>
+        <div class="quick-pick-list">
+          <button
+            v-for="(opt, i) in quickPickState.options"
+            :key="i"
+            class="quick-pick-option"
+            @click="resolveQuickPick(i)"
+          >
+            <div class="quick-pick-option-label">{{ opt.label }}</div>
+            <div v-if="opt.detail" class="quick-pick-option-detail">{{ opt.detail }}</div>
+          </button>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn" @click="resolveQuickPick(null)">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -741,6 +764,46 @@ function resolveConfirm(choice: ConfirmChoice): void {
   state.resolve(choice)
 }
 
+// ---- In-app quick-pick dialog ----
+interface QuickPickOptionUi {
+  label: string
+  detail?: string
+}
+
+interface QuickPickState {
+  title: string
+  placeholder?: string
+  options: QuickPickOptionUi[]
+  resolve: (index: number | null) => void
+}
+
+const quickPickState = ref<QuickPickState | null>(null)
+
+/** Show a single-select list; resolves with the chosen option index, or null if dismissed. */
+function showQuickPick(opts: {
+  title: string
+  placeholder?: string
+  options: QuickPickOptionUi[]
+}): Promise<number | null> {
+  // If a previous prompt is still up, treat it as dismissed.
+  quickPickState.value?.resolve(null)
+  return new Promise(resolve => {
+    quickPickState.value = {
+      title: opts.title,
+      placeholder: opts.placeholder,
+      options: opts.options,
+      resolve,
+    }
+  })
+}
+
+function resolveQuickPick(index: number | null): void {
+  const state = quickPickState.value
+  if (!state) return
+  quickPickState.value = null
+  state.resolve(index)
+}
+
 defineExpose({
   editorContainer,
   toggleSidebar,
@@ -756,6 +819,7 @@ defineExpose({
   appendOutput,
   clearOutput,
   showConfirm,
+  showQuickPick,
   setTabs,
   onTabActivate,
   onTabCloseRequest,

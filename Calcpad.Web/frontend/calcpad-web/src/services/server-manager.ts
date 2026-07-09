@@ -25,6 +25,11 @@ interface ServerCrashPayload {
     tail: string;
 }
 
+interface ServerLogPayload {
+    stream: 'stdout' | 'stderr';
+    line: string;
+}
+
 export class TauriServerManager {
     private url = '';
     private _isRunning = false;
@@ -32,11 +37,13 @@ export class TauriServerManager {
     private unlistenUrl: UnlistenFn | null = null;
     private unlistenCrash: UnlistenFn | null = null;
     private unlistenStartupError: UnlistenFn | null = null;
+    private unlistenLog: UnlistenFn | null = null;
     private logger: ServerManagerLogger;
 
     public onCrashExhausted?: (crashOutput: string) => void;
     public onUrlChanged?: (newUrl: string) => void;
     public onStartupBlocked?: (details: string) => void;
+    public onServerLog?: (line: string, stream: 'stdout' | 'stderr') => void;
 
     constructor(logger: ServerManagerLogger) {
         this.logger = logger;
@@ -90,6 +97,10 @@ export class TauriServerManager {
             } else {
                 this.onCrashExhausted?.(evt.payload.tail || '');
             }
+        });
+
+        this.unlistenLog = await listen<ServerLogPayload>('server-log', (evt) => {
+            this.onServerLog?.(evt.payload.line, evt.payload.stream);
         });
 
         this.unlistenStartupError = await listen<string>('server-startup-error', (evt) => {
@@ -171,9 +182,11 @@ export class TauriServerManager {
         try { this.unlistenUrl?.(); } catch { /* ignore */ }
         try { this.unlistenCrash?.(); } catch { /* ignore */ }
         try { this.unlistenStartupError?.(); } catch { /* ignore */ }
+        try { this.unlistenLog?.(); } catch { /* ignore */ }
         this.unlistenUrl = null;
         this.unlistenCrash = null;
         this.unlistenStartupError = null;
+        this.unlistenLog = null;
     }
 
     private log(message: string): void {

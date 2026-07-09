@@ -26,12 +26,12 @@ import {
     getExtraObject,
 } from 'calcpad-frontend/types/settings';
 import type { CalcpadSettings, CalcpadExtras } from 'calcpad-frontend/types/settings';
-import { readImageFromClipboard } from './image-insert';
 import {
     IMAGE_EXTENSIONS,
     bytesToBase64,
     isImageExtension,
     mimeFromExtension,
+    type PickedImage,
 } from 'calcpad-frontend';
 import { setAppTheme, coerceAppTheme } from '../editor/app-theme';
 
@@ -47,6 +47,19 @@ const MAX_RECENT_FILES = 10;
 function pathDirname(p: string): string {
     const idx = Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\'));
     return idx > 0 ? p.slice(0, idx) : '';
+}
+
+/** POSIX-style relative path from `from` to `to`, using forward slashes. */
+function pathRelative(from: string, to: string): string {
+    const norm = (p: string) => p.replace(/\\/g, '/').replace(/\/+$/, '');
+    const fromParts = norm(from).split('/').filter(Boolean);
+    const toParts = norm(to).split('/').filter(Boolean);
+    let i = 0;
+    while (i < fromParts.length && i < toParts.length && fromParts[i] === toParts[i]) i++;
+    const up = fromParts.slice(i).map(() => '..');
+    const down = toParts.slice(i);
+    const rel = [...up, ...down].join('/');
+    return rel || '.';
 }
 
 function pathIsAbsolute(p: string): boolean {
@@ -88,9 +101,7 @@ async function inlineLocalImages(html: string, documentDir: string): Promise<str
         if (!isImageExtension(ext)) continue;
         const mime = mimeFromExtension(ext);
 
-        const absolute = pathIsAbsolute(src)
-            ? src
-            : (documentDir ? `${documentDir}/${src}` : src);
+        const absolute = pathResolve(documentDir, src);
 
         try {
             const bytes = await fsReadFile(absolute);
@@ -183,10 +194,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
         setAppTheme(coerceAppTheme(theme));
     }
 
-    protected async pickImage(): Promise<string | null> {
-        const fromClipboard = await readImageFromClipboard();
-        if (fromClipboard) return fromClipboard;
-
+    protected async pickImageSrc(): Promise<string | null> {
         const selected = await dialogOpen({
             title: 'Insert Image',
             multiple: false,
@@ -198,8 +206,88 @@ export class TauriMessageBridge extends BaseMessageBridge {
         });
         if (!selected || Array.isArray(selected)) return null;
         this.rememberDialogDir(selected);
-        const buffer = await fsReadFile(selected);
-        return `data:${mimeFromExtension(selected)};base64,${bytesToBase64(buffer)}`;
+        return this.referenceForImagePath(selected);
+    }
+
+    /**
+     * Build the `<img src>` reference for an image already on disk: relative to
+     * the document when the image sits inside the document's folder tree,
+     * otherwise an absolute (forward-slash) path.
+     */
+    private referenceForImagePath(target: string): string {
+        const docPath = this.activeTabFilePath();
+        const docDir = docPath ? pathDirname(docPath) : '';
+        if (docDir) {
+            const normDir = docDir.replace(/\\/g, '/').replace(/\/+$/, '');
+            const normTarget = target.replace(/\\/g, '/');
+            if (normTarget.toLowerCase().startsWith(normDir.toLowerCase() + '/')) {
+                return pathRelative(docDir, target);
+            }
+        }
+        return target.replace(/\\/g, '/');
+    }
+
+    protected canSaveImageToDisk(): boolean {
+        return true;
+    }
+
+    protected canSaveImageRelativeToDocument(): boolean {
+        return !!this.activeTabFilePath();
+    }
+
+    /**
+     * Replace on-disk `<img src>` references in preview HTML with base64 data
+     * URIs so the sandboxed preview iframe can render them (the VS Code
+     * extension does the same via its image cache). Absolute paths resolve
+     * even for untitled documents; relative paths need the active tab's folder.
+     * Remote/data URIs are left untouched.
+     */
+    async inlineDocumentImages(html: string): Promise<string> {
+        return inlineLocalImages(html, this.activeTabDirectory());
+    }
+
+    protected async saveImageToImagesFolder(img: PickedImage): Promise<string | null> {
+        const docPath = this.activeTabFilePath();
+        if (!docPath) return null;
+        const docDir = pathDirname(docPath);
+        const sep = docDir.includes('\\') ? '\\' : '/';
+        const imagesDir = `${docDir}${sep}images`;
+        try { await mkdir(imagesDir, { recursive: true }); } catch { /* exists */ }
+        const filename = await this.uniqueFilename(imagesDir, img.filename, sep);
+        await fsWriteFile(`${imagesDir}${sep}${filename}`, img.data);
+        return `./images/${filename}`;
+    }
+
+    protected async saveImageToCustomPath(img: PickedImage): Promise<string | null> {
+        const docPath = this.activeTabFilePath();
+        const docDir = docPath ? pathDirname(docPath) : '';
+        const startDir = docDir || (this.getDialogDefaultPath() ?? '');
+        const sep = startDir.includes('\\') ? '\\' : '/';
+        const savePath = await dialogSave({
+            title: 'Save Image',
+            defaultPath: startDir ? `${startDir}${sep}${img.filename}` : img.filename,
+            filters: [{ name: 'Images', extensions: [...IMAGE_EXTENSIONS] }],
+        });
+        if (!savePath) return null;
+        this.rememberDialogDir(savePath);
+        await fsWriteFile(savePath, img.data);
+        // Relative to the document when it's saved; an absolute path otherwise
+        // (an untitled document has no folder to be relative to).
+        return docDir ? pathRelative(docDir, savePath) : savePath.replace(/\\/g, '/');
+    }
+
+    /** Append `-1`, `-2`, … to `filename` until it doesn't collide in `dir`. */
+    private async uniqueFilename(dir: string, filename: string, sep: string): Promise<string> {
+        const dot = filename.lastIndexOf('.');
+        const base = dot > 0 ? filename.slice(0, dot) : filename;
+        const ext = dot > 0 ? filename.slice(dot) : '';
+        let candidate = filename;
+        let counter = 1;
+        while (await exists(`${dir}${sep}${candidate}`)) {
+            candidate = `${base}-${counter}${ext}`;
+            counter++;
+        }
+        return candidate;
     }
 
     protected async saveExportedFile(req: ExportRequest): Promise<void> {
@@ -619,13 +707,15 @@ export class TauriMessageBridge extends BaseMessageBridge {
     }
 
     private async handleGetServerLog(): Promise<void> {
-        const path = this.getServerLogPath();
+        const path = await this.getServerLogPath();
         if (!path) {
             this.postToVue({
                 type: 'serverLogResponse',
                 path: '',
                 content: '',
-                error: 'Server directory not resolved — server log only available in the desktop build.',
+                error: this.getServerLogDir()
+                    ? 'No server log file found yet.'
+                    : 'Server directory not resolved — server log only available in the desktop build.',
             });
             return;
         }
@@ -648,9 +738,21 @@ export class TauriMessageBridge extends BaseMessageBridge {
         }
     }
 
-    private getServerLogPath(): string | null {
+    // The server writes a date-stamped CalcpadServer-yyyyMMdd.log (see the
+    // .NET FileLogger). Resolve the newest one — names sort chronologically.
+    private async getServerLogPath(): Promise<string | null> {
         const dir = this.getServerLogDir();
-        return dir ? `${dir}/server-stderr.log` : null;
+        if (!dir) return null;
+        try {
+            const logs = (await readDir(dir))
+                .filter(e => e.isFile && /^CalcpadServer-\d+\.log$/i.test(e.name))
+                .map(e => e.name)
+                .sort();
+            const newest = logs.at(-1);
+            return newest ? `${dir}/${newest}` : null;
+        } catch {
+            return null;
+        }
     }
 
     private getServerLogDir(): string | null {
@@ -674,7 +776,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
     }
 
     private async browserMissing(): Promise<boolean> {
-        const path = this.getServerLogPath();
+        const path = await this.getServerLogPath();
         if (!path) return false;
         try {
             const raw = await readTextFile(path);

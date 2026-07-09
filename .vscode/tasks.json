@@ -160,6 +160,57 @@
                 "panel": "shared"
             }
         },
+        {
+            "label": "Frontend Lib: Install Dependencies",
+            "type": "shell",
+            "command": "npm",
+            "args": ["install"],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-frontend"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Extension: Install Dependencies",
+            "type": "shell",
+            "command": "npm",
+            "args": ["install"],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Desktop: Install Dependencies",
+            "type": "shell",
+            "command": "npm",
+            "args": ["install"],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Frontend: Install All Dependencies",
+            "dependsOn": [
+                "Frontend Lib: Install Dependencies",
+                "Web: Install Dependencies",
+                "Extension: Install Dependencies",
+                "Desktop: Install Dependencies"
+            ],
+            "dependsOrder": "parallel",
+            "group": "build",
+            "problemMatcher": []
+        },
 
         // ── Desktop (Tauri) ─────────────────────────────────────────────
         // Publishes Calcpad.Server for the host RID and stages the apphost as

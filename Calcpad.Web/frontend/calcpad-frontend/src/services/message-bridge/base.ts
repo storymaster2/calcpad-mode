@@ -5,7 +5,8 @@ import { parseHeadings } from '../headings';
 import { getDefaultSettings, buildApiSettings } from '../../types/settings';
 import type { CalcpadSettings } from '../../types/settings';
 import { DEFAULT_PDF_SETTINGS } from '../../types/pdf-settings';
-import { buildImageCommentLine } from '../image-utils';
+import { buildImageCommentLine, bytesToBase64 } from '../image-utils';
+import type { ImageStorageMode, PickedImage } from '../image-utils';
 import type { ILogger } from '../../types/interfaces';
 
 export interface ExportRequest {
@@ -15,6 +16,26 @@ export interface ExportRequest {
     extensions: string[];
     dialogTitle: string;
 }
+
+export interface QuickPickOption<T> {
+    label: string;
+    detail?: string;
+    value: T;
+}
+
+/**
+ * Present a modal list of choices and resolve with the chosen value, or null
+ * if the user dismissed it. Injected by the host (see `setQuickPick`) so the
+ * platform-agnostic bridge can prompt without depending on the app shell.
+ */
+export type QuickPickFn = <T>(opts: {
+    title: string;
+    placeholder?: string;
+    options: QuickPickOption<T>[];
+}) => Promise<T | null>;
+
+/** Base64 payloads above this size prompt a "save to file instead?" warning. */
+const BASE64_WARN_BYTES = 250 * 1024;
 
 const BUILTIN_THEMES = [
     { id: 'calcpad-dark',  label: 'Dark',  kind: 'dark'  as const },
@@ -35,6 +56,7 @@ export abstract class BaseMessageBridge {
     protected definitionsService: CalcpadDefinitionsService;
     protected settings: CalcpadSettings;
     protected _onInsertText: ((text: string) => void) | null = null;
+    protected quickPick: QuickPickFn | null = null;
 
     constructor(serverUrl: string, logger?: ILogger) {
         const log: ILogger = logger ?? { appendLine: (msg: string) => console.debug('[CalcPad]', msg) };
@@ -58,6 +80,11 @@ export abstract class BaseMessageBridge {
 
     set onInsertText(handler: (text: string) => void) {
         this._onInsertText = handler;
+    }
+
+    /** Host injects a modal list picker used by the image-storage prompt. */
+    setQuickPick(fn: QuickPickFn): void {
+        this.quickPick = fn;
     }
 
     /** Send updated TOC headings to the Vue sidebar. */
@@ -156,8 +183,16 @@ export abstract class BaseMessageBridge {
     protected abstract resetSettingsBackend(): void | Promise<void>;
     protected abstract coerceColorTheme(raw: string | undefined | null): string;
     protected abstract applyColorTheme(theme: string): void;
-    /** Return a fresh data URI for an inserted image, or null if the user cancelled. */
-    protected abstract pickImage(): Promise<string | null>;
+    /** File-picker insert: returns the `src` to reference the chosen image (a path or data URI), or null if cancelled. */
+    protected abstract pickImageSrc(): Promise<string | null>;
+    /** True when this platform can write image files to disk (desktop). Web is base64-only. */
+    protected canSaveImageToDisk(): boolean { return false; }
+    /** True when the active document can host relative image files (has a path on disk). */
+    protected canSaveImageRelativeToDocument(): boolean { return false; }
+    /** Copy the image into an `images/` folder beside the document; return its relative src. */
+    protected async saveImageToImagesFolder(_img: PickedImage): Promise<string | null> { return null; }
+    /** Prompt for a save location; return the src (relative to the document) to reference it by. */
+    protected async saveImageToCustomPath(_img: PickedImage): Promise<string | null> { return null; }
     protected abstract saveExportedFile(req: ExportRequest): Promise<void>;
     protected abstract buildFileContext(content: string): Promise<{ sourceFilePath?: string }>;
     protected abstract getVariablesOrigin(): string;
@@ -262,10 +297,87 @@ export abstract class BaseMessageBridge {
     }
 
     private async handleInsertImage(): Promise<void> {
-        const dataUri = await this.pickImage();
-        if (dataUri && this._onInsertText) {
-            this._onInsertText(buildImageCommentLine(dataUri));
+        // File picker: the image already exists on disk, so reference it in
+        // place. The storage-mode prompt is only for pasted in-memory images.
+        // On web (no real file path) this returns a base64 data URI.
+        const src = await this.pickImageSrc();
+        if (src && this._onInsertText) {
+            this._onInsertText(buildImageCommentLine(src));
         }
+    }
+
+    /**
+     * Store an already-captured image (e.g. a clipboard paste) and insert its
+     * comment line, prompting for storage mode just like the file-picker path.
+     */
+    async insertImageData(image: PickedImage): Promise<void> {
+        await this.storeAndInsertImage(image);
+    }
+
+    private async storeAndInsertImage(image: PickedImage): Promise<void> {
+        const mode = await this.resolveImageStorageMode(image);
+        if (!mode) return;
+
+        let src: string | null = null;
+        switch (mode) {
+            case 'base64':
+                src = `data:${image.mimeType};base64,${bytesToBase64(image.data)}`;
+                break;
+            case 'imagesFolder':
+                src = await this.saveImageToImagesFolder(image);
+                break;
+            case 'customPath':
+                src = await this.saveImageToCustomPath(image);
+                break;
+        }
+
+        if (src && this._onInsertText) {
+            this._onInsertText(buildImageCommentLine(src));
+        }
+    }
+
+    /**
+     * Decide how the image should be stored. On desktop we offer the base64 /
+     * images-folder / custom-path choice (matching the VS Code extension) — the
+     * images-folder option only when the document is saved (it needs a folder
+     * to sit beside). Without disk access (pure web) base64 is the only option.
+     * Large base64 embeds get a follow-up warning with a save-to-file escape hatch.
+     */
+    private async resolveImageStorageMode(image: PickedImage): Promise<ImageStorageMode | null> {
+        if (!this.canSaveImageToDisk() || !this.quickPick) return 'base64';
+
+        const canSaveRelative = this.canSaveImageRelativeToDocument();
+        const options: QuickPickOption<ImageStorageMode>[] = [
+            { label: 'Embed as Base64', detail: 'Inline the image data directly in the document', value: 'base64' },
+        ];
+        if (canSaveRelative) {
+            options.push({ label: 'Save to ./images/ folder', detail: 'Copy the image into an images subfolder beside this document', value: 'imagesFolder' });
+        }
+        options.push({ label: 'Save to custom path…', detail: 'Choose where to save the image file', value: 'customPath' });
+
+        const mode = await this.quickPick<ImageStorageMode>({
+            title: 'Insert Image',
+            placeholder: 'How should the image be stored?',
+            options,
+        });
+        if (!mode) return null;
+
+        if (mode === 'base64' && image.data.length > BASE64_WARN_BYTES) {
+            const sizeKB = Math.round(image.data.length / 1024);
+            const fallback: ImageStorageMode = canSaveRelative ? 'imagesFolder' : 'customPath';
+            const saveLabel = canSaveRelative ? 'Save to ./images/ folder instead' : 'Save to a file instead';
+            const choice = await this.quickPick<'embed' | 'save'>({
+                title: 'Large image',
+                placeholder: `This image is ${sizeKB} KB — embedding it inflates the document and slows processing.`,
+                options: [
+                    { label: saveLabel, value: 'save' },
+                    { label: 'Embed anyway', value: 'embed' },
+                ],
+            });
+            if (!choice) return null;
+            if (choice === 'save') return fallback;
+        }
+        return mode;
     }
 
     private async handleSaveSourceHtml(): Promise<void> {

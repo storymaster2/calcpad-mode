@@ -6,6 +6,16 @@
 
 export const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] as const;
 
+/** How an inserted image is stored: inlined, or copied to disk (desktop only). */
+export type ImageStorageMode = 'base64' | 'imagesFolder' | 'customPath';
+
+/** Raw image chosen from a file dialog, before it is embedded or saved. */
+export interface PickedImage {
+    data: Uint8Array;
+    mimeType: string;
+    filename: string;
+}
+
 export const IMAGE_MIME_TYPES = [
     'image/png',
     'image/jpeg',

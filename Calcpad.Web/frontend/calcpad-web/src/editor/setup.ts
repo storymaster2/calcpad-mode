@@ -33,6 +33,22 @@ export interface CalcpadEditorOptions {
 }
 
 /**
+ * Monaco measures glyph widths once when an editor is created. JuliaMono ships
+ * as an async web font, so on machines that don't have it installed the first
+ * measurement happens against a fallback and the cursor/glyph grid ends up
+ * misaligned. Force the font to load, then re-measure all editors.
+ */
+export function remeasureEditorFontsWhenReady(fontSize = 14): void {
+    if (!('fonts' in document)) return;
+    Promise.all([
+        document.fonts.load(`${fontSize}px "JuliaMono"`),
+        document.fonts.load(`bold ${fontSize}px "JuliaMono"`),
+    ])
+        .catch(() => undefined)
+        .then(() => monaco.editor.remeasureFonts());
+}
+
+/**
  * Create a CalcPad-configured Monaco editor.
  * Caller must set up MonacoEnvironment workers before calling this.
  */

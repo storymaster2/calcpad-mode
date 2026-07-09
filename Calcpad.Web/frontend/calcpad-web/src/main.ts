@@ -5,7 +5,7 @@ import CalcpadAppVue from 'calcpad-frontend/vue/components/CalcpadApp.vue';
 import { initMessaging } from 'calcpad-frontend/vue/services/messaging';
 import { MessageBridge } from './services/message-bridge';
 import { buildApiSettings } from 'calcpad-frontend/types/settings';
-import { registerCalcpadLanguage, registerCalcpadTheme, createCalcpadEditor } from './editor/setup';
+import { registerCalcpadLanguage, registerCalcpadTheme, createCalcpadEditor, remeasureEditorFontsWhenReady } from './editor/setup';
 import { setAppTheme, coerceAppTheme } from './editor/app-theme';
 import { registerSemanticTokensProvider } from './editor/semantic-tokens';
 import { setupDiagnostics } from './editor/diagnostics';
@@ -105,6 +105,23 @@ c = √(a² + b²)
 }
 
 /**
+ * Encode raw RGBA pixels (as returned by Tauri's native clipboard readImage)
+ * to PNG bytes via an offscreen canvas, so a pasted image can be embedded or
+ * saved like a file-picked one.
+ */
+async function rgbaToPng(rgba: Uint8Array, width: number, height: number): Promise<Uint8Array | null> {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.putImageData(new ImageData(new Uint8ClampedArray(rgba), width, height), 0, 0);
+    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) return null;
+    return new Uint8Array(await blob.arrayBuffer());
+}
+
+/**
  * Native message box shown when the calculation server never becomes ready.
  * The editor itself keeps working; only server-backed features (preview,
  * linting, export) need it.
@@ -181,6 +198,16 @@ async function bootstrap(): Promise<void> {
     const app = createApp(App);
     const appInstance = app.mount('#app') as any;
 
+    // Let the bridge prompt via the in-app quick-pick modal (image storage mode).
+    activeBridge.setQuickPick(async ({ title, placeholder, options }) => {
+        const index = await appInstance.showQuickPick({
+            title,
+            placeholder,
+            options: options.map((o: { label: string; detail?: string }) => ({ label: o.label, detail: o.detail })),
+        });
+        return index == null ? null : options[index].value;
+    });
+
     // Wait for DOM to render, then set up Monaco editor
     await nextTick();
 
@@ -201,6 +228,11 @@ async function bootstrap(): Promise<void> {
     const editor = createCalcpadEditor(editorEl, {
         value: '',
     });
+
+    // JuliaMono is an async web font; re-measure once it loads so the cursor
+    // grid isn't stuck on the fallback font's metrics (off-grid caret on PCs
+    // that don't have JuliaMono installed system-wide).
+    remeasureEditorFontsWhenReady();
 
     // ---- Tab manager ----
     // Owns the per-tab Monaco models. The single `editor` instance gets
@@ -582,7 +614,13 @@ async function bootstrap(): Promise<void> {
         pendingPreviewScrollLine = null;
 
         if (typeof html === 'string') {
-            appInstance.setPreviewHtml(html, scrollToLine);
+            // Desktop: inline on-disk images so relative <img src> paths (from
+            // the images-folder / custom-path insert options) render in the
+            // sandboxed preview iframe, matching PDF export.
+            const finalHtml = tauriBridge
+                ? await tauriBridge.inlineDocumentImages(html)
+                : html;
+            appInstance.setPreviewHtml(finalHtml, scrollToLine);
         }
     }
 
@@ -794,6 +832,32 @@ async function bootstrap(): Promise<void> {
         };
 
         /**
+         * Read an image off the system clipboard (Tauri native, no WebView2
+         * prompt) and run it through the image-insert flow. No-op when the
+         * clipboard holds no image. Returns true if an image was inserted.
+         */
+        async function tryPasteClipboardImage(): Promise<boolean> {
+            let pngBytes: Uint8Array | null = null;
+            try {
+                const image = await tauriClipboard.readImage();
+                const rgba = await image.rgba();
+                const { width, height } = await image.size();
+                if (!width || !height || rgba.length === 0) return false;
+                pngBytes = await rgbaToPng(rgba, width, height);
+            } catch {
+                // readImage throws when the clipboard has no image — nothing to paste.
+                return false;
+            }
+            if (!pngBytes) return false;
+            await tauriBridge!.insertImageData({
+                data: pngBytes,
+                mimeType: 'image/png',
+                filename: 'pasted-image.png',
+            });
+            return true;
+        }
+
+        /**
          * Route a clipboard / edit action from the native menu. On WebKitGTK
          * (Linux Tauri) Ctrl+C/X/V are not bound to native clipboard ops
          * inside the WebView, so the menu accelerator is the only way to fire
@@ -838,11 +902,18 @@ async function bootstrap(): Promise<void> {
                 if (action === 'paste') {
                     let text = '';
                     try { text = await tauriClipboard.readText(); } catch { /* ignored */ }
-                    if (!text) return;
-                    const sel = editor.getSelection();
-                    if (!sel) return;
-                    editor.executeEdits('menu-paste', [{ range: sel, text, forceMoveMarkers: true }]);
-                    editor.pushUndoStop();
+                    if (text) {
+                        const sel = editor.getSelection();
+                        if (!sel) return;
+                        editor.executeEdits('menu-paste', [{ range: sel, text, forceMoveMarkers: true }]);
+                        editor.pushUndoStop();
+                        return;
+                    }
+                    // No text on the clipboard — try a native image paste. Uses
+                    // Tauri's Rust-side clipboard (permitted via
+                    // clipboard-manager:allow-read-image) so it doesn't trigger
+                    // the WebView2 security prompt that navigator.clipboard.read does.
+                    await tryPasteClipboardImage();
                     return;
                 }
                 const cmd = {
@@ -1029,13 +1100,17 @@ async function bootstrap(): Promise<void> {
                         `Server log is empty: ${data.path}`);
                     return;
                 }
-                appInstance.appendOutput('info', `--- Server stderr (${data.path}) ---`);
+                appInstance.appendOutput('info', `--- Server log (${data.path}) ---`);
                 for (const line of text.split('\n')) {
                     if (!line.trim()) continue;
-                    const sev = /WARNING|warn/i.test(line) ? 'warn' : 'error';
+                    const level = /\[(INFO|WARN|WARNING|ERROR|CRASH)\]/i.exec(line)?.[1]?.toUpperCase();
+                    const sev = level === 'ERROR' || level === 'CRASH' ? 'error'
+                        : level === 'WARN' || level === 'WARNING' ? 'warn'
+                        : level === 'INFO' ? 'info'
+                        : 'error';
                     appInstance.appendOutput(sev, line);
                 }
-                appInstance.appendOutput('info', '--- end server stderr ---');
+                appInstance.appendOutput('info', '--- end server log ---');
             } else if (data.type === 'pdfError') {
                 appInstance.appendOutput('error', String(data.message || 'PDF export failed'));
             }

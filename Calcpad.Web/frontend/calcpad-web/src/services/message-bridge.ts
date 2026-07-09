@@ -1,7 +1,7 @@
 import { BaseMessageBridge, type ExportRequest } from 'calcpad-frontend/services/message-bridge/base';
 import { getDefaultSettings } from 'calcpad-frontend/types/settings';
 import type { CalcpadSettings } from 'calcpad-frontend/types/settings';
-import { readImageFromClipboard, blobToDataUri } from './image-insert';
+import { mimeFromExtension, bytesToBase64 } from 'calcpad-frontend';
 import { setAppTheme, coerceAppTheme } from '../editor/app-theme';
 
 const SETTINGS_KEY = 'calcpad-settings';
@@ -23,8 +23,8 @@ function triggerBlobDownload(blob: Blob, filename: string): void {
     URL.revokeObjectURL(url);
 }
 
-/** Pop a hidden `<input type="file">` to let the user choose an image; resolve with a data URI. */
-function pickImageViaInput(): Promise<string | null> {
+/** Pop a hidden `<input type="file">` to let the user choose an image; resolve with the File. */
+function pickImageViaInput(): Promise<File | null> {
     return new Promise(resolve => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -32,13 +32,11 @@ function pickImageViaInput(): Promise<string | null> {
         input.style.display = 'none';
         let settled = false;
         const cleanup = () => { if (input.parentNode) input.parentNode.removeChild(input); };
-        input.onchange = async () => {
+        input.onchange = () => {
             settled = true;
-            const file = input.files?.[0];
-            if (!file) { cleanup(); resolve(null); return; }
-            const uri = await blobToDataUri(file);
+            const file = input.files?.[0] ?? null;
             cleanup();
-            resolve(uri);
+            resolve(file);
         };
         // If the user cancels, no event fires reliably across browsers; clean up on next tick
         // when focus returns to the window.
@@ -89,8 +87,12 @@ export class MessageBridge extends BaseMessageBridge {
         setAppTheme(coerceAppTheme(theme));
     }
 
-    protected async pickImage(): Promise<string | null> {
-        return (await readImageFromClipboard()) ?? (await pickImageViaInput());
+    protected async pickImageSrc(): Promise<string | null> {
+        const file = await pickImageViaInput();
+        if (!file) return null;
+        const data = new Uint8Array(await file.arrayBuffer());
+        const mimeType = file.type || mimeFromExtension(file.name);
+        return `data:${mimeType};base64,${bytesToBase64(data)}`;
     }
 
     protected async saveExportedFile(req: ExportRequest): Promise<void> {

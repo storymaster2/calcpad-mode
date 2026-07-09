@@ -471,6 +471,34 @@ select option {
     background: var(--vscode-button-hoverBackground, #1177bb);
 }
 
+.quick-pick-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
+}
+.quick-pick-option {
+    text-align: left;
+    background: var(--vscode-editor-background, #1e1e1e);
+    color: var(--vscode-editor-foreground, #d4d4d4);
+    border: 1px solid var(--vscode-widget-border, #474747);
+    border-radius: 3px;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+.quick-pick-option:hover {
+    background: var(--vscode-list-hoverBackground, #2a2d2e);
+    border-color: var(--vscode-focusBorder, #007fd4);
+}
+.quick-pick-option-label {
+    font-size: 12px;
+}
+.quick-pick-option-detail {
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground, #858585);
+    margin-top: 2px;
+}
+
 .problems-badge {
     font-size: 10px;
     padding: 0 5px;
