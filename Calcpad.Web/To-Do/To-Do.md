@@ -65,8 +65,22 @@
 
 ## Calcpad.Web Desktop App
 
-- updating preview theme setting doesn't change what the webview uses
-
+-   open logs/settings folder doesn't work
+-   changing linter setting didn't refresh the UI
+-   add wrapped vs unwrapped lines toggle with Alt+Z
+-   (), [] colors are very random and don't match VS Code
+-   Remove monaco yellow boxes around unicode chars
+-   create backup files of the current file state before a Tauri app crash in the project root directory. have this able to be opened via the files tab
+-   add font selector to switch between JuliaMono and system default font (or any other fonts stored in the fonts folder). add button to open fonts folder.
+-   Make Prettify document put brackets at same line level, add spaces before and after operators, and add one space after line delimiters (and 0 spaces before ; delimiters):
+    x2,seg = [38.667; 48; 66.667; 80.667; 90.667; 108.667; 118.667; _
+            33.333; 40.333; 51.667; 75; 96.667; 108.333; 118.667; _
+            23.333; 23.333; 23.333; _
+            35; 35; 35; 35]*1ft
+-   allow splitting code window similar to VS code
+-   add a max log length before it gets overwritten to help with performance
+-   error buttons don't jump to error line correctly when the error occurs in a loop. I think errors should get their own id that the buttons can get mapped to for scroll anchoring
+-   HTML preview gets blank lines sent to it (noticed this in unwrapped code)
 
 ## Calcpad.Web Browser
 -   Have `calcpad-web` (pure browser build) mirror the desktop settings scheme in localStorage — same JSON shape, active-config pointer, named configs — with export/import via browser file up/download. Not urgent; pure web build isn't the active target.
@@ -107,11 +121,13 @@
 -   Add #hideRegion {cond} and #endHideRegion {cond} to replace hideC/unhideC
 -   Add a way to throw errors that Calcpad.Core uses with a built-in function. Catch all errors including these in Calcpad.Core and pass them to the Vue panel with source code line references/external filepath.
 -   Add inline unit convsersion function on a variable (instead of per-line)
+-   Colors in unwrapped code don't match syntax highlighter
 
 ### Bugs
 
 -   Fix #varsub to work when using v.i = x.i + y.i, this currently treats as #nosub
 -   Calcpad's parser doesn't handle .iζ indexing on inline-substituted expressions like first(row(...)) (it parses .iζ as a unit suffix).
+-   Underlined line number line links for errors in unwrapped code do not route to source lines
 
 ### Testing
 
