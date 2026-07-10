@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { parseHeadings, DEFAULT_PDF_SETTINGS } from 'calcpad-frontend';
+import type { CalcpadError } from 'calcpad-frontend';
 import { CalcpadSettingsManager } from './calcpadSettings';
 import { CalcpadInsertManager } from './calcpadInsertManager';
 
@@ -375,6 +376,10 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                 data: data
             });
         }
+    }
+
+    public updateConvertErrors(errors: CalcpadError[]) {
+        this._view?.webview.postMessage({ type: 'updateConvertErrors', errors });
     }
 
     public dispose() {

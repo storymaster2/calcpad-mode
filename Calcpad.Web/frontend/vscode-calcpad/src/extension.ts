@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { CalcpadApiClient, DEFAULT_PDF_SETTINGS } from 'calcpad-frontend';
+import { CalcpadApiClient, DEFAULT_PDF_SETTINGS, parseConvertErrorHeader } from 'calcpad-frontend';
 import type { PdfSettings as FrontendPdfSettings } from 'calcpad-frontend';
 import { CalcpadServerLinter } from './calcpadServerLinter';
 import { CalcpadSemanticTokensProvider, semanticTokensLegend } from './calcpadSemanticTokensProvider';
@@ -38,6 +38,7 @@ let outputChannel: vscode.OutputChannel;
 let calcpadOutputHtmlChannel: vscode.OutputChannel;
 let calcpadWebviewConsoleChannel: vscode.OutputChannel;
 let extensionContext: vscode.ExtensionContext;
+let vueUiProvider: CalcpadVueUIProvider | undefined;
 
 // Extends the shared PdfSettings with additional server-side fields
 interface FullPdfSettings extends FrontendPdfSettings {
@@ -579,6 +580,8 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
             throw new Error(`Server returned ${response.status}`);
         }
         outputChannel.appendLine('API call successful');
+
+        vueUiProvider?.updateConvertErrors(parseConvertErrorHeader(response));
 
         // Use the entire API response as the webview HTML
         const apiResponse = await response.text();
@@ -1297,7 +1300,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (definitions) {
             outputChannel.appendLine('[processDocument] Found ' + definitions.macros.length + ' macros, ' + definitions.variables.length + ' variables, ' + definitions.functions.length + ' functions, ' + definitions.customUnits.length + ' custom units');
 
-            vueUiProvider.updateVariables({
+            vueUiProvider?.updateVariables({
                 macros: definitions.macros.map(m => ({
                     name: m.name,
                     params: m.parameters.length > 0 ? m.parameters.join('; ') : undefined,
@@ -1381,7 +1384,7 @@ export async function activate(context: vscode.ExtensionContext) {
         outputChannel.appendLine('[Settings] All components refreshed');
     }
 
-    const vueUiProvider = new CalcpadVueUIProvider(context.extensionUri, context, settingsManager, insertManager);
+    vueUiProvider = new CalcpadVueUIProvider(context.extensionUri, context, settingsManager, insertManager);
     vueUiProvider.onPreviewThemeChanged = async () => {
         const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor) return;

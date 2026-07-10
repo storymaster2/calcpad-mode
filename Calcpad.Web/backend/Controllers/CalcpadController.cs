@@ -39,12 +39,18 @@ namespace Calcpad.Server.Controllers
                 }
 
                 var forceUnwrapped = unwrap || request.ForceUnwrappedCode;
-                var (htmlResult, _) = _calcpadService.Convert(request.Content, request.Settings, forceUnwrapped, request.Theme, request.SourceFilePath, request.ForPrint);
+                var (htmlResult, _, errors) = _calcpadService.Convert(request.Content, request.Settings, forceUnwrapped, request.Theme, request.SourceFilePath, request.ForPrint);
                 if (unwrap)
                 {
                     htmlResult = ProcessDataTextLinks(htmlResult);
                 }
 
+                var errorsJson = System.Text.Json.JsonSerializer.Serialize(errors, new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                    Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() },
+                });
+                Response.Headers["X-Calcpad-Errors"] = Uri.EscapeDataString(errorsJson);
                 return Content(htmlResult, "text/html");
             }
             catch (Exception ex)
@@ -201,7 +207,7 @@ namespace Calcpad.Server.Controllers
                 // matching what the OpenXmlWriter expects. captureOpenXml=true tells
                 // the parser to emit OMML so equations render as native Word math
                 // instead of empty <m:oMath/>.
-                var (html, openXmlExpressions) = _calcpadService.Convert(
+                var (html, openXmlExpressions, _) = _calcpadService.Convert(
                     request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, forPrint: true, captureOpenXml: true);
 
                 using var ms = new MemoryStream();

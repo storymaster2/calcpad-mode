@@ -38,7 +38,7 @@ namespace Calcpad.Server.Services
             };
         }
 
-        public (string Html, IReadOnlyList<string> OpenXmlExpressions) Convert(
+        public (string Html, IReadOnlyList<string> OpenXmlExpressions, IReadOnlyList<CalcpadError> Errors) Convert(
             string calcpadContent,
             Settings? settings = null,
             bool forceUnwrappedCode = false,
@@ -82,10 +82,28 @@ namespace Calcpad.Server.Services
 
                 string htmlResult;
                 IReadOnlyList<string> openXmlExpressions = Array.Empty<string>();
+                var errors = new List<CalcpadError>(macroParser.Errors);
 
                 if (hasMacroErrors || forceUnwrappedCode)
                 {
-                    htmlResult = ConvertCodeToHtml(outputText);
+                    // Forced-unwrapped with no macro errors: silently run
+                    // ExpressionParser so the code view can highlight lines that
+                    // would error in the wrapped preview. Skip when macro errors
+                    // already exist since the expression pass would just fail.
+                    if (forceUnwrappedCode && !hasMacroErrors)
+                    {
+                        try
+                        {
+                            var silent = new ExpressionParser { Settings = coreSettings, SourceFilePath = sourceFilePath, Debug = true };
+                            silent.Parse(outputText, true, false);
+                            errors.AddRange(silent.Errors);
+                        }
+                        catch (Exception silentEx)
+                        {
+                            FileLogger.LogWarning("Silent expression parse for error collection failed", silentEx.Message);
+                        }
+                    }
+                    htmlResult = ConvertCodeToHtml(outputText, errors);
                 }
                 else
                 {
@@ -97,13 +115,14 @@ namespace Calcpad.Server.Services
                         var parser = new ExpressionParser { Settings = coreSettings, SourceFilePath = sourceFilePath, Debug = !forPrint };
                         parser.Parse(outputText, true, captureOpenXml);
                         htmlResult = RemoveEmptyParagraphs(parser.HtmlResult);
+                        errors.AddRange(parser.Errors);
                         if (captureOpenXml)
                             openXmlExpressions = parser.OpenXmlExpressions.ToList();
                     }
                     catch (Exception parseEx)
                     {
                         FileLogger.LogWarning("Expression parsing failed, falling back to unwrapped code", parseEx.Message);
-                        htmlResult = ConvertCodeToHtml(outputText);
+                        htmlResult = ConvertCodeToHtml(outputText, errors);
                     }
                 }
 
@@ -111,7 +130,7 @@ namespace Calcpad.Server.Services
                 var finalHtml = WrapHtmlResult(htmlResult, theme);
                 FileLogger.LogInfo("Conversion completed successfully", $"Output length: {finalHtml.Length}");
 
-                return (finalHtml, openXmlExpressions);
+                return (finalHtml, openXmlExpressions, errors);
             }
             catch (MathParserException ex)
             {
@@ -152,39 +171,69 @@ tan_angle = tan(angle°)";
         }
 
 
-        private string ConvertCodeToHtml(string code)
+        private string ConvertCodeToHtml(string code, IReadOnlyList<CalcpadError>? errorList = null)
         {
             // Convert code to HTML with line numbers and syntax highlighting (following WPF pattern)
             const string ErrorString = "#Error";
-            
+
+            // Key by OutputLine so macro-expanded loops only highlight the exact
+            // erroring row, not every iteration that came from the same source
+            // line. Fall back to SourceLine when OutputLine isn't known (0).
+            var errorsByOutputLine = new Dictionary<int, string>();
+            var errorsBySourceLine = new Dictionary<int, string>();
+            if (errorList != null)
+            {
+                foreach (var err in errorList)
+                {
+                    if (err.OutputLine > 0)
+                    {
+                        errorsByOutputLine[err.OutputLine] = errorsByOutputLine.TryGetValue(err.OutputLine, out var prevO)
+                            ? prevO + "\n" + err.Message
+                            : err.Message;
+                    }
+                    else
+                    {
+                        errorsBySourceLine[err.SourceLine] = errorsBySourceLine.TryGetValue(err.SourceLine, out var prevS)
+                            ? prevS + "\n" + err.Message
+                            : err.Message;
+                    }
+                }
+            }
+
             var errors = new Queue<int>();
             var stringBuilder = new System.Text.StringBuilder();
             var lines = code.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            
+
             stringBuilder.AppendLine("<div class=\"code\">");
             var lineNumber = 0;
-            
+
             foreach (var line in lines)
             {
                 ++lineNumber;
                 var i = line.IndexOf('\v');
                 var lineText = i < 0 ? line : line.Substring(0, i);
                 var sourceLine = i < 0 ? lineNumber.ToString() : line.Substring(i + 1);
-                
+
                 // Format line number with proper padding
                 var lineNumText = lineNumber.ToString();
                 var n = lineNumText.Length;
                 var spaceCount = Math.Max(0, 6 - n);
                 var paddedSpaces = new string(' ', spaceCount).Replace(" ", "&nbsp;");
-                
+
+                errorsByOutputLine.TryGetValue(lineNumber, out var errMsg);
+                if (errMsg == null && int.TryParse(sourceLine, out var srcLineNum))
+                    errorsBySourceLine.TryGetValue(srcLineNum, out errMsg);
+                var errClass = errMsg != null ? " err-line" : "";
+                var errTitle = errMsg != null ? $" title=\"{System.Web.HttpUtility.HtmlAttributeEncode(errMsg)}\"" : "";
+                if (errMsg != null) errors.Enqueue(lineNumber);
+
                 // The paragraph id is the (output) line number for in-preview scrolling; the line-num
                 // anchor carries data-text=sourceLine so clicking it navigates the editor to the
                 // original source line (mirrors WPF's CodeToHtml).
-                stringBuilder.Append($"<p class=\"line-text\" id=\"line-{lineNumber}\"><a class=\"line-num\" href=\"#0\" data-text=\"{sourceLine}\" title=\"Source line {sourceLine}\">{paddedSpaces}{lineNumber}</a>&emsp;│&emsp;");
+                stringBuilder.Append($"<p class=\"line-text{errClass}\" id=\"line-{lineNumber}\"{errTitle}><a class=\"line-num\" href=\"#0\" data-text=\"{sourceLine}\" title=\"Source line {sourceLine}\">{paddedSpaces}{lineNumber}</a>&emsp;│&emsp;");
 
                 if (lineText.StartsWith(ErrorString))
                 {
-                    errors.Enqueue(lineNumber);
                     var errorText = lineText.Length > ErrorString.Length ? lineText.Substring(ErrorString.Length) : "";
                     // MacroParser already HTML encoded the error text, but we need to preserve HTML links
                     // So we decode it first, then re-encode only the parts that aren't HTML links
@@ -195,7 +244,6 @@ tan_angle = tan(angle°)";
                 {
                     // Line contains error HTML with data-text links - don't apply syntax highlighting
                     // The HTML tags are NOT encoded in the raw text from MacroParser
-                    errors.Enqueue(lineNumber);
                     stringBuilder.Append($"<span class=\"err\">{lineText}</span>");
                 }
                 else
@@ -209,8 +257,8 @@ tan_angle = tan(angle°)";
             
             stringBuilder.AppendLine("</div>");
             
-            // Add error summary if there are many errors
-            if (errors.Count != 0 && lineNumber > 30)
+            // Add error summary
+            if (errors.Count != 0)
             {
                 stringBuilder.AppendLine($"<div class=\"errorHeader\">Found <b>{errors.Count}</b> errors in modules and macros:");
                 var count = 0;

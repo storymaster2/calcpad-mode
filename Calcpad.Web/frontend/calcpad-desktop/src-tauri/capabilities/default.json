@@ -18,7 +18,16 @@
     "core:path:default",
     "core:app:default",
     "shell:allow-open",
-    "opener:allow-open-path",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        { "path": "$APPDATA/**" },
+        { "path": "$APPCONFIG/**" },
+        { "path": "$APPLOG/**" },
+        { "path": "$RESOURCE/**" },
+        { "path": "$HOME/**" }
+      ]
+    },
     "opener:allow-open-url",
     "dialog:default",
     "dialog:allow-open",

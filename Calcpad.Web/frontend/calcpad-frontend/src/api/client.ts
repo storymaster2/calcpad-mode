@@ -11,6 +11,8 @@ import type {
     SymbolAtPositionResponse,
     PrettifyRequest,
     PrettifyResponse,
+    CalcpadError,
+    ConvertResult,
 } from '../types/api';
 import type { SnippetsResponse } from '../types/snippets';
 
@@ -88,7 +90,7 @@ export class CalcpadApiClient {
         forPrint: boolean = false,
         sourceFilePath?: string,
         theme?: 'light' | 'dark'
-    ): Promise<ArrayBuffer | string | null> {
+    ): Promise<ArrayBuffer | ConvertResult | null> {
         const url = this.baseUrl + '/api/calcpad/convert';
         try {
             const response = await fetch(url, {
@@ -102,7 +104,8 @@ export class CalcpadApiClient {
             if (outputFormat === 'pdf') {
                 return response.arrayBuffer();
             }
-            return response.text();
+            const html = await response.text();
+            return { html, errors: parseConvertErrorHeader(response) };
         } catch (error) {
             this.logError('Convert', error);
             return null;
@@ -149,7 +152,7 @@ export class CalcpadApiClient {
         settings: unknown,
         sourceFilePath?: string,
         theme?: 'light' | 'dark',
-    ): Promise<string | null> {
+    ): Promise<ConvertResult | null> {
         const url = this.baseUrl + '/api/calcpad/convert?unwrap=true';
         try {
             const response = await fetch(url, {
@@ -159,7 +162,8 @@ export class CalcpadApiClient {
                 signal: AbortSignal.timeout(60000),
             });
             if (!response.ok) return null;
-            return response.text();
+            const html = await response.text();
+            return { html, errors: parseConvertErrorHeader(response) };
         } catch (error) {
             this.logError('ConvertUnwrapped', error);
             return null;
@@ -227,5 +231,16 @@ export class CalcpadApiClient {
         } else {
             this.logger.appendLine(`[${tag}] Error: ${error instanceof Error ? error.message : String(error)}`);
         }
+    }
+}
+
+export function parseConvertErrorHeader(response: Response): CalcpadError[] {
+    const raw = response.headers.get('X-Calcpad-Errors');
+    if (!raw) return [];
+    try {
+        const parsed = JSON.parse(decodeURIComponent(raw));
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
     }
 }

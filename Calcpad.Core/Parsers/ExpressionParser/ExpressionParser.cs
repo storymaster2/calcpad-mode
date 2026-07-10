@@ -26,12 +26,16 @@ namespace Calcpad.Core
         private MathParser _parser;
         private readonly StringBuilder _sb = new(10000);
         private Queue<int> _errors;
+        private int _errIndex;
+        private Dictionary<int, int> _firstErrIndexByLine;
+        private List<CalcpadError> _errorList;
         private LineInfo[] _lineCache;
         private static bool[] IsLineExtension = new bool[128];
 
         public Settings Settings { get; set; } = new();
         public string SourceFilePath { get; set; }
         public string HtmlResult { get; private set; }
+        public IReadOnlyList<CalcpadError> Errors => _errorList;
         public static bool IsUs
         {
             get => Unit.IsUs;
@@ -195,12 +199,14 @@ namespace Calcpad.Core
                 ApplyUnits(_sb, _calculate);
                 if (_currentLine == lineCount && (_calculate || !IsPaused))
                 {
-                    if (_condition.Id > 0 && !_condition.IsLoop)
+                    var ifNotClosed = _condition.Id > 0 && !_condition.IsLoop;
+                    var loopNotClosed = _loops.Count != 0;
+                    if (ifNotClosed)
                         _sb.Append(ErrHtml(Messages.if_block_not_closed_Missing_end_if, _currentLine));
-                    if (_loops.Count != 0)
+                    if (loopNotClosed)
                         _sb.Append(ErrHtml(Messages.Iteration_block_not_closed_Missing_loop, _currentLine));
-                    if (Debug && (_condition.Id > 0 || _loops.Count != 0))
-                        _errors.Enqueue(_currentLine);
+                    var msg = ifNotClosed ? Messages.if_block_not_closed_Missing_end_if : Messages.Iteration_block_not_closed_Missing_loop;
+                    RecordError(_currentLine, msg, Debug && (ifNotClosed || loopNotClosed));
                 }
             }
             catch (MathParserException ex)
@@ -209,9 +215,9 @@ namespace Calcpad.Core
             }
             catch (Exception ex)
             {
-                _sb.Append(ErrHtml(string.Format(Messages.Unexpected_error_0_Please_check_the_expression_consistency, ex.Message), _currentLine));
-                if (Debug)
-                    _errors.Enqueue(_currentLine);
+                var msg = string.Format(Messages.Unexpected_error_0_Please_check_the_expression_consistency, ex.Message);
+                _sb.Append(ErrHtml(msg, _currentLine));
+                RecordError(_currentLine, msg, Debug);
             }
             finally
             {
@@ -443,6 +449,9 @@ namespace Calcpad.Core
             _errorCount = 0;
             _calculate = calculate;
             _errors = new();
+            _errIndex = 0;
+            _firstErrIndexByLine = new();
+            _errorList = new();
             if (!_calculate)
                 _startLine = 0;
 
@@ -486,7 +495,7 @@ namespace Calcpad.Core
             if (_startLine > 0)
                 _sb.Append(Messages.Paused_Press_F5_to_continue);
 
-            if (Debug && lineCount > 30 && _errors.Count != 0)
+            if (Debug && _errors.Count != 0)
                 AppendErrors();
 
             HtmlResult = _sb.ToString();
@@ -508,11 +517,15 @@ namespace Calcpad.Core
             var prevLine = 0;
             while (_errors.Count != 0 && count < 20)
             {
-                var errLine = _errors.Dequeue() + 1;
+                var srcLine = _errors.Dequeue();
+                var errLine = srcLine + 1;
                 if (errLine != prevLine)
                 {
                     ++count;
-                    _sb.Append($" <span class=\"roundBox\" data-line=\"{errLine}\">{errLine}</span>");
+                    var errAttr = _firstErrIndexByLine.TryGetValue(srcLine, out var idx)
+                        ? $" data-error=\"err-{idx}\""
+                        : string.Empty;
+                    _sb.Append($" <span class=\"roundBox\" data-line=\"{errLine}\"{errAttr}>{errLine}</span>");
                 }
                 prevLine = errLine;
             }
@@ -520,7 +533,6 @@ namespace Calcpad.Core
                 _sb.Append(" ...");
 
             _sb.Append("</div>");
-            _sb.AppendLine("<style>body {padding-top:1em;}</style>");
             _errors.Clear();
         }
 
@@ -577,8 +589,7 @@ namespace Calcpad.Core
                             errText = HttpUtility.HtmlEncode(token.Value);
                         errText = string.Format(Messages.Error_in_0_on_line_1_2, errText, LineHtml(_currentLine), ex.Message);
                         _sb.Append($"<span class=\"err\"{Id(_currentLine)}>{errText}</span>");
-                        if (Debug)
-                            _errors.Enqueue(_currentLine);
+                        RecordError(_currentLine, ex.Message, Debug);
 
                         if (++_errorCount == 40)
                             throw new MathParserException(Messages.Too_many_errors);
@@ -593,14 +604,37 @@ namespace Calcpad.Core
         {
             string s = lineContent.Replace("<", "&lt;").Replace(">", "&gt;");
             _sb.Append(ErrHtml(string.Format(Messages.Error_in_0_on_line_1_2, s, LineHtml(line), text), line));
+            RecordError(line, text, Debug);
+        }
 
-            if (Debug)
-                _errors.Enqueue(line);
+        private void RecordError(int line, string message, bool enabled)
+        {
+            if (!enabled) return;
+            _errors.Enqueue(line);
+            // `line` (== _currentLine) is the position in MacroParser's expanded
+            // output. Report both: SourceLine (from _parser.Line's \v marker) for
+            // editor navigation, and OutputLine (expanded position) for the
+            // code-view highlighter to mark the exact erroring row.
+            var sourceLine = _parser?.Line > 0 ? _parser.Line : line + 1;
+            _errorList.Add(new CalcpadError
+            {
+                SourceLine = sourceLine,
+                OutputLine = line + 1,
+                Message = message,
+                Source = CalcpadErrorSource.Expression,
+            });
         }
 
         private static string LineHtml(int line) => $"[<a href=\"#0\" data-text=\"{line + 1}\">{line + 1}</a>]";
-        private string ErrHtml(string text, int line) => $"<p class=\"err\"{Id(line)}\">{text}</p>";
-        private string Id(int line) => Debug ? $" id=\"line-{line + 1}\"" : string.Empty;
+        private string ErrHtml(string text, int line) => $"<p class=\"err\"{Id(line)}>{text}</p>";
+        private string Id(int line)
+        {
+            if (!Debug) return string.Empty;
+            ++_errIndex;
+            if (!_firstErrIndexByLine.ContainsKey(line))
+                _firstErrIndexByLine[line] = _errIndex;
+            return $" id=\"err-{_errIndex}\" data-source-line=\"{line + 1}\"";
+        }
 
         private static string InsertAttribute(ReadOnlySpan<char> s, string attr)
         {

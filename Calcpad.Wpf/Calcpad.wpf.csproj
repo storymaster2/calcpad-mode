@@ -34,13 +34,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Calcpad.core\Calcpad.Core.csproj" />
+    <ProjectReference Include="..\Calcpad.Core\Calcpad.Core.csproj" />
     <ProjectReference Include="..\Calcpad.OpenXml\Calcpad.OpenXml.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="resources\calc.png" />
-    <Resource Include="resources\Calcpad.ico" />
+    <Resource Include="resources\calcpad.ico" />
     <Resource Include="resources\copy.png" />
     <Resource Include="resources\find.png" />
     <Resource Include="resources\form.png" />

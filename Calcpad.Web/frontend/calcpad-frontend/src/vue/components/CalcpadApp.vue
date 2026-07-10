@@ -113,6 +113,11 @@
         @save-html="handleSaveSourceHtml"
         @save-docx="handleSaveDocx"
       />
+      <CalcpadErrorsTab
+        v-else-if="activeTab === 'errors'"
+        :errors="convertErrors"
+        @go-to-line="handleGoToLine"
+      />
     </div>
     </div>
   </div>
@@ -128,8 +133,10 @@ import CalcpadPdfTab from './CalcpadPdfTab.vue'
 import CalcpadFormattingTab from './CalcpadFormattingTab.vue'
 import CalcpadExportTab from './CalcpadExportTab.vue'
 import CalcpadFilesTab from './CalcpadFilesTab.vue'
+import CalcpadErrorsTab from './CalcpadErrorsTab.vue'
 import { postMessage } from '../services/messaging'
 import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading, ThemeInfo, FileNode } from '../types'
+import type { CalcpadError } from '../../types/api'
 import { DEFAULT_PDF_SETTINGS } from '../types'
 
 // Props
@@ -192,8 +199,11 @@ const tabs: Tab[] = [
   { id: 'variables', label: 'Variables' },
   { id: 'pdf', label: 'PDF' },
   { id: 'formatting', label: 'Formatting' },
-  { id: 'export', label: 'Export' }
+  { id: 'export', label: 'Export' },
+  { id: 'errors', label: 'Errors' }
 ]
+
+const convertErrors = ref<CalcpadError[]>([])
 
 // Methods
 const switchView = (viewId: string) => {
@@ -436,6 +446,9 @@ const handleMessage = (event: MessageEvent) => {
     case 'updateHeadings':
       tocHeadings.value = message.headings || []
       tocLoading.value = false
+      break
+    case 'updateConvertErrors':
+      convertErrors.value = message.errors || []
       break
     case 'pdfSettingsResponse':
       pdfSettings.value = message.settings

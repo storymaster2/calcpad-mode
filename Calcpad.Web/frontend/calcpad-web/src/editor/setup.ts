@@ -30,6 +30,7 @@ export interface CalcpadEditorOptions {
     value?: string;
     readOnly?: boolean;
     fontSize?: number;
+    wordWrap?: 'on' | 'off';
 }
 
 /**
@@ -69,10 +70,13 @@ export function createCalcpadEditor(
         lineNumbers: 'on',
         renderWhitespace: 'none',
         scrollBeyondLastLine: false,
-        wordWrap: 'on',
+        wordWrap: options?.wordWrap ?? 'on',
         tabSize: 4,
         insertSpaces: true,
-        bracketPairColorization: { enabled: true },
+        // Rainbow bracket colorization clobbers the theme's `bracket` token
+        // color. VS Code extension disables it for the same reason.
+        bracketPairColorization: { enabled: false },
+        matchBrackets: 'always',
         'semanticHighlighting.enabled': true,
         // Match VS Code's default-but-flipped suggest behavior: Tab accepts
         // the current suggestion, Enter never does. Without this, Enter
@@ -81,6 +85,13 @@ export function createCalcpadEditor(
         acceptSuggestionOnEnter: 'off',
         acceptSuggestionOnCommitCharacter: false,
         tabCompletion: 'on',
+        // Calcpad source is full of Greek letters, math symbols, and other
+        // non-ASCII glyphs — Monaco's unicode highlighter flags all of them.
+        unicodeHighlight: {
+            ambiguousCharacters: false,
+            invisibleCharacters: false,
+            nonBasicASCII: false,
+        },
     });
     return editor;
 }

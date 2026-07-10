@@ -1,14 +1,23 @@
+use std::backtrace::Backtrace;
+use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::sync::{Arc, Mutex, OnceLock};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::menu::{Menu, MenuBuilder, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Emitter, Manager, RunEvent, State, WindowEvent};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::sync::mpsc;
+
+// Populated at setup(); read from the panic hook (which has no AppHandle).
+static CRASH_DIR: OnceLock<PathBuf> = OnceLock::new();
+static DRAFTS_DIR: OnceLock<PathBuf> = OnceLock::new();
+// Shared with spawn_sidecar so the panic hook can attach the last few KB
+// of the child's combined stdio to the dump — same trick the C# server uses.
+static SIDECAR_TAIL: OnceLock<Arc<Mutex<String>>> = OnceLock::new();
 
 // Name of the .NET apphost inside the resource dir. All ~200 sibling
 // DLLs / native libs / deps.json / runtimeconfig.json land next to it so
@@ -47,6 +56,248 @@ struct ServerLogLine {
 #[derive(Clone, Serialize)]
 struct MenuClickPayload {
     id: String,
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+struct DraftMeta {
+    filename: String,
+    #[serde(rename = "filePath")]
+    file_path: Option<String>,
+    #[serde(rename = "savedAt")]
+    saved_at: u64,
+}
+
+#[derive(Serialize, Clone)]
+struct DraftInfo {
+    id: String,
+    filename: String,
+    #[serde(rename = "filePath")]
+    file_path: Option<String>,
+    #[serde(rename = "savedAt")]
+    saved_at: u64,
+    size: u64,
+}
+
+#[derive(Serialize, Clone)]
+struct DraftContent {
+    id: String,
+    filename: String,
+    #[serde(rename = "filePath")]
+    file_path: Option<String>,
+    #[serde(rename = "savedAt")]
+    saved_at: u64,
+    content: String,
+}
+
+fn unix_millis() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+fn crash_dir() -> Option<&'static Path> {
+    CRASH_DIR.get().map(|p| p.as_path())
+}
+
+fn write_crash_report(kind: &str, body: &str) {
+    // Fall back to the system temp dir if the panic fires before setup()
+    // populated CRASH_DIR — better a temp-dir dump than none.
+    let base = crash_dir()
+        .map(|p| p.to_path_buf())
+        .unwrap_or_else(std::env::temp_dir);
+    let _ = std::fs::create_dir_all(&base);
+    let path = base.join(format!("crash-{}-{}.log", kind, unix_millis()));
+    let _ = std::fs::write(&path, body);
+    eprintln!("[crash] wrote {}", path.display());
+}
+
+fn install_panic_hook() {
+    // Force full backtraces even if the user didn't set RUST_BACKTRACE.
+    // std::env::set_var is safe here — no other threads read it before we set it.
+    if std::env::var_os("RUST_BACKTRACE").is_none() {
+        std::env::set_var("RUST_BACKTRACE", "full");
+    }
+    let default_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        let payload = info
+            .payload()
+            .downcast_ref::<&'static str>()
+            .map(|s| (*s).to_string())
+            .or_else(|| info.payload().downcast_ref::<String>().cloned())
+            .unwrap_or_else(|| "<non-string panic payload>".to_string());
+        let location = info
+            .location()
+            .map(|l| format!("{}:{}:{}", l.file(), l.line(), l.column()))
+            .unwrap_or_else(|| "<unknown>".to_string());
+        let backtrace = Backtrace::force_capture();
+        let thread = std::thread::current()
+            .name()
+            .unwrap_or("<unnamed>")
+            .to_string();
+        let tail = SIDECAR_TAIL
+            .get()
+            .and_then(|m| m.lock().ok().map(|g| g.clone()))
+            .unwrap_or_default();
+        let body = format!(
+            "=== CalcPad Desktop panic ===\n\
+             Time (unix ms): {ms}\n\
+             Thread: {thread}\n\
+             Location: {location}\n\
+             Payload: {payload}\n\n\
+             Backtrace:\n{backtrace}\n\n\
+             --- Sidecar stdio tail ---\n{tail}\n",
+            ms = unix_millis(),
+        );
+        write_crash_report("panic", &body);
+        default_hook(info);
+    }));
+}
+
+fn drafts_dir() -> Result<PathBuf, String> {
+    DRAFTS_DIR
+        .get()
+        .cloned()
+        .ok_or_else(|| "drafts dir not initialized".to_string())
+}
+
+// Some characters (\, /, .., NUL) in a caller-supplied id would let the
+// draft commands read/write outside the drafts dir. Restrict ids to a
+// conservative alphanumeric-plus-dash-underscore set — matches crypto.randomUUID().
+fn validate_draft_id(id: &str) -> Result<(), String> {
+    if id.is_empty() || id.len() > 128 {
+        return Err("invalid draft id".into());
+    }
+    if !id
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+    {
+        return Err("invalid draft id".into());
+    }
+    Ok(())
+}
+
+fn draft_paths(id: &str) -> Result<(PathBuf, PathBuf), String> {
+    validate_draft_id(id)?;
+    let base = drafts_dir()?;
+    Ok((
+        base.join(format!("{id}.cpd")),
+        base.join(format!("{id}.meta.json")),
+    ))
+}
+
+fn atomic_write(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
+    let tmp = path.with_extension({
+        let mut e = path
+            .extension()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            .to_string();
+        e.push_str(".tmp");
+        e
+    });
+    std::fs::write(&tmp, bytes)?;
+    std::fs::rename(&tmp, path)
+}
+
+#[tauri::command]
+fn draft_write(
+    id: String,
+    filename: String,
+    file_path: Option<String>,
+    content: String,
+) -> Result<(), String> {
+    let (content_path, meta_path) = draft_paths(&id)?;
+    let base = drafts_dir()?;
+    std::fs::create_dir_all(&base).map_err(|e| format!("create drafts dir: {e}"))?;
+    let meta = DraftMeta {
+        filename,
+        file_path,
+        saved_at: unix_millis(),
+    };
+    let meta_json =
+        serde_json::to_vec_pretty(&meta).map_err(|e| format!("serialize meta: {e}"))?;
+    atomic_write(&content_path, content.as_bytes())
+        .map_err(|e| format!("write draft content: {e}"))?;
+    atomic_write(&meta_path, &meta_json).map_err(|e| format!("write draft meta: {e}"))?;
+    Ok(())
+}
+
+fn read_draft_meta(meta_path: &Path) -> Option<DraftMeta> {
+    let bytes = std::fs::read(meta_path).ok()?;
+    serde_json::from_slice::<DraftMeta>(&bytes).ok()
+}
+
+#[tauri::command]
+fn draft_list() -> Result<Vec<DraftInfo>, String> {
+    let base = match DRAFTS_DIR.get() {
+        Some(p) => p,
+        None => return Ok(Vec::new()),
+    };
+    if !base.exists() {
+        return Ok(Vec::new());
+    }
+    let mut out = Vec::new();
+    let entries = std::fs::read_dir(base).map_err(|e| format!("read drafts dir: {e}"))?;
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|s| s.to_str()) != Some("cpd") {
+            continue;
+        }
+        let id = match path.file_stem().and_then(|s| s.to_str()) {
+            Some(s) => s.to_string(),
+            None => continue,
+        };
+        if validate_draft_id(&id).is_err() {
+            continue;
+        }
+        let meta_path = base.join(format!("{id}.meta.json"));
+        let meta = read_draft_meta(&meta_path).unwrap_or(DraftMeta {
+            filename: format!("{id}.cpd"),
+            file_path: None,
+            saved_at: 0,
+        });
+        let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+        out.push(DraftInfo {
+            id,
+            filename: meta.filename,
+            file_path: meta.file_path,
+            saved_at: meta.saved_at,
+            size,
+        });
+    }
+    out.sort_by(|a, b| b.saved_at.cmp(&a.saved_at));
+    Ok(out)
+}
+
+#[tauri::command]
+fn draft_read(id: String) -> Result<Option<DraftContent>, String> {
+    let (content_path, meta_path) = draft_paths(&id)?;
+    if !content_path.exists() {
+        return Ok(None);
+    }
+    let content = std::fs::read_to_string(&content_path)
+        .map_err(|e| format!("read draft content: {e}"))?;
+    let meta = read_draft_meta(&meta_path).unwrap_or(DraftMeta {
+        filename: format!("{id}.cpd"),
+        file_path: None,
+        saved_at: 0,
+    });
+    Ok(Some(DraftContent {
+        id,
+        filename: meta.filename,
+        file_path: meta.file_path,
+        saved_at: meta.saved_at,
+        content,
+    }))
+}
+
+#[tauri::command]
+fn draft_delete(id: String) -> Result<(), String> {
+    let (content_path, meta_path) = draft_paths(&id)?;
+    let _ = std::fs::remove_file(&content_path);
+    let _ = std::fs::remove_file(&meta_path);
+    Ok(())
 }
 
 #[tauri::command]
@@ -187,7 +438,14 @@ async fn spawn_sidecar(app: &AppHandle) -> Result<String, String> {
 
     // Rolling tail of the child's combined stdio, shared with the wait task
     // so it can attach the last N bytes to the server-crashed payload.
-    let tail = Arc::new(Mutex::new(String::new()));
+    // Also shared globally with the panic hook via SIDECAR_TAIL so a Rust
+    // panic can dump the same context.
+    let tail = SIDECAR_TAIL
+        .get_or_init(|| Arc::new(Mutex::new(String::new())))
+        .clone();
+    if let Ok(mut t) = tail.lock() {
+        t.clear();
+    }
     let saw_first_output = Arc::new(std::sync::atomic::AtomicBool::new(false));
 
     // Port-file poller — resolves as soon as Kestrel binds, independent of
@@ -348,6 +606,20 @@ async fn spawn_sidecar(app: &AppHandle) -> Result<String, String> {
                     .ok()
                     .map(|t| t.clone())
                     .unwrap_or_default();
+                // The .NET server writes its own crash log via FileLogger, but
+                // duplicate here anyway — if the sidecar died before .NET's
+                // AppDomain.UnhandledException could fire (SIGKILL, StackOverflow,
+                // FailFast), that's the only trace of the tail we'll have.
+                let body = format!(
+                    "=== Calcpad.Server sidecar exited unexpectedly ===\n\
+                     Time (unix ms): {ms}\n\
+                     Exit code: {code:?}\n\n\
+                     --- Sidecar stdio tail ---\n{tail}\n",
+                    ms = unix_millis(),
+                    code = exit_code,
+                    tail = tail_snapshot,
+                );
+                write_crash_report("sidecar", &body);
                 let _ = app_for_wait.emit(
                     "server-crashed",
                     ServerCrashPayload {
@@ -518,6 +790,13 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
             )?,
             &MenuItem::with_id(
                 app,
+                "toggle-word-wrap",
+                "Toggle Word Wrap",
+                true,
+                Some("Alt+Z"),
+            )?,
+            &MenuItem::with_id(
+                app,
                 "preview-mode:wrapped",
                 "Preview Mode: Wrapped",
                 true,
@@ -565,6 +844,7 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    install_panic_hook();
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
             if let Some(w) = app.get_webview_window("main") {
@@ -589,9 +869,24 @@ pub fn run() {
             restart_server,
             stop_server,
             get_env,
-            server_dir
+            server_dir,
+            draft_write,
+            draft_list,
+            draft_read,
+            draft_delete,
         ])
         .setup(|app| {
+            // Pin the on-disk locations the panic hook + draft commands need.
+            // app_data_dir is per-user and writable on all supported platforms.
+            if let Ok(data_dir) = app.path().app_data_dir() {
+                let crash = data_dir.join("crashes");
+                let drafts = data_dir.join("drafts");
+                let _ = std::fs::create_dir_all(&crash);
+                let _ = std::fs::create_dir_all(&drafts);
+                let _ = CRASH_DIR.set(crash);
+                let _ = DRAFTS_DIR.set(drafts);
+            }
+
             let menu = build_menu(app.handle())?;
             app.set_menu(menu)?;
             let handle_for_menu = app.handle().clone();
@@ -611,7 +906,27 @@ pub fn run() {
                         let _ = handle_for_spawn.emit("server-url", url);
                     }
                     Err(err) => {
+                        let body = format!(
+                            "=== Calcpad.Server failed to start ===\n\
+                             Time (unix ms): {ms}\n\
+                             Error: {err}\n",
+                            ms = unix_millis(),
+                        );
+                        write_crash_report("startup", &body);
                         let _ = handle_for_spawn.emit("server-startup-error", err);
+                    }
+                }
+            });
+
+            // Surface any orphan drafts left by a prior session so the UI can
+            // offer a recovery prompt. Emitted on the tick after setup so the
+            // JS listener has a chance to register.
+            let handle_for_drafts = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                tokio::time::sleep(Duration::from_millis(50)).await;
+                if let Ok(drafts) = draft_list() {
+                    if !drafts.is_empty() {
+                        let _ = handle_for_drafts.emit("drafts-recovered", drafts);
                     }
                 }
             });

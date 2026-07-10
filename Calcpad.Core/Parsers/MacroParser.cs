@@ -90,6 +90,8 @@ namespace Calcpad.Core
         private static readonly Dictionary<string, Macro> Macros = new(StringComparer.Ordinal);
         public Func<string, Queue<string>, string> Include;
         public string SourceFilePath { get; set; }
+        private readonly List<CalcpadError> _errorList = new();
+        public IReadOnlyList<CalcpadError> Errors => _errorList;
 
         private static Keywords GetKeyword(ReadOnlySpan<char> s)
         {
@@ -116,6 +118,7 @@ namespace Calcpad.Core
                 _lineNumbers.Clear();
                 _includeStack.Clear();
                 _parsedLineNumber = 0;
+                _errorList.Clear();
             }
             var macroBuilder = new StringBuilder(1000);
             var macroName = string.Empty;
@@ -389,8 +392,17 @@ namespace Calcpad.Core
 
             void AppendError(ReadOnlySpan<char> lineContent, string errorMessage)
             {
-                sb.AppendLine(string.Format(Messages.Error_in_0_on_line_1_2, HttpUtility.HtmlEncode(lineContent.ToString()), LineHtml(lineNumber), errorMessage));
+                var marker = addLineNumbers ? $"\v{lineNumber}" : string.Empty;
+                sb.AppendLine(string.Format(Messages.Error_in_0_on_line_1_2, HttpUtility.HtmlEncode(lineContent.ToString()), LineHtml(lineNumber), errorMessage) + marker);
+                ++_parsedLineNumber;
                 hasErrors = true;
+                _errorList.Add(new CalcpadError
+                {
+                    SourceLine = lineNumber,
+                    OutputLine = _parsedLineNumber,
+                    Message = errorMessage,
+                    Source = CalcpadErrorSource.Macro,
+                });
             }
 
             void AddMacro(ReadOnlySpan<char> lineContent, string name, Macro macro)

@@ -27,6 +27,8 @@ export type ActiveModelChangeListener = (
     tabId: string | null,
     model: monaco.editor.ITextModel | null,
 ) => void;
+export type TabContentChangeListener = (tabId: string) => void;
+export type TabRemovedListener = (tabId: string) => void;
 
 /**
  * Owns the open-tabs list, their Monaco models, and view-state restoration.
@@ -44,6 +46,8 @@ export class TabManager {
 
     private listeners = new Set<TabsListener>();
     private activeModelListeners = new Set<ActiveModelChangeListener>();
+    private contentListeners = new Set<TabContentChangeListener>();
+    private removedListeners = new Set<TabRemovedListener>();
 
     constructor(private editor: monaco.editor.IStandaloneCodeEditor) {}
 
@@ -57,6 +61,16 @@ export class TabManager {
     onActiveModelChanged(listener: ActiveModelChangeListener): () => void {
         this.activeModelListeners.add(listener);
         return () => this.activeModelListeners.delete(listener);
+    }
+
+    onTabContentChanged(listener: TabContentChangeListener): () => void {
+        this.contentListeners.add(listener);
+        return () => this.contentListeners.delete(listener);
+    }
+
+    onTabRemoved(listener: TabRemovedListener): () => void {
+        this.removedListeners.add(listener);
+        return () => this.removedListeners.delete(listener);
     }
 
     // ---- Read API ----
@@ -91,6 +105,18 @@ export class TabManager {
     isDirty(id?: string): boolean {
         const t = id ? this.tabs.find(t => t.id === id) : this.findActive();
         return !!t?.dirty;
+    }
+
+    getContent(id: string): string | null {
+        return this.tabs.find(t => t.id === id)?.model.getValue() ?? null;
+    }
+
+    getFilePath(id: string): string | null {
+        return this.tabs.find(t => t.id === id)?.filePath ?? null;
+    }
+
+    getTitle(id: string): string | null {
+        return this.tabs.find(t => t.id === id)?.title ?? null;
     }
 
     anyDirty(): boolean {
@@ -185,6 +211,7 @@ export class TabManager {
         tab.contentSub.dispose();
         tab.model.dispose();
         this.tabs.splice(idx, 1);
+        for (const l of this.removedListeners) l(id);
 
         if (wasActive) {
             const nextActive = this.tabs[idx] ?? this.tabs[idx - 1] ?? null;
@@ -225,6 +252,23 @@ export class TabManager {
             // Title or path may still have changed.
             this.emit();
         }
+    }
+
+    /**
+     * Restore a tab from an autosave draft. Unlike openFile, the tab starts
+     * dirty — the on-disk file (if any) may differ from `content`, so the
+     * user must explicitly save to reconcile.
+     */
+    openDraft(opts: { filePath: string | null; title: string; content: string }): string {
+        const tab = this.createTab({ title: opts.title, filePath: opts.filePath, content: opts.content });
+        // Force dirty even though content matches the model's initial value:
+        // set savedVersionId to a value the alternative-version-id can never
+        // hit (it starts at 1 and only grows), so recomputeDirty sees a diff.
+        tab.savedVersionId = -1;
+        tab.dirty = true;
+        this.activate(tab.id);
+        this.emit();
+        return tab.id;
     }
 
     /** Replace the active tab's content as if it had just been opened from disk. */
@@ -276,7 +320,10 @@ export class TabManager {
             model,
             viewState: null,
             savedVersionId,
-            contentSub: model.onDidChangeContent(() => this.recomputeDirty(id)),
+            contentSub: model.onDidChangeContent(() => {
+                this.recomputeDirty(id);
+                for (const l of this.contentListeners) l(id);
+            }),
         };
         this.tabs.push(tab);
         this.emit();

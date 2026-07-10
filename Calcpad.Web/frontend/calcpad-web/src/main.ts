@@ -200,6 +200,11 @@ async function bootstrap(): Promise<void> {
     // Initialize the platform messaging (reads VITE_PLATFORM='web')
     initMessaging();
 
+    // The base message bridge's handleGoToLine looks up the editor via
+    // window.monaco (matches the vscode-webview convention). Expose it here so
+    // sidebar tabs (TOC, Errors) can post `goToLine` and reach Monaco.
+    (window as any).monaco = monaco;
+
     // Mount the main app layout
     const app = createApp(App);
     const appInstance = app.mount('#app') as any;
@@ -231,9 +236,23 @@ async function bootstrap(): Promise<void> {
     if (tauriBridge) await tauriBridge.ready;
     setAppTheme(coerceAppTheme(activeBridge.getStoredColorTheme()));
 
+    const WORD_WRAP_KEY = 'calcpad.wordWrap';
+    const initialWordWrap: 'on' | 'off' =
+        localStorage.getItem(WORD_WRAP_KEY) === 'off' ? 'off' : 'on';
+
     const editor = createCalcpadEditor(editorEl, {
         value: '',
+        wordWrap: initialWordWrap,
     });
+
+    function toggleWordWrap(): void {
+        const current = editor.getOption(monaco.editor.EditorOption.wordWrap);
+        const next: 'on' | 'off' = current === 'on' ? 'off' : 'on';
+        editor.updateOptions({ wordWrap: next });
+        localStorage.setItem(WORD_WRAP_KEY, next);
+    }
+
+    editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, toggleWordWrap);
 
     // JuliaMono is an async web font; re-measure once it loads so the cursor
     // grid isn't stuck on the fallback font's metrics (off-grid caret on PCs
@@ -469,6 +488,12 @@ async function bootstrap(): Promise<void> {
         const sev = editorBridge.getExtraSetting('linterMinSeverity');
         return (sev === 'error' || sev === 'warning') ? sev : 'information';
     }, getFileContext);
+
+    window.addEventListener('message', (e: MessageEvent) => {
+        if (e.data?.type === 'linterMinSeverityChanged') {
+            void diagnostics.refresh();
+        }
+    });
     registerCompletionProvider(editorBridge);
     if (tauriBridge) {
         registerIncludeCompletionProvider({
@@ -551,6 +576,9 @@ async function bootstrap(): Promise<void> {
     // doesn't show stale data from the previous tab.
     tabs.onActiveModelChanged(() => {
         refreshProblemsForActiveModel();
+        // Re-lint: content-change events don't fire on tab switch, so the
+        // debounced lint in setupDiagnostics never re-runs for the new model.
+        void diagnostics.refresh();
         // Also kick the preview/TOC to repaint against the new content.
         if (appInstance.isPreviewVisible()) {
             void refreshPreview();
@@ -612,12 +640,9 @@ async function bootstrap(): Promise<void> {
 
         const fileContext = getFileContext ? await getFileContext(content) : {};
 
-        let html: string | ArrayBuffer | null;
-        if (mode === 'unwrapped') {
-            html = await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath, theme);
-        } else {
-            html = await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath, theme);
-        }
+        const result = mode === 'unwrapped'
+            ? await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath, theme)
+            : await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath, theme);
 
         // Consume any pending two-step scroll target: only the unwrapped view it
         // was set for should honor it, and only once.
@@ -626,14 +651,17 @@ async function bootstrap(): Promise<void> {
             : undefined;
         pendingPreviewScrollLine = null;
 
-        if (typeof html === 'string') {
+        if (result && !(result instanceof ArrayBuffer)) {
             // Desktop: inline on-disk images so relative <img src> paths (from
             // the images-folder / custom-path insert options) render in the
             // sandboxed preview iframe, matching PDF export.
             const finalHtml = tauriBridge
-                ? await tauriBridge.inlineDocumentImages(html)
-                : html;
+                ? await tauriBridge.inlineDocumentImages(result.html)
+                : result.html;
             appInstance.setPreviewHtml(finalHtml, scrollToLine);
+            window.dispatchEvent(new MessageEvent('message', {
+                data: { type: 'updateConvertErrors', errors: result.errors },
+            }));
         }
     }
 
@@ -682,12 +710,138 @@ async function bootstrap(): Promise<void> {
             { getCurrentWindow },
             { exit: processExit, relaunch: processRelaunch },
             tauriClipboard,
+            { invoke: tauriInvoke },
         ] = await Promise.all([
             import('@tauri-apps/api/event'),
             import('@tauri-apps/api/window'),
             import('@tauri-apps/plugin-process'),
             import('@tauri-apps/plugin-clipboard-manager'),
+            import('@tauri-apps/api/core'),
         ]);
+
+        // ---- Autosave drafts (10s debounce per tab) ----
+        // Rust owns the on-disk drafts dir (<app_data>/drafts). Each tab is
+        // assigned a stable UUID on first autosave; the id persists via the
+        // tab object for the session. Saved/closed tabs delete their draft.
+        const AUTOSAVE_DEBOUNCE_MS = 10_000;
+        const draftTimers = new Map<string, ReturnType<typeof setTimeout>>();
+        const draftIds = new Map<string, string>();
+
+        function draftIdFor(tabId: string): string {
+            let id = draftIds.get(tabId);
+            if (!id) {
+                id = crypto.randomUUID();
+                draftIds.set(tabId, id);
+            }
+            return id;
+        }
+
+        async function writeDraft(tabId: string): Promise<void> {
+            if (!tabs.isDirty(tabId)) return;
+            const content = tabs.getContent(tabId);
+            if (content == null) return;
+            const filePath = tabs.getFilePath(tabId);
+            const title = tabs.getTitle(tabId) ?? 'Untitled';
+            const filename = filePath ? title : `${title}.cpd`;
+            try {
+                await tauriInvoke('draft_write', {
+                    id: draftIdFor(tabId),
+                    filename,
+                    filePath,
+                    content,
+                });
+            } catch (err) {
+                appInstance.appendOutput('warn',
+                    `Autosave failed for ${title}: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        }
+
+        async function deleteDraft(tabId: string): Promise<void> {
+            const id = draftIds.get(tabId);
+            if (!id) return;
+            draftIds.delete(tabId);
+            const timer = draftTimers.get(tabId);
+            if (timer) {
+                clearTimeout(timer);
+                draftTimers.delete(tabId);
+            }
+            try {
+                await tauriInvoke('draft_delete', { id });
+            } catch { /* swallow — draft may not exist yet */ }
+        }
+
+        tabs.onTabContentChanged((tabId) => {
+            const existing = draftTimers.get(tabId);
+            if (existing) clearTimeout(existing);
+            draftTimers.set(tabId, setTimeout(() => {
+                draftTimers.delete(tabId);
+                void writeDraft(tabId);
+            }, AUTOSAVE_DEBOUNCE_MS));
+        });
+
+        tabs.onTabRemoved((tabId) => { void deleteDraft(tabId); });
+
+        // ---- Draft recovery ----
+        // Rust emits `drafts-recovered` shortly after startup if orphan drafts
+        // exist from a prior session. Prompt once, then either restore each
+        // draft as a dirty tab or discard them all.
+        interface DraftInfo {
+            id: string;
+            filename: string;
+            filePath: string | null;
+            savedAt: number;
+            size: number;
+        }
+        interface DraftContent extends DraftInfo { content: string; }
+
+        async function restoreDraft(info: DraftInfo): Promise<void> {
+            try {
+                const drafted = await tauriInvoke<DraftContent | null>('draft_read', { id: info.id });
+                if (!drafted) return;
+                const displayTitle = drafted.filePath
+                    ? drafted.filename
+                    : drafted.filename.replace(/\.cpd$/i, '');
+                const newTabId = tabs.openDraft({
+                    filePath: drafted.filePath,
+                    title: displayTitle,
+                    content: drafted.content,
+                });
+                // Reuse the draft id so subsequent autosaves overwrite it in place
+                // instead of stacking a new draft next to the recovered one.
+                draftIds.set(newTabId, drafted.id);
+            } catch (err) {
+                appInstance.appendOutput('warn',
+                    `Draft recovery failed for ${info.filename}: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        }
+
+        await tauriListen<DraftInfo[]>('drafts-recovered', async (evt) => {
+            const drafts = evt.payload;
+            if (!drafts || drafts.length === 0) return;
+            const summary = drafts
+                .map(d => `• ${d.filename}${d.filePath ? ` (${d.filePath})` : ''}`)
+                .join('\n');
+            const choice = await appInstance.showConfirm({
+                title: 'Recover unsaved changes?',
+                message:
+                    `CalcPad found ${drafts.length} unsaved draft${drafts.length === 1 ? '' : 's'} `
+                    + `from a previous session:\n\n${summary}\n\n`
+                    + `Restore them into new tabs? Choose "Don't Restore" to discard.`,
+                yesLabel: 'Restore',
+                noLabel: "Don't Restore",
+            });
+            if (choice === 'yes') {
+                for (const d of drafts) await restoreDraft(d);
+                appInstance.appendOutput('info', `Recovered ${drafts.length} draft(s).`);
+            } else if (choice === 'no') {
+                for (const d of drafts) {
+                    try { await tauriInvoke('draft_delete', { id: d.id }); }
+                    catch { /* ignored */ }
+                }
+                appInstance.appendOutput('info', `Discarded ${drafts.length} draft(s).`);
+            }
+            // 'cancel' leaves the drafts on disk — surfaced again on next launch.
+        });
 
         // Menu is built in Rust (src-tauri/src/lib.rs:build_menu). The frontend
         // just tracks recents in the plugin-store; there is no dynamic menu
@@ -734,21 +888,25 @@ async function bootstrap(): Promise<void> {
             if (active.filePath) {
                 await tauriBridge!.saveFile(active.filePath, content);
                 tabs.markActiveSaved();
+                await deleteDraft(active.id);
                 return true;
             }
             const newPath = await tauriBridge!.saveFileAs(content);
             if (!newPath) return false;
             tabs.markActiveSaved({ filePath: newPath });
             await tauriBridge!.addRecentFile(newPath);
+            await deleteDraft(active.id);
             return true;
         }
 
         async function saveAsActive(): Promise<boolean> {
+            const active = tabs.activeTab;
             const content = tabs.activeModel?.getValue() ?? '';
             const newPath = await tauriBridge!.saveFileAs(content);
             if (!newPath) return false;
             tabs.markActiveSaved({ filePath: newPath });
             await tauriBridge!.addRecentFile(newPath);
+            if (active) await deleteDraft(active.id);
             return true;
         }
 
@@ -1027,6 +1185,10 @@ async function bootstrap(): Promise<void> {
                     appInstance.togglePreview();
                     break;
 
+                case 'toggle-word-wrap':
+                    toggleWordWrap();
+                    break;
+
                 case 'quit':
                     await tryExit();
                     break;
@@ -1036,8 +1198,10 @@ async function bootstrap(): Promise<void> {
                     break;
 
                 case 'show-server-log':
-                    appInstance.appendOutput('info', 'Fetching server log…');
-                    tauriBridge.handleMessage({ type: 'getServerLog' });
+                    // Server stdout/stderr is streamed live into the Output
+                    // panel's 'server' channel via the `server-log` Tauri
+                    // event, so we just reveal that channel.
+                    appInstance.showOutput('server');
                     break;
 
                 case 'stop-server':

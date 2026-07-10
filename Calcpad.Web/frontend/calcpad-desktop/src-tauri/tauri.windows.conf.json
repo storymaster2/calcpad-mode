@@ -1,13 +1,18 @@
 {
   "build": {
-    "beforeDevCommand": "powershell -ExecutionPolicy Bypass -File local-npm.ps1 --prefix ../calcpad-web run build:watch",
-    "beforeBuildCommand": "powershell -ExecutionPolicy Bypass -File local-npm.ps1 --prefix ../calcpad-web run build"
+    "beforeDevCommand": "powershell -ExecutionPolicy Bypass -Command \"& { .\\local-npm.ps1 --prefix ../calcpad-frontend run build; Start-Process -NoNewWindow -FilePath powershell -ArgumentList '-ExecutionPolicy Bypass -File local-npm.ps1 --prefix ../calcpad-frontend run watch'; .\\local-npm.ps1 --prefix ../calcpad-web run build:watch }\"",
+    "beforeBuildCommand": "powershell -ExecutionPolicy Bypass -Command \"& { .\\local-npm.ps1 --prefix ../calcpad-frontend run build; .\\local-npm.ps1 --prefix ../calcpad-web run build }\""
   },
   "bundle": {
     "targets": ["msi", "nsis"],
     "resources": {
       "binaries/*.dll": "./",
-      "binaries/Calcpad.Server.exe": "./"
+      "binaries/*.json": "./",
+      "binaries/Calcpad.Server.exe": "./",
+      "binaries/template.html": "./",
+      "binaries/Fonts/*": "./Fonts/",
+      "binaries/bg/*": "./bg/",
+      "binaries/zh/*": "./zh/"
     },
     "windows": {
       "wix": {

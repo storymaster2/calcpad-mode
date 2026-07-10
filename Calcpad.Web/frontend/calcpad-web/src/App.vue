@@ -446,6 +446,12 @@ function clearOutput(): void {
   outputLines.value = outputLines.value.filter(l => l.channel !== activeOutputChannel.value)
 }
 
+function showOutput(channel: OutputChannel = 'app'): void {
+  activeOutputChannel.value = channel
+  activeBottomTab.value = 'output'
+  bottomPanelOpen.value = true
+}
+
 function toggleSidebar(): void {
   sidebarVisible.value = !sidebarVisible.value
 }
@@ -624,11 +630,18 @@ function injectLineLinks(html: string, scrollToLine?: number): string {
     "    });",
     "  });",
     "  window.addEventListener('scroll', hideAllLineLinks);",
-    // Error-summary chips: scroll the preview to the referenced output line.
+    // Error-summary chips: scroll the preview to the referenced error's own
+    // element. In loop bodies the source-line id belongs to the first
+    // iteration (which may not be an error), so we key off the unique
+    // per-error id emitted by ExpressionParser when available.
     "  document.querySelectorAll('.roundBox').forEach(function(box) {",
     "    box.addEventListener('click', function() {",
-    "      var line = box.getAttribute('data-line');",
-    "      var target = line && document.getElementById('line-' + line);",
+    "      var errId = box.getAttribute('data-error');",
+    "      var target = errId ? document.getElementById(errId) : null;",
+    "      if (!target) {",
+    "        var line = box.getAttribute('data-line');",
+    "        target = line ? document.getElementById('line-' + line) : null;",
+    "      }",
     "      if (target) target.scrollIntoView({ block: 'start' });",
     "    });",
     "  });",
@@ -818,6 +831,7 @@ defineExpose({
   getPreviewMode,
   appendOutput,
   clearOutput,
+  showOutput,
   showConfirm,
   showQuickPick,
   setTabs,

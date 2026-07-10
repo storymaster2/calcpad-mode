@@ -29,7 +29,8 @@ namespace Calcpad.Server.Services
                 {
                     policy.AllowAnyOrigin()
                           .AllowAnyMethod()
-                          .AllowAnyHeader();
+                          .AllowAnyHeader()
+                          .WithExposedHeaders("X-Calcpad-Errors");
                 });
             });
 

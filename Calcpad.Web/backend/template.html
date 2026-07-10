@@ -650,6 +650,15 @@
             overflow-x: hidden;
         }
 
+        body:has(.errorHeader) {
+            padding-top: 2.2em;
+        }
+
+        body:has(.errorHeader) [id^="line-"],
+        body:has(.errorHeader) [id^="err-"] {
+            scroll-margin-top: 2.2em;
+        }
+
         .roundBox {
             background-color: #fee;
             color: crimson;
@@ -707,6 +716,11 @@
             padding: 0;
             line-height: 1.15em;
             white-space: pre-wrap;
+        }
+
+        .line-text.err-line {
+            background-color: #FEE;
+            cursor: help;
         }
 
         .line-num {
@@ -800,6 +814,10 @@
         .dark-theme .err {
             color: #f48771; /* Light red for errors */
             background-color: #3d2426; /* Dark red background */
+        }
+
+        .dark-theme .line-text.err-line {
+            background-color: #3d2426;
         }
 
         .dark-theme .ok {

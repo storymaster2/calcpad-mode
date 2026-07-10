@@ -282,3 +282,21 @@ export enum CalcpadTypeId {
     CustomUnit = 9,
     FutureReserved10 = 10
 }
+
+// ============================================
+// Convert Errors (returned via X-Calcpad-Errors response header)
+// ============================================
+
+export type CalcpadErrorSource = 'Macro' | 'Expression';
+
+export interface CalcpadError {
+    sourceLine: number;
+    outputLine: number;
+    message: string;
+    source: CalcpadErrorSource;
+}
+
+export interface ConvertResult {
+    html: string;
+    errors: CalcpadError[];
+}

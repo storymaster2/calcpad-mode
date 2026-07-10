@@ -22,6 +22,9 @@ export type {
     SymbolAtPositionResponse,
     PrettifyRequest,
     PrettifyResponse,
+    CalcpadError,
+    CalcpadErrorSource,
+    ConvertResult,
 } from './types/api';
 export { CalcpadTokenType, CalcpadTypeId } from './types/api';
 
@@ -56,7 +59,7 @@ export type {
 } from './types/snippets';
 
 // --- API Client --------------------------------------------------------------
-export { CalcpadApiClient } from './api/client';
+export { CalcpadApiClient, parseConvertErrorHeader } from './api/client';
 
 // --- Services ----------------------------------------------------------------
 export { CalcpadLintService } from './services/linter';

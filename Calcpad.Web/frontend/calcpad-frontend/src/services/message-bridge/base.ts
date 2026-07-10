@@ -143,6 +143,7 @@ export abstract class BaseMessageBridge {
                 break;
             case 'updateLinterMinSeverity':
                 this.setExtraSetting('linterMinSeverity', message.severity);
+                this.postToVue({ type: 'linterMinSeverityChanged', severity: message.severity });
                 break;
             case 'getPdfSettings':
                 this.handleGetPdfSettings();
@@ -384,11 +385,11 @@ export abstract class BaseMessageBridge {
         const content = this.getActiveEditorContent();
         const apiSettings = buildApiSettings(this.settings);
         const { sourceFilePath } = await this.buildFileContext(content);
-        const html = await this.apiClient.convert(content, apiSettings, 'html', false, sourceFilePath);
-        if (typeof html !== 'string') return;
+        const result = await this.apiClient.convert(content, apiSettings, 'html', false, sourceFilePath);
+        if (!result || result instanceof ArrayBuffer) return;
         await this.saveExportedFile({
             defaultName: 'calcpad-output.html',
-            data: html,
+            data: result.html,
             mime: 'text/html;charset=utf-8',
             extensions: ['html', 'htm'],
             dialogTitle: 'Save HTML',
