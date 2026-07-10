@@ -78,7 +78,7 @@
   </span>
   iterations
  </p>
- <p "="" class="err">
+ <p class="err">
   Error in "$Map{JuliaSet(x + 1i*y; c) @ x = -1.5 : 1.5 &amp; y = -1 : 1}" on line [
   <a data-text="9" href="#0">9</a>
   ]: Error parsing "i" as units.
