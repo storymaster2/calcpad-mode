@@ -46,6 +46,13 @@ If you prefer to write your worksheets in an IDE, we maintain a dedicated extens
 
 🡒 **[Try the Online Editor](https://calcpad-ce.org/)**
 
+The easiest way to install CalcpadCE is via [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/).
+Simply open a Windows terminal and run:
+
+```powershell
+winget install -e --id Imartincei.CalcpadCE
+```
+
 ## ⚡ Quick Start
 
 Writing a CalcpadCE worksheet is as simple as typing math and adding comments.

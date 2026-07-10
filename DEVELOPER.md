@@ -83,3 +83,22 @@ Generation can be started by invoking this command.
 A local webserver will spawn to serve the rendered documentation:
 
 `mkdocs serve`
+
+## Creating a Release
+
+Releasing is automated via GitHub Actions.
+The workflow is as follows:
+
+Items marked with 🫵, require an action by you.
+
+- 🫵 Push a tag in the format `vX.Y.Z`.
+- The artifacts for all platforms are built.
+- A release draft is created on the repo's Releases page.
+- A workflow is triggered to create a PR updating the version on the website.
+- 🫵 Edit the draft and the automatically generated release notes. Remove all release notes lines:
+  - starting with `chore:`, `CI:`, `docs:`
+  - refactorings, which are not relevant from the user's perspective
+  - fixes which addressed only unreleased code
+- 🫵 Click on "Publish Release".
+- A workflow is triggered to create a PR in the winget repo updating the version.
+- 🫵 Write an announcement on GitHub Discussions.

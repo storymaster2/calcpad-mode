@@ -55,19 +55,14 @@ namespace Calcpad.Core
         public void Cancel() => _parser?.Cancel();
         public void Pause() => _isPausedByUser = true;
 
-        // Debug mode emits class="line" + data-source-line on every iteration so the
-        // preview line-link arrows appear on repeated loop output too, but only stamps
-        // id="line-N" once (first loop pass or outside any loop) since the id is the
-        // scroll target and getElementById returns only the first match.
         private string HtmlId
         {
             get
             {
                 if (!Debug) return string.Empty;
                 var isFirstPass = _loops.Count == 0 || _loops.Peek().IsFirstPass;
-                return isFirstPass
-                    ? $" id=\"line-{_currentLine + 1}\" data-source-line=\"{_parser.Line}\" class=\"line\""
-                    : $" data-source-line=\"{_parser.Line}\" class=\"line\"";
+                var idAttribute = isFirstPass ? $" id=\"line-{_currentLine + 1}\"" : string.Empty;
+                return $"{idAttribute} data-source-line=\"{_parser.Line}\" class=\"line\"";
             }
         }
 
@@ -106,11 +101,6 @@ namespace Calcpad.Core
                     {
                         if (IsEnabled())
                         {
-                            // Restore the source line from cache. Loop iterations reach
-                            // this fast path without re-reading the '\v' marker, so
-                            // without this _parser.Line would drift to whatever the last
-                            // non-cached line set — pulling data-source-line and error
-                            // targets off the actual source line.
                             _parser.Line = currentLineCache.SourceLine != 0
                                 ? currentLineCache.SourceLine
                                 : _currentLine + 1;
@@ -611,10 +601,6 @@ namespace Calcpad.Core
         {
             if (!enabled) return;
             _errors.Enqueue(line);
-            // `line` (== _currentLine) is the position in MacroParser's expanded
-            // output. Report both: SourceLine (from _parser.Line's \v marker) for
-            // editor navigation, and OutputLine (expanded position) for the
-            // code-view highlighter to mark the exact erroring row.
             var sourceLine = _parser?.Line > 0 ? _parser.Line : line + 1;
             _errorList.Add(new CalcpadError
             {

@@ -785,5 +785,5 @@
   </span>
  </p>
  <h4>Plot</h4>
- <p "="" class="err">Unexpected error: Index was outside the bounds of the array. Please check the expression consistency.</p>
+ <p class="err">Unexpected error: Index was outside the bounds of the array. Please check the expression consistency.</p>
 </div>
