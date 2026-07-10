@@ -46,6 +46,12 @@ namespace Calcpad.Wpf
 
         internal async Task<string> GetLinkDataAsync()
         {
+            var (data, _) = await GetLinkDataAndClassAsync();
+            return data;
+        }
+
+        internal async Task<(string Data, string ClassName)> GetLinkDataAndClassAsync()
+        {
             try
             {
                 var tagName = await InvokeScriptAsync<string>("document.activeElement.tagName");
@@ -53,17 +59,20 @@ namespace Calcpad.Wpf
                 {
                     var linkData = await InvokeScriptAsync<string>("document.activeElement.getAttribute('data-text')");
                     if (linkData != "undefined")
-                        return linkData;
+                    {
+                        var className = await InvokeScriptAsync<string>("document.activeElement.className || ''");
+                        return (linkData, className ?? string.Empty);
+                    }
                 }
                 else if (tagName == "SELECT")
                 {
                     var linkData = await InvokeScriptAsync<string>("document.activeElement.value");
                     if (linkData != "undefined")
-                        return linkData;
+                        return (linkData, string.Empty);
                 }
             }
             catch { }
-            return null;
+            return (null, string.Empty);
         }
 
         internal async Task<string> GetUnitsAsync()
