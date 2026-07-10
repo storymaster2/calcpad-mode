@@ -709,6 +709,15 @@
             overflow-x: hidden;
         }
 
+        body:has(.errorHeader) {
+            padding-top: 2.2em;
+        }
+
+        body:has(.errorHeader) [id^="line-"],
+        body:has(.errorHeader) [id^="err-"] {
+            scroll-margin-top: 2.2em;
+        }
+
         .roundBox {
             background-color: #fee;
             color: crimson;
