@@ -278,6 +278,18 @@
         </label>
       </div>
 
+      <div class="setting-group">
+        <label>
+          <input
+            v-model="enablePreviewCursorSync"
+            type="checkbox"
+            @change="updatePreviewCursorSync"
+          />
+          Sync Preview to Cursor Line
+        </label>
+        <span class="setting-hint">Scroll the preview to follow the line the cursor is on in the editor.</span>
+      </div>
+
       <h3>Library</h3>
       <div class="setting-group">
         <label for="libraryPath">Library Path:</label>
@@ -375,6 +387,7 @@ interface Props {
   initialEnableQuickTyping?: boolean
   initialCommentFormat?: string
   initialEnableFormattingHotkeys?: boolean
+  initialEnablePreviewCursorSync?: boolean
   initialDarkBackground?: string
   initialLinterMinSeverity?: string
   initialLibraryPath?: string
@@ -416,6 +429,7 @@ const props = withDefaults(defineProps<Props>(), {
   initialEnableQuickTyping: true,
   initialCommentFormat: 'auto',
   initialEnableFormattingHotkeys: true,
+  initialEnablePreviewCursorSync: false,
   initialDarkBackground: '#1a1a2e',
   initialLinterMinSeverity: 'information',
   initialLibraryPath: '',
@@ -431,6 +445,7 @@ const emit = defineEmits<{
   updateQuickTyping: [enabled: boolean]
   updateCommentFormat: [format: string]
   updateFormattingHotkeys: [enabled: boolean]
+  updatePreviewCursorSync: [enabled: boolean]
   updateDarkBackground: [color: string]
   updateLinterMinSeverity: [severity: string]
   updateLibraryPath: [path: string]
@@ -453,6 +468,7 @@ const knownThemeLabels = computed(() => new Set(availableThemes.value.map(t => t
 const enableQuickTyping = ref(props.initialEnableQuickTyping)
 const commentFormat = ref(props.initialCommentFormat)
 const enableFormattingHotkeys = ref(props.initialEnableFormattingHotkeys)
+const enablePreviewCursorSync = ref(props.initialEnablePreviewCursorSync)
 const darkBackground = ref(props.initialDarkBackground)
 const linterMinSeverity = ref(props.initialLinterMinSeverity)
 const libraryPath = ref(props.initialLibraryPath)
@@ -484,6 +500,10 @@ const updateCommentFormat = () => {
 
 const updateFormattingHotkeys = () => {
   emit('updateFormattingHotkeys', enableFormattingHotkeys.value)
+}
+
+const updatePreviewCursorSync = () => {
+  emit('updatePreviewCursorSync', enablePreviewCursorSync.value)
 }
 
 const updateDarkBackground = () => {
@@ -582,6 +602,13 @@ watch(
   () => props.initialEnableFormattingHotkeys,
   (newValue) => {
     enableFormattingHotkeys.value = newValue
+  }
+)
+
+watch(
+  () => props.initialEnablePreviewCursorSync,
+  (newValue) => {
+    enablePreviewCursorSync.value = newValue
   }
 )
 

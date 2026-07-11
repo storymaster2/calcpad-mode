@@ -10,7 +10,6 @@
 
 -   Add HTML table styling when a table is called in the code
 -   Update documentation for new features
--   Add better documentation for using vs code features
 
 ## calcpad-frontend
 
@@ -36,9 +35,7 @@
 
 ### Testing
 
--   Make refresh button check if the server is down and restart it if it crashes. See if it is possible to put the server in a try/catch loop and send the crash message to the client output. Have this on 3 retries before requiring a manual refresh and give the user a pop-up so they know it crashed due to something in their file.
 -   Fix base64 syntax highlighting by sending the last characters that close the img tag.
--   Add button that auto-downloads the .NET runtime into the extension folder with slim build options if the user doesn't want to install the .NET runtimes locally
 -   Make sure long API calls are awaited and do not freeze the UI
 -   Check if the cache needs cleared on intervals
 -   Have variables use the tokenizer for recognition when you highlight text when clicking, commas are not handled properly currently.
@@ -54,7 +51,11 @@
 -   Add #UI features to main branch
 -   Make update do var name is not default #UI id, but {varName:varRepeatNumber} is the id to handle repetitions of the same variable name.
 
+
 ### Bugs
+
+-   Settings tab "Degrees" control is a numeric input (0–360) but should be a mode selector matching Calcpad.Core's `degrees` setting (0 = radians, 1 = degrees, 2 = gradians). As-is it lets users enter meaningless values and doesn't map to the actual angle-unit modes.
+-   Macro names in Go To Definition are not matching with $ and exact names properly, doubleCheck$ navigated to double$. Make sure it is using the ContentResolution/tokenizer workflow.
 
 ### Testing
 
@@ -72,6 +73,9 @@
 -   allow splitting code window similar to VS code
 -   add a max log length before it gets overwritten to help with performance
 -   HTML preview gets blank lines sent to it (noticed this in unwrapped code)
+
+### Bugs
+-   Fix Ctrl without click navigating to definition when the macro comes from an included file.
 
 ### Testing
 -   error buttons don't jump to error line correctly when the error occurs in a loop. I think errors should get their own id that the buttons can get mapped to for scroll anchoring

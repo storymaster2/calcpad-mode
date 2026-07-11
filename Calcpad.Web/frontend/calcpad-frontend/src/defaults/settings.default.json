@@ -34,6 +34,7 @@
         "commentFormat": "auto",
         "formattingHotkeys": true,
         "quickTyping": true,
+        "previewCursorSync": false,
         "linterMinSeverity": "information",
         "libraryPath": "",
         "prettifyIndentStyle": "tab",

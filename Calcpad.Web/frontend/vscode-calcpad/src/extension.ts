@@ -397,6 +397,8 @@ function getScrollbarStyleScript(): string {
                always in the DOM at opacity 0 so pointing at the margin reveals it
                directly — no need to hover the line text first. */
             .line { position: relative; }
+            /* Brief flash when the preview is focused to the editor's cursor line. */
+            .cpd-line-focus { background-color: var(--vscode-editor-findMatchHighlightBackground, rgba(120,170,255,0.28)) !important; transition: background-color 0.3s ease !important; }
             .lineLink {
                 left: -3em !important;
                 top: 0 !important;
@@ -482,6 +484,40 @@ function getLineLinkScript(scrollToLine?: number): string {
                     var target = document.getElementById('line-' + scrollToLine);
                     if (target) target.scrollIntoView({ block: 'center' });
                 }
+
+                // Editor -> preview sync. The extension posts
+                // { type: 'scrollToSourceLine', line } (a source line) on cursor
+                // move (when auto-sync is on) or via the 'Focus Preview to Line'
+                // command. Match data-source-line first (wrapped view), then the
+                // code view's line-num anchors, falling back to the nearest
+                // preceding source line so blank/continuation lines still resolve.
+                var focusTimer = null;
+                function focusPreviewLine(line) {
+                    if (typeof line !== 'number' || isNaN(line)) return;
+                    var target = document.querySelector('[data-source-line="' + line + '"]');
+                    if (!target) {
+                        var anchor = document.querySelector('a.line-num[data-text="' + line + '"]');
+                        if (anchor) target = anchor.closest('.line-text') || anchor;
+                    }
+                    if (!target) {
+                        var best = null, bestSrc = -1;
+                        document.querySelectorAll('[data-source-line]').forEach(function(el) {
+                            var s = parseInt(el.getAttribute('data-source-line'), 10);
+                            if (!isNaN(s) && s <= line && s > bestSrc) { bestSrc = s; best = el; }
+                        });
+                        target = best;
+                    }
+                    if (!target) return;
+                    target.scrollIntoView({ block: 'center' });
+                    document.querySelectorAll('.cpd-line-focus').forEach(function(el) { el.classList.remove('cpd-line-focus'); });
+                    target.classList.add('cpd-line-focus');
+                    if (focusTimer) clearTimeout(focusTimer);
+                    focusTimer = setTimeout(function() { target.classList.remove('cpd-line-focus'); }, 1200);
+                }
+                window.addEventListener('message', function(e) {
+                    var d = e.data;
+                    if (d && d.type === 'scrollToSourceLine') focusPreviewLine(d.line);
+                });
             });
         </script>
     `;
@@ -926,6 +962,15 @@ function navigateEditorToLine(sourceEditor: vscode.TextEditor, line: number) {
     sourceEditor.selection = selection;
     sourceEditor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
     vscode.window.showTextDocument(sourceEditor.document, vscode.ViewColumn.One);
+}
+
+// Editor -> preview sync: tell any open preview panel(s) to scroll to a 1-based
+// source line. Both views match on data-source-line / line-num anchors, so the
+// same source line works for the wrapped and unwrapped panels.
+function postPreviewSourceLine(line: number) {
+    const msg = { type: 'scrollToSourceLine', line };
+    wrappedPanel?.webview.postMessage(msg);
+    unwrappedPanel?.webview.postMessage(msg);
 }
 
 function handlePreviewMessage(message: any, kind: 'regular' | 'unwrapped') {
@@ -1412,6 +1457,19 @@ export async function activate(context: vscode.ExtensionContext) {
         showPreview('unwrapped');
     });
 
+    const focusPreviewToLineCommand = vscode.commands.registerCommand('vscode-calcpad.focusPreviewToLine', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) return;
+        const line = editor.selection.active.line + 1;
+        if (!wrappedPanel && !unwrappedPanel) {
+            await showPreview('regular');
+            // Wait for the webview to load its DOMContentLoaded listener before posting.
+            setTimeout(() => postPreviewSourceLine(line), 600);
+        } else {
+            postPreviewSourceLine(line);
+        }
+    });
+
     const showInsertCommand = vscode.commands.registerCommand('vscode-calcpad.showInsert', () => {
         vscode.commands.executeCommand('workbench.view.extension.calcpad-ui');
     });
@@ -1636,6 +1694,19 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
+    // Auto-sync the preview to the cursor's source line (gated on the setting).
+    let cursorSyncTimeout: NodeJS.Timeout | undefined;
+    const onDidChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(event => {
+        const doc = event.textEditor.document;
+        if (doc.languageId !== 'calcpad' && doc.languageId !== 'plaintext') return;
+        if (!wrappedPanel && !unwrappedPanel) return;
+        if (!CalcpadSettingsManager.getInstance().getExtraBool('previewCursorSync', false)) return;
+        if (cursorSyncTimeout) clearTimeout(cursorSyncTimeout);
+        cursorSyncTimeout = setTimeout(() => {
+            postPreviewSourceLine(event.selections[0].active.line + 1);
+        }, 150);
+    });
+
     // Refresh all components when calcpad settings change
     const onDidChangeConfiguration = vscode.workspace.onDidChangeConfiguration(async event => {
         // Check if any calcpad settings changed
@@ -1653,6 +1724,8 @@ export async function activate(context: vscode.ExtensionContext) {
             disposable,
             previewCommand,
             previewUnwrappedCommand,
+            focusPreviewToLineCommand,
+            onDidChangeTextEditorSelection,
             showInsertCommand,
             printToPdfCommand,
             saveSourceHtmlCommand,

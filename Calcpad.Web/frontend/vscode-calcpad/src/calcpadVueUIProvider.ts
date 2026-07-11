@@ -127,6 +127,10 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     this._settingsManager.setExtra('quickTyping', data.enabled);
                     break;
 
+                case 'updatePreviewCursorSync':
+                    this._settingsManager.setExtra('previewCursorSync', data.enabled);
+                    break;
+
                 case 'updateDarkBackground':
                     this._settingsManager.setExtra('darkBackground', data.color);
                     break;
@@ -348,6 +352,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
             commentFormat: sm.getExtra('commentFormat', 'auto'),
             enableFormattingHotkeys: sm.getExtraBool('formattingHotkeys', true),
             enableQuickTyping: sm.getExtraBool('quickTyping', true),
+            enablePreviewCursorSync: sm.getExtraBool('previewCursorSync', false),
             darkBackground: sm.getExtra('darkBackground', '#1e1e1e'),
             linterMinSeverity: sm.getExtra('linterMinSeverity', 'information'),
             libraryPath: sm.getExtra('libraryPath', ''),

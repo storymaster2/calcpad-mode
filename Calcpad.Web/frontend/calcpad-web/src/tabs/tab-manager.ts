@@ -49,7 +49,16 @@ export class TabManager {
     private contentListeners = new Set<TabContentChangeListener>();
     private removedListeners = new Set<TabRemovedListener>();
 
-    constructor(private editor: monaco.editor.IStandaloneCodeEditor) {}
+    /**
+     * @param editor   The editor instance this manager swaps models on.
+     * @param idPrefix Namespacing prefix for tab ids and model URIs. Must be
+     *                 unique per editor group so two groups can't create two
+     *                 Monaco models with the same URI (which Monaco rejects).
+     */
+    constructor(
+        private editor: monaco.editor.IStandaloneCodeEditor,
+        private idPrefix: string = '',
+    ) {}
 
     // ---- Subscription ----
 
@@ -302,10 +311,30 @@ export class TabManager {
         if (t) this.activate(t.id);
     }
 
+    /**
+     * Dispose every model + subscription this manager owns. Used when an
+     * editor group is closed (unsplit). Fires the removed-listeners so the
+     * caller can clean up per-tab state (drafts) first, then clears listeners
+     * so no stale callbacks fire against the disposed editor.
+     */
+    disposeAll(): void {
+        for (const t of this.tabs) {
+            for (const l of this.removedListeners) l(t.id);
+            t.contentSub.dispose();
+            t.model.dispose();
+        }
+        this.tabs = [];
+        this._activeId = null;
+        this.listeners.clear();
+        this.activeModelListeners.clear();
+        this.contentListeners.clear();
+        this.removedListeners.clear();
+    }
+
     // ---- Internals ----
 
     private createTab(opts: { title: string; filePath: string | null; content: string }): InternalTab {
-        const id = `tab-${++this._seq}`;
+        const id = `${this.idPrefix}tab-${++this._seq}`;
         // Use a unique URI per model — Monaco needs this so markers/providers
         // can distinguish tabs. Path includes the tab id so the URI is stable
         // across rename and unique even when two tabs hold the same file path.

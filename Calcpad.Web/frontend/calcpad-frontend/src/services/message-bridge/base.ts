@@ -141,6 +141,9 @@ export abstract class BaseMessageBridge {
             case 'updateFormattingHotkeys':
                 this.setExtraSetting('formattingHotkeys', String(message.enabled));
                 break;
+            case 'updatePreviewCursorSync':
+                this.setExtraSetting('previewCursorSync', String(message.enabled));
+                break;
             case 'updateLinterMinSeverity':
                 this.setExtraSetting('linterMinSeverity', message.severity);
                 this.postToVue({ type: 'linterMinSeverityChanged', severity: message.severity });
@@ -253,6 +256,7 @@ export abstract class BaseMessageBridge {
             availableThemes: BUILTIN_THEMES,
             commentFormat: this.getExtraSetting('commentFormat') || 'auto',
             enableFormattingHotkeys: this.getExtraSetting('formattingHotkeys') !== 'false',
+            enablePreviewCursorSync: this.getExtraSetting('previewCursorSync') === 'true',
             linterMinSeverity: this.getExtraSetting('linterMinSeverity') || 'information',
             ...extras,
         });

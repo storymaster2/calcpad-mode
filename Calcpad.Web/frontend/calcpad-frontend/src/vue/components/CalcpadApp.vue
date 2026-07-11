@@ -65,6 +65,7 @@
         :initial-enable-quick-typing="enableQuickTyping"
         :initial-comment-format="commentFormat"
         :initial-enable-formatting-hotkeys="enableFormattingHotkeys"
+        :initial-enable-preview-cursor-sync="enablePreviewCursorSync"
         :initial-dark-background="darkBackground"
         :initial-linter-min-severity="linterMinSeverity"
         :initial-library-path="libraryPath"
@@ -76,6 +77,7 @@
         @update-quick-typing="handleUpdateQuickTyping"
         @update-comment-format="handleUpdateCommentFormat"
         @update-formatting-hotkeys="handleUpdateFormattingHotkeys"
+        @update-preview-cursor-sync="handleUpdatePreviewCursorSync"
         @update-dark-background="handleUpdateDarkBackground"
         @update-linter-min-severity="handleUpdateLinterMinSeverity"
         @update-library-path="handleUpdateLibraryPath"
@@ -173,6 +175,7 @@ const availableThemes = ref<ThemeInfo[]>([])
 const enableQuickTyping = ref(true)
 const commentFormat = ref('auto')
 const enableFormattingHotkeys = ref(true)
+const enablePreviewCursorSync = ref(false)
 const darkBackground = ref('#1e1e1e')
 const linterMinSeverity = ref('information')
 const libraryPath = ref('')
@@ -327,6 +330,11 @@ const handleUpdateFormattingHotkeys = (enabled: boolean) => {
   postMessage({ type: 'updateFormattingHotkeys', enabled })
 }
 
+const handleUpdatePreviewCursorSync = (enabled: boolean) => {
+  enablePreviewCursorSync.value = enabled
+  postMessage({ type: 'updatePreviewCursorSync', enabled })
+}
+
 const handleUpdateDarkBackground = (color: string) => {
   darkBackground.value = color
   postMessage({ type: 'updateDarkBackground', color })
@@ -427,6 +435,7 @@ const handleMessage = (event: MessageEvent) => {
       commentFormat.value = message.commentFormat || 'auto'
       enableFormattingHotkeys.value = message.enableFormattingHotkeys !== false
       if (typeof message.enableQuickTyping === 'boolean') enableQuickTyping.value = message.enableQuickTyping
+      if (typeof message.enablePreviewCursorSync === 'boolean') enablePreviewCursorSync.value = message.enablePreviewCursorSync
       darkBackground.value = message.darkBackground || '#1e1e1e'
       linterMinSeverity.value = message.linterMinSeverity || 'information'
       libraryPath.value = message.libraryPath || ''

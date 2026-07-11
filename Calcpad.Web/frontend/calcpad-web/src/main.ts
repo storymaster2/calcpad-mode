@@ -17,6 +17,7 @@ import {
     registerReferenceProvider,
     registerRenameProvider,
     type IncludeFileOpener,
+    type IncludeUriResolver,
 } from './editor/references';
 import { attachQuickTyper } from './editor/quick-type';
 import { attachOperatorReplacer } from './editor/operator-replacer';
@@ -440,13 +441,13 @@ async function bootstrap(): Promise<void> {
         ? (content: string) => (activeBridge as any).buildFileContext(content)
         : undefined;
 
-    // Cross-file Go-to-Definition / Find All References needs to read include
-    // files off disk. Only wire the opener up on Tauri desktop, where we
-    // have filesystem access; in the pure-web build the providers silently
-    // skip include locations. See `IncludeFileOpener` for the browser/remote
+    // Find All References needs the include files' models registered so the
+    // panel can render their snippets. Only wire this up on Tauri desktop, where
+    // we have filesystem access; in the pure-web build the provider silently
+    // skips include locations. See `IncludeFileOpener` for the browser/remote
     // follow-up.
     const openIncludeFile: IncludeFileOpener | undefined = tauriBridge
-        ? async (rawFileName: string, navigateTo?: { line: number; column: number }) => {
+        ? async (rawFileName: string) => {
             try {
                 const absPath = tauriBridge.resolveIncludePath(rawFileName);
                 let model = tabs.findModelByPath(absPath);
@@ -458,22 +459,6 @@ async function bootstrap(): Promise<void> {
                         console.warn(`[references] opened ${absPath} as ${tabId} but no model was registered`);
                         return null;
                     }
-                } else {
-                    // Tab exists but may not be the active one — switch to it
-                    // so the editor actually shows the include file.
-                    const existing = tabs.findByPath(absPath);
-                    if (existing && tabs.activeId !== existing.id) {
-                        tabs.activate(existing.id);
-                    }
-                }
-                // Standalone Monaco's openCodeEditor service doesn't reliably
-                // re-apply the selection after a provider has swapped the
-                // active model, so position the cursor explicitly here.
-                if (navigateTo) {
-                    const lineNumber = Math.max(0, navigateTo.line) + 1;
-                    const column = Math.max(0, navigateTo.column) + 1;
-                    editor.setPosition({ lineNumber, column });
-                    editor.revealPositionInCenter({ lineNumber, column });
                 }
                 return model.uri;
             } catch (err) {
@@ -482,6 +467,58 @@ async function bootstrap(): Promise<void> {
             }
         }
         : undefined;
+
+    // Go-to-Definition must stay side-effect free — Monaco calls provideDefinition
+    // on Ctrl+hover just to draw the underline, so opening a file or moving the
+    // cursor there would navigate on hover with no click. The provider gets a
+    // pure URI for the include (below); the real open + cursor move happens in
+    // the editor opener, which Monaco invokes only on an actual click / F12.
+    // We stash the resolved absolute path keyed by the exact URI string we mint
+    // so the opener recovers it verbatim (fsPath would re-case the Windows drive
+    // letter and break the tab lookup's strict path compare).
+    const includeUriToPath = new Map<string, string>();
+    const resolveIncludeUri: IncludeUriResolver | undefined = tauriBridge
+        ? (rawFileName: string): monaco.Uri | null => {
+            try {
+                const absPath = tauriBridge.resolveIncludePath(rawFileName);
+                const uri = monaco.Uri.parse(`calcpad-include:${encodeURIComponent(absPath)}`);
+                includeUriToPath.set(uri.toString(), absPath);
+                return uri;
+            } catch {
+                return null;
+            }
+        }
+        : undefined;
+
+    if (tauriBridge) {
+        const bridge = tauriBridge;
+        monaco.editor.registerEditorOpener({
+            openCodeEditor(_source, resource, selectionOrPosition) {
+                const absPath = includeUriToPath.get(resource.toString());
+                if (absPath === undefined) return false; // not an include jump — let Monaco handle it
+                return (async () => {
+                    try {
+                        const existing = tabs.findByPath(absPath);
+                        if (existing) {
+                            tabs.activate(existing.id);
+                        } else {
+                            tabs.openFile(absPath, await bridge.readFile(absPath));
+                        }
+                        if (selectionOrPosition) {
+                            const pos = 'startLineNumber' in selectionOrPosition
+                                ? { lineNumber: selectionOrPosition.startLineNumber, column: selectionOrPosition.startColumn }
+                                : { lineNumber: selectionOrPosition.lineNumber, column: selectionOrPosition.column };
+                            editor.setPosition(pos);
+                            editor.revealPositionInCenter(pos);
+                        }
+                    } catch (err) {
+                        console.warn(`[references] failed to open include ${absPath}: ${err instanceof Error ? err.message : String(err)}`);
+                    }
+                    return true;
+                })();
+            },
+        });
+    }
 
     registerSemanticTokensProvider(activeBridge.api, getFileContext);
     const diagnostics = setupDiagnostics(editor, activeBridge.api, () => {
@@ -504,7 +541,7 @@ async function bootstrap(): Promise<void> {
         });
     }
     registerHoverProvider(editorBridge);
-    registerDefinitionProvider(editorBridge, getFileContext, openIncludeFile);
+    registerDefinitionProvider(editorBridge, getFileContext, resolveIncludeUri);
     registerReferenceProvider(editorBridge, getFileContext, openIncludeFile);
     registerRenameProvider(editorBridge, getFileContext);
     registerFormatDocumentProvider(editorBridge);
@@ -702,6 +739,38 @@ async function bootstrap(): Promise<void> {
             setTimeout(refreshPreview, 50);
         }
     };
+
+    // Editor -> preview sync: scroll the preview to the cursor's source line.
+    // `force` opens the preview if it's closed (used by the right-click action);
+    // the automatic path (cursor move) only runs when the preview is already open.
+    const syncPreviewToCursor = (force: boolean) => {
+        const pos = editor.getPosition();
+        if (!pos) return;
+        if (!appInstance.isPreviewVisible()) {
+            if (!force) return;
+            appInstance.togglePreview();
+            // Wait for the first preview render + iframe listener before posting.
+            setTimeout(() => appInstance.scrollPreviewToSourceLine(pos.lineNumber), 600);
+            return;
+        }
+        appInstance.scrollPreviewToSourceLine(pos.lineNumber);
+    };
+
+    let cursorSyncTimer: ReturnType<typeof setTimeout> | null = null;
+    editor.onDidChangeCursorPosition(() => {
+        if (editorBridge.getExtraSetting('previewCursorSync') !== 'true') return;
+        if (!appInstance.isPreviewVisible()) return;
+        if (cursorSyncTimer) clearTimeout(cursorSyncTimer);
+        cursorSyncTimer = setTimeout(() => syncPreviewToCursor(false), 150);
+    });
+
+    editor.addAction({
+        id: 'calcpad.focusPreviewToLine',
+        label: 'Focus Preview to Line',
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: () => syncPreviewToCursor(true),
+    });
 
     // Tauri-specific: native menu clicks + file operations
     if (isTauri && tauriBridge) {

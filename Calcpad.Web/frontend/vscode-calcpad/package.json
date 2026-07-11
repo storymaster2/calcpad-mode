@@ -239,6 +239,11 @@
         "icon": "$(eye)"
       },
       {
+        "command": "vscode-calcpad.focusPreviewToLine",
+        "title": "CalcPad: Focus Preview to Line",
+        "icon": "$(target)"
+      },
+      {
         "command": "vscode-calcpad.viewWebviewSource",
         "title": "CalcPad: View Webview Source HTML"
       },
@@ -411,6 +416,11 @@
           "command": "vscode-calcpad.viewWebviewSource",
           "when": "resourceLangId == calcpad || resourceLangId == plaintext",
           "group": "calcpad@2"
+        },
+        {
+          "command": "vscode-calcpad.focusPreviewToLine",
+          "when": "resourceLangId == calcpad || resourceLangId == plaintext",
+          "group": "calcpad@3"
         }
       ]
     },

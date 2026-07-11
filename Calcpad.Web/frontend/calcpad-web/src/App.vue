@@ -24,37 +24,75 @@
     <div class="editor-pane">
       <div class="editor-toolbar">
         <span class="spacer"></span>
+        <button
+          class="toolbar-btn"
+          @click="onToggleSplit"
+          :title="isSplit ? 'Merge editor groups' : 'Split editor down (Ctrl+\\)'"
+        >
+          {{ isSplit ? 'Unsplit' : 'Split ⬓' }}
+        </button>
         <button class="toolbar-btn" @click="togglePreview" title="Preview HTML">
           {{ previewVisible ? 'Hide Preview' : 'Preview' }}
         </button>
       </div>
-      <!-- Tab strip (VS Code-style). Hidden until at least one tab is registered. -->
-      <div v-if="tabs.length > 0" class="tab-strip" role="tablist" @contextmenu.prevent>
-        <div
-          v-for="tab in tabs"
-          :key="tab.id"
-          class="tab"
-          :class="{ active: tab.isActive, dirty: tab.dirty }"
-          role="tab"
-          :aria-selected="tab.isActive"
-          :title="tab.filePath || tab.title"
-          @mousedown.left="onTabClick(tab.id)"
-          @mousedown.middle.prevent="onTabClose(tab.id)"
-          @contextmenu.prevent="onTabContextMenu($event, tab.id)"
-        >
-          <span class="tab-title">{{ tab.title }}</span>
-          <span v-if="tab.dirty" class="tab-dirty-dot" :title="'Unsaved changes'">●</span>
-          <button
-            class="tab-close"
-            :title="tab.dirty ? 'Close (unsaved changes)' : 'Close'"
-            @mousedown.stop
-            @click.stop="onTabClose(tab.id)"
+
+      <!-- Editor groups, stacked top/bottom. One group normally; two when split. -->
+      <div class="editor-groups">
+        <template v-for="(group, gi) in groups" :key="group.id">
+          <div
+            class="editor-group"
+            :class="{ 'active-group': group.id === activeGroupId && isSplit }"
+            :style="editorGroupStyle(gi)"
+            @mousedown="onGroupFocus(group.id)"
           >
-            ✕
-          </button>
-        </div>
-        <button class="tab-new" title="New tab (Ctrl+T)" @click="onNewTab">+</button>
+            <!-- Tab strip (VS Code-style). Hidden until at least one tab is registered. -->
+            <div v-if="group.tabs.length > 0" class="tab-strip" role="tablist" @contextmenu.prevent>
+              <div
+                v-for="tab in group.tabs"
+                :key="tab.id"
+                class="tab"
+                :class="{ active: tab.isActive, dirty: tab.dirty }"
+                role="tab"
+                :aria-selected="tab.isActive"
+                :title="tab.filePath || tab.title"
+                @mousedown.left="onTabClick(group.id, tab.id)"
+                @mousedown.middle.prevent="onTabClose(group.id, tab.id)"
+                @contextmenu.prevent="onTabContextMenu($event, group.id, tab.id)"
+              >
+                <span class="tab-title">{{ tab.title }}</span>
+                <span v-if="tab.dirty" class="tab-dirty-dot" :title="'Unsaved changes'">●</span>
+                <button
+                  class="tab-close"
+                  :title="tab.dirty ? 'Close (unsaved changes)' : 'Close'"
+                  @mousedown.stop
+                  @click.stop="onTabClose(group.id, tab.id)"
+                >
+                  ✕
+                </button>
+              </div>
+              <button class="tab-new" title="New tab (Ctrl+T)" @click="onNewTab(group.id)">+</button>
+              <span class="spacer"></span>
+              <button
+                v-if="isSplit"
+                class="group-close"
+                title="Close this editor group"
+                @click="onCloseGroup(group.id)"
+              >✕</button>
+            </div>
+            <div class="editor-container" :ref="el => setEditorRef(group.id, el)"></div>
+          </div>
+          <!-- Horizontal divider between the two stacked groups. -->
+          <div
+            v-if="gi === 0 && isSplit"
+            class="group-divider"
+            :class="{ dragging: draggingEditorDivider }"
+            @mousedown="onEditorDividerMouseDown"
+            role="separator"
+            aria-orientation="horizontal"
+          ></div>
+        </template>
       </div>
+
       <!-- Right-click context menu for tabs. Rendered outside .tab-strip so it
            can be positioned absolutely without being clipped. @mousedown.stop
            keeps the document-level closer from firing before the button's
@@ -69,7 +107,6 @@
         <button class="tab-context-item" @click="onContextClose">Close</button>
         <button
           class="tab-context-item"
-          :disabled="tabs.length <= 1"
           @click="onContextCloseOthers"
         >Close Others</button>
         <button class="tab-context-item" @click="onContextCloseAll">Close All</button>
@@ -86,8 +123,8 @@
           </button>
         </template>
       </div>
-      <div ref="editorContainer" class="editor-container"></div>
-      <!-- Bottom panel (Problems / Output) -->
+
+      <!-- Bottom panel (Problems / Output) — reflects the ACTIVE group. -->
       <div v-if="bottomPanelOpen" class="bottom-panel">
         <div class="bottom-panel-header">
           <button
@@ -117,6 +154,9 @@
               {{ OUTPUT_CHANNEL_LABELS[ch] }}
             </option>
           </select>
+          <span v-if="isSplit" class="panel-scope" :title="'Showing the active editor group'">
+            {{ activeGroupLabel }}
+          </span>
           <span class="spacer"></span>
           <button v-if="activeBottomTab === 'output'" class="toolbar-btn" @click="clearOutput" title="Clear Output">⌫</button>
           <button class="toolbar-btn" @click="bottomPanelOpen = false">✕</button>
@@ -170,6 +210,7 @@
         </span>
       </div>
     </div>
+
     <div v-if="previewVisible" class="preview-pane">
       <div class="preview-toolbar">
         <span>Preview</span>
@@ -190,12 +231,28 @@
         <span class="spacer"></span>
         <button class="toolbar-btn" @click="togglePreview">✕</button>
       </div>
-      <!-- allow-scripts is required so the injected console-interception
-           script (and any user #HTML script) actually runs in the iframe.
-           Without it the preview is silent — matches the VS Code webview
-           behaviour where "hello!" / `console.log(...)` reach the Output
-           panel via the previewConsole bridge in injectPreviewConsole. -->
-      <iframe ref="previewFrame" class="preview-frame" sandbox="allow-same-origin allow-scripts"></iframe>
+      <!-- One preview iframe per editor group, stacked to mirror the editor
+           split. allow-scripts is required so the injected console-interception
+           script (and any user #HTML script) actually runs in the iframe. -->
+      <div class="preview-frames">
+        <template v-for="(group, gi) in groups" :key="'pv-' + group.id">
+          <iframe
+            class="preview-frame"
+            :class="{ 'active-group': group.id === activeGroupId && isSplit }"
+            :style="editorGroupStyle(gi)"
+            :ref="el => setPreviewRef(group.id, el)"
+            sandbox="allow-same-origin allow-scripts"
+          ></iframe>
+          <div
+            v-if="gi === 0 && isSplit"
+            class="group-divider"
+            :class="{ dragging: draggingEditorDivider }"
+            @mousedown="onEditorDividerMouseDown"
+            role="separator"
+            aria-orientation="horizontal"
+          ></div>
+        </template>
+      </div>
     </div>
 
     <!-- Confirm dialog. HTML modal instead of a native dialog for cross-platform
@@ -254,12 +311,14 @@ export interface ProblemItem {
 
 export type PreviewMode = 'wrapped' | 'unwrapped'
 
+// Preview mode is shared across both groups. `onGotoProblem` targets the
+// active group's editor (main.ts resolves it).
 const onGotoProblem = ref<((problem: ProblemItem) => void) | null>(null)
 const onPreviewToggled = ref<((visible: boolean) => void) | null>(null)
 const onPreviewModeChanged = ref<((mode: PreviewMode) => void) | null>(null)
 const previewMode = ref<PreviewMode>('wrapped')
 
-// ---- Tab strip ----
+// ---- Tab strip / editor groups ----
 export interface TabUiState {
   id: string
   title: string
@@ -268,45 +327,164 @@ export interface TabUiState {
   isActive: boolean
 }
 
-const tabs = ref<TabUiState[]>([])
-const onTabActivate = ref<((id: string) => void) | null>(null)
-const onTabCloseRequest = ref<((id: string) => void) | null>(null)
-const onNewTabRequest = ref<(() => void) | null>(null)
-const onTabCloseOthersRequest = ref<((id: string) => void) | null>(null)
-const onTabCloseAllRequest = ref<(() => void) | null>(null)
-const onTabOpenContainingFolderRequest = ref<((id: string) => void) | null>(null)
-const onTabCopyFullPathRequest = ref<((id: string) => void) | null>(null)
-const onTabCopyRelativePathRequest = ref<((id: string) => void) | null>(null)
+interface GroupUi {
+  id: string
+  tabs: TabUiState[]
+  problems: ProblemItem[]
+  errorCount: number
+  warningCount: number
+  infoCount: number
+}
+
+function emptyGroup(id: string): GroupUi {
+  return { id, tabs: [], problems: [], errorCount: 0, warningCount: 0, infoCount: 0 }
+}
+
+// Seed with the primary group. main.ts adds a second on split.
+const groups = ref<GroupUi[]>([emptyGroup('g0')])
+const activeGroupId = ref<string>('g0')
+
+const isSplit = computed(() => groups.value.length > 1)
+const activeGroup = computed(() => groups.value.find(g => g.id === activeGroupId.value) ?? groups.value[0])
+const problems = computed(() => activeGroup.value?.problems ?? [])
+const errorCount = computed(() => activeGroup.value?.errorCount ?? 0)
+const warningCount = computed(() => activeGroup.value?.warningCount ?? 0)
+const infoCount = computed(() => activeGroup.value?.infoCount ?? 0)
+const activeGroupLabel = computed(() => {
+  const i = groups.value.findIndex(g => g.id === activeGroupId.value)
+  return i === 0 ? 'Top' : 'Bottom'
+})
+
+// DOM element registries (function refs). main.ts reads these to create the
+// Monaco editor / write preview HTML for each group.
+const editorEls = new Map<string, HTMLElement>()
+const previewEls = new Map<string, HTMLIFrameElement>()
+
+function setEditorRef(id: string, el: unknown): void {
+  if (el instanceof HTMLElement) editorEls.set(id, el)
+  else editorEls.delete(id)
+}
+function setPreviewRef(id: string, el: unknown): void {
+  if (el instanceof HTMLIFrameElement) previewEls.set(id, el)
+  else previewEls.delete(id)
+}
+function getEditorContainer(id: string): HTMLElement | null {
+  return editorEls.get(id) ?? null
+}
+
+// ---- Split ratio (top group's fraction of the stack height) ----
+const editorSplitRatio = ref<number>(0.5)
+const draggingEditorDivider = ref(false)
+
+function editorGroupStyle(index: number): Record<string, string> {
+  if (!isSplit.value) return { flex: '1 1 0', minHeight: '0' }
+  if (index === 0) return { flex: `0 0 ${editorSplitRatio.value * 100}%`, minHeight: '0' }
+  return { flex: '1 1 0', minHeight: '0' }
+}
+
+function onEditorDividerMouseDown(e: MouseEvent): void {
+  e.preventDefault()
+  draggingEditorDivider.value = true
+  const container = (e.currentTarget as HTMLElement).parentElement
+  if (!container) return
+  const rect = container.getBoundingClientRect()
+  const onMove = (ev: MouseEvent) => {
+    const frac = (ev.clientY - rect.top) / rect.height
+    editorSplitRatio.value = Math.min(0.85, Math.max(0.15, frac))
+  }
+  const onUp = () => {
+    draggingEditorDivider.value = false
+    window.removeEventListener('mousemove', onMove)
+    window.removeEventListener('mouseup', onUp)
+  }
+  window.addEventListener('mousemove', onMove)
+  window.addEventListener('mouseup', onUp)
+}
+
+// ---- Group lifecycle (driven by main.ts) ----
+const onSplitRequest = ref<(() => void) | null>(null)
+const onCloseGroupRequest = ref<((groupId: string) => void) | null>(null)
+const onGroupFocusRequest = ref<((groupId: string) => void) | null>(null)
+
+function addGroup(id: string): void {
+  if (groups.value.some(g => g.id === id)) return
+  groups.value.push(emptyGroup(id))
+}
+function removeGroup(id: string): void {
+  const idx = groups.value.findIndex(g => g.id === id)
+  if (idx < 0) return
+  groups.value.splice(idx, 1)
+  editorEls.delete(id)
+  previewEls.delete(id)
+  if (activeGroupId.value === id) {
+    activeGroupId.value = groups.value[0]?.id ?? 'g0'
+  }
+}
+function setActiveGroup(id: string): void {
+  if (groups.value.some(g => g.id === id)) activeGroupId.value = id
+}
+function groupIds(): string[] {
+  return groups.value.map(g => g.id)
+}
+
+function onToggleSplit(): void {
+  if (isSplit.value) {
+    // Merge: close the non-active group (main.ts prompts for dirty tabs).
+    const other = groups.value.find(g => g.id !== activeGroupId.value)
+    if (other) onCloseGroupRequest.value?.(other.id)
+  } else {
+    onSplitRequest.value?.()
+  }
+}
+function onCloseGroup(groupId: string): void {
+  onCloseGroupRequest.value?.(groupId)
+}
+function onGroupFocus(groupId: string): void {
+  if (activeGroupId.value !== groupId) onGroupFocusRequest.value?.(groupId)
+}
+
+// ---- Tab-strip callbacks (per group) ----
+const onTabActivate = ref<((groupId: string, id: string) => void) | null>(null)
+const onTabCloseRequest = ref<((groupId: string, id: string) => void) | null>(null)
+const onNewTabRequest = ref<((groupId: string) => void) | null>(null)
+const onTabCloseOthersRequest = ref<((groupId: string, id: string) => void) | null>(null)
+const onTabCloseAllRequest = ref<((groupId: string) => void) | null>(null)
+const onTabOpenContainingFolderRequest = ref<((groupId: string, id: string) => void) | null>(null)
+const onTabCopyFullPathRequest = ref<((groupId: string, id: string) => void) | null>(null)
+const onTabCopyRelativePathRequest = ref<((groupId: string, id: string) => void) | null>(null)
 
 interface TabContextMenuState {
   x: number
   y: number
+  groupId: string
   tabId: string
   filePath: string | null
 }
 const tabContextMenu = ref<TabContextMenuState | null>(null)
 
-function setTabs(next: TabUiState[]): void {
-  tabs.value = next
+function setTabs(groupId: string, next: TabUiState[]): void {
+  const g = groups.value.find(g => g.id === groupId)
+  if (g) g.tabs = next
 }
 
-function onTabClick(id: string): void {
-  onTabActivate.value?.(id)
+function onTabClick(groupId: string, id: string): void {
+  onTabActivate.value?.(groupId, id)
 }
 
-function onTabClose(id: string): void {
-  onTabCloseRequest.value?.(id)
+function onTabClose(groupId: string, id: string): void {
+  onTabCloseRequest.value?.(groupId, id)
 }
 
-function onNewTab(): void {
-  onNewTabRequest.value?.()
+function onNewTab(groupId: string): void {
+  onNewTabRequest.value?.(groupId)
 }
 
-function onTabContextMenu(e: MouseEvent, tabId: string): void {
-  const tab = tabs.value.find(t => t.id === tabId)
+function onTabContextMenu(e: MouseEvent, groupId: string, tabId: string): void {
+  const tab = groups.value.find(g => g.id === groupId)?.tabs.find(t => t.id === tabId)
   tabContextMenu.value = {
     x: e.clientX,
     y: e.clientY,
+    groupId,
     tabId,
     filePath: tab?.filePath ?? null,
   }
@@ -319,41 +497,42 @@ function closeTabContextMenu(): void {
 function onContextClose(): void {
   const m = tabContextMenu.value
   if (!m) return
-  onTabCloseRequest.value?.(m.tabId)
+  onTabCloseRequest.value?.(m.groupId, m.tabId)
   closeTabContextMenu()
 }
 
 function onContextCloseOthers(): void {
   const m = tabContextMenu.value
   if (!m) return
-  onTabCloseOthersRequest.value?.(m.tabId)
+  onTabCloseOthersRequest.value?.(m.groupId, m.tabId)
   closeTabContextMenu()
 }
 
 function onContextCloseAll(): void {
-  if (!tabContextMenu.value) return
-  onTabCloseAllRequest.value?.()
+  const m = tabContextMenu.value
+  if (!m) return
+  onTabCloseAllRequest.value?.(m.groupId)
   closeTabContextMenu()
 }
 
 function onContextOpenContainingFolder(): void {
   const m = tabContextMenu.value
   if (!m) return
-  onTabOpenContainingFolderRequest.value?.(m.tabId)
+  onTabOpenContainingFolderRequest.value?.(m.groupId, m.tabId)
   closeTabContextMenu()
 }
 
 function onContextCopyFullPath(): void {
   const m = tabContextMenu.value
   if (!m) return
-  onTabCopyFullPathRequest.value?.(m.tabId)
+  onTabCopyFullPathRequest.value?.(m.groupId, m.tabId)
   closeTabContextMenu()
 }
 
 function onContextCopyRelativePath(): void {
   const m = tabContextMenu.value
   if (!m) return
-  onTabCopyRelativePathRequest.value?.(m.tabId)
+  onTabCopyRelativePathRequest.value?.(m.groupId, m.tabId)
   closeTabContextMenu()
 }
 
@@ -367,17 +546,11 @@ function gotoProblem(problem: ProblemItem): void {
   onGotoProblem.value?.(problem)
 }
 
-const editorContainer = ref<HTMLElement | null>(null)
-const previewFrame = ref<HTMLIFrameElement | null>(null)
 const serverConnected = ref(false)
 const sidebarVisible = ref(true)
 const previewVisible = ref(false)
 const bottomPanelOpen = ref(false)
 const activeBottomTab = ref<'problems' | 'output'>('problems')
-const problems = ref<ProblemItem[]>([])
-const errorCount = ref(0)
-const warningCount = ref(0)
-const infoCount = ref(0)
 
 export type OutputChannel = 'app' | 'preview' | 'server'
 
@@ -387,6 +560,8 @@ export interface OutputLine {
   label: string
   message: string
   channel: OutputChannel
+  /** For the per-group 'preview' channel: which group's preview emitted it. */
+  groupId?: string
 }
 
 const OUTPUT_CHANNEL_LABELS: Record<OutputChannel, string> = {
@@ -399,8 +574,13 @@ const outputLines = ref<OutputLine[]>([])
 const outputList = ref<HTMLElement | null>(null)
 const activeOutputChannel = ref<OutputChannel>('app')
 
+// The 'preview' channel is per-group (each split preview has its own console),
+// so filter it by the active group. 'app' / 'server' are global.
 const filteredOutputLines = computed(() =>
-  outputLines.value.filter(l => l.channel === activeOutputChannel.value)
+  outputLines.value.filter(l =>
+    l.channel === activeOutputChannel.value &&
+    (l.channel !== 'preview' || !l.groupId || l.groupId === activeGroupId.value)
+  )
 )
 
 function openBottomTab(tab: 'problems' | 'output'): void {
@@ -416,24 +596,25 @@ function appendOutput(
   level: 'info' | 'warn' | 'error' | 'debug',
   message: string,
   channel: OutputChannel = 'app',
+  groupId?: string,
 ): void {
   const now = new Date()
   const time = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
   const labels: Record<string, string> = { info: 'INFO', warn: 'WARN', error: 'ERROR', debug: 'DEBUG' }
   // Sample scroll position BEFORE mutating outputLines so the new line's
   // height doesn't inflate scrollHeight and mask a user-initiated scroll-up.
-  // If the user is pinned to (or within a few px of) the bottom, keep
-  // auto-scrolling; otherwise leave the viewport alone so they can read/copy.
   const el = outputList.value
   const wasAtBottom = el
     ? (el.scrollHeight - el.scrollTop - el.clientHeight) <= 4
     : true
-  outputLines.value.push({ time, level, label: labels[level] ?? level, message, channel })
+  outputLines.value.push({ time, level, label: labels[level] ?? level, message, channel, groupId })
   // Cap at 1000 lines (across all channels combined)
   if (outputLines.value.length > 1000) {
     outputLines.value.splice(0, outputLines.value.length - 1000)
   }
-  if (wasAtBottom && channel === activeOutputChannel.value) {
+  const visible = channel === activeOutputChannel.value &&
+    (channel !== 'preview' || !groupId || groupId === activeGroupId.value)
+  if (wasAtBottom && visible) {
     nextTick(() => {
       const target = outputList.value
       if (target) target.scrollTop = target.scrollHeight
@@ -520,14 +701,21 @@ function getPreviewMode(): PreviewMode {
   return previewMode.value
 }
 
-function setPreviewHtml(html: string, scrollToLine?: number): void {
-  const frame = previewFrame.value
+function setPreviewHtml(groupId: string, html: string, scrollToLine?: number): void {
+  const frame = previewEls.get(groupId)
   if (!frame) return
   const doc = frame.contentDocument
   if (!doc) return
   doc.open()
-  doc.write(injectPreviewConsole(injectLineLinks(injectScrollbarStyles(html), scrollToLine)))
+  doc.write(injectPreviewConsole(injectLineLinks(injectScrollbarStyles(html), scrollToLine, groupId), groupId))
   doc.close()
+}
+
+// Scroll a group's preview to a source line (editor -> preview sync). Posts to
+// the listener injected by injectLineLinks; no-op if that preview isn't shown.
+function scrollPreviewToSourceLine(groupId: string, line: number): void {
+  const frame = previewEls.get(groupId)
+  frame?.contentWindow?.postMessage({ type: 'scrollPreviewToLine', line }, '*')
 }
 
 // Give the preview iframe a clearly visible vertical scrollbar. The default
@@ -551,11 +739,9 @@ function injectScrollbarStyles(html: string): string {
     '::-webkit-scrollbar-corner { background: transparent; }',
     // Pin the arrow to its own line (position: relative on .line) and extend it
     // across the body's left margin so the whole gutter is a hover+click target.
-    // Each arrow is always in the DOM at opacity 0 so pointing at the margin
-    // reveals it directly — no need to hover the line text first. The JS still
-    // toggles `display` for scroll-hides, but `!important` keeps the anchor
-    // interactive whenever visible.
     '.line { position: relative; }',
+    // Brief flash when the preview is focused to the editor's cursor line.
+    '.cpd-line-focus { background-color: rgba(120,170,255,0.28) !important; transition: background-color 0.3s ease !important; }',
     '.lineLink { left: -3em !important; top: 0 !important; bottom: 0 !important; width: 3em !important; height: auto !important; font-size: 16pt !important; padding-right: 4pt !important; box-sizing: border-box !important; display: flex !important; align-items: center !important; justify-content: flex-end !important; opacity: 0 !important; transition: opacity 0.15s !important; }',
     '.lineLink:hover { opacity: 1 !important; }',
     '</' + 'style>',
@@ -567,27 +753,18 @@ function injectScrollbarStyles(html: string): string {
   return style + html
 }
 
-// Inject the line-link behaviour ported from vscode-calcpad
-// (getErrorNavigationScript's a[data-text] binding + getLineLinkScript):
-//  - a[data-text] anchors (error links + .line-num code anchors) post
-//    'navigateToLine'. isCodeView (any .line-num present) or a .line-num class
-//    marks the target as a 'source' line; otherwise it's an expanded 'output'
-//    line — the discriminator main.ts uses for the macro two-step.
-//  - each wrapped-view .line gets a hover '←' link posting an 'output' line.
-//  - .roundBox error chips scroll the preview to their output line.
-//  - an optional baked-in scrollToLine target is scrolled into view on load,
-//    avoiding a postMessage race with the iframe reload.
-function injectLineLinks(html: string, scrollToLine?: number): string {
+// Inject the line-link behaviour ported from vscode-calcpad. Posted messages
+// carry `groupId` so main.ts routes navigation to the group that owns this
+// preview (see App.vue's per-group iframes).
+function injectLineLinks(html: string, scrollToLine: number | undefined, groupId: string): string {
   const scrollTarget = typeof scrollToLine === 'number' ? String(scrollToLine) : 'null'
+  const gid = JSON.stringify(groupId)
   const body = [
     "document.addEventListener('DOMContentLoaded', function() {",
+    "  var GROUP_ID = " + gid + ";",
     "  var post = function(line, lineType) {",
-    "    try { window.parent.postMessage({ type: 'navigateToLine', line: line, lineType: lineType }, '*'); } catch (e) {}",
+    "    try { window.parent.postMessage({ type: 'navigateToLine', line: line, lineType: lineType, groupId: GROUP_ID }, '*'); } catch (e) {}",
     "  };",
-    // Error links + line-num anchors: the code view (unwrapped output, or the
-    // wrapped view's error fallback) renders .line-num anchors whose data-text
-    // is already a source line. Tag each click so main.ts only does the
-    // output->unwrapped two-step for real output lines.
     "  var isCodeView = !!document.querySelector('.line-num');",
     "  document.querySelectorAll('a[data-text]').forEach(function(link) {",
     "    link.addEventListener('click', function(e) {",
@@ -598,18 +775,12 @@ function injectLineLinks(html: string, scrollToLine?: number): string {
     "      post(parseInt(n, 10), lineType);",
     "    });",
     "  });",
-    // Hover '←' links on each wrapped-view line. Prefer data-source-line
-    // (set by Calcpad.Core when the line came from a macro/include expansion)
-    // so the arrow navigates the editor straight to the source line and skips
-    // the wrapped->unwrapped two-step. Error links keep the 'output' path.
     "  function hideAllLineLinks() {",
     "    document.querySelectorAll('.lineLink').forEach(function(l) { l.style.display = 'none'; });",
     "  }",
     "  document.querySelectorAll('.line').forEach(function(el) {",
     "    var id = el.id || '';",
     "    var n = id.indexOf('line-') === 0 ? id.slice(5) : '';",
-    // Loop iterations past the first drop the id (it's the scroll anchor and must
-    // stay unique) but keep data-source-line, so key off the source line here.
     "    var src = el.getAttribute('data-source-line') || n;",
     "    if (!src) return;",
     "    var link = document.createElement('a');",
@@ -630,10 +801,6 @@ function injectLineLinks(html: string, scrollToLine?: number): string {
     "    });",
     "  });",
     "  window.addEventListener('scroll', hideAllLineLinks);",
-    // Error-summary chips: scroll the preview to the referenced error's own
-    // element. In loop bodies the source-line id belongs to the first
-    // iteration (which may not be an error), so we key off the unique
-    // per-error id emitted by ExpressionParser when available.
     "  document.querySelectorAll('.roundBox').forEach(function(box) {",
     "    box.addEventListener('click', function() {",
     "      var errId = box.getAttribute('data-error');",
@@ -650,6 +817,33 @@ function injectLineLinks(html: string, scrollToLine?: number): string {
     "    var target = document.getElementById('line-' + scrollToLine);",
     "    if (target) target.scrollIntoView({ block: 'center' });",
     "  }",
+    "  var focusTimer = null;",
+    "  function focusPreviewLine(line) {",
+    "    if (typeof line !== 'number' || isNaN(line)) return;",
+    "    var target = document.querySelector('[data-source-line=\"' + line + '\"]');",
+    "    if (!target) {",
+    "      var anchor = document.querySelector('a.line-num[data-text=\"' + line + '\"]');",
+    "      if (anchor) target = anchor.closest('.line-text') || anchor;",
+    "    }",
+    "    if (!target) {",
+    "      var best = null, bestSrc = -1;",
+    "      document.querySelectorAll('[data-source-line]').forEach(function(el) {",
+    "        var s = parseInt(el.getAttribute('data-source-line'), 10);",
+    "        if (!isNaN(s) && s <= line && s > bestSrc) { bestSrc = s; best = el; }",
+    "      });",
+    "      target = best;",
+    "    }",
+    "    if (!target) return;",
+    "    target.scrollIntoView({ block: 'center' });",
+    "    document.querySelectorAll('.cpd-line-focus').forEach(function(el) { el.classList.remove('cpd-line-focus'); });",
+    "    target.classList.add('cpd-line-focus');",
+    "    if (focusTimer) clearTimeout(focusTimer);",
+    "    focusTimer = setTimeout(function() { target.classList.remove('cpd-line-focus'); }, 1200);",
+    "  }",
+    "  window.addEventListener('message', function(e) {",
+    "    var d = e.data;",
+    "    if (d && d.type === 'scrollPreviewToLine') focusPreviewLine(d.line);",
+    "  });",
     "});",
   ].join('\n')
   const script = '<' + 'script>' + body + '</' + 'script>'
@@ -661,22 +855,22 @@ function injectLineLinks(html: string, scrollToLine?: number): string {
 }
 
 // Forward iframe console.* + uncaught errors to the parent window via
-// postMessage. The desktop's main.ts listens for these and routes them
-// into the Output panel.
-function injectPreviewConsole(html: string): string {
-  // Body of the script tag. Tags themselves are assembled at runtime to avoid
-  // the Vue SFC parser interpreting them as the closing tag of <script setup>.
+// postMessage, tagged with groupId so the Output panel's "Preview Console"
+// channel can be split by the active editor group.
+function injectPreviewConsole(html: string, groupId: string): string {
+  const gid = JSON.stringify(groupId)
   const body = [
     '(function() {',
     '  if (window.__calcpadConsolePatched) return;',
     '  window.__calcpadConsolePatched = true;',
+    '  var GROUP_ID = ' + gid + ';',
     '  var post = function(level, args) {',
     '    var msg = Array.from(args).map(function(a) {',
     '      if (a instanceof Error) return a.stack || a.message;',
     "      if (typeof a === 'object') { try { return JSON.stringify(a); } catch (e) { return String(a); } }",
     '      return String(a);',
     "    }).join(' ');",
-    "    try { window.parent.postMessage({ type: 'previewConsole', level: level, message: msg }, '*'); } catch (e) {}",
+    "    try { window.parent.postMessage({ type: 'previewConsole', level: level, message: msg, groupId: GROUP_ID }, '*'); } catch (e) {}",
     '  };',
     "  ['log','info','debug','warn','error'].forEach(function(level) {",
     '    var orig = console[level];',
@@ -689,11 +883,6 @@ function injectPreviewConsole(html: string): string {
     '    var r = e.reason; var d = r && (r.stack || r.message) || String(r);',
     "    post('error', ['[Unhandled Rejection] ' + d]);",
     '  });',
-    // Heartbeat — mirrors the VS Code webview\'s "console interception
-    // initialized" announcement so the Preview Console channel always
-    // shows at least one line per render. Goes through console.log so the
-    // patched console forwards it via the same postMessage path as
-    // anything the user logs.
     "  console.log('CalcPad preview console interception initialized');",
     '})();',
   ].join('\n')
@@ -707,11 +896,13 @@ function injectPreviewConsole(html: string): string {
   return script + html
 }
 
-function setProblems(markers: ProblemItem[]): void {
-  problems.value = markers
-  errorCount.value = markers.filter(m => m.severity === 8).length
-  warningCount.value = markers.filter(m => m.severity === 4).length
-  infoCount.value = markers.filter(m => m.severity === 2).length
+function setProblems(groupId: string, markers: ProblemItem[]): void {
+  const g = groups.value.find(g => g.id === groupId)
+  if (!g) return
+  g.problems = markers
+  g.errorCount = markers.filter(m => m.severity === 8).length
+  g.warningCount = markers.filter(m => m.severity === 4).length
+  g.infoCount = markers.filter(m => m.severity === 2).length
 }
 
 onMounted(async () => {
@@ -818,11 +1009,21 @@ function resolveQuickPick(index: number | null): void {
 }
 
 defineExpose({
-  editorContainer,
+  // group lifecycle
+  addGroup,
+  removeGroup,
+  setActiveGroup,
+  groupIds,
+  getEditorContainer,
+  onSplitRequest,
+  onCloseGroupRequest,
+  onGroupFocusRequest,
+  // panels / preview
   toggleSidebar,
   togglePreview,
   isPreviewVisible,
   setPreviewHtml,
+  scrollPreviewToSourceLine,
   setProblems,
   onGotoProblem,
   onPreviewToggled,
@@ -834,6 +1035,7 @@ defineExpose({
   showOutput,
   showConfirm,
   showQuickPick,
+  // tabs
   setTabs,
   onTabActivate,
   onTabCloseRequest,
