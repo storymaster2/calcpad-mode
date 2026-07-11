@@ -1,5 +1,11 @@
 {
     "editor.formatOnSave": false,
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "typescript.suggest.autoImports": true,
+    "typescript.validate.enable": true,
+    "files.associations": {
+        "*.vue": "vue"
+    },
     "files.trimTrailingWhitespace": true,
     "files.trimFinalNewlines": true,
     "files.insertFinalNewline": true,

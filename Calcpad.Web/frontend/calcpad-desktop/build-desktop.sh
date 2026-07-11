@@ -11,9 +11,11 @@
 #      macOS, deb/AppImage on Linux) into src-tauri/target/release/bundle/.
 #
 # Usage:
-#   ./build-desktop.sh [--rid=<rid>] [--target=<triple>]
+#   ./build-desktop.sh [--rid=<rid>] [--target=<triple>] [--bundles=<list>]
 #     --rid: dotnet publish RID (default: host)
 #     --target: cargo target triple for `tauri build --target` (default: host)
+#     --bundles: comma-separated tauri bundle types, e.g. deb,appimage,dmg
+#                (default: all formats configured for the platform)
 
 set -euo pipefail
 
@@ -24,11 +26,13 @@ BINARIES_DIR="$SCRIPT_DIR/src-tauri/binaries"
 
 DOTNET_RID=""
 CARGO_TARGET=""
+BUNDLES=""
 for arg in "$@"; do
     case "$arg" in
-        --rid=*)    DOTNET_RID="${arg#*=}" ;;
-        --target=*) CARGO_TARGET="${arg#*=}" ;;
-        *)          echo "Unknown option: $arg" >&2; exit 1 ;;
+        --rid=*)     DOTNET_RID="${arg#*=}" ;;
+        --target=*)  CARGO_TARGET="${arg#*=}" ;;
+        --bundles=*) BUNDLES="${arg#*=}" ;;
+        *)           echo "Unknown option: $arg" >&2; exit 1 ;;
     esac
 done
 
@@ -98,4 +102,9 @@ chmod +x "$DEST_EXE"
 echo ">> Sidecar staged at $DEST_EXE"
 
 cd "$SCRIPT_DIR"
-npx tauri build --config src-tauri/tauri.linux.conf.json --target "$CARGO_TARGET"
+if [[ -n "$BUNDLES" ]]; then
+    IFS=',' read -ra BUNDLE_LIST <<< "$BUNDLES"
+    npx tauri build --config src-tauri/tauri.linux.conf.json --target "$CARGO_TARGET" --bundles "${BUNDLE_LIST[@]}"
+else
+    npx tauri build --config src-tauri/tauri.linux.conf.json --target "$CARGO_TARGET"
+fi

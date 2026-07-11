@@ -13,14 +13,22 @@
             "stopAtEntry": false
         },
         {
-            "name": "Server: Run",
-            "type": "node",
+            "name": "Server: Debug (.NET)",
+            "type": "coreclr",
             "request": "launch",
-            "runtimeExecutable": "bash",
-            "runtimeArgs": [
-                "${workspaceFolder}/Calcpad.Web/backend/scripts/restart-dev-server.sh"
-            ],
-            "console": "integratedTerminal"
+            "preLaunchTask": "Server: Build (.NET)",
+            "program": "${workspaceFolder}/Calcpad.Web/backend/bin/Debug/net10.0/Calcpad.Server.dll",
+            "args": ["--urls", "http://127.0.0.1:9420"],
+            "cwd": "${workspaceFolder}/Calcpad.Web/backend",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s/swagger"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
         },
         {
             "name": "Extension: Run",
@@ -35,30 +43,6 @@
             "preLaunchTask": "Extension: Compile & Sync Server"
         },
         {
-            "name": "Extension + Server: Run",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
-            ],
-            "preLaunchTask": "Extension + Server: Compile & Start"
-        },
-        {
-            "name": "Extension + Bundled Server",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
-            ],
-            "preLaunchTask": "Extension: Compile + Deploy Bundle"
-        },
-        {
             // `tauri dev` hot-reloads the Vue frontend and rebuilds the Rust
             // shell on change. Sidecar staging runs via preLaunchTask so the
             // ShellExt lookup in lib.rs resolves.
@@ -70,27 +54,6 @@
             "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop",
             "console": "integratedTerminal",
             "preLaunchTask": "Desktop: Stage Sidecar"
-        },
-        {
-            // Runs the bundled release binary produced by build-desktop.sh.
-            // Linux only — Tauri's release binary lives at
-            // src-tauri/target/release/<crate-name>.
-            "name": "Desktop: Run Release Build (Linux)",
-            "type": "node",
-            "request": "launch",
-            "runtimeExecutable": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/src-tauri/target/release/calcpad-desktop",
-            "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop",
-            "console": "integratedTerminal",
-            "preLaunchTask": "Desktop: Bundle"
-        },
-        {
-            "name": "Desktop: Run Release Build (Windows)",
-            "type": "node",
-            "request": "launch",
-            "runtimeExecutable": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/src-tauri/target/release/calcpad-desktop.exe",
-            "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop",
-            "console": "integratedTerminal",
-            "preLaunchTask": "Desktop: Bundle"
         }
     ]
 }

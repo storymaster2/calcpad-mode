@@ -4,14 +4,12 @@
 
 ## General
 
--   Add error logging that passes Calcpad errors to the frontend even if they aren't visible in the webview
 -   Audit Calcpad.Core for shared mutable state that races under concurrent local requests. Known offender: `MacroParser.Macros` is a `static` dictionary cleared and repopulated per `Parse(..., includeLine == 0)` call, so two simultaneous requests stomp each other. Less acute in single-user local mode but still a correctness bug if two editor panes hit the server concurrently.
 
 ### To Test/Review
 
 -   Add HTML table styling when a table is called in the code
 -   Update documentation for new features
--   Get desktop version usable so new features can be tested and vs code can be used as a fallback.
 -   Add better documentation for using vs code features
 
 ## calcpad-frontend
@@ -32,7 +30,6 @@
 -   Switch Vue tabs from text to icons now that they are getting longer.
 -   Add quick typing for macros (~1 macro 1, ~2 macro 2, etc.). Add macro mapping to vscode config using json object {macroMapping:{"1": "macroName$", ...}}. Have VS code set cursor position to within () and before first param.
 -   Publish to Open VSX but not Visual Studio Marketplace unless I need a personal Azure account for other reasons
--   Fix line links to use source line mapping - this may be fixed? If I run into it again, give test case
 -   Add intermediate step that changes the display name of a variable by using find and replace on the HTML content. This will need some processing of complex characters, for example \_ turns into a subscript in the HTML. Read how Calcpad.Core handles this and reverse-engineer it. This can use a displayName property in an HTML comment above the variable definition line. Alternatively, have a variable mapping object as part of the settings and have it change the variable name at the HTML output step in Calcpad.Core.
 
 ### Bugs
@@ -65,7 +62,7 @@
 
 ## Calcpad.Web Desktop App
 
--   create backup files of the current file state before a Tauri app crash in the project root directory. have this able to be opened via the files tab
+
 -   add font selector to switch between JuliaMono and system default font (or any other fonts stored in the fonts folder). add button to open fonts folder.
 -   Make Prettify document put brackets at same line level, add spaces before and after operators, and add one space after line delimiters (and 0 spaces before ; delimiters):
     x2,seg = [38.667; 48; 66.667; 80.667; 90.667; 108.667; 118.667; _
@@ -78,6 +75,7 @@
 
 ### Testing
 -   error buttons don't jump to error line correctly when the error occurs in a loop. I think errors should get their own id that the buttons can get mapped to for scroll anchoring
+-   create backup files of the current file state before a Tauri app crash in the project root directory. have this able to be opened via the files tab
 
 ## Calcpad.Web Browser
 -   Have `calcpad-web` (pure browser build) mirror the desktop settings scheme in localStorage — same JSON shape, active-config pointer, named configs — with export/import via browser file up/download. Not urgent; pure web build isn't the active target.

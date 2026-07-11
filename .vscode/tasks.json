@@ -20,27 +20,40 @@
             "problemMatcher": "$msCompile"
         },
 
-        // ── Backend (Calcpad.Server) ────────────────────────────────────
+        // ── Tests (Calcpad.Tests) ───────────────────────────────────────
         {
-            "label": "Server: Start Dev",
-            "type": "shell",
-            "command": "bash",
-            "args": ["${workspaceFolder}/Calcpad.Web/backend/scripts/restart-dev-server.sh"],
-            "group": "build",
-            "isBackground": true,
-            "problemMatcher": {
-                "pattern": { "regexp": "^$" },
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": "^Building Calcpad.Server",
-                    "endsPattern": "^Server started"
-                }
+            "label": "Tests: Run",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "test",
+                "${workspaceFolder}/Calcpad.Tests/Calcpad.Tests.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
             },
             "presentation": {
                 "reveal": "always",
-                "panel": "dedicated",
-                "group": "server"
-            }
+                "panel": "dedicated"
+            },
+            "problemMatcher": "$msCompile"
+        },
+
+        // ── Backend (Calcpad.Server) ────────────────────────────────────
+        {
+            "label": "Server: Build (.NET)",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/Calcpad.Web/backend/Calcpad.Server.sln",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "Server: Build Linux",
@@ -131,10 +144,6 @@
             },
             "group": "build",
             "linux": {
-                "command": "bash",
-                "args": ["-c", "[ -d node_modules ] || npm install && npm run build"]
-            },
-            "osx": {
                 "command": "bash",
                 "args": ["-c", "[ -d node_modules ] || npm install && npm run build"]
             },
@@ -230,10 +239,6 @@
                 "command": "bash",
                 "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/stage-sidecar.sh"]
             },
-            "osx": {
-                "command": "bash",
-                "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/stage-sidecar.sh"]
-            },
             "windows": {
                 "command": "powershell",
                 "args": [
@@ -269,16 +274,16 @@
             }
         },
         {
-            "label": "Desktop: Bundle",
+            "label": "Desktop: Bundle Windows",
             "type": "shell",
             "group": "build",
             "linux": {
                 "command": "bash",
-                "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh"]
-            },
-            "osx": {
-                "command": "bash",
-                "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh"]
+                "args": [
+                    "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh",
+                    "--rid=win-x64",
+                    "--target=x86_64-pc-windows-msvc"
+                ]
             },
             "windows": {
                 "command": "powershell",
@@ -290,26 +295,58 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"
-            }
+            },
+            "problemMatcher": []
         },
         {
-            "label": "Desktop: Bundle Windows (cross)",
+            "label": "Desktop: Bundle AppImage (Linux)",
             "type": "shell",
             "group": "build",
             "linux": {
                 "command": "bash",
                 "args": [
                     "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh",
-                    "--rid=win-x64",
-                    "--target=x86_64-pc-windows-msvc"
+                    "--bundles=appimage"
                 ]
             },
-            "osx": {
+            "windows": { "command": "echo", "args": ["AppImage can only be built on Linux"] },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Desktop: Bundle .deb (Linux)",
+            "type": "shell",
+            "group": "build",
+            "linux": {
                 "command": "bash",
                 "args": [
                     "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh",
-                    "--rid=win-x64",
-                    "--target=x86_64-pc-windows-msvc"
+                    "--bundles=deb"
+                ]
+            },
+            "windows": { "command": "echo", "args": [".deb can only be built on Linux"] },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Desktop: Bundle All",
+            "type": "shell",
+            "group": "build",
+            "linux": {
+                "command": "bash",
+                "args": ["${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/build-desktop.sh"]
+            },
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop\\build-desktop.ps1"
                 ]
             },
             "presentation": {
@@ -334,15 +371,30 @@
             "problemMatcher": []
         },
         {
+            "label": "Desktop: Cargo Clean",
+            "type": "shell",
+            "command": "cargo",
+            "args": ["clean"],
+            "options": {
+                "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/src-tauri"
+            },
+            "windows": {
+                "options": {
+                    "cwd": "${workspaceFolder}\\Calcpad.Web\\frontend\\calcpad-desktop\\src-tauri"
+                }
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Desktop: Clean & Rebuild",
             "type": "shell",
             "group": "build",
             "linux": {
-                "command": "bash",
-                "args": ["-c", "rm -rf src-tauri/target/release/bundle && bash build-desktop.sh"],
-                "options": { "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop" }
-            },
-            "osx": {
                 "command": "bash",
                 "args": ["-c", "rm -rf src-tauri/target/release/bundle && bash build-desktop.sh"],
                 "options": { "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop" }
@@ -376,13 +428,6 @@
                 ]
             },
             "linux": {
-                "command": "bash",
-                "args": [
-                    "${workspaceFolder}/Calcpad.Web/backend/scripts/build-and-deploy-extension.sh",
-                    "${workspaceFolder}"
-                ]
-            },
-            "osx": {
                 "command": "bash",
                 "args": [
                     "${workspaceFolder}/Calcpad.Web/backend/scripts/build-and-deploy-extension.sh",
@@ -460,10 +505,6 @@
                 "command": "bash",
                 "args": ["-c", "[ -d node_modules ] || npm install && npm run build"]
             },
-            "osx": {
-                "command": "bash",
-                "args": ["-c", "[ -d node_modules ] || npm install && npm run build"]
-            },
             "windows": {
                 "command": "powershell",
                 "args": ["-NoProfile", "-Command", "if(-not(Test-Path node_modules)){npm install}; npm run build"]
@@ -482,10 +523,6 @@
             },
             "dependsOn": "Frontend: Install & Build",
             "linux": {
-                "command": "bash",
-                "args": ["-c", "[ -d node_modules ] || npm install && npm run compile"]
-            },
-            "osx": {
                 "command": "bash",
                 "args": ["-c", "[ -d node_modules ] || npm install && npm run compile"]
             },
@@ -509,22 +546,6 @@
 
         // ── Compound ────────────────────────────────────────────────────
         {
-            "label": "Full Stack: Start Dev",
-            "dependsOn": ["Server: Start Dev", "Web: Dev Server"],
-            "dependsOrder": "parallel",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "Extension + Server: Compile & Start",
-            "dependsOn": ["Extension: Compile", "Server: Start Dev"],
-            "dependsOrder": "parallel",
-            "problemMatcher": []
-        },
-        {
             // preLaunchTask for "Extension: Run". Runs in sequence so the full
             // server publish (Server: Sync Bundle to Extension) lands LAST and
             // leaves bin/ complete — the 4-DLL copy inside Extension: Compile
@@ -532,12 +553,6 @@
             "label": "Extension: Compile & Sync Server",
             "dependsOn": ["Extension: Compile", "Server: Sync Bundle to Extension"],
             "dependsOrder": "sequence",
-            "problemMatcher": []
-        },
-        {
-            "label": "Extension: Compile + Deploy Bundle",
-            "dependsOn": ["Extension: Compile", "Server: Deploy Slim Bundle to Extension"],
-            "dependsOrder": "parallel",
             "problemMatcher": []
         },
         {
