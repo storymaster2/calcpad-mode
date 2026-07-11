@@ -148,6 +148,10 @@ export abstract class BaseMessageBridge {
                 this.setExtraSetting('linterMinSeverity', message.severity);
                 this.postToVue({ type: 'linterMinSeverityChanged', severity: message.severity });
                 break;
+            case 'updateMaxOutputLines':
+                this.setExtraSetting('maxOutputLines', String(message.value));
+                this.postToVue({ type: 'maxOutputLinesChanged', value: message.value });
+                break;
             case 'getPdfSettings':
                 this.handleGetPdfSettings();
                 break;
@@ -258,6 +262,7 @@ export abstract class BaseMessageBridge {
             enableFormattingHotkeys: this.getExtraSetting('formattingHotkeys') !== 'false',
             enablePreviewCursorSync: this.getExtraSetting('previewCursorSync') === 'true',
             linterMinSeverity: this.getExtraSetting('linterMinSeverity') || 'information',
+            maxOutputLines: Number(this.getExtraSetting('maxOutputLines')) || 1000,
             ...extras,
         });
     }

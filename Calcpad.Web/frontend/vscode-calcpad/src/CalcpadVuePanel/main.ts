@@ -11,7 +11,14 @@ const vscode = (window as any).acquireVsCodeApi()
 initMessaging()
 
 // Create and mount the Vue app
-const app = createApp(CalcpadApp)
+const app = createApp(CalcpadApp, {
+  versionConfig: {
+    isVSCode: true,
+    isWeb: false,
+    isDesktop: false,
+    isWebOrDesktop: false,
+  },
+})
 app.mount('#app')
 
 // Handle any global errors

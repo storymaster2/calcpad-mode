@@ -653,7 +653,18 @@ async function bootstrap(): Promise<void> {
         if (e.data?.type === 'linterMinSeverityChanged') {
             for (const g of groups.values()) void g.diagnostics?.refresh();
         }
+        if (e.data?.type === 'maxOutputLinesChanged') {
+            const n = Number(e.data.value);
+            if (Number.isFinite(n)) appInstance.setMaxOutputLines(n);
+        }
     });
+
+    // Apply persisted cap at startup — the sidebar's settingsResponse will
+    // sync it too, but the log wiring below can fire before that arrives.
+    {
+        const stored = Number(editorBridge.getExtraSetting('maxOutputLines'));
+        if (Number.isFinite(stored) && stored >= 10) appInstance.setMaxOutputLines(stored);
+    }
 
     // Wire the bridge's insertText handler to the active editor.
     activeBridge.onInsertText = (text: string) => {
@@ -840,7 +851,13 @@ async function bootstrap(): Promise<void> {
 
     // Mount the CalcPad Vue sidebar. Desktop (Tauri) shows the Files view
     // + activity icons; web mode keeps the original single-panel look.
-    const sidebarApp = createApp(CalcpadAppVue, { extraTabs: isTauri });
+    const versionConfig = {
+        isVSCode: false,
+        isWeb: !isTauri,
+        isDesktop: isTauri,
+        isWebOrDesktop: true,
+    };
+    const sidebarApp = createApp(CalcpadAppVue, { versionConfig });
     const sidebarInstance = sidebarApp.mount('#vue-sidebar') as {
         switchTab?: (id: string) => void;
         switchView?: (id: string) => void;

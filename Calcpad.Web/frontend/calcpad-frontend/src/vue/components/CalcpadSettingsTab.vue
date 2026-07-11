@@ -15,15 +15,16 @@
       </div>
 
       <div class="setting-group">
-        <label for="degrees">Degrees:</label>
-        <input
+        <label for="degrees">Angle Units:</label>
+        <select
           id="degrees"
           v-model.number="localSettings.math.degrees"
-          type="number"
-          min="0"
-          max="360"
-          @input="updateSettings"
-        />
+          @change="updateSettings"
+        >
+          <option :value="0">Radians</option>
+          <option :value="1">Degrees</option>
+          <option :value="2">Gradians</option>
+        </select>
       </div>
 
       <div class="setting-group">
@@ -145,23 +146,20 @@
 
       <div class="setting-group">
         <label for="lightDirection">Light Direction:</label>
-        <input
+        <select
           id="lightDirection"
           v-model="localSettings.plot.lightDirection"
-          type="text"
-          @input="updateSettings"
-        />
-      </div>
-
-      <h3>Server Settings</h3>
-      <div class="setting-group">
-        <label for="serverUrl">Remote Server URL:</label>
-        <input
-          id="serverUrl"
-          v-model="localSettings.server.url"
-          type="text"
-          @input="updateSettings"
-        />
+          @change="updateSettings"
+        >
+          <option value="NorthWest">NorthWest</option>
+          <option value="North">North</option>
+          <option value="NorthEast">NorthEast</option>
+          <option value="West">West</option>
+          <option value="East">East</option>
+          <option value="SouthWest">SouthWest</option>
+          <option value="South">South</option>
+          <option value="SouthEast">SouthEast</option>
+        </select>
       </div>
 
       <h3>Units</h3>
@@ -176,6 +174,17 @@
           <option value="Imperial">Imperial</option>
           <option value="US">US Customary</option>
         </select>
+      </div>
+
+      <h3>Server Settings</h3>
+      <div class="setting-group">
+        <label for="serverUrl">Remote Server URL:</label>
+        <input
+          id="serverUrl"
+          v-model="localSettings.server.url"
+          type="text"
+          @input="updateSettings"
+        />
       </div>
 
       <h3>Preview Theme</h3>
@@ -250,7 +259,8 @@
             type="checkbox"
             @change="updateQuickTyping"
           />
-          Enable Quick Typing (e.g., ~a → α, ~' → ′)
+          Enable Quick Typing
+          <span class="setting-info" title="Type shortcuts like ~a → α, ~' → ′">ⓘ</span>
         </label>
       </div>
 
@@ -274,7 +284,8 @@
             type="checkbox"
             @change="updateFormattingHotkeys"
           />
-          Enable Formatting Hotkeys (Ctrl+B, Ctrl+I, etc.)
+          Enable Formatting Hotkeys
+          <span class="setting-info" title="Ctrl+B for bold, Ctrl+I for italic, etc.">ⓘ</span>
         </label>
       </div>
 
@@ -286,13 +297,16 @@
             @change="updatePreviewCursorSync"
           />
           Sync Preview to Cursor Line
+          <span class="setting-info" title="Scroll the preview to follow the line the cursor is on in the editor.">ⓘ</span>
         </label>
-        <span class="setting-hint">Scroll the preview to follow the line the cursor is on in the editor.</span>
       </div>
 
       <h3>Library</h3>
       <div class="setting-group">
-        <label for="libraryPath">Library Path:</label>
+        <label for="libraryPath">
+          Library Path:
+          <span class="setting-info" title="Shared .cpd/.txt files for #include autocomplete. Supports %ENV% variables.">ⓘ</span>
+        </label>
         <input
           id="libraryPath"
           v-model="libraryPath"
@@ -300,7 +314,6 @@
           placeholder="%USERPROFILE%\Documents\CalcpadLibrary"
           @input="updateLibraryPath"
         />
-        <span class="setting-hint">Shared .cpd/.txt files for #include autocomplete. Supports %ENV% variables.</span>
       </div>
 
       <h3>Linter</h3>
@@ -319,10 +332,29 @@
 
       <h3>Diagnostics</h3>
       <div class="setting-group">
-        <button class="diagnostics-button" @click="openLogsFolder">
+        <button
+          class="diagnostics-button"
+          title="Opens the folder containing server logs and the most recent crash dump."
+          @click="openLogsFolder"
+        >
           Open Logs Folder
         </button>
-        <span class="setting-hint">Opens the folder containing server logs and the most recent crash dump.</span>
+      </div>
+
+      <div v-if="versionConfig.isWebOrDesktop" class="setting-group">
+        <label for="maxOutputLines">
+          Max Output Lines (per channel):
+          <span class="setting-info" title="Lines retained in each Output channel before older lines are dropped. Lower values reduce memory use and improve responsiveness when logs are noisy.">ⓘ</span>
+        </label>
+        <input
+          id="maxOutputLines"
+          v-model.number="maxOutputLines"
+          type="number"
+          min="10"
+          max="100000"
+          step="100"
+          @change="updateMaxOutputLines"
+        />
       </div>
 
       <h3>Configuration</h3>
@@ -376,7 +408,8 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import type { Settings, ThemeInfo } from '../types'
+import type { Settings, ThemeInfo, VersionConfig } from '../types'
+import { DEFAULT_VERSION_CONFIG } from '../types'
 
 // Props
 interface Props {
@@ -390,6 +423,8 @@ interface Props {
   initialEnablePreviewCursorSync?: boolean
   initialDarkBackground?: string
   initialLinterMinSeverity?: string
+  initialMaxOutputLines?: number
+  versionConfig?: VersionConfig
   initialLibraryPath?: string
   initialActiveConfig?: string
   initialAvailableConfigs?: string[]
@@ -432,6 +467,8 @@ const props = withDefaults(defineProps<Props>(), {
   initialEnablePreviewCursorSync: false,
   initialDarkBackground: '#1a1a2e',
   initialLinterMinSeverity: 'information',
+  initialMaxOutputLines: 1000,
+  versionConfig: () => ({ ...DEFAULT_VERSION_CONFIG }),
   initialLibraryPath: '',
   initialActiveConfig: 'default',
   initialAvailableConfigs: () => ['default']
@@ -448,6 +485,7 @@ const emit = defineEmits<{
   updatePreviewCursorSync: [enabled: boolean]
   updateDarkBackground: [color: string]
   updateLinterMinSeverity: [severity: string]
+  updateMaxOutputLines: [value: number]
   updateLibraryPath: [path: string]
   resetSettings: []
   saveNamedConfig: [name: string]
@@ -471,6 +509,7 @@ const enableFormattingHotkeys = ref(props.initialEnableFormattingHotkeys)
 const enablePreviewCursorSync = ref(props.initialEnablePreviewCursorSync)
 const darkBackground = ref(props.initialDarkBackground)
 const linterMinSeverity = ref(props.initialLinterMinSeverity)
+const maxOutputLines = ref(props.initialMaxOutputLines)
 const libraryPath = ref(props.initialLibraryPath)
 const activeConfig = ref(props.initialActiveConfig)
 const availableConfigs = ref<string[]>(props.initialAvailableConfigs)
@@ -517,6 +556,12 @@ const resetDarkBackground = () => {
 
 const updateLinterMinSeverity = () => {
   emit('updateLinterMinSeverity', linterMinSeverity.value)
+}
+
+const updateMaxOutputLines = () => {
+  const n = Number(maxOutputLines.value)
+  if (!Number.isFinite(n) || n < 10) return
+  emit('updateMaxOutputLines', Math.floor(n))
 }
 
 const updateLibraryPath = () => {
@@ -623,6 +668,13 @@ watch(
   () => props.initialLinterMinSeverity,
   (newValue) => {
     linterMinSeverity.value = newValue
+  }
+)
+
+watch(
+  () => props.initialMaxOutputLines,
+  (newValue) => {
+    maxOutputLines.value = newValue
   }
 )
 
@@ -736,11 +788,11 @@ watch(
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
-.setting-hint {
-  display: block;
-  margin-top: 4px;
+.setting-info {
+  margin-left: 4px;
   font-size: 11px;
   color: var(--vscode-descriptionForeground);
+  cursor: help;
 }
 
 .setting-error {

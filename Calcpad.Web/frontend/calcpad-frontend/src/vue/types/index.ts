@@ -1,5 +1,23 @@
 // Type definitions for CalcpadVuePanel
 
+// Which host is running the Vue UI. Exactly one of isVSCode / isWeb / isDesktop
+// is true. `isWebOrDesktop` is a convenience — true for the calcpad-web/desktop
+// hosts (which share App.vue's in-page Output panel, tab strip, etc.) and false
+// for VS Code (where the extension embeds a subset of the UI).
+export interface VersionConfig {
+  isVSCode: boolean
+  isWeb: boolean
+  isDesktop: boolean
+  isWebOrDesktop: boolean
+}
+
+export const DEFAULT_VERSION_CONFIG: VersionConfig = {
+  isVSCode: true,
+  isWeb: false,
+  isDesktop: false,
+  isWebOrDesktop: false,
+}
+
 export interface SnippetParameter {
   name: string
   description?: string

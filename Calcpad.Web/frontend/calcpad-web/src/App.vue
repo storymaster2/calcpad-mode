@@ -594,6 +594,28 @@ function openBottomTab(tab: 'problems' | 'output'): void {
   }
 }
 
+// User-configurable cap on retained output lines per channel. Older lines in
+// that channel are dropped once the cap is exceeded — a lower value helps
+// performance when large log volumes accumulate.
+const maxOutputLinesPerChannel = ref<number>(1000)
+function trimChannel(channel: OutputChannel): void {
+  const cap = maxOutputLinesPerChannel.value
+  let excess = 0
+  for (const l of outputLines.value) if (l.channel === channel) excess++
+  excess -= cap
+  if (excess <= 0) return
+  let removed = 0
+  outputLines.value = outputLines.value.filter(l => {
+    if (removed < excess && l.channel === channel) { removed++; return false }
+    return true
+  })
+}
+function setMaxOutputLines(n: number): void {
+  if (!Number.isFinite(n) || n < 10) return
+  maxOutputLinesPerChannel.value = Math.floor(n)
+  for (const ch of ['app', 'preview', 'server'] as OutputChannel[]) trimChannel(ch)
+}
+
 function appendOutput(
   level: 'info' | 'warn' | 'error' | 'debug',
   message: string,
@@ -610,10 +632,7 @@ function appendOutput(
     ? (el.scrollHeight - el.scrollTop - el.clientHeight) <= 4
     : true
   outputLines.value.push({ time, level, label: labels[level] ?? level, message, channel, groupId })
-  // Cap at 1000 lines (across all channels combined)
-  if (outputLines.value.length > 1000) {
-    outputLines.value.splice(0, outputLines.value.length - 1000)
-  }
+  trimChannel(channel)
   const visible = channel === activeOutputChannel.value &&
     (channel !== 'preview' || !groupId || groupId === activeGroupId.value)
   if (wasAtBottom && visible) {
@@ -1035,6 +1054,7 @@ defineExpose({
   appendOutput,
   clearOutput,
   showOutput,
+  setMaxOutputLines,
   showConfirm,
   showQuickPick,
   // tabs

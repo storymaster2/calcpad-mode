@@ -40,9 +40,6 @@
 -   Check if the cache needs cleared on intervals
 -   Have variables use the tokenizer for recognition when you highlight text when clicking, commas are not handled properly currently.
 -   UI state persists across code changes where possible.
--   Add docstrings for built-in functions using the same hover option. Build this into the snippet provider
--   Add prettify command that does the same thing as eat space and auto-indenting. However, the automatic behavior is not preferred as it caused various bugs in Wpf.
--   Have variables use the tokenizer for recognition when you highlight text when clicking, commas are not handled properly currently.
 
 ## Calcpad.Web
 
@@ -50,12 +47,12 @@
 -   Add support for other languages, especially Chinese as there is a large Chinese community.
 -   Add #UI features to main branch
 -   Make update do var name is not default #UI id, but {varName:varRepeatNumber} is the id to handle repetitions of the same variable name.
-
+-   Equation format, max output count, non-metric units, and zero small elemements settings are missing in Calcpad.Web
+-   Add auto-run setting to Vue panel. When this is off, run only occurs when the preview is opened in VS Code or a refresh is run. In calcpad-desktop, add a run button that re-calculates the active view.
+-   Add a help button that opens the calcpad documentation in the same browser used for puppeteer.
+-   An external browser dropdown could be helpful that allows switching the puppeteer and help button browser from the settings. I think this is doable if we store both the browser name and path in an object (then only show browsers with a valid path and allow adding a browser via file select to the exe or pasted path).
 
 ### Bugs
-
--   Settings tab "Degrees" control is a numeric input (0–360) but should be a mode selector matching Calcpad.Core's `degrees` setting (0 = radians, 1 = degrees, 2 = gradians). As-is it lets users enter meaningless values and doesn't map to the actual angle-unit modes.
--   Macro names in Go To Definition are not matching with $ and exact names properly, doubleCheck$ navigated to double$. Make sure it is using the ContentResolution/tokenizer workflow.
 
 ### Testing
 
@@ -70,9 +67,7 @@
             33.333; 40.333; 51.667; 75; 96.667; 108.333; 118.667; _
             23.333; 23.333; 23.333; _
             35; 35; 35; 35]*1ft
--   allow splitting code window similar to VS code
 -   add a max log length before it gets overwritten to help with performance
--   HTML preview gets blank lines sent to it (noticed this in unwrapped code)
 
 ### Bugs
 -   Fix Ctrl without click navigating to definition when the macro comes from an included file.

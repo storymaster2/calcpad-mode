@@ -36,6 +36,7 @@
         "quickTyping": true,
         "previewCursorSync": false,
         "linterMinSeverity": "information",
+        "maxOutputLines": 1000,
         "libraryPath": "",
         "prettifyIndentStyle": "tab",
         "prettifyIndentSize": 4,

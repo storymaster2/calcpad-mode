@@ -6,7 +6,7 @@
   <div class="calcpad-vue-ui" @contextmenu.prevent>
     <!-- Activity icons: only shown when the host app enables extra tabs (desktop).
          VS Code webview keeps a single Calcpad view. -->
-    <div v-if="extraTabs" class="activity-icons" role="tablist">
+    <div v-if="versionConfig.isDesktop" class="activity-icons" role="tablist">
       <button
         v-for="view in views"
         :key="view.id"
@@ -21,7 +21,7 @@
     </div>
 
     <CalcpadFilesTab
-      v-if="extraTabs && activeView === 'files'"
+      v-if="versionConfig.isDesktop && activeView === 'files'"
       :opened-folder="openedFolder"
       :tree-roots="fileTreeRoots"
       @open-folder-request="handleOpenFolderRequest"
@@ -31,7 +31,7 @@
       @close-folder="handleCloseFolder"
     />
 
-    <div v-show="!extraTabs || activeView === 'calcpad'" class="calcpad-view">
+    <div v-show="!versionConfig.isDesktop || activeView === 'calcpad'" class="calcpad-view">
     <div class="tab-container">
       <button
         v-for="tab in tabs"
@@ -68,6 +68,8 @@
         :initial-enable-preview-cursor-sync="enablePreviewCursorSync"
         :initial-dark-background="darkBackground"
         :initial-linter-min-severity="linterMinSeverity"
+        :initial-max-output-lines="maxOutputLines"
+        :version-config="versionConfig"
         :initial-library-path="libraryPath"
         :initial-active-config="activeConfig"
         :initial-available-configs="availableConfigs"
@@ -80,6 +82,7 @@
         @update-preview-cursor-sync="handleUpdatePreviewCursorSync"
         @update-dark-background="handleUpdateDarkBackground"
         @update-linter-min-severity="handleUpdateLinterMinSeverity"
+        @update-max-output-lines="handleUpdateMaxOutputLines"
         @update-library-path="handleUpdateLibraryPath"
         @reset-settings="handleResetSettings"
         @save-named-config="handleSaveNamedConfig"
@@ -137,15 +140,18 @@ import CalcpadExportTab from './CalcpadExportTab.vue'
 import CalcpadFilesTab from './CalcpadFilesTab.vue'
 import CalcpadErrorsTab from './CalcpadErrorsTab.vue'
 import { postMessage } from '../services/messaging'
-import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading, ThemeInfo, FileNode } from '../types'
+import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading, ThemeInfo, FileNode, VersionConfig } from '../types'
+import { DEFAULT_VERSION_CONFIG } from '../types'
 import type { CalcpadError } from '../../types/api'
 import { DEFAULT_PDF_SETTINGS } from '../types'
 
 // Props
 interface Props {
-  extraTabs?: boolean
+  versionConfig?: VersionConfig
 }
-const props = withDefaults(defineProps<Props>(), { extraTabs: false })
+const props = withDefaults(defineProps<Props>(), {
+  versionConfig: () => ({ ...DEFAULT_VERSION_CONFIG }),
+})
 
 // Views: string-identified so future views can be added by extending this list.
 // Icons are inline SVGs so no external asset dependencies.
@@ -178,6 +184,7 @@ const enableFormattingHotkeys = ref(true)
 const enablePreviewCursorSync = ref(false)
 const darkBackground = ref('#1e1e1e')
 const linterMinSeverity = ref('information')
+const maxOutputLines = ref(1000)
 const libraryPath = ref('')
 const activeConfig = ref('default')
 const availableConfigs = ref<string[]>(['default'])
@@ -345,6 +352,11 @@ const handleUpdateLinterMinSeverity = (severity: string) => {
   postMessage({ type: 'updateLinterMinSeverity', severity })
 }
 
+const handleUpdateMaxOutputLines = (value: number) => {
+  maxOutputLines.value = value
+  postMessage({ type: 'updateMaxOutputLines', value })
+}
+
 const handleUpdateLibraryPath = (path: string) => {
   libraryPath.value = path
   postMessage({ type: 'updateLibraryPath', path })
@@ -438,6 +450,9 @@ const handleMessage = (event: MessageEvent) => {
       if (typeof message.enablePreviewCursorSync === 'boolean') enablePreviewCursorSync.value = message.enablePreviewCursorSync
       darkBackground.value = message.darkBackground || '#1e1e1e'
       linterMinSeverity.value = message.linterMinSeverity || 'information'
+      if (typeof message.maxOutputLines === 'number' && message.maxOutputLines >= 10) {
+        maxOutputLines.value = message.maxOutputLines
+      }
       libraryPath.value = message.libraryPath || ''
       if (message.activeConfig) activeConfig.value = message.activeConfig
       if (Array.isArray(message.availableConfigs)) availableConfigs.value = message.availableConfigs
@@ -492,7 +507,7 @@ onMounted(() => {
   postMessage({ type: 'getSettings' })
   postMessage({ type: 'getPdfSettings' })
 
-  if (props.extraTabs) {
+  if (props.versionConfig.isDesktop) {
     postMessage({ type: 'getOpenedFolder' })
   }
 
