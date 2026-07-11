@@ -73,7 +73,7 @@
               <button class="tab-new" title="New tab (Ctrl+T)" @click="onNewTab(group.id)">+</button>
               <span class="spacer"></span>
               <button
-                v-if="isSplit"
+                v-if="isSplit && gi > 0"
                 class="group-close"
                 title="Close this editor group"
                 @click="onCloseGroup(group.id)"
@@ -429,9 +429,11 @@ function groupIds(): string[] {
 
 function onToggleSplit(): void {
   if (isSplit.value) {
-    // Merge: close the non-active group (main.ts prompts for dirty tabs).
-    const other = groups.value.find(g => g.id !== activeGroupId.value)
-    if (other) onCloseGroupRequest.value?.(other.id)
+    // Merge: always close the bottom group; the top (primary) is preserved
+    // and the bottom is created fresh on each split (main.ts prompts for
+    // dirty tabs before closing).
+    const bottom = groups.value[groups.value.length - 1]
+    if (bottom) onCloseGroupRequest.value?.(bottom.id)
   } else {
     onSplitRequest.value?.()
   }

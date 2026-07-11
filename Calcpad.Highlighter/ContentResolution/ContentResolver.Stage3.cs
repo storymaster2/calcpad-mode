@@ -590,8 +590,7 @@ namespace Calcpad.Highlighter.ContentResolution
                 var mergedColumn = 0;
                 if (macroDef.LineNumber >= 0 && macroDef.LineNumber < stage2Lines.Count)
                 {
-                    var defLine = stage2Lines[macroDef.LineNumber];
-                    var nameIdx = defLine.AsSpan().IndexOf(macroDef.Name.AsSpan(), StringComparison.OrdinalIgnoreCase);
+                    var nameIdx = FindMacroNameColumn(stage2Lines[macroDef.LineNumber], macroDef.Name);
                     if (nameIdx >= 0) mergedColumn = nameIdx;
                 }
 
@@ -638,16 +637,18 @@ namespace Calcpad.Highlighter.ContentResolution
                     if (!seenCallSites.Add((macroName, stage2Line)))
                         continue; // Already tracked this call site
 
-                    var (source, sourceFile, includeOriginalLine) = GetStage2SourceInfo(stage2Line);
+                    // Locate the macro name on the call line, requiring a proper name
+                    // boundary. expansion.MacroNames includes macros pulled in by nested/
+                    // recursive expansion (e.g. doubleCheck$'s body calls double$), which
+                    // are not literally on this line — skip those rather than recording a
+                    // bogus column-0 location that would shadow the real call.
+                    if (stage2Line < 0 || stage2Line >= stage2Lines.Count)
+                        continue;
+                    var mergedColumn = FindMacroNameColumn(stage2Lines[stage2Line], macroName);
+                    if (mergedColumn < 0)
+                        continue;
 
-                    // Find column of macro call in the merged Stage 2 line
-                    var mergedColumn = 0;
-                    if (stage2Line >= 0 && stage2Line < stage2Lines.Count)
-                    {
-                        var callLine = stage2Lines[stage2Line];
-                        var nameIdx = callLine.AsSpan().IndexOf(macroName.AsSpan(), StringComparison.OrdinalIgnoreCase);
-                        if (nameIdx >= 0) mergedColumn = nameIdx;
-                    }
+                    var (source, sourceFile, includeOriginalLine) = GetStage2SourceInfo(stage2Line);
 
                     int originalLine, adjustedColumn;
                     if (source == "include" && includeOriginalLine >= 0)
@@ -797,6 +798,27 @@ namespace Calcpad.Highlighter.ContentResolution
             }
 
             return index;
+        }
+
+        /// <summary>
+        /// Finds the column of a macro-name occurrence in a line, requiring that the
+        /// character before it is not a macro-name letter. This prevents a shorter
+        /// macro name from matching inside a longer one (e.g. "check$" must not match
+        /// inside "doubleCheck$"). Returns -1 when the name does not appear as a
+        /// standalone macro reference.
+        /// </summary>
+        private static int FindMacroNameColumn(string line, string macroName)
+        {
+            int from = 0;
+            while (from <= line.Length - macroName.Length)
+            {
+                int idx = line.IndexOf(macroName, from, StringComparison.OrdinalIgnoreCase);
+                if (idx < 0) return -1;
+                if (idx == 0 || !CalcpadCharacterHelpers.IsMacroLetter(line[idx - 1], 1))
+                    return idx;
+                from = idx + 1;
+            }
+            return -1;
         }
 
         /// <summary>

@@ -509,8 +509,11 @@ onMounted(() => {
   /* Natural document flow inside the parent (#vue-sidebar in calcpad-desktop,
    * <body> in the VS Code webview). Avoids flex-column edge cases where a
    * wrapped .tab-container can render on top of .tab-content because the
-   * column's fixed height was computed before the wrap layout pass. */
-  height: 100%;
+   * column's fixed height was computed before the wrap layout pass.
+   * min-height (not height) so the box grows to the full content height:
+   * a fixed 100% would cap it at one viewport, and the sticky .activity-icons
+   * bar would un-stick once its containing block scrolled past. */
+  min-height: 100%;
   display: block;
   font-family: var(--vscode-font-family);
   font-size: var(--vscode-font-size);

@@ -439,8 +439,11 @@ export abstract class BaseMessageBridge {
 
     private handleGoToLine(line: number): void {
         if (typeof line !== 'number') return;
+        // Prefer the host's active editor (set per focused editor group in the
+        // desktop split layout); fall back to the first registered editor.
+        const active = (window as { calcpadActiveEditor?: MonacoEditorLike }).calcpadActiveEditor;
         const editors = (window as { monaco?: MonacoLike }).monaco?.editor?.getEditors?.();
-        const editor = editors?.[0];
+        const editor = active ?? editors?.[0];
         if (editor) {
             editor.revealLineInCenter(line);
             editor.setPosition({ lineNumber: line, column: 1 });

@@ -795,6 +795,22 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
                 true,
                 Some("Alt+Z"),
             )?,
+            &sep()?,
+            &MenuItem::with_id(
+                app,
+                "split-editor",
+                "Split Editor Down",
+                true,
+                Some("CmdOrCtrl+\\"),
+            )?,
+            &MenuItem::with_id(
+                app,
+                "unsplit-editor",
+                "Merge Editor Groups",
+                true,
+                None::<&str>,
+            )?,
+            &sep()?,
             &MenuItem::with_id(
                 app,
                 "preview-mode:wrapped",

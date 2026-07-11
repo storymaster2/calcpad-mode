@@ -89,6 +89,29 @@ namespace Calcpad.Tests.HighlighterTests
         }
 
         [Fact]
+        public void Resolves_Macro_WhoseNameContainsAnotherMacroName()
+        {
+            // Regression: doubleCheck$ calls double$ in its body. Expanding the
+            // doubleCheck$ call recursively pulls in double$, which used to be
+            // recorded as a bogus column-0 call site on the doubleCheck$ line and
+            // shadowed the real macro, routing "go to definition" to double$.
+            var src =
+                "#def double$(n$) = n$*2\n" +
+                "#def doubleCheck$(a$) = double$(a$)\n" +
+                "doubleCheck$(5)\n";
+
+            // Cursor inside "doubleCheck$" on line 2 must resolve to doubleCheck$.
+            var hit = Resolve(src, line: 2, column: 3);
+            Assert.NotNull(hit);
+            Assert.Equal("doubleCheck$", hit.Name);
+            Assert.Equal(SymbolKind.Macro, hit.Kind);
+            // Its definition is on line 1, not double$'s line 0.
+            var def = hit.Locations.Find(l => l.IsAssignment);
+            Assert.NotNull(def);
+            Assert.Equal(1, def.Line);
+        }
+
+        [Fact]
         public void Returns_Null_WhenCursorOutsideAnyToken()
         {
             var src = "x = 5\n";

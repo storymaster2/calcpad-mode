@@ -25,6 +25,14 @@ export class CalcpadApiClient {
     private baseUrl: string;
     private logger?: ILogger;
 
+    // Serializes every parser-touching request. Calcpad.Core parses through a
+    // process-global `MacroParser.Macros` dictionary that is cleared and
+    // repopulated per request, so two in-flight requests corrupt each other's
+    // macro state (and can crash the server). Chaining requests through this
+    // promise guarantees at most one runs at a time — this matters now that the
+    // desktop app can drive two editor groups (two previews + two linters).
+    private requestQueue: Promise<unknown> = Promise.resolve();
+
     constructor(baseUrl: string, logger?: ILogger) {
         this.baseUrl = baseUrl;
         this.logger = logger;
@@ -36,6 +44,16 @@ export class CalcpadApiClient {
 
     public getBaseUrl(): string {
         return this.baseUrl;
+    }
+
+    /**
+     * Run `task` only after every previously-queued request has settled, so
+     * parser requests never overlap. A task's failure never breaks the chain.
+     */
+    private serialize<T>(task: () => Promise<T>): Promise<T> {
+        const run = this.requestQueue.then(task, task);
+        this.requestQueue = run.then(() => undefined, () => undefined);
+        return run;
     }
 
     public async lint(content: string, sourceFilePath?: string): Promise<LintResponse | null> {
@@ -91,25 +109,27 @@ export class CalcpadApiClient {
         sourceFilePath?: string,
         theme?: 'light' | 'dark'
     ): Promise<ArrayBuffer | ConvertResult | null> {
-        const url = this.baseUrl + '/api/calcpad/convert';
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings, outputFormat, forPrint, sourceFilePath, theme }),
-                signal: AbortSignal.timeout(60000),
-            });
-            if (!response.ok) return null;
+        return this.serialize(async () => {
+            const url = this.baseUrl + '/api/calcpad/convert';
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content, settings, outputFormat, forPrint, sourceFilePath, theme }),
+                    signal: AbortSignal.timeout(60000),
+                });
+                if (!response.ok) return null;
 
-            if (outputFormat === 'pdf') {
-                return response.arrayBuffer();
+                if (outputFormat === 'pdf') {
+                    return response.arrayBuffer();
+                }
+                const html = await response.text();
+                return { html, errors: parseConvertErrorHeader(response) };
+            } catch (error) {
+                this.logError('Convert', error);
+                return null;
             }
-            const html = await response.text();
-            return { html, errors: parseConvertErrorHeader(response) };
-        } catch (error) {
-            this.logError('Convert', error);
-            return null;
-        }
+        });
     }
 
     /**
@@ -122,25 +142,27 @@ export class CalcpadApiClient {
         settings: unknown,
         sourceFilePath?: string,
     ): Promise<ArrayBuffer | null> {
-        const url = this.baseUrl + '/api/calcpad/docx';
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    content,
-                    settings,
-                    sourceFilePath,
-                    forPrint: true,
-                }),
-                signal: AbortSignal.timeout(60000),
-            });
-            if (!response.ok) return null;
-            return response.arrayBuffer();
-        } catch (error) {
-            this.logError('ConvertDocx', error);
-            return null;
-        }
+        return this.serialize(async () => {
+            const url = this.baseUrl + '/api/calcpad/docx';
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content,
+                        settings,
+                        sourceFilePath,
+                        forPrint: true,
+                    }),
+                    signal: AbortSignal.timeout(60000),
+                });
+                if (!response.ok) return null;
+                return response.arrayBuffer();
+            } catch (error) {
+                this.logError('ConvertDocx', error);
+                return null;
+            }
+        });
     }
 
     /**
@@ -153,21 +175,23 @@ export class CalcpadApiClient {
         sourceFilePath?: string,
         theme?: 'light' | 'dark',
     ): Promise<ConvertResult | null> {
-        const url = this.baseUrl + '/api/calcpad/convert?unwrap=true';
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings, sourceFilePath, theme }),
-                signal: AbortSignal.timeout(60000),
-            });
-            if (!response.ok) return null;
-            const html = await response.text();
-            return { html, errors: parseConvertErrorHeader(response) };
-        } catch (error) {
-            this.logError('ConvertUnwrapped', error);
-            return null;
-        }
+        return this.serialize(async () => {
+            const url = this.baseUrl + '/api/calcpad/convert?unwrap=true';
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content, settings, sourceFilePath, theme }),
+                    signal: AbortSignal.timeout(60000),
+                });
+                if (!response.ok) return null;
+                const html = await response.text();
+                return { html, errors: parseConvertErrorHeader(response) };
+            } catch (error) {
+                this.logError('ConvertUnwrapped', error);
+                return null;
+            }
+        });
     }
 
     public async checkHealth(): Promise<boolean> {
@@ -181,26 +205,30 @@ export class CalcpadApiClient {
         }
     }
 
-    private async post<T>(endpoint: string, body: unknown, tag: string): Promise<T | null> {
-        const url = this.baseUrl + endpoint;
-        try {
-            this.logger?.appendLine(`[${tag}] Sending request to server...`);
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-                signal: AbortSignal.timeout(30000),
-            });
-            if (!response.ok) {
-                this.logger?.appendLine(`[${tag}] Server returned ${response.status}`);
+    private post<T>(endpoint: string, body: unknown, tag: string): Promise<T | null> {
+        // Serialized: every POST endpoint runs the Calcpad.Core parser, whose
+        // static macro state cannot be shared by concurrent requests.
+        return this.serialize(async () => {
+            const url = this.baseUrl + endpoint;
+            try {
+                this.logger?.appendLine(`[${tag}] Sending request to server...`);
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                    signal: AbortSignal.timeout(30000),
+                });
+                if (!response.ok) {
+                    this.logger?.appendLine(`[${tag}] Server returned ${response.status}`);
+                    return null;
+                }
+                const data: T = await response.json();
+                return data;
+            } catch (error) {
+                this.logError(tag, error);
                 return null;
             }
-            const data: T = await response.json();
-            return data;
-        } catch (error) {
-            this.logError(tag, error);
-            return null;
-        }
+        });
     }
 
     private async get<T>(endpoint: string, tag: string): Promise<T | null> {

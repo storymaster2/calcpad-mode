@@ -426,6 +426,12 @@
     },
     "keybindings": [
       {
+        "command": "vscode-calcpad.focusPreviewToLine",
+        "key": "ctrl+`",
+        "mac": "cmd+`",
+        "when": "editorTextFocus && editorLangId == 'calcpad'"
+      },
+      {
         "command": "vscode-calcpad.formatBold",
         "key": "ctrl+b",
         "mac": "cmd+b",

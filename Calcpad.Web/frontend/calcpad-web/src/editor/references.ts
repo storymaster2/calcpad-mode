@@ -21,15 +21,15 @@ import type { FileContextProvider } from './diagnostics';
 export type IncludeFileOpener = (rawFileName: string) => Promise<monaco.Uri | null>;
 
 /**
- * Maps an include's raw file name to a Monaco URI *without* touching disk or
- * editor state — a pure lookup. Go-to-definition uses this instead of
- * `IncludeFileOpener` because Monaco calls `provideDefinition` on Ctrl+hover
- * (just to draw the underline), so the provider must be side-effect free; the
- * actual file open + cursor move happens later in an editor opener that Monaco
- * only invokes on a real click / F12. Desktop-only. Returns null when the path
- * can't be resolved.
+ * Resolves an include's raw file name to a Monaco URI for go-to-definition,
+ * registering a detached (tab-less) Monaco model for it so Monaco can render
+ * the Ctrl+hover underline + preview *without* opening or activating a tab.
+ * Used instead of `IncludeFileOpener` because Monaco calls `provideDefinition`
+ * on Ctrl+hover, so navigation must not happen here — the real tab open +
+ * cursor move happen later in an editor opener that Monaco only invokes on a
+ * real click / F12. Desktop-only. Returns null when the path can't be resolved.
  */
-export type IncludeUriResolver = (rawFileName: string) => monaco.Uri | null;
+export type IncludeUriResolver = (rawFileName: string) => Promise<monaco.Uri | null>;
 
 async function resolveSymbol(
     bridge: EditorBridge,
@@ -99,7 +99,7 @@ export function registerDefinitionProvider(
                 return { uri: model.uri, range: locationToRange(definition) };
             }
             if (!resolveIncludeUri || !definition.sourceFile) return null;
-            const uri = resolveIncludeUri(definition.sourceFile);
+            const uri = await resolveIncludeUri(definition.sourceFile);
             if (!uri) return null;
 
             return { uri, range: locationToRange(definition) };
