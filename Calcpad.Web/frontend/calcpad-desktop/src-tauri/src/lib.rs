@@ -379,6 +379,22 @@ fn server_dir(app: AppHandle) -> Result<String, String> {
         .map_err(|e| e.to_string())
 }
 
+// Writable log directory shared with the .NET sidecar. On an AppImage the
+// resource dir is a read-only FUSE mount, so the server can't create logs/
+// beside its apphost. Point both sides at app_data_dir/logs instead.
+fn resolve_log_dir(app: &AppHandle) -> Option<PathBuf> {
+    let dir = app.path().app_data_dir().ok()?.join("logs");
+    let _ = std::fs::create_dir_all(&dir);
+    Some(dir)
+}
+
+#[tauri::command]
+fn log_dir(app: AppHandle) -> Result<String, String> {
+    resolve_log_dir(&app)
+        .map(|p| p.to_string_lossy().to_string())
+        .ok_or_else(|| "app_data_dir unresolved".to_string())
+}
+
 /// Launch the .NET calculation server as a background child process.
 ///
 /// **Why not `tauri_plugin_shell::sidecar()`?** Framework-dependent .NET
@@ -434,6 +450,7 @@ async fn spawn_sidecar(app: &AppHandle) -> Result<String, String> {
 
     let spawn_started = Instant::now();
     eprintln!("[sidecar-timing] spawning {:?}", exe_path);
+    let log_dir = resolve_log_dir(app);
     let mut command = tokio::process::Command::new(&exe_path);
     command
         .args([
@@ -449,6 +466,9 @@ async fn spawn_sidecar(app: &AppHandle) -> Result<String, String> {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
+    if let Some(dir) = &log_dir {
+        command.env("CALCPAD_LOG_DIR", dir);
+    }
     #[cfg(windows)]
     {
         // The apphost is a console subsystem binary; without this it pops up
@@ -949,6 +969,7 @@ pub fn run() {
             draft_read,
             draft_delete,
             open_path_native,
+            log_dir,
         ])
         .setup(|app| {
             // Pin the on-disk locations the panic hook + draft commands need.

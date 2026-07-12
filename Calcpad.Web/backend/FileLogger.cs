@@ -12,16 +12,26 @@ namespace Calcpad.Server
         {
             try
             {
-                // Get the directory where the executable is located
-                var executablePath = Assembly.GetExecutingAssembly().Location;
-                if (string.IsNullOrEmpty(executablePath))
+                // Host apps (Tauri AppImage, VS Code extension) set CALCPAD_LOG_DIR
+                // when the executable dir is read-only (AppImage FUSE mount, MSI
+                // Program Files, etc.). Fall back to executable-adjacent logs/ for
+                // dev runs and other embedders that don't set it.
+                var overrideDir = Environment.GetEnvironmentVariable("CALCPAD_LOG_DIR");
+                string logsDir;
+                if (!string.IsNullOrEmpty(overrideDir))
                 {
-                    // Fallback for single-file deployment
-                    executablePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
+                    logsDir = overrideDir;
                 }
-                
-                var directory = Path.GetDirectoryName(executablePath) ?? AppContext.BaseDirectory;
-                var logsDir = Path.Combine(directory, "logs");
+                else
+                {
+                    var executablePath = Assembly.GetExecutingAssembly().Location;
+                    if (string.IsNullOrEmpty(executablePath))
+                    {
+                        executablePath = Environment.ProcessPath ?? AppContext.BaseDirectory;
+                    }
+                    var directory = Path.GetDirectoryName(executablePath) ?? AppContext.BaseDirectory;
+                    logsDir = Path.Combine(directory, "logs");
+                }
                 Directory.CreateDirectory(logsDir);
                 var timestamp = DateTime.Now.ToString("yyyyMMdd");
                 _logFilePath = Path.Combine(logsDir, $"CalcpadServer-{timestamp}.log");

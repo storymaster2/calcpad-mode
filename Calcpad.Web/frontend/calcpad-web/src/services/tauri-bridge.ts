@@ -144,6 +144,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
     private _fontsDir: string = '';
     private _availableFonts: string[] = [];
     private _serverDir: string = '';
+    private _serverLogDir: string = '';
     private _platform: string = 'linux';
     private _store: Store | null = null;
 
@@ -161,6 +162,11 @@ export class TauriMessageBridge extends BaseMessageBridge {
             this._serverDir = (await invoke<string>('server_dir')).replace(/[\\/]+$/, '');
         } catch {
             this._serverDir = '';
+        }
+        try {
+            this._serverLogDir = (await invoke<string>('log_dir')).replace(/[\\/]+$/, '');
+        } catch {
+            this._serverLogDir = '';
         }
         this._store = await Store.load(STORE_FILE);
         await this.loadSettingsFromStorage();
@@ -795,6 +801,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
     }
 
     private getServerLogDir(): string | null {
+        if (this._serverLogDir) return this._serverLogDir;
         return this._serverDir ? `${this._serverDir}/logs` : null;
     }
 
