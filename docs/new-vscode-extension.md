@@ -103,10 +103,21 @@ Three webview previews, each opening in a new editor column:
 
 Both panels:
 
-- Re-render automatically on document change
+- Re-render automatically on document change when the `autoRun` setting is on (default)
 - Apply the theme from `calcpad.previewTheme` (`light` / `dark` / `system`)
 - Use `calcpad.darkBackground` (default `#1e1e1e`) for dark-mode backgrounds
 - Embed local images as base64 (needed for PDF/print fidelity)
+
+### Manual run
+
+`calcpad.refreshDocument` (**CalcPad: Run Preview**) re-lints the active document, refreshes semantic tokens, re-renders any open preview panels, and re-populates the Export tab's plot list. Triggers:
+
+- Keybinding **Ctrl+Alt+X** (`when: editorLangId == 'calcpad' || editorLangId == 'plaintext'`)
+- Editor right-click context menu (group `calcpad@0`, ordered above the print/inspect items)
+- View title bar button on the `calcpadVueUI` view
+- Command Palette: *CalcPad: Run Preview*
+
+When `autoRun` is off, the debounced `onDidChangeTextDocument` skips `schedulePreviewUpdate` — the preview only re-renders on manual run or when the preview panel is (re)opened.
 
 ## Export and print commands
 
@@ -118,6 +129,15 @@ Both panels:
 | `saveDocx` | Renders the active document, then converts to Word `.docx` via `/api/calcpad/docx` (Calcpad.OpenXml). Available from the **Save Word…** button on the sidebar's **Export** tab and from the Command Palette as *CalcPad: Save as Word Document…* |
 | `viewWebviewSource` | Opens the rendered HTML in a scratch editor for debugging |
 | `insertImage` | File picker to insert an `<img>` tag with relative path |
+
+### Plot export
+
+Every rendered preview also pushes its HTML through `setCachedHtml` on the sidebar's Vue UI provider, which extracts image data from `<img>` tags produced by Calcpad plotters and caches them so the Export tab's **Plots** section shows a thumbnail list. Two message types back it:
+
+- `savePlot` — saves plot `#index` via a native save dialog. The extension picks the file extension from the cached blob (PNG for raster, SVG for vector).
+- `savePlotsZip` — bundles all cached plots into a single ZIP via the shared `buildZip` helper.
+
+The Vue-side cache is invalidated on `calcpad.refreshDocument` and on every `updatePreviewContent`, so the plot list mirrors the current document state without a separate API round-trip.
 
 ## Calcpad sidebar
 

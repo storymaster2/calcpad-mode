@@ -111,7 +111,7 @@ Hovering over a built-in function shows its signature, description, return type,
 
 ## The CalcPad panel
 
-Click the **CalcPad** icon in the activity bar (left edge) to open the panel. It has **Files** and **Calcpad** views, and the Calcpad view is organized into tabs (Insert, TOC, Settings, Variables, PDF, Formatting, Export, Errors). The view title bar has **Refresh Document** (re-parses the active file) and **Stop Server** buttons.
+Click the **CalcPad** icon in the activity bar (left edge) to open the panel. It has **Files** and **Calcpad** views, and the Calcpad view is organized into tabs (Insert, TOC, Settings, Variables, PDF, Formatting, Export, Errors). The view title bar has **CalcPad: Run Preview** (re-renders the active file and refreshes plots) and **Stop Server** buttons.
 
 The panel is the same across every Calcpad front end — see **[The CalcPad Panel & Settings](calcpad-panel-and-settings.md)** for a full walkthrough of each tab.
 
@@ -128,11 +128,22 @@ The **Unwrapped** preview shows the fully expanded source (macros and includes r
 
 Both panels:
 
-- Re-render automatically as you type.
+- Re-render automatically as you type when **Auto-Run Preview** is on (default).
 - Follow the `previewTheme` setting (`light` / `dark` / `system`), using `darkBackground` for the dark background color.
 - Embed local images as base64 so PDF/print output matches the preview.
 
 Right-click a preview → **View Webview Source HTML** to inspect the rendered markup (also available as *CalcPad: View Webview Source HTML*).
+
+### Manual run (Auto-Run off)
+
+When you turn **Settings → Auto-Run Preview** off, typing no longer re-renders the preview. You trigger the run yourself via any of:
+
+- **Ctrl+Alt+X** (works whenever a `.cpd` or plaintext editor has focus)
+- Right-click in the editor → **CalcPad: Run Preview**
+- The **CalcPad: Run Preview** button in the CalcPad sidebar's view title bar
+- The *CalcPad: Run Preview* command in the Command Palette
+
+Running also re-lints the document, refreshes semantic tokens, and refreshes the Export tab's plot list.
 
 ## Errors and diagnostics
 
@@ -151,7 +162,7 @@ All exports run through the same backend conversion pipeline as the preview, so 
 | **HTML** | **Save HTML…** on the sidebar's **Export** tab, or *CalcPad: Save Source HTML…* | Renders and saves standalone HTML via a native dialog. |
 | **Word (.docx)** | **Save Word…** on the sidebar's **Export** tab, or *CalcPad: Save as Word Document…* | Renders, then converts to Word via Calcpad.OpenXml. |
 
-Use the **PDF** tab in the panel to set the document title, timestamp format, page size, and header/footer before exporting. The **Save HTML…** / **Save Word…** buttons live on the panel's **Export** tab — see [The CalcPad Panel & Settings → Export](calcpad-panel-and-settings.md#export).
+Use the **PDF** tab in the panel to set the document title, timestamp format, page size, and header/footer before exporting. The **Save HTML…** and **Save Word…** buttons live on the panel's **Export** tab, along with the **Plots** section — a thumbnail list of every plot the document emits, each with an individual **Save…** button and a **Download all (ZIP)** button. See [The CalcPad Panel & Settings → Export](calcpad-panel-and-settings.md#export).
 
 ## Settings
 

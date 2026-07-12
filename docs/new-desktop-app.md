@@ -36,21 +36,25 @@ Two Monaco options are flipped to match the most common keyboard expectations an
 
 ## Export tab
 
-The sidebar's **Export** tab now has three actions in addition to the existing per-file download buttons:
+The sidebar's **Export** tab combines document and plot exports:
 
 | Button | Behaviour (desktop) | Behaviour (web) |
 |--------|---------------------|------------------|
 | **Save HTML…** | Native save dialog → writes `.html` via Tauri's `plugin-fs` | Browser blob download (`calcpad-output.html`) |
 | **Save Word…** | Native save dialog → writes `.docx` via Tauri's `plugin-fs` | Browser blob download (`calcpad-output.docx`) |
-| **Download all (.zip)** | Existing zipped `#write`/`#append` exports | Same |
+| **Refresh** (Plots section) | Re-runs the document and repopulates the plot list | Same |
+| **Save…** (per plot) | Native save dialog → writes the raw PNG/SVG bytes | Browser blob download |
+| **Download all (ZIP)** | Native save dialog → writes a single ZIP built by the shared `buildZip` helper | Browser blob download |
 
-Both new actions go through the same backend pipeline:
+Both HTML/Word actions go through the same backend pipeline:
 
 1. `POST /api/calcpad/convert` (HTML) or `POST /api/calcpad/docx` (Word)
 2. The DOCX endpoint runs the calcpad → HTML pipeline with `forPrint: true`, then feeds the HTML through `Calcpad.OpenXml.OpenXmlWriter` and returns the `.docx` bytes
 3. Frontend writes the result via the platform's save mechanism
 
-The same buttons fire on the VS Code sidebar's Export tab, where they execute the `vscode-calcpad.saveSourceHtml` and `vscode-calcpad.saveDocx` commands (also available from the Command Palette).
+Plots are extracted from the rendered HTML by `extractPlotsFromHtml` (see `calcpad-frontend/src/services/plot-extract.ts`) — the shared base bridge caches the extracted `ExtractedPlot[]` after each `getPlots` message, so per-plot saves and the ZIP export both reuse the same in-memory copy without an extra API round-trip. This replaces the WPF app's *plot output directory* setting; on Calcpad.Web, plot files are only written on explicit user action.
+
+The same buttons fire on the VS Code sidebar's Export tab, where the HTML / Word buttons execute the `vscode-calcpad.saveSourceHtml` and `vscode-calcpad.saveDocx` commands (also available from the Command Palette), and the plot list is fed by `setCachedHtml` on the Vue UI provider.
 
 ## Embedded server lifecycle
 
@@ -69,10 +73,23 @@ Built in Rust via Tauri's `MenuBuilder` (see `build_menu` in [src-tauri/src/lib.
 
 - **File** — New Tab · Open… · Save · Save As… · Close Tab · Export PDF… · Quit
 - **Edit** — Undo · Redo · Cut · Copy · Paste · Select All · Find · Replace
-- **View** — Toggle Sidebar · Toggle Preview · Preview Mode: Wrapped / Unwrapped
-- **Server** — Refresh · Show Server Log · Stop Server · Restart Server · Restart App
+- **View** — Toggle Sidebar · Toggle Preview · Split Editor · Preview Mode: Wrapped / Unwrapped
+- **Server** — Refresh (`Ctrl+Alt+X`) · Show Server Log · Stop Server · Restart Server
+- **Help** — Documentation (opens the docs site via `plugin-opener`)
 
-Recent files are tracked by the frontend via Tauri's `plugin-store`.
+`Refresh` runs the frontend's `runRefresh()`: re-lint every group, refresh definitions/TOC, redraw previews, and post `getPlots` so the Export tab's cache is repopulated. Recent files are tracked by the frontend via Tauri's `plugin-store`.
+
+## Manual run and auto-run
+
+The `autoRun` extra setting (Settings tab → **Auto-Run Preview**, default on) gates the debounced content-change handler in `wireGroupCommon` — when off, `refreshPreviewFor` is not scheduled on `onDidChangeModelContent`. The preview still refreshes on preview open, tab switch, and manual run. Manual triggers:
+
+- **▶ Run** button on the editor toolbar (`onRunRequest` callback → `runRefresh()`).
+- **Ctrl+Alt+X** — bound in `wireGroupCommon` via `editor.addAction` (also shows in Monaco's right-click context menu under `navigation` group) and at the window level in `wireGroupTauri` so it fires with focus outside the editor.
+- **Server → Refresh** — the same menu accelerator, routed through the shared `menu-click` handler.
+
+## Split editor
+
+The editor toolbar's **Split ⬓** button (also **View → Split Editor**) calls the `onSplitRequest` callback wired from `main.ts` → `splitEditor()`, which appends a second `EditorGroup` (its own tabs, Monaco instance, preview iframe, and diagnostic cache) stacked below the first. Each group is wired independently by `wireGroupCommon` / `wireGroupTauri`; the *active group* (last focused) drives the sidebar (Problems, TOC, Variables). Unsplitting closes the bottom group, walking any dirty tabs through the save prompt first. The split state is not persisted between sessions.
 
 ## Drag-and-drop
 

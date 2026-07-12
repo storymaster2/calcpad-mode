@@ -52,6 +52,7 @@
 -   Submit removed jquery refactor as a PR to main.
 -   Submit IsUS settings refactor as a PR to main.
 -   Submit plot export Core refactor as a PR to main.
+-   Add app version to settings Vue tab.
 
 ### Bugs
 
@@ -66,6 +67,8 @@
             33.333; 40.333; 51.667; 75; 96.667; 108.333; 118.667; _
             23.333; 23.333; 23.333; _
             35; 35; 35; 35]*1ft
+-   Make .cpd the default save extension
+-   Associate .cpd filetype with CalcpadCE Web on install (is this possible with appimage? If not, wait until full deployment)
 
 ### Bugs
 

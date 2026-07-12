@@ -102,6 +102,9 @@ CalcpadCE includes a large collection of predefined units as follows:
 
 ### Non-metric units (Imperial/US)
 
+> Several bare unit names have a UK and US variant with different magnitudes (`gal`, `ton`, `cwt`, `pt`, `qt`, `bbl`, `tonf`, `therm`, …). The **Non-Metric Units** setting picks which one the bare form resolves to — **UK (Imperial)** or **US Customary**. The suffixed forms (`gal_UK`, `gal_US`, …) always mean exactly what they say. This setting lives on `Settings.IsUs` and applies uniformly to the WPF app, the CLI, and every Calcpad.Web host.
+
+
 - Mass: gr, dr, oz, lb (or lbm, lb_m), kipm (or kip_m), st, qr,  
      cwt (or cwt_UK, cwt_US), ton (or ton_UK, ton_US), slug;
 - Length: th, in, ft, yd, ch, fur, mi, ftm (or ftm_UK, ftm_US),  

@@ -97,6 +97,22 @@ The preview pane renders your report live and re-renders as you type. From **Vie
 - **Preview Mode: Wrapped** — the normal report view.
 - **Preview Mode: Unwrapped** — the fully expanded source, with macros and includes resolved. Useful for debugging what the engine computes.
 
+### Manual run (Auto-Run off)
+
+By default the preview re-renders continuously as you type. If you turn **Settings → Auto-Run Preview** off, the preview only re-renders when:
+
+- The preview pane is first opened.
+- You click **▶ Run** on the editor toolbar.
+- You press **Ctrl+Alt+X**.
+- You right-click in the editor → **Run Preview**.
+- You use **Server → Refresh** in the native menu (same shortcut).
+
+A manual run also re-lints the document, refreshes definitions/TOC, and re-populates the Export tab's plot list — so long-running documents can be edited freely and only re-computed on demand.
+
+## Splitting the editor
+
+The **Split ⬓** button in the editor toolbar (also **View → Split Editor**) opens a second editor group stacked below the first. Each group has its own tabs, tab strip, preview iframe, and Problems markers. Click **Unsplit** (same button) to close the bottom group. The active group is the one that most recently had focus — hover, definitions, references, and preview sync target the active group.
+
 ## Errors
 
 ### Linter
@@ -115,7 +131,7 @@ All exports use the app's built-in server, so the output matches the preview exa
 | **HTML** | **Save HTML…** on the sidebar's **Export** tab | Native save dialog writes standalone `.html`. |
 | **Word (.docx)** | **Save Word…** on the sidebar's **Export** tab | Native save dialog writes `.docx` (converted via Calcpad.OpenXml). |
 
-Set the document title, timestamp format, page size, and header/footer in the sidebar's **PDF** tab before exporting. The **Save HTML…** / **Save Word…** / **Download all (.zip)** buttons live on the **Export** tab — see [The CalcPad Panel & Settings → Export](calcpad-panel-and-settings.md#export).
+Set the document title, timestamp format, page size, and header/footer in the sidebar's **PDF** tab before exporting. The **Save HTML…** and **Save Word…** buttons live on the **Export** tab, along with a **Plots** section that lists every plot the document produces so you can save each one individually or as a ZIP archive — see [The CalcPad Panel & Settings → Export](calcpad-panel-and-settings.md#export).
 
 ## The native menu
 
@@ -123,8 +139,9 @@ The menu bar drives the whole app:
 
 - **File** — New Tab · Open… · Save · Save As… · Close Tab · Export PDF… · Quit
 - **Edit** — Undo · Redo · Cut · Copy · Paste · Select All · Find · Replace
-- **View** — Toggle Sidebar · Toggle Preview · Preview Mode: Wrapped / Unwrapped
-- **Server** — Refresh · Show Server Log · Stop Server · Restart Server · Restart App
+- **View** — Toggle Sidebar · Toggle Preview · Split Editor · Preview Mode: Wrapped / Unwrapped
+- **Server** — Refresh (Ctrl+Alt+X) · Show Server Log · Stop Server · Restart Server
+- **Help** — Documentation (opens the docs site in your default browser)
 
 ## Settings and configurations
 
@@ -138,10 +155,9 @@ The app runs a .NET calculation server bundled inside it. It starts automaticall
 
 If calculations stop working, use the **Server** menu:
 
-- **Refresh** — re-parse the active document.
+- **Refresh** *(Ctrl+Alt+X)* — re-run the active document (re-lint, re-render previews, refresh plots and definitions).
 - **Show Server Log** — open the server's log file to diagnose problems.
 - **Stop Server** / **Restart Server** — cycle the server process.
-- **Restart App** — full app restart.
 
 ## Troubleshooting
 

@@ -566,6 +566,50 @@
                 "panel": "dedicated"
             },
             "problemMatcher": []
+        },
+
+        // ── Version Bump (calcpad-frontend + calcpad-desktop + vscode-calcpad kept in sync) ──
+        {
+            "label": "Version: Bump Patch",
+            "type": "process",
+            "command": "node",
+            "args": [
+                "${workspaceFolder}/Calcpad.Web/frontend/scripts/bump-versions.mjs",
+                "patch"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Version: Bump Minor",
+            "type": "process",
+            "command": "node",
+            "args": [
+                "${workspaceFolder}/Calcpad.Web/frontend/scripts/bump-versions.mjs",
+                "minor"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Version: Bump Major",
+            "type": "process",
+            "command": "node",
+            "args": [
+                "${workspaceFolder}/Calcpad.Web/frontend/scripts/bump-versions.mjs",
+                "major"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
         }
     ]
 }

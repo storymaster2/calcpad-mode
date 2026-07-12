@@ -4,7 +4,7 @@
 
 The **CalcPad panel** is the tabbed sidebar that sits beside the editor. It shows what your document defines, lets you insert symbols and snippets, controls the calculation and plot settings, and drives export. Because every Calcpad front end embeds the same panel, the tabs and settings are identical everywhere; only how you open it differs:
 
-- **VS Code** — click the **CalcPad** icon in the activity bar. The view title bar has **Refresh Document** and **Stop Server** buttons.
+- **VS Code** — click the **CalcPad** icon in the activity bar. The view title bar has **CalcPad: Run Preview** (re-render) and **Stop Server** buttons.
 - **Desktop app** — **View → Toggle Sidebar**.
 
 ## Views
@@ -26,7 +26,7 @@ The **Calcpad** view is organized into tabs:
 | **Variables** | Everything defined in the document — macros, variables, functions, and custom units — with types and signatures. Click an entry to insert it; each is searchable. |
 | **PDF** | Header/footer, page size, and layout options applied when you export to PDF. |
 | **Formatting** | Prettify options and the **Prettify Document** button. See [Formatting](#formatting-prettify). |
-| **Export** | **Save HTML…**, **Save Word…**, and **Download all (.zip)** buttons. See [Export](#export). |
+| **Export** | **Save HTML…**, **Save Word…**, and per-plot / ZIP-all image export from any plots produced by the document. See [Export](#export). |
 | **Errors** | Full list of calculation errors from the engine, each linking to its source line — including errors that occur inside hidden (`#hide`) regions and so never appear in the preview. |
 
 ### Insert
@@ -69,15 +69,22 @@ Use **Generate PDF** to export, or **Reset** to restore the defaults.
 
 ### Export
 
-Three actions that render the current document through the backend and save the result:
+Renders the current document through the backend and offers several save actions:
 
 | Button | Result |
 |--------|--------|
 | **Save HTML…** | Saves a standalone `.html` of the rendered report. |
 | **Save Word…** | Converts the report to a Word `.docx` (via Calcpad.OpenXml). |
-| **Download all (.zip)** | Bundles the files produced by any `#write` / `#append` commands. |
 
-On the desktop app these use native save dialogs; in the browser build they download as blobs.
+Below those, the **Plots** section lists every plot the document emits, each with a thumbnail, filename, and size:
+
+| Button | Result |
+|--------|--------|
+| **Refresh** | Re-runs the document and re-lists plots. Triggered automatically by a manual **Run Preview**. |
+| **Save…** (per plot) | Writes that plot to disk in its native format (PNG or SVG, depending on the **Vector Graphics** setting). |
+| **Download all (ZIP)** | Bundles every plot in one archive. |
+
+On the desktop app these use native save dialogs; in the browser build they download as blobs. This replaces the WPF "plot output directory" setting — plots are always kept in memory and exported on demand.
 
 ### Errors
 
@@ -92,10 +99,12 @@ The **Settings** tab is the single place to control the calculation engine and t
 | Setting | Values | Meaning |
 |---------|--------|---------|
 | **Decimals** | 0–15 | Decimal places shown in results. |
-| **Degrees** | 0–360 | Trigonometric angle setting. |
+| **Angle Units** | Radians / Degrees / Gradians | Trigonometric angle setting. |
 | **Complex Numbers** | on/off | Enable complex-number arithmetic. |
 | **Substitute Variables** | on/off | Substitute variable values into the output. |
-| **Format Equations** | on/off | Render equations in formatted math rather than plain text. |
+| **Format Equations** | on/off | *Professional* (on) renders equations in stacked math form; *Inline* (off) renders them on a single line. |
+| **Zero Small Matrix Elements** | on/off | Show very small matrix/vector values as `0` instead of using scientific notation. |
+| **Max Output Count** | 5–100 | Maximum number of rows/columns shown for large matrices and vectors. |
 
 ### Plot
 
@@ -112,7 +121,8 @@ The **Settings** tab is the single place to control the calculation engine and t
 
 ### Units
 
-**Units System** — SI (International System) / Imperial / US Customary.
+- **Default Input Length Unit** — `m` / `cm` / `mm`. Used for `%u` placeholders in input forms.
+- **Non-Metric Units** — **UK (Imperial)** or **US Customary**. Selects the definition of bare unit names that differ between the two systems (`gal`, `ton`, `cwt`, `pt`, `qt`, `bbl`, `tonf`, `therm`, …). This lives on `Settings.IsUs` and is unified across the WPF app, the CLI, and the web/desktop/VS Code hosts.
 
 ### Server
 
@@ -127,12 +137,20 @@ The **Settings** tab is the single place to control the calculation engine and t
 
 **Color Theme** — the syntax-highlighting theme, defaulting to *System* with the available dark and light themes grouped in the list.
 
+### Editor Font
+
+Desktop app only. Pick the Monaco editor's font family from:
+
+- **JuliaMono** (bundled default) or **System Default**.
+- Any additional `.woff2`/`.woff`/`.ttf`/`.otf` files dropped into the desktop app's *fonts folder*. Use **Open Fonts Folder** to reveal it, drop your fonts in, then reopen the Font Family picker to pick them up.
+
 ### Editor features
 
 - **Enable Quick Typing** — `~`-prefixed shortcuts expand to symbols (e.g. `~a` → `α`, `~'` → `′`).
 - **Comment Format** — Auto (detect `#md` on/off) / HTML / Markdown; controls what the formatting hotkeys emit.
 - **Enable Formatting Hotkeys** — the Ctrl+B / Ctrl+I / Ctrl+1–6 … bindings.
 - **Sync Preview to Cursor Line** — scroll the preview to follow the line the cursor is on.
+- **Auto-Run Preview** *(default on)* — when off, the preview only re-renders when the preview panel is first opened or a manual **Run Preview** is triggered (**Ctrl+Alt+X**, the ▶ Run button, the editor context menu, or the Server → Refresh menu in the desktop app). Turn this off for large documents where every keystroke re-render is too costly.
 
 ### Library
 
@@ -144,7 +162,8 @@ The **Settings** tab is the single place to control the calculation engine and t
 
 ### Diagnostics
 
-**Open Logs Folder** — opens the folder holding server logs and the most recent crash dump.
+- **Open Logs Folder** — opens the folder holding server logs and the most recent crash dump.
+- **Max Output Lines (per channel)** *(web/desktop)* — 10–100000, default 1000. Number of lines retained in each Output panel channel before older lines are dropped. Lower values reduce memory use and keep the UI responsive when logs are noisy.
 
 ## Named configurations
 

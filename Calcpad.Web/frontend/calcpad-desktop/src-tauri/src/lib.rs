@@ -322,6 +322,52 @@ fn get_env(name: String) -> Option<String> {
     std::env::var(name).ok()
 }
 
+// Inside a linuxdeploy-generated AppImage, AppRun exports LD_LIBRARY_PATH so
+// the bundled binary can find its libs. If we spawn xdg-open through the
+// opener plugin, the child inherits that env, and any glib/dbus tools it
+// invokes crash trying to load the AppImage's bundled libc/libglib against
+// the host system. Strip those vars (plus the archived originals AppRun
+// stashes) so xdg-open sees a pristine environment.
+#[tauri::command]
+fn open_path_native(path: String) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    {
+        let mut cmd = std::process::Command::new("xdg-open");
+        cmd.arg(&path);
+        for key in [
+            "LD_LIBRARY_PATH",
+            "LD_PRELOAD",
+            "GTK_DATA_PREFIX",
+            "GTK_THEME",
+            "GTK_EXE_PREFIX",
+            "GTK_PATH",
+            "GTK_IM_MODULE_FILE",
+            "GDK_PIXBUF_MODULE_FILE",
+            "GIO_EXTRA_MODULES",
+            "GSETTINGS_SCHEMA_DIR",
+            "XDG_DATA_DIRS",
+            "PYTHONHOME",
+            "PYTHONPATH",
+            "PERLLIB",
+            "QT_PLUGIN_PATH",
+        ] {
+            let orig = format!("APPDIR_ORIG_{key}");
+            match std::env::var(&orig) {
+                Ok(v) if !v.is_empty() => { cmd.env(key, v); }
+                _ => { cmd.env_remove(key); }
+            }
+            cmd.env_remove(orig);
+        }
+        cmd.stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null());
+        cmd.spawn().map(|_| ()).map_err(|e| e.to_string())
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = path;
+        Err("open_path_native is Linux-only".to_string())
+    }
+}
+
 #[tauri::command]
 fn server_dir(app: AppHandle) -> Result<String, String> {
     // Directory where the sidecar was extracted at install time. Calcpad.Server
@@ -902,6 +948,7 @@ pub fn run() {
             draft_list,
             draft_read,
             draft_delete,
+            open_path_native,
         ])
         .setup(|app| {
             // Pin the on-disk locations the panic hook + draft commands need.

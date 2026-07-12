@@ -624,10 +624,22 @@ export class TauriMessageBridge extends BaseMessageBridge {
         const parent = pathDirname(itemPath);
         const target = parent || itemPath;
         try {
-            await openPath(target);
+            await this.openPathSafe(target);
         } catch (err) {
             console.error(`Failed to open containing folder for ${itemPath}:`, err);
         }
+    }
+
+    // On Linux, prefer a native command that spawns xdg-open with the
+    // AppImage's LD_LIBRARY_PATH / GTK_* env stripped. plugin-opener inherits
+    // the parent's env, and inside an AppImage that env poisons every glib
+    // tool xdg-open forwards to (gio open, dbus-send, kfmclient...).
+    private async openPathSafe(target: string): Promise<void> {
+        if (this._platform === 'linux') {
+            await invoke('open_path_native', { path: target });
+            return;
+        }
+        await openPath(target);
     }
 
     // ---- Library path resolution ----
@@ -794,7 +806,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
         }
         try { await mkdir(dir, { recursive: true }); } catch { /* already exists */ }
         try {
-            await openPath(dir);
+            await this.openPathSafe(dir);
             console.info(`Opened logs folder: ${dir}`);
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
@@ -1049,7 +1061,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
 
     private async handleOpenSettingsFolder(): Promise<void> {
         try { await mkdir(this._settingsDir, { recursive: true }); } catch { /* exists */ }
-        try { await openPath(this._settingsDir); }
+        try { await this.openPathSafe(this._settingsDir); }
         catch (err) {
             console.error('Failed to open settings folder:', err);
         }
@@ -1058,7 +1070,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
     private async handleOpenFontsFolder(): Promise<void> {
         if (!this._fontsDir) return;
         try { await mkdir(this._fontsDir, { recursive: true }); } catch { /* exists */ }
-        try { await openPath(this._fontsDir); }
+        try { await this.openPathSafe(this._fontsDir); }
         catch (err) {
             console.error('Failed to open fonts folder:', err);
         }
