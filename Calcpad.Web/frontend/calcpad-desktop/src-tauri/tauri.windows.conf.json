@@ -1,7 +1,7 @@
 {
   "build": {
-    "beforeDevCommand": "powershell -ExecutionPolicy Bypass -Command \"& { Remove-Item -Recurse -Force ../calcpad-web/dist -ErrorAction SilentlyContinue; .\\local-npm.ps1 --prefix ../calcpad-frontend run build; Start-Process -NoNewWindow -FilePath powershell -ArgumentList '-ExecutionPolicy Bypass -File local-npm.ps1 --prefix ../calcpad-frontend run watch'; .\\local-npm.ps1 --prefix ../calcpad-web run build:watch }\"",
-    "beforeBuildCommand": "powershell -ExecutionPolicy Bypass -Command \"& { Remove-Item -Recurse -Force ../calcpad-web/dist -ErrorAction SilentlyContinue; .\\local-npm.ps1 --prefix ../calcpad-frontend run build; .\\local-npm.ps1 --prefix ../calcpad-web run build }\""
+    "beforeDevCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File build-frontend.ps1 -Watch",
+    "beforeBuildCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File build-frontend.ps1"
   },
   "bundle": {
     "targets": ["msi", "nsis"],
