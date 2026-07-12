@@ -616,7 +616,8 @@ namespace Calcpad.Core
                 double d = 0.75 / ScreenScaleFactor;
                 double dw = Math.Round(d * Width);
                 double dh = Math.Round(d * Height);
-                return $"<div class=\"plot\" style=\"width:{dw}pt; height:{dh}pt;\">{g}</div>";
+                var svgText = "<svg data-plot=\"svg\" " + g.ToString()[4..];
+                return $"<div class=\"plot\" style=\"width:{dw}pt; height:{dh}pt;\">{svgText}</div>";
             }
             SvgToFile(g, Settings.ImagePath, fileName);
             return HtmlImg(Settings.ImageUri + fileName);
