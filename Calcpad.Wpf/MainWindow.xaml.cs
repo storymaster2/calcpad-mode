@@ -528,11 +528,11 @@ namespace Calcpad.Wpf
 
         private int _scrollOutputToLine;
         private double _scrollOffset;
-        private async void LineClicked(string data)
+        private async void LineClicked(string data, bool isSourceLink = false)
         {
             if (int.TryParse(data, out var line) && line > 0)
             {
-                if (_highlighter.Defined.HasMacros && !IsUnwarpedCode)
+                if (!isSourceLink && _highlighter.Defined.HasMacros && !IsUnwarpedCode)
                 {
                     _scrollOffset = await _wv2Warper.GetVerticalPositionAsync(line);
                     _scrollOutputToLine = line;
@@ -3814,7 +3814,7 @@ namespace Calcpad.Wpf
 
         private async void WebViewer_LinkClicked()
         {
-            var s = await _wv2Warper.GetLinkDataAsync();
+            var (s, className) = await _wv2Warper.GetLinkDataAndClassAsync();
             if (s is null)
                 return;
 
@@ -3848,7 +3848,10 @@ namespace Calcpad.Wpf
                 else if (s == "cancel")
                     Cancel();
                 else if (IsCalculated || _parser.IsPaused)
-                    LineClicked(s);
+                {
+                    var isSourceLink = className != null && className.Contains("lineLink");
+                    LineClicked(s, isSourceLink);
+                }
                 else if (!IsWebForm)
                     LinkClicked(s);
             }
