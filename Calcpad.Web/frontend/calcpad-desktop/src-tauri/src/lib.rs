@@ -26,6 +26,13 @@ const SIDECAR_EXE_UNIX: &str = "Calcpad.Server";
 const SIDECAR_EXE_WINDOWS: &str = "Calcpad.Server.exe";
 const PORT_READY_TIMEOUT_MS: u64 = 30_000;
 
+/// Files handed to us by the OS at launch (double-click on .cpd via the
+/// installed file association). Populated in setup() from argv; drained by
+/// the frontend once it has registered its open-file listener, avoiding the
+/// race between Rust emitting and JS being ready to listen.
+#[derive(Default)]
+struct PendingLaunchFiles(Mutex<Vec<String>>);
+
 #[derive(Default)]
 struct ServerState {
     // Send () to signal the running sidecar to shut down. Owned here so the
@@ -87,6 +94,24 @@ struct DraftContent {
     #[serde(rename = "savedAt")]
     saved_at: u64,
     content: String,
+}
+
+/// Pull out any file paths (with .cpd extension) from a launch argv so we can
+/// open them once the frontend is ready. argv[0] is the executable path — skip
+/// it. macOS may pass an `-psn_...` process serial arg for double-click launches.
+fn extract_launch_files<I: IntoIterator<Item = String>>(args: I) -> Vec<PathBuf> {
+    args.into_iter()
+        .skip(1)
+        .filter(|a| !a.starts_with('-'))
+        .map(PathBuf::from)
+        .filter(|p| {
+            p.extension()
+                .and_then(|e| e.to_str())
+                .map(|e| e.eq_ignore_ascii_case("cpd"))
+                .unwrap_or(false)
+        })
+        .filter(|p| p.exists())
+        .collect()
 }
 
 fn unix_millis() -> u64 {
@@ -303,6 +328,11 @@ fn draft_delete(id: String) -> Result<(), String> {
 #[tauri::command]
 fn server_url(state: State<'_, ServerState>) -> Option<String> {
     state.url.lock().ok().and_then(|g| g.clone())
+}
+
+#[tauri::command]
+fn take_pending_launch_files(state: State<'_, PendingLaunchFiles>) -> Vec<String> {
+    state.0.lock().map(|mut g| std::mem::take(&mut *g)).unwrap_or_default()
 }
 
 #[tauri::command]
@@ -940,11 +970,14 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
 pub fn run() {
     install_panic_hook();
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+        .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             if let Some(w) = app.get_webview_window("main") {
                 let _ = w.show();
                 let _ = w.set_focus();
                 let _ = w.unminimize();
+            }
+            for path in extract_launch_files(argv) {
+                let _ = app.emit("open-file-request", path.to_string_lossy().to_string());
             }
         }))
         .plugin(tauri_plugin_shell::init())
@@ -958,6 +991,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(ServerState::default())
+        .manage(PendingLaunchFiles::default())
         .invoke_handler(tauri::generate_handler![
             server_url,
             restart_server,
@@ -970,6 +1004,7 @@ pub fn run() {
             draft_delete,
             open_path_native,
             log_dir,
+            take_pending_launch_files,
         ])
         .setup(|app| {
             // Pin the on-disk locations the panic hook + draft commands need.
@@ -1026,6 +1061,19 @@ pub fn run() {
                     }
                 }
             });
+
+            // Cold-start file associations: if the app was launched by
+            // double-clicking a .cpd file, argv contains its path. Stash it
+            // in shared state; the frontend drains it via take_pending_launch_files
+            // once its listener is up (event emit would race the JS boot).
+            let launch_files = extract_launch_files(std::env::args());
+            if !launch_files.is_empty() {
+                let pending: State<'_, PendingLaunchFiles> = app.state();
+                let mut guard = pending.0.lock().expect("pending launch files mutex poisoned");
+                for path in launch_files {
+                    guard.push(path.to_string_lossy().to_string());
+                }
+            }
 
             // Main window is configured `visible: true` in tauri.conf.json and
             // intentionally NOT hidden-then-shown here: on GNOME (X11 and

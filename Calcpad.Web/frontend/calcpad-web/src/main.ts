@@ -1100,6 +1100,18 @@ async function bootstrap(): Promise<void> {
             if (detail?.path) void loadFile(detail.path);
         });
 
+        // Drain any files handed to us at cold start by the OS's .cpd file
+        // association. Runs after the listener above is wired so the bridge's
+        // synchronous dispatch inside handleOpenFileByPath actually lands.
+        if (isTauri) {
+            try {
+                const pending = await tauriInvoke<string[]>('take_pending_launch_files');
+                for (const path of pending) await loadFile(path);
+            } catch {
+                /* older desktop builds may not expose the command; ignore */
+            }
+        }
+
         /**
          * Save the active tab. If it has no file path, prompts for one.
          * Returns true if saved, false if the user cancelled / no active tab.

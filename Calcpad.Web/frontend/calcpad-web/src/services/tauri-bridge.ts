@@ -1,5 +1,6 @@
 import * as monaco from 'monaco-editor';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
 import {
     readTextFile,
@@ -171,6 +172,9 @@ export class TauriMessageBridge extends BaseMessageBridge {
         this._store = await Store.load(STORE_FILE);
         await this.loadSettingsFromStorage();
         await this.loadUserFonts();
+        await listen<string>('open-file-request', (evt) => {
+            void this.handleOpenFileByPath(evt.payload);
+        });
     }
 
     getExtraSetting(key: string): string | undefined {
@@ -466,6 +470,15 @@ export class TauriMessageBridge extends BaseMessageBridge {
         return this._lastDialogDir ?? undefined;
     }
 
+    private getSaveDialogDefaultPath(): string | undefined {
+        const activePath = this.activeTabFilePath();
+        if (activePath) return activePath;
+        const title = this.activeTabTitle() || 'Untitled';
+        const name = /\.[^./\\]+$/.test(title) ? title : `${title}.cpd`;
+        const dir = this._lastDialogDir;
+        return dir ? pathResolve(dir, name) : name;
+    }
+
     private rememberDialogDir(pathOrFile: string | null | undefined, isDirectory = false): void {
         if (!pathOrFile) return;
         this._lastDialogDir = isDirectory ? pathOrFile : pathDirname(pathOrFile) || pathOrFile;
@@ -528,7 +541,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
     async saveFileAs(content: string): Promise<string | null> {
         const filePath = await dialogSave({
             title: 'Save File',
-            defaultPath: this.getDialogDefaultPath(),
+            defaultPath: this.getSaveDialogDefaultPath(),
             filters: [
                 { name: 'CalcPad Files', extensions: ['cpd'] },
                 { name: 'All Files', extensions: ['*'] },
@@ -690,6 +703,11 @@ export class TauriMessageBridge extends BaseMessageBridge {
     private activeTabFilePath(): string {
         const tabs = (window as any).calcpadTabs;
         return tabs?.activeTab?.filePath ?? '';
+    }
+
+    private activeTabTitle(): string {
+        const tabs = (window as any).calcpadTabs;
+        return tabs?.activeTab?.title ?? '';
     }
 
     private activeTabDirectory(): string {

@@ -39,6 +39,16 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "fileAssociations": [
+      {
+        "ext": ["cpd"],
+        "name": "Calcpad Document",
+        "description": "Calcpad calculation document",
+        "mimeType": "application/x-calcpad",
+        "role": "Editor",
+        "rank": "Default"
+      }
+    ],
     "category": "DeveloperTool",
     "shortDescription": "CalcPadCE Web desktop editor",
     "longDescription": "CalcPadCE Web is a Vue-based editor for Calcpad calculation files, backed by an embedded ASP.NET Core server.",

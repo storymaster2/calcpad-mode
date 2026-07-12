@@ -53,6 +53,7 @@
 -   Submit IsUS settings refactor as a PR to main.
 -   Submit plot export Core refactor as a PR to main.
 -   Add app version to settings Vue tab.
+-   Make light mode for empty document HTML
 
 ### Bugs
 
