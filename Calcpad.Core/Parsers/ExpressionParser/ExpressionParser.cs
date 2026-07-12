@@ -45,7 +45,6 @@ namespace Calcpad.Core
         public bool Debug { get; set; }
         public bool ShowWarnings { get; set; } = true;
         public readonly List<string> OpenXmlExpressions = new(100);
-        public readonly List<PlotOutput> PlotOutputs = new();
 
         static ExpressionParser()
         {
@@ -464,7 +463,6 @@ namespace Calcpad.Core
                 _previousKeyword = Keyword.None;
                 _isMarkdownOn = false;
                 OpenXmlExpressions.Clear();
-                PlotOutputs.Clear();
             }
             else
             {
@@ -495,7 +493,6 @@ namespace Calcpad.Core
 
             if (_calculate && _startLine == 0)
             {
-                PlotOutputs.AddRange(_parser.PlotOutputs);
                 _parser.ClearCache();
                 _parser = null;
             }

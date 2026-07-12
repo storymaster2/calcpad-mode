@@ -66,6 +66,7 @@
         :initial-comment-format="commentFormat"
         :initial-enable-formatting-hotkeys="enableFormattingHotkeys"
         :initial-enable-preview-cursor-sync="enablePreviewCursorSync"
+        :initial-enable-auto-run="enableAutoRun"
         :initial-dark-background="darkBackground"
         :initial-linter-min-severity="linterMinSeverity"
         :initial-max-output-lines="maxOutputLines"
@@ -82,6 +83,7 @@
         @update-comment-format="handleUpdateCommentFormat"
         @update-formatting-hotkeys="handleUpdateFormattingHotkeys"
         @update-preview-cursor-sync="handleUpdatePreviewCursorSync"
+        @update-auto-run="handleUpdateAutoRun"
         @update-dark-background="handleUpdateDarkBackground"
         @update-linter-min-severity="handleUpdateLinterMinSeverity"
         @update-max-output-lines="handleUpdateMaxOutputLines"
@@ -92,6 +94,7 @@
         @open-settings-folder="handleOpenSettingsFolder"
         @open-logs-folder="handleOpenLogsFolder"
         @open-fonts-folder="handleOpenFontsFolder"
+        @refresh-fonts="handleRefreshFonts"
         @update-editor-font-family="handleUpdateEditorFontFamily"
       />
       <CalcpadVariablesTab
@@ -191,6 +194,7 @@ const enableQuickTyping = ref(true)
 const commentFormat = ref('auto')
 const enableFormattingHotkeys = ref(true)
 const enablePreviewCursorSync = ref(false)
+const enableAutoRun = ref(true)
 const darkBackground = ref('#1e1e1e')
 const linterMinSeverity = ref('information')
 const maxOutputLines = ref(1000)
@@ -377,6 +381,11 @@ const handleUpdatePreviewCursorSync = (enabled: boolean) => {
   postMessage({ type: 'updatePreviewCursorSync', enabled })
 }
 
+const handleUpdateAutoRun = (enabled: boolean) => {
+  enableAutoRun.value = enabled
+  postMessage({ type: 'updateAutoRun', enabled })
+}
+
 const handleUpdateDarkBackground = (color: string) => {
   darkBackground.value = color
   postMessage({ type: 'updateDarkBackground', color })
@@ -423,6 +432,10 @@ const handleOpenLogsFolder = () => {
 
 const handleOpenFontsFolder = () => {
   postMessage({ type: 'openFontsFolder' })
+}
+
+const handleRefreshFonts = () => {
+  postMessage({ type: 'refreshFonts' })
 }
 
 const handleUpdateEditorFontFamily = (family: string) => {
@@ -492,6 +505,7 @@ const handleMessage = (event: MessageEvent) => {
       enableFormattingHotkeys.value = message.enableFormattingHotkeys !== false
       if (typeof message.enableQuickTyping === 'boolean') enableQuickTyping.value = message.enableQuickTyping
       if (typeof message.enablePreviewCursorSync === 'boolean') enablePreviewCursorSync.value = message.enablePreviewCursorSync
+      if (typeof message.enableAutoRun === 'boolean') enableAutoRun.value = message.enableAutoRun
       darkBackground.value = message.darkBackground || '#1e1e1e'
       linterMinSeverity.value = message.linterMinSeverity || 'information'
       if (typeof message.maxOutputLines === 'number' && message.maxOutputLines >= 10) {
@@ -505,6 +519,9 @@ const handleMessage = (event: MessageEvent) => {
       break
     case 'editorFontFamilyChanged':
       if (typeof message.family === 'string') editorFontFamily.value = message.family
+      break
+    case 'availableFontsChanged':
+      if (Array.isArray(message.availableFonts)) availableFonts.value = message.availableFonts
       break
     case 'saveNamedConfigError':
       window.alert(message.message || 'Failed to save settings.')

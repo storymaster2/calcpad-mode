@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { parseHeadings, DEFAULT_PDF_SETTINGS, decodePlotPayload, buildZip } from 'calcpad-frontend';
-import type { CalcpadError, ExtractedPlot, PlotsResponse } from 'calcpad-frontend';
+import { parseHeadings, DEFAULT_PDF_SETTINGS, extractPlotsFromHtml, buildZip } from 'calcpad-frontend';
+import type { CalcpadError, ExtractedPlot } from 'calcpad-frontend';
 import { CalcpadSettingsManager } from './calcpadSettings';
 import { CalcpadInsertManager } from './calcpadInsertManager';
 
@@ -12,6 +12,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;
     private _outputChannel: vscode.OutputChannel;
     private _cachedPlots: ExtractedPlot[] = [];
+    private _cachedHtml: string = '';
     /**
      * Extension supplies a getter that combines `activeTextEditor` with the
      * remembered preview-source editor so plot fetching still works when the
@@ -138,6 +139,10 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
                 case 'updatePreviewCursorSync':
                     this._settingsManager.setExtra('previewCursorSync', data.enabled);
+                    break;
+
+                case 'updateAutoRun':
+                    this._settingsManager.setExtra('autoRun', data.enabled);
                     break;
 
                 case 'updateDarkBackground':
@@ -374,6 +379,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
             enableFormattingHotkeys: sm.getExtraBool('formattingHotkeys', true),
             enableQuickTyping: sm.getExtraBool('quickTyping', true),
             enablePreviewCursorSync: sm.getExtraBool('previewCursorSync', false),
+            enableAutoRun: sm.getExtraBool('autoRun', true),
             darkBackground: sm.getExtra('darkBackground', '#1e1e1e'),
             linterMinSeverity: sm.getExtra('linterMinSeverity', 'information'),
             libraryPath: sm.getExtra('libraryPath', ''),
@@ -382,17 +388,29 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         };
     }
 
+    public setCachedHtml(html: string): void {
+        this._cachedHtml = html;
+        this._cachedPlots = extractPlotsFromHtml(html);
+        if (this._view) {
+            this._view.webview.postMessage({
+                type: 'plotsResponse',
+                plots: this._cachedPlots.map(p => ({
+                    index: p.index,
+                    ext: p.ext,
+                    dataUri: p.dataUri,
+                    sizeBytes: p.bytes.length,
+                })),
+            });
+        }
+    }
+
     private async _handleGetPlots(): Promise<void> {
         if (!this._view) return;
-        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
-        const content = editor?.document.getText() ?? '';
-        if (!content.trim()) {
+        if (this._cachedHtml) {
+            this._cachedPlots = extractPlotsFromHtml(this._cachedHtml);
+        } else {
             this._cachedPlots = [];
-            this._view.webview.postMessage({ type: 'plotsResponse', plots: [] });
-            return;
         }
-        const response = await this._fetchPlots(content, editor?.document.uri.fsPath);
-        this._cachedPlots = response ? decodePlotPayload(response.plots) : [];
         this._view.webview.postMessage({
             type: 'plotsResponse',
             plots: this._cachedPlots.map(p => ({
@@ -441,25 +459,6 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         }
         const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         return folder ?? '';
-    }
-
-    private async _fetchPlots(content: string, sourceFilePath?: string): Promise<PlotsResponse | null> {
-        const apiBaseUrl = this._settingsManager.getServerUrl();
-        if (!apiBaseUrl) return null;
-        const settings = await this._settingsManager.getApiSettings();
-        try {
-            const response = await fetch(`${apiBaseUrl}/api/calcpad/plots`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings, sourceFilePath }),
-                signal: AbortSignal.timeout(30000),
-            });
-            if (!response.ok) return null;
-            return await response.json() as PlotsResponse;
-        } catch (err) {
-            this._outputChannel.appendLine(`[Plots] fetch failed: ${err instanceof Error ? err.message : String(err)}`);
-            return null;
-        }
     }
 
     private _sendHeadings() {

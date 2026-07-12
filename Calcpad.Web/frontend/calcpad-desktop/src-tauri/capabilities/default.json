@@ -28,7 +28,10 @@
         { "path": "$HOME/**" }
       ]
     },
-    "opener:allow-open-url",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [{ "url": "https://imartincei.github.io/CalcpadCE/*" }]
+    },
     "dialog:default",
     "dialog:allow-open",
     "dialog:allow-save",

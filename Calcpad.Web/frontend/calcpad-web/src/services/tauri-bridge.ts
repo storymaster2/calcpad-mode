@@ -390,6 +390,16 @@ export class TauriMessageBridge extends BaseMessageBridge {
         void this.handleOpenFontsFolder();
     }
 
+    protected onRefreshFonts(): void {
+        void (async () => {
+            await this.loadUserFonts();
+            this.postToVue({
+                type: 'availableFontsChanged',
+                availableFonts: [...this._availableFonts],
+            });
+        })();
+    }
+
     protected handlePlatformMessage(message: any): boolean {
         switch (message.type) {
             case 'saveNamedConfig':

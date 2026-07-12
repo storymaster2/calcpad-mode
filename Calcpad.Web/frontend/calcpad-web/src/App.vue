@@ -26,6 +26,13 @@
         <span class="spacer"></span>
         <button
           class="toolbar-btn"
+          @click="onRunPreview"
+          title="Run preview (Ctrl+Alt+X)"
+        >
+          ▶ Run
+        </button>
+        <button
+          class="toolbar-btn"
           @click="onToggleSplit"
           :title="isSplit ? 'Merge editor groups' : 'Split editor down (Ctrl+\\)'"
         >
@@ -405,6 +412,11 @@ function onEditorDividerMouseDown(e: MouseEvent): void {
 const onSplitRequest = ref<(() => void) | null>(null)
 const onCloseGroupRequest = ref<((groupId: string) => void) | null>(null)
 const onGroupFocusRequest = ref<((groupId: string) => void) | null>(null)
+const onRunRequest = ref<(() => void) | null>(null)
+
+function onRunPreview(): void {
+  onRunRequest.value?.()
+}
 
 function addGroup(id: string): void {
   if (groups.value.some(g => g.id === id)) return
@@ -1039,6 +1051,7 @@ defineExpose({
   onSplitRequest,
   onCloseGroupRequest,
   onGroupFocusRequest,
+  onRunRequest,
   // panels / preview
   toggleSidebar,
   togglePreview,

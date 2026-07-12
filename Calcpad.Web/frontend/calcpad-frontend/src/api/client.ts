@@ -13,7 +13,6 @@ import type {
     PrettifyResponse,
     CalcpadError,
     ConvertResult,
-    PlotsResponse,
 } from '../types/api';
 import type { SnippetsResponse } from '../types/snippets';
 
@@ -193,23 +192,6 @@ export class CalcpadApiClient {
                 return null;
             }
         });
-    }
-
-    /**
-     * Fetch plots for a calcpad document as structured data (server runs a
-     * full Convert internally and returns only the plot bytes). Powers the
-     * Export tab's individual/ZIP download without regex-parsing HTML.
-     */
-    public async getPlots(
-        content: string,
-        settings: unknown,
-        sourceFilePath?: string,
-    ): Promise<PlotsResponse | null> {
-        return this.post<PlotsResponse>(
-            '/api/calcpad/plots',
-            { content, settings, sourceFilePath },
-            'Plots',
-        );
     }
 
     public async checkHealth(): Promise<boolean> {

@@ -36,7 +36,10 @@ export function hasSnippetPlaceholders(item: InsertItem): boolean {
  * parameters). Used for plain-text display (no snippet syntax) — e.g. the
  * autocomplete dropdown label and the Insert Tab.
  */
-export function replaceParameterPlaceholders(text: string, item: InsertItem): string {
+export function replaceParameterPlaceholders(
+    text: string,
+    item: { parameters?: { name: string }[] }
+): string {
     if (!text.includes(SNIPPET_PLACEHOLDER)) return text;
     const segments = text.split(SNIPPET_PLACEHOLDER);
     let result = segments[0];

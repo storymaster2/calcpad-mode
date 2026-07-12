@@ -833,7 +833,7 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
         "Server",
         true,
         &[
-            &MenuItem::with_id(app, "refresh", "Refresh", true, Some("F5"))?,
+            &MenuItem::with_id(app, "refresh", "Refresh", true, Some("CmdOrCtrl+Alt+X"))?,
             &MenuItem::with_id(
                 app,
                 "show-server-log",
@@ -849,12 +849,24 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
                 true,
                 None::<&str>,
             )?,
-            &MenuItem::with_id(app, "restart-app", "Restart App", true, None::<&str>)?,
         ],
     )?;
 
+    let help = Submenu::with_items(
+        app,
+        "Help",
+        true,
+        &[&MenuItem::with_id(
+            app,
+            "help-documentation",
+            "Documentation",
+            true,
+            None::<&str>,
+        )?],
+    )?;
+
     MenuBuilder::new(app)
-        .items(&[&file, &edit, &view, &server])
+        .items(&[&file, &edit, &view, &server, &help])
         .build()
 }
 

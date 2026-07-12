@@ -7,7 +7,7 @@ import type { CalcpadSettings } from '../../types/settings';
 import { DEFAULT_PDF_SETTINGS } from '../../types/pdf-settings';
 import { buildImageCommentLine, bytesToBase64 } from '../image-utils';
 import type { ImageStorageMode, PickedImage } from '../image-utils';
-import { decodePlotPayload, type ExtractedPlot } from '../plot-extract';
+import { extractPlotsFromHtml, type ExtractedPlot } from '../plot-extract';
 import { buildZip } from '../zip-writer';
 import type { ILogger } from '../../types/interfaces';
 
@@ -147,6 +147,10 @@ export abstract class BaseMessageBridge {
             case 'updatePreviewCursorSync':
                 this.setExtraSetting('previewCursorSync', String(message.enabled));
                 break;
+            case 'updateAutoRun':
+                this.setExtraSetting('autoRun', String(message.enabled));
+                this.postToVue({ type: 'autoRunChanged', enabled: !!message.enabled });
+                break;
             case 'updateLinterMinSeverity':
                 this.setExtraSetting('linterMinSeverity', message.severity);
                 this.postToVue({ type: 'linterMinSeverityChanged', severity: message.severity });
@@ -195,6 +199,9 @@ export abstract class BaseMessageBridge {
             case 'openFontsFolder':
                 this.onOpenFontsFolder();
                 break;
+            case 'refreshFonts':
+                this.onRefreshFonts();
+                break;
             case 'updateEditorFontFamily':
                 this.setExtraSetting('editorFontFamily', message.family ?? '');
                 this.postToVue({ type: 'editorFontFamilyChanged', family: message.family ?? '' });
@@ -239,6 +246,7 @@ export abstract class BaseMessageBridge {
     protected onOpenFontsFolder(): void {
         console.warn('Open Fonts Folder is only available in the desktop build.');
     }
+    protected onRefreshFonts(): void { /* default no-op; desktop overrides */ }
     protected afterResetSettings(): void | Promise<void> { /* default no-op */ }
 
     // ---- Shared handlers ----
@@ -283,6 +291,7 @@ export abstract class BaseMessageBridge {
             commentFormat: this.getExtraSetting('commentFormat') || 'auto',
             enableFormattingHotkeys: this.getExtraSetting('formattingHotkeys') !== 'false',
             enablePreviewCursorSync: this.getExtraSetting('previewCursorSync') === 'true',
+            enableAutoRun: this.getExtraSetting('autoRun') !== 'false',
             linterMinSeverity: this.getExtraSetting('linterMinSeverity') || 'information',
             maxOutputLines: Number(this.getExtraSetting('maxOutputLines')) || 1000,
             editorFontFamily: this.getExtraSetting('editorFontFamily') ?? 'JuliaMono',
@@ -453,8 +462,9 @@ export abstract class BaseMessageBridge {
         }
         const apiSettings = buildApiSettings(this.settings);
         const { sourceFilePath } = await this.buildFileContext(content);
-        const response = await this.apiClient.getPlots(content, apiSettings, sourceFilePath);
-        this._cachedPlots = response ? decodePlotPayload(response.plots) : [];
+        const result = await this.apiClient.convert(content, apiSettings, 'html', false, sourceFilePath);
+        const html = result && !(result instanceof ArrayBuffer) ? result.html : '';
+        this._cachedPlots = extractPlotsFromHtml(html);
         this.postToVue({
             type: 'plotsResponse',
             plots: this._cachedPlots.map(p => ({

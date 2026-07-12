@@ -447,6 +447,19 @@ async function bootstrap(): Promise<void> {
             run: () => syncPreviewToCursorFor(group, true),
         });
 
+        // Manual "run" — re-renders all previews. Useful when Auto-Run Preview
+        // is off. The Ctrl+Alt+X shortcut is bound both here (works when the
+        // editor has focus) and at the window level (Tauri) so it fires from
+        // anywhere in the app.
+        ed.addAction({
+            id: 'calcpad.runPreview',
+            label: 'Run Preview',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyX],
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.4,
+            run: () => { void runRefresh(); },
+        });
+
         // Content changes: refresh this group's definitions cache + preview,
         // and (only when this is the active group) the sidebar TOC.
         let definitionsTimer: ReturnType<typeof setTimeout> | null = null;
@@ -456,7 +469,7 @@ async function bootstrap(): Promise<void> {
             ed.onDidChangeModelContent(() => {
                 if (definitionsTimer) clearTimeout(definitionsTimer);
                 definitionsTimer = setTimeout(() => void refreshDefinitionsFor(group), 800);
-                if (appInstance.isPreviewVisible()) {
+                if (appInstance.isPreviewVisible() && editorBridge.getExtraSetting('autoRun') !== 'false') {
                     if (previewTimer) clearTimeout(previewTimer);
                     previewTimer = setTimeout(() => void refreshPreviewFor(group), 800);
                 }
@@ -883,7 +896,8 @@ async function bootstrap(): Promise<void> {
     }
 
     // Manual refresh: re-lint with current settings, refresh definitions/
-    // headings, redraw previews. Called from the Server > Refresh menu item.
+    // headings, redraw previews, and re-extract Export-tab plots. Called from
+    // the Server > Refresh menu item and the editor's Run action.
     async function runRefresh(): Promise<void> {
         appInstance.appendOutput('info', 'Refreshing…');
         for (const g of groups.values()) {
@@ -892,6 +906,10 @@ async function bootstrap(): Promise<void> {
             if (appInstance.isPreviewVisible()) await refreshPreviewFor(g);
         }
         activeBridge.refreshHeadings();
+        // Refresh the Export tab's plot list — it caches independently of the
+        // preview and would otherwise show stale plots until the user clicks
+        // "Refresh Plots" manually.
+        window.dispatchEvent(new MessageEvent('message', { data: { type: 'getPlots' } }));
     }
 
     appInstance.onPreviewModeChanged = (mode: PreviewMode) => {
@@ -906,12 +924,15 @@ async function bootstrap(): Promise<void> {
         }
     };
 
+    // Toolbar "Run" button.
+    appInstance.onRunRequest = () => { void runRefresh(); };
+
     // Tauri-specific: native menu clicks + file operations
     if (isTauri && tauriBridge) {
         const [
             { listen: tauriListen },
             { getCurrentWindow },
-            { exit: processExit, relaunch: processRelaunch },
+            { exit: processExit },
             tauriClipboard,
             { invoke: tauriInvoke },
         ] = await Promise.all([
@@ -1518,10 +1539,6 @@ async function bootstrap(): Promise<void> {
                     }
                     break;
 
-                case 'restart-app':
-                    await processRelaunch();
-                    break;
-
                 case 'undo':
                     runClipboardAction('undo');
                     break;
@@ -1546,6 +1563,12 @@ async function bootstrap(): Promise<void> {
                 case 'replace':
                     runClipboardAction('replace');
                     break;
+
+                case 'help-documentation': {
+                    const { openUrl } = await import('@tauri-apps/plugin-opener');
+                    await openUrl('https://imartincei.github.io/CalcpadCE/');
+                    break;
+                }
             }
         });
 
@@ -1587,8 +1610,8 @@ async function bootstrap(): Promise<void> {
         // preview iframe parent, etc.). Editor-focused variants are bound per
         // group in wireGroupTauri.
         window.addEventListener('keydown', (e) => {
-            // F5 — refresh (no modifier; bound here so it fires from any focus).
-            if (e.key === 'F5' && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) {
+            // Ctrl+Alt+X — run/refresh (bound here so it fires from any focus).
+            if ((e.key === 'x' || e.key === 'X') && e.ctrlKey && e.altKey && !e.shiftKey && !e.metaKey) {
                 e.preventDefault();
                 void runRefresh();
                 return;

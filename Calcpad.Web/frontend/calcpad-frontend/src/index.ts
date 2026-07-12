@@ -25,8 +25,6 @@ export type {
     CalcpadError,
     CalcpadErrorSource,
     ConvertResult,
-    PlotPayload,
-    PlotsResponse,
 } from './types/api';
 export { CalcpadTokenType, CalcpadTypeId } from './types/api';
 
@@ -88,7 +86,7 @@ export {
 export type { ImageStorageMode, PickedImage } from './services/image-utils';
 
 // --- Plot Extraction + ZIP ---------------------------------------------------
-export { decodePlotPayload } from './services/plot-extract';
+export { extractPlotsFromHtml } from './services/plot-extract';
 export type { ExtractedPlot } from './services/plot-extract';
 export { buildZip } from './services/zip-writer';
 export type { ZipEntry } from './services/zip-writer';

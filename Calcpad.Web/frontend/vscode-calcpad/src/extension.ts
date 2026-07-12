@@ -622,6 +622,10 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         // Use the entire API response as the webview HTML
         const apiResponse = await response.text();
 
+        // Share the freshly-converted HTML with the Vue side panel so the
+        // Export tab can extract plot bytes without another server round-trip.
+        vueUiProvider?.setCachedHtml(apiResponse);
+
         // Log to dedicated HTML output channel (without stealing focus)
         calcpadOutputHtmlChannel.clear();
         calcpadOutputHtmlChannel.appendLine(apiResponse);
@@ -1621,7 +1625,10 @@ export async function activate(context: vscode.ExtensionContext) {
             await processDocument(activeEditor.document);
             // Re-highlight (semantic tokens)
             semanticTokensProvider.refresh();
-            outputChannel.appendLine('[Refresh] Document re-linted and re-highlighted');
+            // Re-render preview panels. This is the manual "run" path used
+            // when auto-run is off.
+            schedulePreviewUpdate();
+            outputChannel.appendLine('[Refresh] Document re-linted, re-highlighted, and preview re-rendered');
         }
     });
 
@@ -1688,8 +1695,12 @@ export async function activate(context: vscode.ExtensionContext) {
             lintTimeout = setTimeout(() => {
                 processDocument(event.document).catch(e => outputChannel.appendLine('[processDocument] Error: ' + e));
             }, 500);
-            // Only schedule preview update for CalcPad files
-            schedulePreviewUpdate();
+            // Only schedule preview update when auto-run is on. Otherwise the
+            // preview updates only when the panel is (re)opened or the user
+            // runs `calcpad.refreshDocument`.
+            if (CalcpadSettingsManager.getInstance().getExtraBool('autoRun', true)) {
+                schedulePreviewUpdate();
+            }
         }
     });
 

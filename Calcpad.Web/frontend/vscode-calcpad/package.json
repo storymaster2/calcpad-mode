@@ -346,7 +346,7 @@
       },
       {
         "command": "calcpad.refreshDocument",
-        "title": "Refresh Document",
+        "title": "CalcPad: Run Preview",
         "icon": "$(refresh)"
       },
       {
@@ -408,6 +408,11 @@
       ],
       "editor/context": [
         {
+          "command": "calcpad.refreshDocument",
+          "when": "resourceLangId == calcpad || resourceLangId == plaintext",
+          "group": "calcpad@0"
+        },
+        {
           "command": "vscode-calcpad.printToPdf",
           "when": "resourceLangId == calcpad || resourceLangId == plaintext",
           "group": "calcpad@1"
@@ -425,6 +430,12 @@
       ]
     },
     "keybindings": [
+      {
+        "command": "calcpad.refreshDocument",
+        "key": "ctrl+alt+x",
+        "mac": "cmd+alt+x",
+        "when": "editorLangId == 'calcpad' || editorLangId == 'plaintext'"
+      },
       {
         "command": "vscode-calcpad.focusPreviewToLine",
         "key": "ctrl+`",

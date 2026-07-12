@@ -585,11 +585,7 @@ namespace Calcpad.Core
             DrawColorScalePng(canvas, m);
             string src = null;
             if (string.IsNullOrEmpty(fileName))
-            {
-                var pngBytes = EncodePng(bitmap);
-                Parser.PlotOutputs.Add(new PlotOutput { Format = "png", Data = pngBytes });
-                src = "data:image/png;base64," + System.Convert.ToBase64String(pngBytes);
-            }
+                src = ImageToBase64(bitmap);
             else
             {
                 src = Settings.ImageUri + fileName;
@@ -620,8 +616,7 @@ namespace Calcpad.Core
                 double d = 0.75 / ScreenScaleFactor;
                 double dw = Math.Round(d * Width);
                 double dh = Math.Round(d * Height);
-                var svgText = g.ToString();
-                Parser.PlotOutputs.Add(new PlotOutput { Format = "svg", Data = System.Text.Encoding.UTF8.GetBytes(svgText) });
+                var svgText = "<svg data-plot=\"svg\" " + g.ToString()[4..];
                 return $"<div class=\"plot\" style=\"width:{dw}pt; height:{dh}pt;\">{svgText}</div>";
             }
             SvgToFile(g, Settings.ImagePath, fileName);

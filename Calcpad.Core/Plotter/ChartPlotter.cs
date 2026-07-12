@@ -293,10 +293,8 @@ namespace Calcpad.Core
                     penNo = 0;
             }
             string src;
-            var pngBytes = EncodePng(bitmap);
-            Parser.PlotOutputs.Add(new PlotOutput { Format = "png", Data = pngBytes });
             if (string.IsNullOrEmpty(fileName))
-                src = "data:image/png;base64," + System.Convert.ToBase64String(pngBytes);
+                src = ImageToBase64(bitmap);
             else
             {
                 src = Settings.ImageUri + fileName;
@@ -351,11 +349,7 @@ namespace Calcpad.Core
                     penNo = 1;
             }
             if (string.IsNullOrEmpty(fileName))
-            {
-                var svgText = $"<svg class=\"plot\" {svgDrawing.ToString()[4..]}";
-                Parser.PlotOutputs.Add(new PlotOutput { Format = "svg", Data = System.Text.Encoding.UTF8.GetBytes(svgText) });
-                return svgText;
-            }
+                return $"<svg class=\"plot\" data-plot=\"svg\" {svgDrawing.ToString()[4..]}";
 
             SvgToFile(svgDrawing, Settings.ImagePath, fileName);
             return HtmlImg(Settings.ImageUri + fileName);

@@ -332,7 +332,10 @@ namespace Calcpad.Core
         protected string HtmlImg(string src)
         {
             double w = Math.Round(0.75 * Width / ScreenScaleFactor);
-            return $"<img class=\"plot\" src=\"{src}\" alt=\"Plot\" style=\"width:{w}pt;\">";
+            var dataAttr = src.StartsWith("data:image/png", StringComparison.Ordinal)
+                ? " data-plot=\"png\""
+                : string.Empty;
+            return $"<img class=\"plot\"{dataAttr} src=\"{src}\" alt=\"Plot\" style=\"width:{w}pt;\">";
         }
 
         protected static void PngToFile(SKBitmap bitmap, string imagePath, string imageFileName)
@@ -371,7 +374,7 @@ namespace Calcpad.Core
         }
 
         private static SKPngEncoderOptions _pngEncoderOptions = new(SKPngEncoderFilterFlags.None, 4);
-        protected static byte[] EncodePng(SKBitmap bitmap)
+        protected static string ImageToBase64(SKBitmap bitmap)
         {
             try
             {
@@ -380,16 +383,15 @@ namespace Calcpad.Core
                 using var pixmap = bitmap.PeekPixels();
                 pixmap.Encode(wstream, _pngEncoderOptions);
                 wstream.Flush();
-                return ms.ToArray();
+                var imageBytes = ms.ToArray();
+                var b64Str = Convert.ToBase64String(imageBytes);
+                return "data:image/png;base64," + b64Str;
             }
             catch
             {
                 throw Exceptions.ErrorConvertingPngToBase64();
             }
         }
-
-        protected static string ImageToBase64(SKBitmap bitmap) =>
-            "data:image/png;base64," + Convert.ToBase64String(EncodePng(bitmap));
 
         private static double GetGridStep(double span, int maxSteps)
         {

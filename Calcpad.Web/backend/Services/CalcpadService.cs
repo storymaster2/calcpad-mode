@@ -38,7 +38,7 @@ namespace Calcpad.Server.Services
             };
         }
 
-        public (string Html, IReadOnlyList<string> OpenXmlExpressions, IReadOnlyList<CalcpadError> Errors, IReadOnlyList<PlotOutput> Plots) Convert(
+        public (string Html, IReadOnlyList<string> OpenXmlExpressions, IReadOnlyList<CalcpadError> Errors) Convert(
             string calcpadContent,
             Settings? settings = null,
             bool forceUnwrappedCode = false,
@@ -82,7 +82,6 @@ namespace Calcpad.Server.Services
 
                 string htmlResult;
                 IReadOnlyList<string> openXmlExpressions = Array.Empty<string>();
-                IReadOnlyList<PlotOutput> plots = Array.Empty<PlotOutput>();
                 var errors = new List<CalcpadError>(macroParser.Errors);
 
                 if (hasMacroErrors || forceUnwrappedCode)
@@ -119,7 +118,6 @@ namespace Calcpad.Server.Services
                         errors.AddRange(parser.Errors);
                         if (captureOpenXml)
                             openXmlExpressions = parser.OpenXmlExpressions.ToList();
-                        plots = parser.PlotOutputs.ToList();
                     }
                     catch (Exception parseEx)
                     {
@@ -132,7 +130,7 @@ namespace Calcpad.Server.Services
                 var finalHtml = WrapHtmlResult(htmlResult, theme);
                 FileLogger.LogInfo("Conversion completed successfully", $"Output length: {finalHtml.Length}");
 
-                return (finalHtml, openXmlExpressions, errors, plots);
+                return (finalHtml, openXmlExpressions, errors);
             }
             catch (MathParserException ex)
             {

@@ -78,7 +78,6 @@ namespace Calcpad.Core
         internal bool IsCanceled { get; private set; }
         internal bool IsEnabled { get; set; } = true;
         internal bool IsPlotting { get; set; }
-        internal readonly List<PlotOutput> PlotOutputs = new();
         internal bool IsCalculation { get; set; }
         internal bool Split { get; set; }
         internal bool ShowWarnings { get; set; } = true;

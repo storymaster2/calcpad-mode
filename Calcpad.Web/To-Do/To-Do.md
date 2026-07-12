@@ -48,12 +48,10 @@
 -   Add support for other languages, especially Chinese as there is a large Chinese community.
 -   Add #UI features to main branch
 -   Make update do var name is not default #UI id, but {varName:varRepeatNumber} is the id to handle repetitions of the same variable name.
--   Add auto-run setting to Vue panel. When this is off, run only occurs when the preview is opened in VS Code or a refresh is run. In calcpad-desktop, add a run button that re-calculates the active view.
--   Add a help button that opens the calcpad documentation in the same browser used for puppeteer.
 -   An external browser dropdown could be helpful that allows switching the puppeteer and help button browser from the settings. I think this is doable if we store both the browser name and path in an object (then only show browsers with a valid path and allow adding a browser via file select to the exe or pasted path).
 -   Submit removed jquery refactor as a PR to main.
 -   Submit IsUS settings refactor as a PR to main.
--   Submit PlotOutput Core refactor as a PR to main.
+-   Submit plot export Core refactor as a PR to main.
 
 ### Bugs
 
@@ -68,8 +66,6 @@
             33.333; 40.333; 51.667; 75; 96.667; 108.333; 118.667; _
             23.333; 23.333; 23.333; _
             35; 35; 35; 35]*1ft
-- Restart App button crashes the program, let's just remove it.
-- opening font switcher dialog should re-scan the fonts folder
 
 ### Bugs
 

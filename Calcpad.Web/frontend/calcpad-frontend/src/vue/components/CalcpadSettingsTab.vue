@@ -306,6 +306,8 @@
         <select
           id="editorFontFamily"
           v-model="editorFontFamily"
+          @mousedown="requestFontRescan"
+          @focus="requestFontRescan"
           @change="updateEditorFontFamily"
         >
           <option value="JuliaMono">JuliaMono (default)</option>
@@ -326,7 +328,7 @@
       <div v-if="versionConfig.isDesktop" class="setting-group">
         <button
           class="diagnostics-button"
-          title="Open the folder where custom fonts can be dropped. Restart or reload to pick up new fonts."
+          title="Open the folder where custom fonts can be dropped. Reopen the Font Family picker to pick up new fonts."
           @click="openFontsFolder"
         >
           Open Fonts Folder
@@ -380,6 +382,18 @@
           />
           Sync Preview to Cursor Line
           <span class="setting-info" title="Scroll the preview to follow the line the cursor is on in the editor.">ⓘ</span>
+        </label>
+      </div>
+
+      <div class="setting-group">
+        <label>
+          <input
+            v-model="enableAutoRun"
+            type="checkbox"
+            @change="updateAutoRun"
+          />
+          Auto-Run Preview
+          <span class="setting-info" title="When off, the preview only re-renders when it is first opened or a manual run is triggered.">ⓘ</span>
         </label>
       </div>
 
@@ -503,6 +517,7 @@ interface Props {
   initialCommentFormat?: string
   initialEnableFormattingHotkeys?: boolean
   initialEnablePreviewCursorSync?: boolean
+  initialEnableAutoRun?: boolean
   initialDarkBackground?: string
   initialLinterMinSeverity?: string
   initialMaxOutputLines?: number
@@ -550,6 +565,7 @@ const props = withDefaults(defineProps<Props>(), {
   initialCommentFormat: 'auto',
   initialEnableFormattingHotkeys: true,
   initialEnablePreviewCursorSync: false,
+  initialEnableAutoRun: true,
   initialDarkBackground: '#1a1a2e',
   initialLinterMinSeverity: 'information',
   initialMaxOutputLines: 1000,
@@ -570,6 +586,7 @@ const emit = defineEmits<{
   updateCommentFormat: [format: string]
   updateFormattingHotkeys: [enabled: boolean]
   updatePreviewCursorSync: [enabled: boolean]
+  updateAutoRun: [enabled: boolean]
   updateDarkBackground: [color: string]
   updateLinterMinSeverity: [severity: string]
   updateMaxOutputLines: [value: number]
@@ -580,6 +597,7 @@ const emit = defineEmits<{
   openSettingsFolder: []
   openLogsFolder: []
   openFontsFolder: []
+  refreshFonts: []
   updateEditorFontFamily: [family: string]
 }>()
 
@@ -605,6 +623,7 @@ const enableQuickTyping = ref(props.initialEnableQuickTyping)
 const commentFormat = ref(props.initialCommentFormat)
 const enableFormattingHotkeys = ref(props.initialEnableFormattingHotkeys)
 const enablePreviewCursorSync = ref(props.initialEnablePreviewCursorSync)
+const enableAutoRun = ref(props.initialEnableAutoRun)
 const darkBackground = ref(props.initialDarkBackground)
 const linterMinSeverity = ref(props.initialLinterMinSeverity)
 const maxOutputLines = ref(props.initialMaxOutputLines)
@@ -643,6 +662,10 @@ const updateFormattingHotkeys = () => {
 
 const updatePreviewCursorSync = () => {
   emit('updatePreviewCursorSync', enablePreviewCursorSync.value)
+}
+
+const updateAutoRun = () => {
+  emit('updateAutoRun', enableAutoRun.value)
 }
 
 const updateDarkBackground = () => {
@@ -699,6 +722,10 @@ const openLogsFolder = () => {
 
 const openFontsFolder = () => {
   emit('openFontsFolder')
+}
+
+const requestFontRescan = () => {
+  emit('refreshFonts')
 }
 
 const updateEditorFontFamily = () => {
@@ -762,6 +789,13 @@ watch(
   () => props.initialEnablePreviewCursorSync,
   (newValue) => {
     enablePreviewCursorSync.value = newValue
+  }
+)
+
+watch(
+  () => props.initialEnableAutoRun,
+  (newValue) => {
+    enableAutoRun.value = newValue
   }
 )
 

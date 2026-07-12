@@ -300,12 +300,3 @@ export interface ConvertResult {
     html: string;
     errors: CalcpadError[];
 }
-
-export interface PlotPayload {
-    format: 'png' | 'svg';
-    base64: string;
-}
-
-export interface PlotsResponse {
-    plots: PlotPayload[];
-}
