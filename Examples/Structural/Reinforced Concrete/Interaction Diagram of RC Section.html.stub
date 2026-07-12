@@ -304,7 +304,7 @@
   <table>
    <tr>
     <td>
-     <svg class="plot" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
+     <svg class="plot" data-plot="svg" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -380,7 +380,7 @@ circle.Series1 {fill:Tomato;}
      </svg>
     </td>
     <td>
-     <svg class="plot" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
+     <svg class="plot" data-plot="svg" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -462,7 +462,7 @@ circle.Series1 {fill:Tomato;}
    <i>N</i>
    <sub>Rd</sub>
   </p>
-  <svg class="plot" height="2640px" style="width:494.44pt; height:488.89pt;" version="1.1" viewbox=" 0 0 2670 2640" width="2670px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="2640px" style="width:494.44pt; height:488.89pt;" version="1.1" viewbox=" 0 0 2670 2640" width="2670px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
