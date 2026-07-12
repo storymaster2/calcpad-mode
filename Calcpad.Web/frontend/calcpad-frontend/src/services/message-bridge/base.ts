@@ -7,11 +7,13 @@ import type { CalcpadSettings } from '../../types/settings';
 import { DEFAULT_PDF_SETTINGS } from '../../types/pdf-settings';
 import { buildImageCommentLine, bytesToBase64 } from '../image-utils';
 import type { ImageStorageMode, PickedImage } from '../image-utils';
+import { decodePlotPayload, type ExtractedPlot } from '../plot-extract';
+import { buildZip } from '../zip-writer';
 import type { ILogger } from '../../types/interfaces';
 
 export interface ExportRequest {
     defaultName: string;
-    data: string | ArrayBuffer;
+    data: string | ArrayBuffer | Uint8Array;
     mime: string;
     extensions: string[];
     dialogTitle: string;
@@ -57,6 +59,7 @@ export abstract class BaseMessageBridge {
     protected settings: CalcpadSettings;
     protected _onInsertText: ((text: string) => void) | null = null;
     protected quickPick: QuickPickFn | null = null;
+    private _cachedPlots: ExtractedPlot[] = [];
 
     constructor(serverUrl: string, logger?: ILogger) {
         const log: ILogger = logger ?? { appendLine: (msg: string) => console.debug('[CalcPad]', msg) };
@@ -171,6 +174,15 @@ export abstract class BaseMessageBridge {
             case 'saveDocx':
                 this.handleSaveDocx();
                 break;
+            case 'getPlots':
+                this.handleGetPlots();
+                break;
+            case 'savePlot':
+                this.handleSavePlot(message.index);
+                break;
+            case 'savePlotsZip':
+                this.handleSavePlotsZip();
+                break;
             case 'getHeadings':
                 this.refreshHeadings();
                 break;
@@ -179,6 +191,13 @@ export abstract class BaseMessageBridge {
                 break;
             case 'openLogsFolder':
                 this.onOpenLogsFolder();
+                break;
+            case 'openFontsFolder':
+                this.onOpenFontsFolder();
+                break;
+            case 'updateEditorFontFamily':
+                this.setExtraSetting('editorFontFamily', message.family ?? '');
+                this.postToVue({ type: 'editorFontFamilyChanged', family: message.family ?? '' });
                 break;
             case 'debug':
                 break;
@@ -216,6 +235,9 @@ export abstract class BaseMessageBridge {
     protected handlePlatformMessage(_message: any): boolean { return false; }
     protected onOpenLogsFolder(): void {
         console.warn('Open Logs Folder is only available in the desktop build — server logs live on the host running CalcPad.');
+    }
+    protected onOpenFontsFolder(): void {
+        console.warn('Open Fonts Folder is only available in the desktop build.');
     }
     protected afterResetSettings(): void | Promise<void> { /* default no-op */ }
 
@@ -263,6 +285,7 @@ export abstract class BaseMessageBridge {
             enablePreviewCursorSync: this.getExtraSetting('previewCursorSync') === 'true',
             linterMinSeverity: this.getExtraSetting('linterMinSeverity') || 'information',
             maxOutputLines: Number(this.getExtraSetting('maxOutputLines')) || 1000,
+            editorFontFamily: this.getExtraSetting('editorFontFamily') ?? 'JuliaMono',
             ...extras,
         });
     }
@@ -273,6 +296,7 @@ export abstract class BaseMessageBridge {
         if (newSettings.server?.url) {
             this.apiClient.setBaseUrl(newSettings.server.url);
         }
+        this.postToVue({ type: 'settingsChanged' });
     }
 
     private async handleResetSettings(): Promise<void> {
@@ -417,6 +441,58 @@ export abstract class BaseMessageBridge {
             mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             extensions: ['docx'],
             dialogTitle: 'Save Word Document',
+        });
+    }
+
+    private async handleGetPlots(): Promise<void> {
+        const content = this.getActiveEditorContent();
+        if (!content.trim()) {
+            this._cachedPlots = [];
+            this.postToVue({ type: 'plotsResponse', plots: [] });
+            return;
+        }
+        const apiSettings = buildApiSettings(this.settings);
+        const { sourceFilePath } = await this.buildFileContext(content);
+        const response = await this.apiClient.getPlots(content, apiSettings, sourceFilePath);
+        this._cachedPlots = response ? decodePlotPayload(response.plots) : [];
+        this.postToVue({
+            type: 'plotsResponse',
+            plots: this._cachedPlots.map(p => ({
+                index: p.index,
+                ext: p.ext,
+                dataUri: p.dataUri,
+                sizeBytes: p.bytes.length,
+            })),
+        });
+    }
+
+    private async handleSavePlot(index: number): Promise<void> {
+        const plot = this._cachedPlots[index];
+        if (!plot) return;
+        const name = `plot-${index + 1}.${plot.ext}`;
+        await this.saveExportedFile({
+            defaultName: name,
+            data: plot.bytes,
+            mime: plot.mime,
+            extensions: [plot.ext],
+            dialogTitle: 'Save Plot',
+        });
+    }
+
+    private async handleSavePlotsZip(): Promise<void> {
+        if (this._cachedPlots.length === 0) return;
+        const zipBytes = buildZip(
+            this._cachedPlots.map(p => ({
+                name: `plot-${p.index + 1}.${p.ext}`,
+                bytes: p.bytes,
+            })),
+        );
+        await this.saveExportedFile({
+            defaultName: 'calcpad-plots.zip',
+            data: zipBytes,
+            mime: 'application/zip',
+            extensions: ['zip'],
+            dialogTitle: 'Save Plots ZIP',
         });
     }
 

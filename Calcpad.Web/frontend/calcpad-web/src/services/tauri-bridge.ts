@@ -36,6 +36,14 @@ import {
 import { setAppTheme, coerceAppTheme } from '../editor/app-theme';
 
 const SETTINGS_DIR_NAME = 'settings';
+const FONTS_DIR_NAME = 'fonts';
+const FONT_FILE_EXTENSIONS = ['woff2', 'woff', 'ttf', 'otf'] as const;
+const FONT_MIME: Record<string, string> = {
+    woff2: 'font/woff2',
+    woff: 'font/woff',
+    ttf: 'font/ttf',
+    otf: 'font/otf',
+};
 const DEFAULT_PRESET_NAME = 'default';
 const ACTIVE_SETTINGS_FILE = 'active-settings.json';
 const STORE_FILE = 'storage.json';
@@ -133,6 +141,8 @@ export class TauriMessageBridge extends BaseMessageBridge {
     private _activePresetName: string = DEFAULT_PRESET_NAME;
     private _appDataDir: string = '';
     private _settingsDir: string = '';
+    private _fontsDir: string = '';
+    private _availableFonts: string[] = [];
     private _serverDir: string = '';
     private _platform: string = 'linux';
     private _store: Store | null = null;
@@ -146,6 +156,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
         this._platform = await platform();
         this._appDataDir = (await appDataDir()).replace(/[\\/]+$/, '');
         this._settingsDir = `${this._appDataDir}/${SETTINGS_DIR_NAME}`;
+        this._fontsDir = `${this._appDataDir}/${FONTS_DIR_NAME}`;
         try {
             this._serverDir = (await invoke<string>('server_dir')).replace(/[\\/]+$/, '');
         } catch {
@@ -153,6 +164,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
         }
         this._store = await Store.load(STORE_FILE);
         await this.loadSettingsFromStorage();
+        await this.loadUserFonts();
     }
 
     getExtraSetting(key: string): string | undefined {
@@ -322,6 +334,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
             libraryPath: this._extraSettings.libraryPath || '',
             activeConfig: this._activePresetName,
             availableConfigs: await this.listPresets(),
+            availableFonts: [...this._availableFonts],
         };
     }
 
@@ -371,6 +384,10 @@ export class TauriMessageBridge extends BaseMessageBridge {
 
     protected onOpenLogsFolder(): void {
         void this.handleOpenLogsFolder();
+    }
+
+    protected onOpenFontsFolder(): void {
+        void this.handleOpenFontsFolder();
     }
 
     protected handlePlatformMessage(message: any): boolean {
@@ -1026,5 +1043,77 @@ export class TauriMessageBridge extends BaseMessageBridge {
         catch (err) {
             console.error('Failed to open settings folder:', err);
         }
+    }
+
+    private async handleOpenFontsFolder(): Promise<void> {
+        if (!this._fontsDir) return;
+        try { await mkdir(this._fontsDir, { recursive: true }); } catch { /* exists */ }
+        try { await openPath(this._fontsDir); }
+        catch (err) {
+            console.error('Failed to open fonts folder:', err);
+        }
+    }
+
+    /**
+     * Scan the user's fonts folder, inject an @font-face rule for each file
+     * found, and populate `_availableFonts` with the family names. Font files
+     * are read as bytes and encoded as data URIs so they satisfy the CSP
+     * `font-src 'self' data:` policy.
+     */
+    private async loadUserFonts(): Promise<void> {
+        this._availableFonts = [];
+        if (!this._fontsDir) return;
+        try { await mkdir(this._fontsDir, { recursive: true }); } catch { /* exists */ }
+
+        let entries: Awaited<ReturnType<typeof readDir>>;
+        try {
+            entries = await readDir(this._fontsDir);
+        } catch (err) {
+            console.warn('Failed to read fonts folder:', err);
+            return;
+        }
+
+        const styleEl = this.ensureUserFontStyleElement();
+        const rules: string[] = [];
+        const families = new Set<string>();
+
+        for (const entry of entries) {
+            if (!entry.isFile) continue;
+            const name = entry.name ?? '';
+            const dot = name.lastIndexOf('.');
+            if (dot < 0) continue;
+            const ext = name.slice(dot + 1).toLowerCase();
+            if (!(FONT_FILE_EXTENSIONS as readonly string[]).includes(ext)) continue;
+            const family = name.slice(0, dot);
+            if (!family || families.has(family)) continue;
+
+            const filePath = `${this._fontsDir}/${name}`;
+            try {
+                const bytes = await fsReadFile(filePath);
+                const mime = FONT_MIME[ext] ?? 'application/octet-stream';
+                const dataUri = `data:${mime};base64,${bytesToBase64(bytes)}`;
+                const format = ext === 'ttf' ? 'truetype' : ext === 'otf' ? 'opentype' : ext;
+                rules.push(
+                    `@font-face { font-family: '${family.replace(/'/g, "\\'")}'; font-display: swap; src: url('${dataUri}') format('${format}'); }`,
+                );
+                families.add(family);
+            } catch (err) {
+                console.warn(`Failed to load user font ${name}:`, err);
+            }
+        }
+
+        styleEl.textContent = rules.join('\n');
+        this._availableFonts = [...families].sort((a, b) => a.localeCompare(b));
+    }
+
+    private ensureUserFontStyleElement(): HTMLStyleElement {
+        const id = 'calcpad-user-fonts';
+        let el = document.getElementById(id) as HTMLStyleElement | null;
+        if (!el) {
+            el = document.createElement('style');
+            el.id = id;
+            document.head.appendChild(el);
+        }
+        return el;
     }
 }

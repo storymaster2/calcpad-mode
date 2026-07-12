@@ -39,7 +39,7 @@ namespace Calcpad.Server.Controllers
                 }
 
                 var forceUnwrapped = unwrap || request.ForceUnwrappedCode;
-                var (htmlResult, _, errors) = _calcpadService.Convert(request.Content, request.Settings, forceUnwrapped, request.Theme, request.SourceFilePath, request.ForPrint);
+                var (htmlResult, _, errors, _) = _calcpadService.Convert(request.Content, request.Settings, forceUnwrapped, request.Theme, request.SourceFilePath, request.ForPrint);
                 if (unwrap)
                 {
                     htmlResult = ProcessDataTextLinks(htmlResult);
@@ -192,6 +192,39 @@ namespace Calcpad.Server.Controllers
         }
 
         /// <summary>
+        /// Run a full convert on the calcpad content and return only the
+        /// generated plot images as JSON (base64-encoded PNG bytes or raw SVG
+        /// text). Powers the Export tab's plot download / ZIP-all feature —
+        /// the client doesn't have to parse plots back out of the HTML.
+        /// </summary>
+        [HttpPost("plots")]
+        public IActionResult GetPlots([FromBody] CalcpadRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Content))
+                    return BadRequest(new { error = "Content is required" });
+
+                var (_, _, _, plots) = _calcpadService.Convert(
+                    request.Content, request.Settings, forceUnwrappedCode: false,
+                    request.Theme, request.SourceFilePath, request.ForPrint);
+
+                var payload = plots.Select(p => new
+                {
+                    format = p.Format,
+                    base64 = System.Convert.ToBase64String(p.Data),
+                }).ToList();
+
+                return Ok(new { plots = payload });
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogError("Plot extraction failed", ex);
+                return StatusCode(500, new { error = "Plot extraction failed", message = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Convert calcpad → HTML → DOCX (Word) using Calcpad.OpenXml.OpenXmlWriter.
         /// Returns the .docx bytes; the frontend handles the download / save dialog.
         /// </summary>
@@ -207,7 +240,7 @@ namespace Calcpad.Server.Controllers
                 // matching what the OpenXmlWriter expects. captureOpenXml=true tells
                 // the parser to emit OMML so equations render as native Word math
                 // instead of empty <m:oMath/>.
-                var (html, openXmlExpressions, _) = _calcpadService.Convert(
+                var (html, openXmlExpressions, _, _) = _calcpadService.Convert(
                     request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, forPrint: true, captureOpenXml: true);
 
                 using var ms = new MemoryStream();

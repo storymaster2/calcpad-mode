@@ -27,6 +27,7 @@ export interface CalcpadSettings {
         mode: 'auto' | 'local' | 'remote';
     };
     units: string;
+    isUs: boolean;
 }
 
 /**
@@ -222,6 +223,7 @@ export function buildApiSettings(settings: CalcpadSettings): unknown {
             colorScale: colorScaleToEnum(settings.plot.colorScale),
             lightDirection: lightDirectionToEnum(settings.plot.lightDirection)
         },
-        units: settings.units
+        units: settings.units,
+        isUs: settings.isUs
     };
 }

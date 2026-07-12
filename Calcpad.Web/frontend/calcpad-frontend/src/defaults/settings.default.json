@@ -25,7 +25,8 @@
             "url": "",
             "mode": "auto"
         },
-        "units": "m"
+        "units": "m",
+        "isUs": false
     },
     "extras": {
         "previewTheme": "system",
@@ -43,6 +44,7 @@
         "prettifyTrimTrailingWhitespace": true,
         "writeMode": "localFile",
         "dotnetPath": "dotnet",
+        "editorFontFamily": "JuliaMono",
         "pdfSettings": {
             "enableHeader": true,
             "documentTitle": "",

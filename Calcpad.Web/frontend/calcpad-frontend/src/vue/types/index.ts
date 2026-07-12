@@ -68,6 +68,7 @@ export interface Settings {
     url: string
   }
   units: string
+  isUs: boolean
 }
 
 export interface VariableItem {

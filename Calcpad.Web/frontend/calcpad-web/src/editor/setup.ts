@@ -30,20 +30,38 @@ export interface CalcpadEditorOptions {
     value?: string;
     readOnly?: boolean;
     fontSize?: number;
+    fontFamily?: string;
     wordWrap?: 'on' | 'off';
 }
 
+const SYSTEM_FONT_STACK = "ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace";
+const JULIA_FONT_STACK = "'JuliaMono', 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace";
+
 /**
- * Monaco measures glyph widths once when an editor is created. JuliaMono ships
- * as an async web font, so on machines that don't have it installed the first
- * measurement happens against a fallback and the cursor/glyph grid ends up
- * misaligned. Force the font to load, then re-measure all editors.
+ * Build the Monaco `fontFamily` value from a chosen primary font. The special
+ * value `"system"` (or empty) means "system monospace" — drop JuliaMono from
+ * the stack. Any other value is treated as a font family name and prepended.
  */
-export function remeasureEditorFontsWhenReady(fontSize = 14): void {
+export function resolveEditorFontFamily(name: string | undefined): string {
+    const trimmed = (name ?? '').trim();
+    if (!trimmed || trimmed.toLowerCase() === 'system') return SYSTEM_FONT_STACK;
+    if (trimmed === 'JuliaMono') return JULIA_FONT_STACK;
+    return `'${trimmed}', ${JULIA_FONT_STACK}`;
+}
+
+/**
+ * Monaco measures glyph widths once when an editor is created. Web fonts load
+ * asynchronously, so on the first paint the measurement happens against a
+ * fallback and the cursor/glyph grid ends up misaligned. Force the chosen
+ * primary family to load, then re-measure all editors.
+ */
+export function remeasureEditorFontsWhenReady(family = 'JuliaMono', fontSize = 14): void {
     if (!('fonts' in document)) return;
+    const trimmed = (family ?? '').trim();
+    const primary = !trimmed || trimmed.toLowerCase() === 'system' ? 'JuliaMono' : trimmed;
     Promise.all([
-        document.fonts.load(`${fontSize}px "JuliaMono"`),
-        document.fonts.load(`bold ${fontSize}px "JuliaMono"`),
+        document.fonts.load(`${fontSize}px "${primary}"`),
+        document.fonts.load(`bold ${fontSize}px "${primary}"`),
     ])
         .catch(() => undefined)
         .then(() => monaco.editor.remeasureFonts());
@@ -66,7 +84,7 @@ export function createCalcpadEditor(
         automaticLayout: true,
         minimap: { enabled: false },
         fontSize: options?.fontSize ?? 14,
-        fontFamily: "'JuliaMono', 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace",
+        fontFamily: resolveEditorFontFamily(options?.fontFamily),
         lineNumbers: 'on',
         renderWhitespace: 'none',
         scrollBeyondLastLine: false,

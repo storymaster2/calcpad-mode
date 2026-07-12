@@ -73,6 +73,8 @@
         :initial-library-path="libraryPath"
         :initial-active-config="activeConfig"
         :initial-available-configs="availableConfigs"
+        :initial-editor-font-family="editorFontFamily"
+        :initial-available-fonts="availableFonts"
         @update-settings="handleUpdateSettings"
         @update-preview-theme="handleUpdatePreviewTheme"
         @update-color-theme="handleUpdateColorTheme"
@@ -89,6 +91,8 @@
         @switch-config="handleSwitchConfig"
         @open-settings-folder="handleOpenSettingsFolder"
         @open-logs-folder="handleOpenLogsFolder"
+        @open-fonts-folder="handleOpenFontsFolder"
+        @update-editor-font-family="handleUpdateEditorFontFamily"
       />
       <CalcpadVariablesTab
         v-else-if="activeTab === 'variables'"
@@ -115,8 +119,13 @@
       />
       <CalcpadExportTab
         v-else-if="activeTab === 'export'"
+        :plots="plots"
+        :loading="plotsLoading"
         @save-html="handleSaveSourceHtml"
         @save-docx="handleSaveDocx"
+        @refresh-plots="handleRefreshPlots"
+        @save-plot="handleSavePlot"
+        @save-plots-zip="handleSavePlotsZip"
       />
       <CalcpadErrorsTab
         v-else-if="activeTab === 'errors'"
@@ -188,6 +197,8 @@ const maxOutputLines = ref(1000)
 const libraryPath = ref('')
 const activeConfig = ref('default')
 const availableConfigs = ref<string[]>(['default'])
+const editorFontFamily = ref('JuliaMono')
+const availableFonts = ref<string[]>([])
 const variablesData = ref<VariablesData>({
   macros: [],
   variables: [],
@@ -214,6 +225,10 @@ const tabs: Tab[] = [
 ]
 
 const convertErrors = ref<CalcpadError[]>([])
+
+interface PlotSummary { index: number; ext: 'png' | 'svg'; dataUri: string; sizeBytes: number }
+const plots = ref<PlotSummary[]>([])
+const plotsLoading = ref(false)
 
 // Methods
 const switchView = (viewId: string) => {
@@ -283,6 +298,13 @@ const switchTab = (tabId: string) => {
   if (tabId === 'formatting') {
     postMessage({ type: 'getPrettifySettings' })
   }
+
+  // Fetch the current document's plots the first time the Export tab is opened.
+  // Users can refresh manually after that.
+  if (tabId === 'export' && plots.value.length === 0 && !plotsLoading.value) {
+    plotsLoading.value = true
+    postMessage({ type: 'getPlots' })
+  }
 }
 
 const handleSaveSourceHtml = () => {
@@ -291,6 +313,19 @@ const handleSaveSourceHtml = () => {
 
 const handleSaveDocx = () => {
   postMessage({ type: 'saveDocx' })
+}
+
+const handleRefreshPlots = () => {
+  plotsLoading.value = true
+  postMessage({ type: 'getPlots' })
+}
+
+const handleSavePlot = (index: number) => {
+  postMessage({ type: 'savePlot', index })
+}
+
+const handleSavePlotsZip = () => {
+  postMessage({ type: 'savePlotsZip' })
 }
 
 const handleInsertText = (text: string) => {
@@ -386,6 +421,15 @@ const handleOpenLogsFolder = () => {
   })
 }
 
+const handleOpenFontsFolder = () => {
+  postMessage({ type: 'openFontsFolder' })
+}
+
+const handleUpdateEditorFontFamily = (family: string) => {
+  editorFontFamily.value = family
+  postMessage({ type: 'updateEditorFontFamily', family })
+}
+
 const handleUpdatePdfSettings = (settings: PdfSettings) => {
   postMessage({
     type: 'updatePdfSettings',
@@ -456,6 +500,11 @@ const handleMessage = (event: MessageEvent) => {
       libraryPath.value = message.libraryPath || ''
       if (message.activeConfig) activeConfig.value = message.activeConfig
       if (Array.isArray(message.availableConfigs)) availableConfigs.value = message.availableConfigs
+      if (typeof message.editorFontFamily === 'string') editorFontFamily.value = message.editorFontFamily
+      if (Array.isArray(message.availableFonts)) availableFonts.value = message.availableFonts
+      break
+    case 'editorFontFamilyChanged':
+      if (typeof message.family === 'string') editorFontFamily.value = message.family
       break
     case 'saveNamedConfigError':
       window.alert(message.message || 'Failed to save settings.')
@@ -491,6 +540,10 @@ const handleMessage = (event: MessageEvent) => {
       break
     case 'folderContents':
       setDirectoryChildren(message.path, message.entries || [])
+      break
+    case 'plotsResponse':
+      plots.value = Array.isArray(message.plots) ? message.plots : []
+      plotsLoading.value = false
       break
   }
 }

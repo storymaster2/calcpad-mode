@@ -5,7 +5,7 @@ import CalcpadAppVue from 'calcpad-frontend/vue/components/CalcpadApp.vue';
 import { initMessaging } from 'calcpad-frontend/vue/services/messaging';
 import { MessageBridge } from './services/message-bridge';
 import { buildApiSettings } from 'calcpad-frontend/types/settings';
-import { registerCalcpadLanguage, registerCalcpadTheme, remeasureEditorFontsWhenReady } from './editor/setup';
+import { registerCalcpadLanguage, registerCalcpadTheme, remeasureEditorFontsWhenReady, resolveEditorFontFamily } from './editor/setup';
 import { setAppTheme, coerceAppTheme } from './editor/app-theme';
 import { registerSemanticTokensProvider } from './editor/semantic-tokens';
 import { setupDiagnostics } from './editor/diagnostics';
@@ -236,6 +236,7 @@ async function bootstrap(): Promise<void> {
     const WORD_WRAP_KEY = 'calcpad.wordWrap';
     const initialWordWrap: 'on' | 'off' =
         localStorage.getItem(WORD_WRAP_KEY) === 'off' ? 'off' : 'on';
+    const initialEditorFontFamily = (activeBridge as unknown as EditorBridge).getExtraSetting('editorFontFamily') ?? 'JuliaMono';
 
     // ---- Editor groups ----
     // The desktop supports a single top/bottom split into two editor groups.
@@ -262,7 +263,19 @@ async function bootstrap(): Promise<void> {
         return docKeyFor(activeGroup);
     }
 
-    remeasureEditorFontsWhenReady();
+    remeasureEditorFontsWhenReady(initialEditorFontFamily);
+
+    // Hot-swap the editor's font family when the user picks a different one in
+    // the Settings tab. Also nudge Monaco to re-measure so the glyph grid stays
+    // aligned when switching to/from an async web font.
+    window.addEventListener('message', (event) => {
+        const msg = (event as MessageEvent).data;
+        if (msg?.type !== 'editorFontFamilyChanged') return;
+        const family = typeof msg.family === 'string' ? msg.family : '';
+        const resolved = resolveEditorFontFamily(family);
+        for (const g of groups.values()) g.editor.updateOptions({ fontFamily: resolved });
+        remeasureEditorFontsWhenReady(family);
+    });
 
     // ---- Group-scoped refresh helpers ----
     function markerToSeverityInfo(severity: monaco.MarkerSeverity) {
@@ -491,7 +504,7 @@ async function bootstrap(): Promise<void> {
         await nextTick();
         const container = appInstance.getEditorContainer(id) as HTMLElement | null;
         if (!container) throw new Error(`Editor container for group ${id} not found`);
-        const group = new EditorGroup(id, container, { wordWrap: initialWordWrap });
+        const group = new EditorGroup(id, container, { wordWrap: initialWordWrap, fontFamily: initialEditorFontFamily });
         groups.set(id, group);
         wireGroupCommon(group);
         for (const hook of groupWireHooks) hook(group);
@@ -502,7 +515,7 @@ async function bootstrap(): Promise<void> {
     // ---- Seed the primary group (g0 already rendered by App.vue) ----
     const g0Container = appInstance.getEditorContainer('g0') as HTMLElement | null;
     if (!g0Container) throw new Error('Primary editor container not found');
-    const primaryGroup = new EditorGroup('g0', g0Container, { wordWrap: initialWordWrap });
+    const primaryGroup = new EditorGroup('g0', g0Container, { wordWrap: initialWordWrap, fontFamily: initialEditorFontFamily });
     groups.set('g0', primaryGroup);
     setActiveGroup(primaryGroup);
     wireGroupCommon(primaryGroup);
@@ -738,7 +751,7 @@ async function bootstrap(): Promise<void> {
             return;
         }
 
-        if (data.type === 'previewThemeChanged') {
+        if (data.type === 'previewThemeChanged' || data.type === 'settingsChanged') {
             refreshAllPreviews();
             return;
         }

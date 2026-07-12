@@ -45,6 +45,7 @@ namespace Calcpad.Core
         public bool Debug { get; set; }
         public bool ShowWarnings { get; set; } = true;
         public readonly List<string> OpenXmlExpressions = new(100);
+        public IReadOnlyList<PlotOutput> PlotOutputs => _parser.PlotOutputs;
 
         static ExpressionParser()
         {
@@ -71,6 +72,7 @@ namespace Calcpad.Core
 
         private void Parse(ReadOnlySpan<char> code, bool calculate, bool getXml)
         {
+            Unit.IsUs = Settings.IsUs;
             var lines = new List<int> { 0 };
             var len = code.Length;
             for (int i = 0; i < len; ++i)
@@ -462,6 +464,7 @@ namespace Calcpad.Core
                 _previousKeyword = Keyword.None;
                 _isMarkdownOn = false;
                 OpenXmlExpressions.Clear();
+                _parser.PlotOutputs.Clear();
             }
             else
             {

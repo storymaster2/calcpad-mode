@@ -371,7 +371,7 @@ namespace Calcpad.Core
         }
 
         private static SKPngEncoderOptions _pngEncoderOptions = new(SKPngEncoderFilterFlags.None, 4);
-        protected static string ImageToBase64(SKBitmap bitmap)
+        protected static byte[] EncodePng(SKBitmap bitmap)
         {
             try
             {
@@ -380,15 +380,16 @@ namespace Calcpad.Core
                 using var pixmap = bitmap.PeekPixels();
                 pixmap.Encode(wstream, _pngEncoderOptions);
                 wstream.Flush();
-                var imageBytes = ms.ToArray();
-                var b64Str = Convert.ToBase64String(imageBytes);
-                return "data:image/png;base64," + b64Str;
+                return ms.ToArray();
             }
             catch
             {
                 throw Exceptions.ErrorConvertingPngToBase64();
             }
         }
+
+        protected static string ImageToBase64(SKBitmap bitmap) =>
+            "data:image/png;base64," + Convert.ToBase64String(EncodePng(bitmap));
 
         private static double GetGridStep(double span, int maxSteps)
         {

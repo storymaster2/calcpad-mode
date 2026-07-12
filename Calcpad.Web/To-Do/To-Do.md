@@ -5,6 +5,7 @@
 ## General
 
 -   Audit Calcpad.Core for shared mutable state that races under concurrent local requests. Known offender: `MacroParser.Macros` is a `static` dictionary cleared and repopulated per `Parse(..., includeLine == 0)` call, so two simultaneous requests stomp each other. Less acute in single-user local mode but still a correctness bug if two editor panes hit the server concurrently.
+-   Related: `Unit.IsUs` is another `static` that rebuilds the shared `Units` FrozenDictionary in place whenever it flips. `Unit.Get(name)` reads that same dictionary from every parser/calculator call site. `ExpressionParser.Parse` now writes `Unit.IsUs = Settings.IsUs` at the top of every parse, so concurrent requests with different values will race the same way `MacroParser.Macros` does. Proper fix: pre-build both `UnitsUK` and `UnitsUS` FrozenDictionaries once and change `Unit.Get(name)` to a Settings-aware lookup so nothing is mutated at request time.
 
 ### To Test/Review
 
@@ -47,10 +48,12 @@
 -   Add support for other languages, especially Chinese as there is a large Chinese community.
 -   Add #UI features to main branch
 -   Make update do var name is not default #UI id, but {varName:varRepeatNumber} is the id to handle repetitions of the same variable name.
--   Equation format, max output count, non-metric units, and zero small elemements settings are missing in Calcpad.Web
 -   Add auto-run setting to Vue panel. When this is off, run only occurs when the preview is opened in VS Code or a refresh is run. In calcpad-desktop, add a run button that re-calculates the active view.
 -   Add a help button that opens the calcpad documentation in the same browser used for puppeteer.
 -   An external browser dropdown could be helpful that allows switching the puppeteer and help button browser from the settings. I think this is doable if we store both the browser name and path in an object (then only show browsers with a valid path and allow adding a browser via file select to the exe or pasted path).
+-   Submit removed jquery refactor as a PR to main.
+-   Submit IsUS settings refactor as a PR to main.
+    Submit PlotOutput refactor as a PR to main.
 
 ### Bugs
 
@@ -104,6 +107,8 @@
     '\<br/> 'if (window.dxfDrawing) { window.dxfDrawing.drawLine('x1$', 'y1$', 'x2$', 'y2$'); }\<br/> '  
     #end def
 -   Fix tokenization of custom units
+-   This code produces a bogus error:
+    https://imartincei.github.io/CalcpadCE/examples/multiline-functions.html#fibonacci-numbers
 
 ## Calcpad.Core
 

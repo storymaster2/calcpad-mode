@@ -50,6 +50,7 @@ export interface UiSettings {
     url: string;
   };
   units: string;
+  isUs: boolean;
 }
 
 export interface VariableItem {

@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { parseHeadings, DEFAULT_PDF_SETTINGS } from 'calcpad-frontend';
-import type { CalcpadError } from 'calcpad-frontend';
+import { parseHeadings, DEFAULT_PDF_SETTINGS, extractPlots, buildZip } from 'calcpad-frontend';
+import type { CalcpadError, ExtractedPlot } from 'calcpad-frontend';
 import { CalcpadSettingsManager } from './calcpadSettings';
 import { CalcpadInsertManager } from './calcpadInsertManager';
 
@@ -11,7 +11,9 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
     private _view?: vscode.WebviewView;
     private _outputChannel: vscode.OutputChannel;
+    private _cachedPlots: ExtractedPlot[] = [];
     public onPreviewThemeChanged?: () => void | Promise<void>;
+    public onSettingsChanged?: () => void | Promise<void>;
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
@@ -73,6 +75,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
                 case 'updateSettings':
                     this._settingsManager.updateSettings(data.settings);
+                    void this.onSettingsChanged?.();
                     break;
 
                 case 'resetSettings':
@@ -196,6 +199,18 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
                 case 'saveDocx':
                     vscode.commands.executeCommand('vscode-calcpad.saveDocx');
+                    break;
+
+                case 'getPlots':
+                    await this._handleGetPlots();
+                    break;
+
+                case 'savePlot':
+                    await this._handleSavePlot(data.index);
+                    break;
+
+                case 'savePlotsZip':
+                    await this._handleSavePlotsZip();
                     break;
 
                 case 'getInsertData':
@@ -359,6 +374,91 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
             activeConfig: sm.getActivePresetName(),
             availableConfigs: await sm.listPresets(),
         };
+    }
+
+    private async _handleGetPlots(): Promise<void> {
+        if (!this._view) return;
+        const editor = vscode.window.activeTextEditor;
+        const content = editor?.document.getText() ?? '';
+        if (!content.trim()) {
+            this._cachedPlots = [];
+            this._view.webview.postMessage({ type: 'plotsResponse', plots: [] });
+            return;
+        }
+        const html = await this._runConvert(content, editor?.document.uri.fsPath);
+        if (html == null) {
+            this._cachedPlots = [];
+            this._view.webview.postMessage({ type: 'plotsResponse', plots: [] });
+            return;
+        }
+        this._cachedPlots = extractPlots(html);
+        this._view.webview.postMessage({
+            type: 'plotsResponse',
+            plots: this._cachedPlots.map(p => ({
+                index: p.index,
+                ext: p.ext,
+                dataUri: p.dataUri,
+                sizeBytes: p.bytes.length,
+            })),
+        });
+    }
+
+    private async _handleSavePlot(index: number): Promise<void> {
+        const plot = this._cachedPlots[index];
+        if (!plot) return;
+        const defaultName = `plot-${index + 1}.${plot.ext}`;
+        const defaultDir = this._defaultSaveDir();
+        const saveUri = await vscode.window.showSaveDialog({
+            defaultUri: vscode.Uri.file(path.join(defaultDir, defaultName)),
+            filters: { [plot.ext.toUpperCase()]: [plot.ext] },
+        });
+        if (!saveUri) return;
+        await vscode.workspace.fs.writeFile(saveUri, plot.bytes);
+    }
+
+    private async _handleSavePlotsZip(): Promise<void> {
+        if (this._cachedPlots.length === 0) return;
+        const zipBytes = buildZip(
+            this._cachedPlots.map(p => ({
+                name: `plot-${p.index + 1}.${p.ext}`,
+                bytes: p.bytes,
+            })),
+        );
+        const defaultDir = this._defaultSaveDir();
+        const saveUri = await vscode.window.showSaveDialog({
+            defaultUri: vscode.Uri.file(path.join(defaultDir, 'calcpad-plots.zip')),
+            filters: { 'ZIP Archive': ['zip'] },
+        });
+        if (!saveUri) return;
+        await vscode.workspace.fs.writeFile(saveUri, zipBytes);
+    }
+
+    private _defaultSaveDir(): string {
+        const editor = vscode.window.activeTextEditor;
+        if (editor && !editor.document.isUntitled) {
+            return path.dirname(editor.document.uri.fsPath);
+        }
+        const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        return folder ?? '';
+    }
+
+    private async _runConvert(content: string, sourceFilePath?: string): Promise<string | null> {
+        const apiBaseUrl = this._settingsManager.getServerUrl();
+        if (!apiBaseUrl) return null;
+        const settings = await this._settingsManager.getApiSettings();
+        try {
+            const response = await fetch(`${apiBaseUrl}/api/calcpad/convert`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content, settings, sourceFilePath, forPrint: false }),
+                signal: AbortSignal.timeout(30000),
+            });
+            if (!response.ok) return null;
+            return await response.text();
+        } catch (err) {
+            this._outputChannel.appendLine(`[Plots] convert failed: ${err instanceof Error ? err.message : String(err)}`);
+            return null;
+        }
     }
 
     private _sendHeadings() {

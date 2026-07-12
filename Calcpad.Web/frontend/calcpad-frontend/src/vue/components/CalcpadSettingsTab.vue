@@ -57,7 +57,35 @@
             @change="updateSettings"
           />
           Format Equations
+          <span class="setting-info" title="Professional (checked) renders equations in stacked math form; Inline (unchecked) renders them on a single line.">ⓘ</span>
         </label>
+      </div>
+
+      <div class="setting-group">
+        <label>
+          <input
+            v-model="localSettings.math.zeroSmallMatrixElements"
+            type="checkbox"
+            @change="updateSettings"
+          />
+          Zero Small Matrix Elements
+          <span class="setting-info" title="Display very small matrix/vector values as 0 instead of using scientific notation.">ⓘ</span>
+        </label>
+      </div>
+
+      <div class="setting-group">
+        <label for="maxOutputCount">
+          Max Output Count:
+          <span class="setting-info" title="Maximum number of rows/columns shown for large matrices and vectors (5–100).">ⓘ</span>
+        </label>
+        <input
+          id="maxOutputCount"
+          v-model.number="localSettings.math.maxOutputCount"
+          type="number"
+          min="5"
+          max="100"
+          @input="updateSettings"
+        />
       </div>
 
       <h3>Plot Settings</h3>
@@ -164,15 +192,33 @@
 
       <h3>Units</h3>
       <div class="setting-group">
-        <label for="units">Units System:</label>
+        <label for="units">
+          Default Input Length Unit:
+          <span class="setting-info" title="Default length unit used for %u placeholders in input forms.">ⓘ</span>
+        </label>
         <select
           id="units"
           v-model="localSettings.units"
           @change="updateSettings"
         >
-          <option value="SI">SI (International System)</option>
-          <option value="Imperial">Imperial</option>
-          <option value="US">US Customary</option>
+          <option value="m">m (meters)</option>
+          <option value="cm">cm (centimeters)</option>
+          <option value="mm">mm (millimeters)</option>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <label for="nonMetricUnits">
+          Non-Metric Units:
+          <span class="setting-info" title="Selects US or UK definitions for bare unit names that differ between the two systems (gal, ton, cwt, pt, qt, bbl, tonf, therm, etc.).">ⓘ</span>
+        </label>
+        <select
+          id="nonMetricUnits"
+          v-model="localSettings.isUs"
+          @change="updateSettings"
+        >
+          <option :value="false">UK (Imperial)</option>
+          <option :value="true">US Customary</option>
         </select>
       </div>
 
@@ -249,6 +295,42 @@
             >{{ t.label }}</option>
           </optgroup>
         </select>
+      </div>
+
+      <h3 v-if="versionConfig.isDesktop">Editor Font</h3>
+      <div v-if="versionConfig.isDesktop" class="setting-group">
+        <label for="editorFontFamily">
+          Font Family:
+          <span class="setting-info" title="JuliaMono is the bundled default. Drop .woff2/.woff/.ttf/.otf files into the fonts folder to make them available here.">ⓘ</span>
+        </label>
+        <select
+          id="editorFontFamily"
+          v-model="editorFontFamily"
+          @change="updateEditorFontFamily"
+        >
+          <option value="JuliaMono">JuliaMono (default)</option>
+          <option value="system">System Default</option>
+          <optgroup v-if="userFontOptions.length" label="From fonts folder">
+            <option
+              v-for="name in userFontOptions"
+              :key="name"
+              :value="name"
+            >{{ name }}</option>
+          </optgroup>
+          <option
+            v-if="editorFontFamily && !isKnownFont"
+            :value="editorFontFamily"
+          >{{ editorFontFamily }} (missing)</option>
+        </select>
+      </div>
+      <div v-if="versionConfig.isDesktop" class="setting-group">
+        <button
+          class="diagnostics-button"
+          title="Open the folder where custom fonts can be dropped. Restart or reload to pick up new fonts."
+          @click="openFontsFolder"
+        >
+          Open Fonts Folder
+        </button>
       </div>
 
       <h3>Editor Features</h3>
@@ -428,6 +510,8 @@ interface Props {
   initialLibraryPath?: string
   initialActiveConfig?: string
   initialAvailableConfigs?: string[]
+  initialEditorFontFamily?: string
+  initialAvailableFonts?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -456,7 +540,8 @@ const props = withDefaults(defineProps<Props>(), {
     server: {
       url: ''
     },
-    units: 'm'
+    units: 'm',
+    isUs: false
   }),
   initialPreviewTheme: 'system',
   initialColorTheme: '',
@@ -471,7 +556,9 @@ const props = withDefaults(defineProps<Props>(), {
   versionConfig: () => ({ ...DEFAULT_VERSION_CONFIG }),
   initialLibraryPath: '',
   initialActiveConfig: 'default',
-  initialAvailableConfigs: () => ['default']
+  initialAvailableConfigs: () => ['default'],
+  initialEditorFontFamily: 'JuliaMono',
+  initialAvailableFonts: () => []
 })
 
 // Emits
@@ -492,6 +579,8 @@ const emit = defineEmits<{
   switchConfig: [name: string]
   openSettingsFolder: []
   openLogsFolder: []
+  openFontsFolder: []
+  updateEditorFontFamily: [family: string]
 }>()
 
 // State
@@ -503,6 +592,15 @@ const availableThemes = ref<ThemeInfo[]>(props.initialAvailableThemes)
 const darkThemes = computed(() => availableThemes.value.filter(t => t.kind === 'dark'))
 const lightThemes = computed(() => availableThemes.value.filter(t => t.kind === 'light'))
 const knownThemeLabels = computed(() => new Set(availableThemes.value.map(t => t.label)))
+const userFontOptions = computed(() =>
+  availableFonts.value.filter(f => f && f !== 'JuliaMono')
+)
+const isKnownFont = computed(() => {
+  const v = editorFontFamily.value
+  if (!v) return true
+  if (v === 'JuliaMono' || v === 'system') return true
+  return availableFonts.value.includes(v)
+})
 const enableQuickTyping = ref(props.initialEnableQuickTyping)
 const commentFormat = ref(props.initialCommentFormat)
 const enableFormattingHotkeys = ref(props.initialEnableFormattingHotkeys)
@@ -513,6 +611,8 @@ const maxOutputLines = ref(props.initialMaxOutputLines)
 const libraryPath = ref(props.initialLibraryPath)
 const activeConfig = ref(props.initialActiveConfig)
 const availableConfigs = ref<string[]>(props.initialAvailableConfigs)
+const editorFontFamily = ref(props.initialEditorFontFamily)
+const availableFonts = ref<string[]>(props.initialAvailableFonts)
 const newConfigName = ref('')
 const saveError = ref('')
 
@@ -595,6 +695,14 @@ const openSettingsFolder = () => {
 
 const openLogsFolder = () => {
   emit('openLogsFolder')
+}
+
+const openFontsFolder = () => {
+  emit('openFontsFolder')
+}
+
+const updateEditorFontFamily = () => {
+  emit('updateEditorFontFamily', editorFontFamily.value)
 }
 
 // Watch for prop changes
@@ -696,6 +804,20 @@ watch(
   () => props.initialAvailableConfigs,
   (newValue) => {
     availableConfigs.value = newValue
+  }
+)
+
+watch(
+  () => props.initialEditorFontFamily,
+  (newValue) => {
+    editorFontFamily.value = newValue
+  }
+)
+
+watch(
+  () => props.initialAvailableFonts,
+  (newValue) => {
+    availableFonts.value = newValue
   }
 )
 

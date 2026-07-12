@@ -84,6 +84,7 @@ namespace Calcpad.Server.Services
             var result = new Settings
             {
                 Units           = base_.Units,
+                IsUs            = base_.IsUs,
                 Math = new MathSettings
                 {
                     Decimals                = math.Decimals,
@@ -151,6 +152,11 @@ namespace Calcpad.Server.Services
                     case "units":
                         if (prop.Value.ValueKind == JsonValueKind.String)
                             result.Units = prop.Value.GetString() ?? result.Units;
+                        break;
+
+                    case "isus":
+                        if (prop.Value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                            result.IsUs = prop.Value.GetBoolean();
                         break;
 
                     case "vectorgraphics":
