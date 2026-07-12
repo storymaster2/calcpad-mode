@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { parseHeadings, DEFAULT_PDF_SETTINGS, extractPlots, buildZip } from 'calcpad-frontend';
-import type { CalcpadError, ExtractedPlot } from 'calcpad-frontend';
+import { parseHeadings, DEFAULT_PDF_SETTINGS, decodePlotPayload, buildZip } from 'calcpad-frontend';
+import type { CalcpadError, ExtractedPlot, PlotsResponse } from 'calcpad-frontend';
 import { CalcpadSettingsManager } from './calcpadSettings';
 import { CalcpadInsertManager } from './calcpadInsertManager';
 
@@ -12,6 +12,12 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;
     private _outputChannel: vscode.OutputChannel;
     private _cachedPlots: ExtractedPlot[] = [];
+    /**
+     * Extension supplies a getter that combines `activeTextEditor` with the
+     * remembered preview-source editor so plot fetching still works when the
+     * preview panel is focused (which nulls out `activeTextEditor`).
+     */
+    public getSourceEditor?: () => vscode.TextEditor | undefined;
     public onPreviewThemeChanged?: () => void | Promise<void>;
     public onSettingsChanged?: () => void | Promise<void>;
 
@@ -219,7 +225,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
                 case 'getVariables':
                     // Trigger a refresh of variables from the current document
-                    const editor = vscode.window.activeTextEditor;
+                    const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
                     if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
                         vscode.commands.executeCommand('calcpad.refreshVariables');
                     }
@@ -306,7 +312,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         // Debounced refresh of headings when the document content changes
         let tocTimer: ReturnType<typeof setTimeout> | undefined;
         vscode.workspace.onDidChangeTextDocument((e) => {
-            const editor = vscode.window.activeTextEditor;
+            const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
             if (editor && e.document === editor.document) {
                 if (tocTimer) clearTimeout(tocTimer);
                 tocTimer = setTimeout(() => this._sendHeadings(), 800);
@@ -378,20 +384,15 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
     private async _handleGetPlots(): Promise<void> {
         if (!this._view) return;
-        const editor = vscode.window.activeTextEditor;
+        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
         const content = editor?.document.getText() ?? '';
         if (!content.trim()) {
             this._cachedPlots = [];
             this._view.webview.postMessage({ type: 'plotsResponse', plots: [] });
             return;
         }
-        const html = await this._runConvert(content, editor?.document.uri.fsPath);
-        if (html == null) {
-            this._cachedPlots = [];
-            this._view.webview.postMessage({ type: 'plotsResponse', plots: [] });
-            return;
-        }
-        this._cachedPlots = extractPlots(html);
+        const response = await this._fetchPlots(content, editor?.document.uri.fsPath);
+        this._cachedPlots = response ? decodePlotPayload(response.plots) : [];
         this._view.webview.postMessage({
             type: 'plotsResponse',
             plots: this._cachedPlots.map(p => ({
@@ -434,7 +435,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
     }
 
     private _defaultSaveDir(): string {
-        const editor = vscode.window.activeTextEditor;
+        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
         if (editor && !editor.document.isUntitled) {
             return path.dirname(editor.document.uri.fsPath);
         }
@@ -442,21 +443,21 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         return folder ?? '';
     }
 
-    private async _runConvert(content: string, sourceFilePath?: string): Promise<string | null> {
+    private async _fetchPlots(content: string, sourceFilePath?: string): Promise<PlotsResponse | null> {
         const apiBaseUrl = this._settingsManager.getServerUrl();
         if (!apiBaseUrl) return null;
         const settings = await this._settingsManager.getApiSettings();
         try {
-            const response = await fetch(`${apiBaseUrl}/api/calcpad/convert`, {
+            const response = await fetch(`${apiBaseUrl}/api/calcpad/plots`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, settings, sourceFilePath, forPrint: false }),
+                body: JSON.stringify({ content, settings, sourceFilePath }),
                 signal: AbortSignal.timeout(30000),
             });
             if (!response.ok) return null;
-            return await response.text();
+            return await response.json() as PlotsResponse;
         } catch (err) {
-            this._outputChannel.appendLine(`[Plots] convert failed: ${err instanceof Error ? err.message : String(err)}`);
+            this._outputChannel.appendLine(`[Plots] fetch failed: ${err instanceof Error ? err.message : String(err)}`);
             return null;
         }
     }
@@ -464,7 +465,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
     private _sendHeadings() {
         if (!this._view) return;
 
-        const editor = vscode.window.activeTextEditor;
+        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
         if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
             const headings = parseHeadings(editor.document.getText());
             this._view.webview.postMessage({ type: 'updateHeadings', headings });
@@ -506,7 +507,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="${styleUri}" rel="stylesheet">
     <title>CalcPad Vue UI</title>

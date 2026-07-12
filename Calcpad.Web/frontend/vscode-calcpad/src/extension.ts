@@ -1430,6 +1430,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     vueUiProvider = new CalcpadVueUIProvider(context.extensionUri, context, settingsManager, insertManager);
+    vueUiProvider.getSourceEditor = () => vscode.window.activeTextEditor ?? previewSourceEditor;
     vueUiProvider.onPreviewThemeChanged = async () => {
         const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor) return;

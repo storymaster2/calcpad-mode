@@ -53,7 +53,7 @@
 -   An external browser dropdown could be helpful that allows switching the puppeteer and help button browser from the settings. I think this is doable if we store both the browser name and path in an object (then only show browsers with a valid path and allow adding a browser via file select to the exe or pasted path).
 -   Submit removed jquery refactor as a PR to main.
 -   Submit IsUS settings refactor as a PR to main.
-    Submit PlotOutput refactor as a PR to main.
+-   Submit PlotOutput Core refactor as a PR to main.
 
 ### Bugs
 
@@ -63,21 +63,23 @@
 
 ## Calcpad.Web Desktop App
 
-
--   add font selector to switch between JuliaMono and system default font (or any other fonts stored in the fonts folder). add button to open fonts folder.
 -   Make Prettify document put brackets at same line level, add spaces before and after operators, and add one space after line delimiters (and 0 spaces before ; delimiters):
     x2,seg = [38.667; 48; 66.667; 80.667; 90.667; 108.667; 118.667; _
             33.333; 40.333; 51.667; 75; 96.667; 108.333; 118.667; _
             23.333; 23.333; 23.333; _
             35; 35; 35; 35]*1ft
--   add a max log length before it gets overwritten to help with performance
+- Restart App button crashes the program, let's just remove it.
+- opening font switcher dialog should re-scan the fonts folder
 
 ### Bugs
--   Fix Ctrl without click navigating to definition when the macro comes from an included file.
+
 
 ### Testing
 -   error buttons don't jump to error line correctly when the error occurs in a loop. I think errors should get their own id that the buttons can get mapped to for scroll anchoring
 -   create backup files of the current file state before a Tauri app crash in the project root directory. have this able to be opened via the files tab
+-   add font selector to switch between JuliaMono and system default font (or any other fonts stored in the fonts folder). add button to open fonts folder.
+-   add a max log length before it gets overwritten to help with performance
+-   Fix Ctrl without click navigating to definition when the macro comes from an included file.
 
 ## Calcpad.Web Browser
 -   Have `calcpad-web` (pure browser build) mirror the desktop settings scheme in localStorage — same JSON shape, active-config pointer, named configs — with export/import via browser file up/download. Not urgent; pure web build isn't the active target.
@@ -113,12 +115,11 @@
 ## Calcpad.Core
 
 -   Add Unit safety for angles by having arc functions return the unit based on the default setting (instead of a number with no unit)
--   Add a way to throw custom errors in command block expressions
 -   Allows undefined in inline loops. This is because undefined is the best way to work with jagged matrices. Have the graph either show a vertical asymtote or ignore undefined values.
 -   See if Kelvin unit conversion can be made safer.
 -   Add more imperial units for engineering (ksf, plf, etc.)
 -   Add #hideRegion {cond} and #endHideRegion {cond} to replace hideC/unhideC
--   Add a way to throw errors that Calcpad.Core uses with a built-in function. Catch all errors including these in Calcpad.Core and pass them to the Vue panel with source code line references/external filepath.
+-   Add a way to throw errors that Calcpad.Core uses with a built-in function.
 -   Add inline unit convsersion function on a variable (instead of per-line)
 -   Colors in unwrapped code don't match syntax highlighter
 

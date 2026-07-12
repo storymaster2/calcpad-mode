@@ -16,23 +16,21 @@ export interface ExtractedPlot {
 export function decodePlotPayload(payloads: PlotPayload[]): ExtractedPlot[] {
     return payloads.map((p, index) => {
         const bytes = base64ToBytes(p.base64);
-        if (p.format === 'svg') {
-            const svgText = new TextDecoder().decode(bytes);
-            return {
+        return p.format === 'svg'
+            ? {
                 index,
                 ext: 'svg',
                 mime: 'image/svg+xml',
                 bytes,
-                dataUri: 'data:image/svg+xml;utf8,' + encodeURIComponent(svgText),
+                dataUri: 'data:image/svg+xml;base64,' + p.base64,
+            }
+            : {
+                index,
+                ext: 'png',
+                mime: 'image/png',
+                bytes,
+                dataUri: 'data:image/png;base64,' + p.base64,
             };
-        }
-        return {
-            index,
-            ext: 'png',
-            mime: 'image/png',
-            bytes,
-            dataUri: 'data:image/png;base64,' + p.base64,
-        };
     });
 }
 
