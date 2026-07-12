@@ -716,7 +716,7 @@ namespace Calcpad.Wpf
             if (settings.WindowHeight > 0) Height = settings.WindowHeight;
             this.WindowState = (WindowState)settings.WindowState;
 
-            ExpressionParser.IsUs = US.IsChecked ?? false;
+            _parser.Settings.IsUs = US.IsChecked ?? false;
             var math = _parser.Settings.Math;
             math.FormatEquations = Professional.IsChecked ?? false;
             math.IsComplex = Complex.IsChecked ?? false;
@@ -3460,7 +3460,7 @@ namespace Calcpad.Wpf
 
         private void UnitsRadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            ExpressionParser.IsUs = ReferenceEquals(sender, US);
+            _parser.Settings.IsUs = ReferenceEquals(sender, US);
             ClearOutput();
         }
         private async void WebViewer_NavigationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)

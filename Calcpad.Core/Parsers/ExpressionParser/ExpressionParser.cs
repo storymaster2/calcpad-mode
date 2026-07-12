@@ -71,6 +71,7 @@ namespace Calcpad.Core
 
         private void Parse(ReadOnlySpan<char> code, bool calculate, bool getXml)
         {
+            Unit.IsUs = Settings.IsUs;
             var lines = new List<int> { 0 };
             var len = code.Length;
             for (int i = 0; i < len; ++i)
