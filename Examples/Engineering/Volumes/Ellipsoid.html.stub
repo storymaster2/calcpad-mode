@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <!-- Volume $V = \tfrac{4}{3}\pi\, a\, b\, c$ and approximate surface area of an ellipsoid from its three semi-axes. -->
+ <h3>Volume and Surface Area of Ellipsoid</h3>
  <div style="max-width:110mm">
   <img alt="ellipsoid.png" class="side" src="Images/math/volume/ellipsoid.png" style="height:70pt;"/>
  </div>

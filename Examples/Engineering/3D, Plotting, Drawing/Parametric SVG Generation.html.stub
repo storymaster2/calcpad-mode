@@ -1,8 +1,4 @@
 <div class="calcpad-output">
- <!-- Generate a fully parametric SVG cross-section of a prestressed double-tee panel by composing reusable `#def` shape templates from [`svg_drawing.cpd`](https://github.com/imartincei/CalcpadCE/blob/main/Examples/Engineering/3D%2C%20Plotting%2C%20Drawing/svg_drawing.cpd).
-<p>Adjust any dimension and the drawing redraws itself — ideal for standardised structural detail libraries. -->
- <!-- A small library of reusable CalcpadCE `#def` macros that emit SVG primitives (line, rect, circle, text, dimensions).
-<p>Include this file with `#include svg_drawing.cpd` in any worksheet that needs to draw a parametric structural detail. -->
  <h3>Prestressed TT Panel - Parametric SVG Generation</h3>
  <p>Dimensions:</p>
  <p>
@@ -10,7 +6,7 @@
   <span class="eq">
    <var>h</var>
    =
-   <u class="input-7">750</u>
+   <u class="input-5">750</u>
   </span>
   mm
  </p>
@@ -20,7 +16,7 @@
    <var>b</var>
    <sub>2</sub>
    =
-   <u class="input-8">200</u>
+   <u class="input-6">200</u>
   </span>
   mm
  </p>
@@ -30,7 +26,7 @@
    <var>h</var>
    <sub>f</sub>
    =
-   <u class="input-9">100</u>
+   <u class="input-7">100</u>
   </span>
   mm
  </p>
@@ -40,7 +36,7 @@
    <var>B</var>
    <sub>0</sub>
    =
-   <u class="input-10">1500</u>
+   <u class="input-8">1500</u>
   </span>
   mm
  </p>
@@ -49,7 +45,7 @@
   <span class="eq">
    <var>B</var>
    =
-   <u class="input-11">2500</u>
+   <u class="input-9">2500</u>
   </span>
   mm
  </p>
@@ -177,7 +173,7 @@
    <var>d</var>
    <sub>p1</sub>
    =
-   <u class="input-20">80</u>
+   <u class="input-18">80</u>
   </span>
   mm
  </p>
@@ -187,7 +183,7 @@
    <var>n</var>
    <sub>ph</sub>
    =
-   <u class="input-21">2</u>
+   <u class="input-19">2</u>
   </span>
  </p>
  <p>
@@ -196,7 +192,7 @@
    <var>n</var>
    <sub>pv</sub>
    =
-   <u class="input-22">3</u>
+   <u class="input-20">3</u>
   </span>
  </p>
  <svg style="font-family: Arial Nova Cond, Noto Sans Cond, Segoe UI; font-size: 54px; width:500pt; height:220pt" version="1.1" viewbox="-1450 -150 2800 1250" xmlns="http://www.w3.org/2000/svg">

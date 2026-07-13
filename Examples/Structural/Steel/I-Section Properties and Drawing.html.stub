@@ -346,7 +346,6 @@
     </p>
    </td>
    <td>
-    <!-- SVG drawing macros included by the steel I-section worksheets to render the cross-section with its flange widths, web thickness and root radius. -->
     <svg height="260pt" style="font-size:9pt;" viewbox="-95.5 -50 191 280" width="171pt" xmlns="http://www.w3.org/2000/svg">
      <path d="M-45.5,0H45.5V8H11.65A9,9 0 0 0 2.65,17V163A9,9 0 0 0 11.65,172H45.5V180H-45.5V172H-11.65A9,9 0 0 0 -2.65,163V17A9,9 0 0 0 -11.65,8H-45.5Z" fill="LightSkyBlue" fill-opacity="0.6" stroke="#4ac" stroke-width="1.5">
      </path>

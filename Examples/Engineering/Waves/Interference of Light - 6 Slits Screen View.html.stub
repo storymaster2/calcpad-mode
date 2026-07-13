@@ -1,6 +1,6 @@
 <div class="calcpad-output">
- <!-- Screen-view intensity for the six-slit grating-like configuration: principal maxima become sharp peaks separated by five tiny secondary lobes, the canonical $N$-slit fingerprint. -->
  <p>Assoc. prof. Tadeusz Szumiata, PhD, Radom University, Poland</p>
+ <h3>Interference of light from six slits - view on the screen</h3>
  <p>
  </p>
  <p>Interferencja światła z sześciu szczelin - widok na ekranie</p>
@@ -436,7 +436,7 @@
    <i>cm</i>
   </span>
  </p>
- <svg class="plot" height="640px" style="width:494.44pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2670 640" width="2670px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="640px" style="width:494.44pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2670 640" width="2670px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -528,7 +528,7 @@ circle.Series1 {fill:Tomato;}
   </g>
  </svg>
  <div class="plot" style="width:540pt; height:120pt;">
-  <svg height="640px" style="width:533.33pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2880 640" width="2880px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="640px" style="width:533.33pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2880 640" width="2880px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

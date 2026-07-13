@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <!-- Polar [rose curve](https://en.wikipedia.org/wiki/Rose_(mathematics)) $r = a\, \cos(k\theta)$ with petal count controlled by integer or rational $k$. -->
+ <h3>Rose Curve</h3>
  <p>General equation:</p>
  <p>
   <span class="eq">
@@ -57,7 +57,7 @@
  /
  <i>b</i>
  =4/1
- <svg class="plot" height="1840px" style="width:346.3pt; height:340.74pt;" version="1.1" viewbox=" 0 0 1870 1840" width="1870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1840px" style="width:346.3pt; height:340.74pt;" version="1.1" viewbox=" 0 0 1870 1840" width="1870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

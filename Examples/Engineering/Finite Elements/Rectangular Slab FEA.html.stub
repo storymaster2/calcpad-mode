@@ -1,6 +1,6 @@
 <div class="calcpad-output">
- <!-- Single-panel simply-supported rectangular slab solved with the 16-DOF Bogner–Fox–Schmit plate element under uniform load.
-<p>Returns deflection plus the bending moments $M_x$ and $M_y$ on a user-defined mesh — a compact testbed for convergence studies. -->
+ <h3>Finite Element Analysis of Rectangular Slab</h3>
+ <hr/>
  <h4>Input data</h4>
  <table>
   <tr>
@@ -3742,7 +3742,7 @@
    mm
   </p>
   <div class="plot" style="width:315pt; height:195pt;">
-   <svg height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4288,7 +4288,7 @@
    kNm/m
   </p>
   <div class="plot" style="width:315pt; height:195pt;">
-   <svg height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4574,7 +4574,7 @@
    kNm/m
   </p>
   <div class="plot" style="width:315pt; height:195pt;">
-   <svg height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4860,7 +4860,7 @@
    kNm/m
   </p>
   <div class="plot" style="width:315pt; height:195pt;">
-   <svg height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

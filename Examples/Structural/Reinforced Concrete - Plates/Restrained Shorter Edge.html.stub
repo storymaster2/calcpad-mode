@@ -1,10 +1,13 @@
 <div class="calcpad-output">
- <!-- Two-way slab panel with one shorter edge restrained and the other three simply supported, typical of an edge panel oriented across the short span. -->
- <small>
-  According to
-  <strong>Eurocode</strong>
-  : EN 1992-1-1
- </small>
+ <h3>
+  Slab Panel with Restrained Shorter Edge
+  <hr/>
+  <small>
+   According to
+   <strong>Eurocode</strong>
+   : EN 1992-1-1
+  </small>
+ </h3>
  <div style="max-width:180mm;">
   <img alt="sssf-span-cl.png" class="side" src="Images/structures/rc/spans/sssf-span-cl.png" style="height:180pt;"/>
   <h4>Dimensions</h4>
@@ -22,14 +25,14 @@
     <var>l</var>
     <sub>x_cl</sub>
     =
-    <u class="input-7">4</u>
+    <u class="input-6">4</u>
    </span>
    m,
    <span class="eq">
     <var>l</var>
     <sub>y_cl</sub>
     =
-    <u class="input-7">6</u>
+    <u class="input-6">6</u>
    </span>
    m
   </p>
@@ -41,7 +44,7 @@
     <var>b</var>
     <sub>y</sub>
     =
-    <u class="input-8">25</u>
+    <u class="input-7">25</u>
    </span>
    cm
   </p>
@@ -53,7 +56,7 @@
     <var>b</var>
     <sub>x</sub>
     =
-    <u class="input-9">25</u>
+    <u class="input-8">25</u>
    </span>
    cm
   </p>
@@ -62,7 +65,7 @@
    <span class="eq">
     <var>h</var>
     =
-    <u class="input-10">14</u>
+    <u class="input-9">14</u>
    </span>
    cm
   </p>
@@ -71,7 +74,7 @@
    <span class="eq">
     <var>c</var>
     =
-    <u class="input-11">2</u>
+    <u class="input-10">2</u>
    </span>
    cm
   </p>
@@ -210,7 +213,7 @@
        <var>l</var>
        <sub>y1</sub>
        =
-       <u class="input-29">0</u>
+       <u class="input-28">0</u>
       </span>
       m;
      </p>
@@ -221,7 +224,7 @@
        <var>M</var>
        <sub>Ed_yt1_</sub>
        =
-       <u class="input-31">0</u>
+       <u class="input-30">0</u>
       </span>
       kN·m/m
      </p>
@@ -254,7 +257,7 @@
     <var>g</var>
     <sub>k</sub>
     =
-    <u class="input-40">2.5</u>
+    <u class="input-39">2.5</u>
    </span>
    kN/m²
   </p>
@@ -264,7 +267,7 @@
     <var>q</var>
     <sub>k</sub>
     =
-    <u class="input-41">2</u>
+    <u class="input-40">2</u>
    </span>
    kN/m²
   </p>
@@ -516,7 +519,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-70">25</u>
+    <u class="input-69">25</u>
    </span>
    MPa
   </p>
@@ -532,7 +535,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-71">0.85</u>
+    <u class="input-70">0.85</u>
    </span>
   </p>
   <p>
@@ -615,7 +618,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-79">500</u>
+    <u class="input-78">500</u>
    </span>
    MPa
   </p>
@@ -671,7 +674,7 @@
     <var>d</var>
     <sub>bxb</sub>
     =
-    <u class="input-86">8</u>
+    <u class="input-85">8</u>
    </span>
    mm, parallel to
    <i>y</i>
@@ -680,7 +683,7 @@
     <var>d</var>
     <sub>byb</sub>
     =
-    <u class="input-86">8</u>
+    <u class="input-85">8</u>
    </span>
    mm
   </p>
@@ -692,7 +695,7 @@
     <var>d</var>
     <sub>byt</sub>
     =
-    <u class="input-87">6</u>
+    <u class="input-86">6</u>
    </span>
    mm
   </p>

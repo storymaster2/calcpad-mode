@@ -1,17 +1,20 @@
 <div class="calcpad-output">
- <!-- Serviceability checks for a rectangular beam: stress in the concrete and reinforcement, crack-width and long-term deflection, with the static scheme selected from a drop-down list (only in the Desktop version) of cantilevers and simply supported beams. -->
- <small>
-  According to
-  <strong>Eurocode</strong>
-  : EN 1992-1-1
- </small>
+ <h3>
+  SLS Design of RC Beam with Rectangular Section
+  <hr/>
+  <small>
+   According to
+   <strong>Eurocode</strong>
+   : EN 1992-1-1
+  </small>
+ </h3>
  <div style="max-width:180mm">
   <h4>Static scheme</h4>
   <p class="flip_base" id="type" style="display:none">
    <span class="eq">
     <var>type</var>
     =
-    <u class="input-5">0</u>
+    <u class="input-4">0</u>
    </span>
   </p>
   <img alt="deflection-beam-uniform.png" class="side flip flip_0" src="Images/structures/rc/design/deflection-beam-uniform.png" style="width:150pt;"/>
@@ -21,7 +24,7 @@
    <span class="eq">
     <var>L</var>
     =
-    <u class="input-40">7</u>
+    <u class="input-39">7</u>
    </span>
    m
   </p>
@@ -31,7 +34,7 @@
     <var>w</var>
     <sub>max</sub>
     =
-    <u class="input-42">0.4</u>
+    <u class="input-41">0.4</u>
    </span>
   </p>
   <p>X0 or XC1</p>
@@ -48,7 +51,7 @@
     <var>M</var>
     <sub>k</sub>
     =
-    <u class="input-57">200</u>
+    <u class="input-56">200</u>
    </span>
    kNm
   </p>
@@ -64,7 +67,7 @@
     <var>M</var>
     <sub>qp</sub>
     =
-    <u class="input-58">150</u>
+    <u class="input-57">150</u>
    </span>
    kNm
   </p>
@@ -77,13 +80,13 @@
    <span class="eq">
     <var>b</var>
     =
-    <u class="input-62">300</u>
+    <u class="input-61">300</u>
    </span>
    mm, Height -
    <span class="eq">
     <var>h</var>
     =
-    <u class="input-62">650</u>
+    <u class="input-61">650</u>
    </span>
    mm
   </p>
@@ -92,7 +95,7 @@
    <span class="eq">
     <var>c</var>
     =
-    <u class="input-63">30</u>
+    <u class="input-62">30</u>
    </span>
    mm (to bars surface)
   </p>
@@ -105,14 +108,14 @@
     <var>n</var>
     <sub>1</sub>
     =
-    <u class="input-65">4</u>
+    <u class="input-64">4</u>
    </span>
    with diameter -
    <span class="eq">
     <var>Φ</var>
     <sub>1</sub>
     =
-    <u class="input-65">20</u>
+    <u class="input-64">20</u>
    </span>
    mm
   </p>
@@ -153,7 +156,7 @@
     <var>d</var>
     <sub>1</sub>
     =
-    <u class="input-69">45</u>
+    <u class="input-68">45</u>
    </span>
    mm
   </p>
@@ -175,7 +178,7 @@
    <span class="eq">
     <var>s</var>
     =
-    <u class="input-73">74</u>
+    <u class="input-72">74</u>
    </span>
    mm
   </p>
@@ -188,14 +191,14 @@
     <var>n</var>
     <sub>2</sub>
     =
-    <u class="input-75">2</u>
+    <u class="input-74">2</u>
    </span>
    with diameter -
    <span class="eq">
     <var>Φ</var>
     <sub>2</sub>
     =
-    <u class="input-75">14</u>
+    <u class="input-74">14</u>
    </span>
    mm
   </p>
@@ -236,7 +239,7 @@
     <var>d</var>
     <sub>2</sub>
     =
-    <u class="input-79">45</u>
+    <u class="input-78">45</u>
    </span>
    mm
   </p>
@@ -253,7 +256,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-83">20</u>
+    <u class="input-82">20</u>
    </span>
    MPa
   </p>
@@ -337,7 +340,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-90">500</u>
+    <u class="input-89">500</u>
    </span>
    MPa
   </p>
@@ -386,7 +389,7 @@
     <span class="eq">
      <var>RH</var>
      =
-     <u class="input-100">50</u>
+     <u class="input-99">50</u>
     </span>
     %
    </p>

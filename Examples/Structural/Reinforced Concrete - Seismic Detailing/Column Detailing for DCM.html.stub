@@ -1,10 +1,13 @@
 <div class="calcpad-output">
- <!-- Eurocode 8 detailing of a primary seismic column for medium ductility class: cross-section dimensions, longitudinal ratio, confinement of the boundary regions and minimum mechanical volumetric ratio of the hoops. -->
- <small>
-  According to
-  <strong>Eurocode</strong>
-  : EN 1998-1
- </small>
+ <h3>
+  Column Detailing for Ductility Class DCM
+  <hr/>
+  <small>
+   According to
+   <strong>Eurocode</strong>
+   : EN 1998-1
+  </small>
+ </h3>
  <div style="max-width:180mm">
   <img alt="column-section.png" class="side" src="Images/structures/rc/detailing/column-section.png" style="width:220pt;"/>
   <p>
@@ -16,14 +19,14 @@
     <var>b</var>
     <sub>c</sub>
     =
-    <u class="input-6">500</u>
+    <u class="input-5">500</u>
    </span>
    mm,
    <span class="eq">
     <var>h</var>
     <sub>c</sub>
     =
-    <u class="input-6">500</u>
+    <u class="input-5">500</u>
    </span>
    mm
   </p>
@@ -33,7 +36,7 @@
     <var>l</var>
     <sub>cl</sub>
     =
-    <u class="input-7">2850</u>
+    <u class="input-6">2850</u>
    </span>
    mm
   </p>
@@ -58,7 +61,7 @@
     <var>N</var>
     <sub>Ed</sub>
     =
-    <u class="input-9">983.8</u>
+    <u class="input-8">983.8</u>
    </span>
    kN
   </p>
@@ -74,7 +77,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-13">25</u>
+    <u class="input-12">25</u>
    </span>
    MPa
   </p>
@@ -96,7 +99,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-14">1</u>
+    <u class="input-13">1</u>
    </span>
   </p>
   <img alt="column-view.png" class="side" src="Images/structures/rc/detailing/column-view.png" style="width:130pt;"/>
@@ -178,7 +181,7 @@
    <span class="eq">
     <var>C</var>
     =
-    <u class="input-26">0</u>
+    <u class="input-25">0</u>
    </span>
   </p>
   <p>
@@ -187,7 +190,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-27">500</u>
+    <u class="input-26">500</u>
    </span>
    MPa
   </p>
@@ -241,7 +244,7 @@
     <var>d</var>
     <sub>bL</sub>
     =
-    <u class="input-47">28</u>
+    <u class="input-46">28</u>
    </span>
    mm
   </p>
@@ -261,7 +264,7 @@
     <var>n</var>
     <sub>b</sub>
     =
-    <u class="input-55">12</u>
+    <u class="input-54">12</u>
    </span>
   </p>
   <p>
@@ -273,7 +276,7 @@
     <var>n</var>
     <sub>b1</sub>
     =
-    <u class="input-56">4</u>
+    <u class="input-55">4</u>
    </span>
   </p>
   <p>
@@ -739,7 +742,7 @@
     <var>d</var>
     <sub>bw</sub>
     =
-    <u class="input-128">10</u>
+    <u class="input-127">10</u>
    </span>
    mm
   </p>
@@ -749,7 +752,7 @@
     <var>f</var>
     <sub>ywk</sub>
     =
-    <u class="input-129">500</u>
+    <u class="input-128">500</u>
    </span>
    MPa
   </p>
@@ -1686,7 +1689,7 @@
     <var>T</var>
     <sub>1</sub>
     =
-    <u class="input-236">0.55</u>
+    <u class="input-235">0.55</u>
    </span>
    s
   </p>
@@ -1696,7 +1699,7 @@
     <var>T</var>
     <sub>C</sub>
     =
-    <u class="input-237">0.6</u>
+    <u class="input-236">0.6</u>
    </span>
    s
   </p>
@@ -1706,7 +1709,7 @@
     <var>q</var>
     <sub>0</sub>
     =
-    <u class="input-238">3.9</u>
+    <u class="input-237">3.9</u>
    </span>
   </p>
   <p>

@@ -1,5 +1,4 @@
 <div class="calcpad-output">
- <!-- Same tapered steel pole as the static variant, with the lower mode shapes animated in pure SVG by frame switching driven by a small inline jQuery script. -->
  <h3>Free vibrations of steel pole with variable cross-section of arbitrary shape</h3>
  <hr/>
  <h3>Static scheme</h3>
@@ -920,7 +919,7 @@
   </span>
  </p>
  <!-- <span class="eq"><var>PlotWidth</var> = 200</span> , <span class="eq"><var>PlotHeight</var> = 200</span> , <span class="eq"><var>PlotSVG</var> = 1</span> -->
- <svg class="plot" height="1040px" style="width:198.15pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1070 1040" width="1070px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1040px" style="width:198.15pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1070 1040" width="1070px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1039,7 +1038,7 @@ circle.Series6 {fill:MediumSpringGreen;}
    </polyline>
   </g>
  </svg>
- <svg class="plot" height="1040px" style="width:198.15pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1070 1040" width="1070px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1040px" style="width:198.15pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1070 1040" width="1070px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2698,7 +2697,7 @@ circle.Series6 {fill:MediumSpringGreen;}
    </span>
   </span>
  </p>
- <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2965,7 +2964,7 @@ circle.Series3 {fill:CornflowerBlue;}
  </p>
  <style>[id^="steelpole-fr-"]{display:none;}</style>
  <div id="steelpole-fr-0">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3054,7 +3053,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-1">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3143,7 +3142,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-2">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3232,7 +3231,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-3">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3321,7 +3320,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-4">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3410,7 +3409,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-5">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3499,7 +3498,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-6">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3588,7 +3587,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-7">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3677,7 +3676,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-8">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3766,7 +3765,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-9">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3855,7 +3854,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-10">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3944,7 +3943,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-11">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4033,7 +4032,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-12">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4122,7 +4121,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-13">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4211,7 +4210,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-14">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4300,7 +4299,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-15">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4389,7 +4388,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-16">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4478,7 +4477,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-17">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4567,7 +4566,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-18">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4656,7 +4655,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-19">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4745,7 +4744,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-20">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4834,7 +4833,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-21">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4923,7 +4922,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-22">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5012,7 +5011,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-23">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5101,7 +5100,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-24">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5190,7 +5189,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-25">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5279,7 +5278,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-26">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5368,7 +5367,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-27">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5457,7 +5456,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-28">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5546,7 +5545,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-29">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5635,7 +5634,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-30">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5724,7 +5723,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-31">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5813,7 +5812,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-32">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5902,7 +5901,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-33">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5991,7 +5990,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-34">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6080,7 +6079,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-35">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6169,7 +6168,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-36">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6258,7 +6257,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-37">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6347,7 +6346,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-38">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6436,7 +6435,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-39">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6525,7 +6524,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-40">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6614,7 +6613,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-41">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6703,7 +6702,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-42">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6792,7 +6791,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-43">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6881,7 +6880,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-44">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6970,7 +6969,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-45">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7059,7 +7058,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-46">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7148,7 +7147,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-47">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7237,7 +7236,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-48">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7326,7 +7325,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-49">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7415,7 +7414,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-50">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7504,7 +7503,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-51">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7593,7 +7592,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-52">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7682,7 +7681,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-53">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7771,7 +7770,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-54">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7860,7 +7859,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-55">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7949,7 +7948,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-56">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8038,7 +8037,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-57">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8127,7 +8126,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-58">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8216,7 +8215,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-59">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8305,7 +8304,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </svg>
  </div>
  <div id="steelpole-fr-60">
-  <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

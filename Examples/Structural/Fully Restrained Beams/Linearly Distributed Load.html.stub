@@ -1,6 +1,7 @@
 <div class="calcpad-output">
- <!-- Trapezoidal load between intensities $q_1$ and $q_2$, with the support moments split as $(3 q_1 + 2 q_2) l^2 / 60$ and $(2 q_1 + 3 q_2) l^2 / 60$. -->
+ <h3>Fully Restrained Beam with Linearly Distributed Load</h3>
  <div style="max-width:180mm;">
+  <hr/>
   <img alt="fixed-beam-distributed-load-linear.png" class="side" src="Images/mechanics/beams/fixed-beam-distributed-load-linear.png" style="width:210pt;"/>
   <p>
    <b>Input data</b>
@@ -340,7 +341,7 @@
     </span>
    </span>
   </p>
-  <svg class="plot" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -488,7 +489,7 @@ circle.Series1 {fill:Tomato;}
     </span>
    </span>
   </p>
-  <svg class="plot" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

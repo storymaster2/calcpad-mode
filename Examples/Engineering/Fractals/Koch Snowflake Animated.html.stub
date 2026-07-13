@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <!-- Animated variant of the Koch snowflake: every iteration becomes an SVG layer, toggled in sequence by CSS so the limit curve emerges over time. -->
+ <h3>Koch Snowflake Animation</h3>
  <p>Initial triangle coordinates</p>
  <p>
   <span class="eq">

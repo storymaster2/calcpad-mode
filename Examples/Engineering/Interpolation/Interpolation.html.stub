@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <!-- Compares `take()`, `line()` and `spline()` on a single dataset, then derives wind-load height factors $k_z$ for two terrain categories by interpolating tabulated code values.
-<p>A compact reference for picking the right scheme when working with discrete engineering tables. -->
+ <h3>Interpolation</h3>
  <h4>Data functions in CalcpadCE</h4>
  <p>
   <span class="eq">
@@ -48,7 +47,7 @@
   <span style="color:Tomato;">━━━</span>
  </p>
  <!-- <span class="eq"><var>PlotHeight</var> = 250</span> , <span class="eq"><var>PlotWidth</var> = 400</span> -->
- <svg class="plot" height="1240px" style="width:346.3pt; height:229.63pt;" version="1.1" viewbox=" 0 0 1870 1240" width="1870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1240px" style="width:346.3pt; height:229.63pt;" version="1.1" viewbox=" 0 0 1870 1240" width="1870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -235,7 +234,7 @@ circle.Series3 {fill:CornflowerBlue;}
  </p>
  <!-- <span class="eq"><var>PlotHeight</var> = 250</span> , <span class="eq"><var>PlotWidth</var> = 150</span> -->
  <p>Chart</p>
- <svg class="plot" height="1240px" style="width:161.11pt; height:229.63pt;" version="1.1" viewbox=" 0 0 870 1240" width="870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1240px" style="width:161.11pt; height:229.63pt;" version="1.1" viewbox=" 0 0 870 1240" width="870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

@@ -1,10 +1,13 @@
 <div class="calcpad-output">
- <!-- Shear design of a rectangular section under EN 1992-1-1: shear strength without links $V_{Rd,c}$, required link area for a strut angle $\theta$ and check of the maximum strut compression. -->
- <small>
-  According to
-  <strong>Eurocode</strong>
-  : EN 1992-1-1
- </small>
+ <h3>
+  Shear Design of RC Rectangular Section
+  <hr/>
+  <small>
+   According to
+   <strong>Eurocode</strong>
+   : EN 1992-1-1
+  </small>
+ </h3>
  <div style="max-width:180mm;">
   <img alt="beam-shear.png" class="side" src="Images/structures/rc/design/beam-shear.png" style="width:270pt;"/>
   <h4>Cross section dimensions</h4>
@@ -13,13 +16,13 @@
    <span class="eq">
     <var>b</var>
     =
-    <u class="input-6">300</u>
+    <u class="input-5">300</u>
    </span>
    mm, Height
    <span class="eq">
     <var>h</var>
     =
-    <u class="input-6">800</u>
+    <u class="input-5">800</u>
    </span>
    mm
   </p>
@@ -42,7 +45,7 @@
     <var>A</var>
     <sub>sl</sub>
     =
-    <u class="input-10">1200</u>
+    <u class="input-9">1200</u>
    </span>
    mm²
   </p>
@@ -53,9 +56,9 @@
     =
     <var>h</var>
     −
-    <u class="input-11">50</u>
+    <u class="input-10">50</u>
     = 800 −
-    <u class="input-11">50</u>
+    <u class="input-10">50</u>
     = 750
    </span>
    mm
@@ -99,7 +102,7 @@
     <var>d</var>
     <sub>w</sub>
     =
-    <u class="input-15">8</u>
+    <u class="input-14">8</u>
    </span>
    mm
   </p>
@@ -109,7 +112,7 @@
     <var>n</var>
     <sub>w</sub>
     =
-    <u class="input-16">2</u>
+    <u class="input-15">2</u>
    </span>
   </p>
   <p>
@@ -121,14 +124,14 @@
     <var>V</var>
     <sub>Ed</sub>
     =
-    <u class="input-18">600</u>
+    <u class="input-17">600</u>
    </span>
    kN  Axial force -
    <span class="eq">
     <var>N</var>
     <sub>Ed</sub>
     =
-    <u class="input-18">0</u>
+    <u class="input-17">0</u>
    </span>
    kN
   </p>
@@ -143,7 +146,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-22">20</u>
+    <u class="input-21">20</u>
    </span>
    MPa
   </p>
@@ -159,7 +162,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-23">1</u>
+    <u class="input-22">1</u>
    </span>
   </p>
   <p>
@@ -199,7 +202,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-28">500</u>
+    <u class="input-27">500</u>
    </span>
    MPa
   </p>

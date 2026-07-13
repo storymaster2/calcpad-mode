@@ -1,6 +1,4 @@
 <div class="calcpad-output">
- <!-- Side-by-side comparison of the same function expanded by classical Fourier-coefficient integration and by the discrete FFT.
-<p>Highlights where the two reconstructions agree and how the sample count $n$ controls FFT-based aliasing. -->
  <h3>Fourier series expansion (classic)</h3>
  <p>
   Number of iterations -
@@ -232,7 +230,7 @@
   </span>
  </p>
  <p>Plot the function and Fourier approximation</p>
- <svg class="plot" height="1440px" style="width:420.37pt; height:266.67pt;" version="1.1" viewbox=" 0 0 2270 1440" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1440px" style="width:420.37pt; height:266.67pt;" version="1.1" viewbox=" 0 0 2270 1440" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -632,7 +630,7 @@ circle.Series2 {fill:YellowGreen;}
   </span>
  </p>
  <p>Plot the function and its FFT-based Fourier approximation</p>
- <svg class="plot" height="1440px" style="width:420.37pt; height:266.67pt;" version="1.1" viewbox=" 0 0 2270 1440" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1440px" style="width:420.37pt; height:266.67pt;" version="1.1" viewbox=" 0 0 2270 1440" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

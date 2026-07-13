@@ -1,5 +1,4 @@
 <div class="calcpad-output">
- <!-- Showcases the variadic helpers $min$, $max$, $gcd$ and $lcm$, which accept any number of comma- or semicolon-separated arguments. -->
  <h3>Functions of multiple variables</h3>
  <p>
   <span class="eq">
@@ -105,7 +104,7 @@
   - selective evaluation
  </p>
  <!-- <span class="eq"><var>PlotWidth</var> = 200</span> , <span class="eq"><var>PlotHeight</var> = 120</span> -->
- <svg class="plot" height="720px" style="width:198.15pt; height:133.33pt;" version="1.1" viewbox=" 0 0 1070 720" width="1070px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="720px" style="width:198.15pt; height:133.33pt;" version="1.1" viewbox=" 0 0 1070 720" width="1070px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

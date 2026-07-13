@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <!-- Area $A = \tfrac{1}{2} a\, b$ and perimeter of a right triangle from its two legs (hypotenuse via Pythagoras). -->
+ <h3>Area and Perimeter of Right Triangle</h3>
  <div style="max-width:110mm;">
   <img alt="right-triangle.png" class="side" src="Images/math/area/right-triangle.png" style="height:60pt;"/>
  </div>

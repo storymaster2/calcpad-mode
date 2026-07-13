@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <!-- Discrete-Fourier analysis of a synthetic two-tone signal that switches frequency mid-record, using the built-in `fft()` function.
-<p>Returns the power and amplitude spectral densities so the basic vibration-analysis workflow stays fully visible on the worksheet. -->
+ <h3>FFT Analysis</h3>
  <p>
   Sampling frequency -
   <span class="eq">
@@ -442,7 +441,7 @@
  </p>
  <!-- <span class="eq"><var>PlotWidth</var> = 600</span> , <span class="eq"><var>PlotHeight</var> = 150</span> , <span class="eq"><var>PlotAdaptive</var> = 0</span> -->
  <p>Input signal plot</p>
- <svg class="plot" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -565,7 +564,7 @@ circle.Series2 {fill:YellowGreen;}
   </g>
  </svg>
  <p>Power spectral density plot</p>
- <svg class="plot" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

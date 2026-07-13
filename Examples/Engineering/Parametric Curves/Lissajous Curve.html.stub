@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <!-- Two perpendicular harmonic motions $x = A\sin(a t + \delta)$, $y = B\sin(b t)$ overlaid to recreate classic [Lissajous oscilloscope figures](https://en.wikipedia.org/wiki/Lissajous_curve). -->
+ <h3>Lissajous (Oscilloscope) Curve</h3>
  <p>Equation:</p>
  <p>
   <span class="eq">
@@ -43,7 +43,7 @@
    <u class="input-10">3</u>
   </span>
  </p>
- <svg class="plot" height="1840px" style="width:346.3pt; height:340.74pt;" version="1.1" viewbox=" 0 0 1870 1840" width="1870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1840px" style="width:346.3pt; height:340.74pt;" version="1.1" viewbox=" 0 0 1870 1840" width="1870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

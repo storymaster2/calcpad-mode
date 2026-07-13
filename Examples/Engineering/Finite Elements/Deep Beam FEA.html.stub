@@ -1,6 +1,6 @@
 <div class="calcpad-output">
- <!-- Plane-stress FEA of a deep beam using rectangular 8-DOF elements, with a partial uniform load and elastic supports modelled by a distributed-stiffness function.
-<p>Recovers the $σ_x$, $σ_y$ and $τ_{xy}$ stress fields and the deflected shape on a parametric mesh. -->
+ <h3>Finite Element Analysis of Deep Beam</h3>
+ <hr/>
  <h3>Input data</h3>
  <table>
   <tr>
@@ -4148,7 +4148,7 @@
    </span>
   </p>
   <div class="plot" style="width:390pt; height:195pt;">
-   <svg height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4622,7 +4622,7 @@
    </span>
   </p>
   <div class="plot" style="width:390pt; height:195pt;">
-   <svg height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5376,7 +5376,7 @@
   </p>
   <!-- <span class="eq"><var>k</var> = <b>round</b><span class="b2">(</span><span class="dvc down"><span class="dvc up"><span class="b1">|</span><var>N</var><sub>x</sub> <span class="b1">(</span><span class="dvc"><var>l</var><span class="dvl"></span>2</span>; <var>h</var><span class="b1">)</span><span class="b1">|</span><span class="dvl"></span>20</span></span><span class="b2">)</span> · 50 = <b>round</b><span class="b2">(</span><span class="dvc down"><span class="dvc up"><span class="b1">|</span><var>N</var><sub>x</sub> <span class="b1">(</span><span class="dvc">4<span class="dvl"></span>2</span>; 2<span class="b1">)</span><span class="b1">|</span><span class="dvl"></span>20</span></span><span class="b2">)</span> · 50 = 350</span> -->
   <div class="plot" style="width:390pt; height:195pt;">
-   <svg height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5534,7 +5534,7 @@
    <var>l</var>
    /2
   </p>
-  <svg class="plot" height="1040px" style="width:346.3pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1870 1040" width="1870px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1040px" style="width:346.3pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1870 1040" width="1870px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6034,7 +6034,7 @@ circle.Series3 {fill:CornflowerBlue;}
    </span>
   </p>
   <div class="plot" style="width:390pt; height:195pt;">
-   <svg height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6183,7 +6183,7 @@ circle.Series3 {fill:CornflowerBlue;}
    </svg>
   </div>
   <!-- <span class="eq"><var>k</var> = <b>round</b><span class="b2">(</span><span class="dvc down"><span class="dvc up"><span class="b1">|</span><var>N</var><sub>y</sub> <span class="b1">(</span><span class="dvc"><var>l</var><span class="dvl"></span>2</span>; <var>h</var><span class="b1">)</span><span class="b1">|</span><span class="dvl"></span>20</span></span><span class="b2">)</span> · 50 = <b>round</b><span class="b2">(</span><span class="dvc down"><span class="dvc up"><span class="b1">|</span><var>N</var><sub>y</sub> <span class="b1">(</span><span class="dvc">4<span class="dvl"></span>2</span>; 2<span class="b1">)</span><span class="b1">|</span><span class="dvl"></span>20</span></span><span class="b2">)</span> · 50 = 250</span> -->
-  <svg class="plot" height="1040px" style="width:346.3pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1870 1040" width="1870px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1040px" style="width:346.3pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1870 1040" width="1870px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6644,7 +6644,7 @@ circle.Series3 {fill:CornflowerBlue;}
    </span>
   </p>
   <div class="plot" style="width:390pt; height:195pt;">
-   <svg height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6925,7 +6925,7 @@ circle.Series3 {fill:CornflowerBlue;}
    kN/m
   </p>
   <div class="plot" style="width:390pt; height:195pt;">
-   <svg height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7099,7 +7099,7 @@ circle.Series3 {fill:CornflowerBlue;}
    kN/m
   </p>
   <div class="plot" style="width:390pt; height:195pt;">
-   <svg height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
+   <svg data-plot="svg" height="1040px" style="width:385.19pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2080 1040" width="2080px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

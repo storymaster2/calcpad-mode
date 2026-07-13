@@ -1,5 +1,4 @@
 <div class="calcpad-output">
- <!-- Section properties of a rhombus from its two diagonals: area, $I_x$, $I_y$, section moduli and radii of gyration. -->
  <h3>Geometrical Properties of Rhombus</h3>
  <div style="max-width:130mm">
   <img alt="rombus.png" class="side" src="Images/mechanics/sections/rhombus.png" style="height:135pt;"/>
@@ -9,13 +8,13 @@
   <span class="eq">
    <var>b</var>
    =
-   <u class="input-5">1.414</u>
+   <u class="input-4">1.414</u>
   </span>
   m ,
   <span class="eq">
    <var>d</var>
    =
-   <u class="input-5">1.414</u>
+   <u class="input-4">1.414</u>
   </span>
   m
  </p>

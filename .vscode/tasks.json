@@ -625,6 +625,51 @@
                 "panel": "dedicated"
             },
             "problemMatcher": []
+        },
+
+        // ── Scripts (Python) ────────────────────────────────────────────
+        {
+            "label": "Scripts: Compare Renderings",
+            "type": "shell",
+            "group": "test",
+            "linux": {
+                "command": "bash",
+                "args": ["${workspaceFolder}/.github/scripts/compare-renderings.sh"]
+            },
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}\\.github\\scripts\\compare-renderings.ps1"
+                ]
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Scripts: Compare Renderings (Write)",
+            "type": "shell",
+            "group": "test",
+            "linux": {
+                "command": "bash",
+                "args": ["${workspaceFolder}/.github/scripts/compare-renderings.sh", "--write"]
+            },
+            "windows": {
+                "command": "powershell",
+                "args": [
+                    "-NoProfile", "-ExecutionPolicy", "Bypass",
+                    "-File", "${workspaceFolder}\\.github\\scripts\\compare-renderings.ps1",
+                    "--write"
+                ]
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
         }
     ],
     "inputs": [

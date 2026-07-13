@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <!-- Side-by-side plots of the [Archimedean](https://en.wikipedia.org/wiki/Archimedean_spiral), [logarithmic](https://en.wikipedia.org/wiki/Logarithmic_spiral), hyperbolic and Fermat spirals on the same canvas, parameterised in polar form $r(\theta)$. -->
+ <h3>Common Spirals</h3>
  <p>General parametric equation:</p>
  <p>
   <span class="eq">
@@ -51,7 +51,7 @@
    <b class="err" title=" Warning! Function redefined.">!!!</b>
   </span>
  </p>
- <svg class="plot" height="1800px" style="width:346.3pt; height:333.33pt;" version="1.1" viewbox=" 0 0 1870 1800" width="1870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1800px" style="width:346.3pt; height:333.33pt;" version="1.1" viewbox=" 0 0 1870 1800" width="1870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -154,7 +154,7 @@ circle.Series1 {fill:Tomato;}
    <b class="err" title=" Warning! Function redefined.">!!!</b>
   </span>
  </p>
- <svg class="plot" height="1788px" style="width:346.3pt; height:331.11pt;" version="1.1" viewbox=" 0 0 1870 1788" width="1870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1788px" style="width:346.3pt; height:331.11pt;" version="1.1" viewbox=" 0 0 1870 1788" width="1870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -269,7 +269,7 @@ circle.Series2 {fill:YellowGreen;}
    <b class="err" title=" Warning! Function redefined.">!!!</b>
   </span>
  </p>
- <svg class="plot" height="1276px" style="width:346.3pt; height:236.3pt;" version="1.1" viewbox=" 0 0 1870 1276" width="1870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1276px" style="width:346.3pt; height:236.3pt;" version="1.1" viewbox=" 0 0 1870 1276" width="1870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -382,7 +382,7 @@ circle.Series1 {fill:Tomato;}
    <b class="err" title=" Warning! Function redefined.">!!!</b>
   </span>
  </p>
- <svg class="plot" height="1260px" style="width:346.3pt; height:233.33pt;" version="1.1" viewbox=" 0 0 1870 1260" width="1870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1260px" style="width:346.3pt; height:233.33pt;" version="1.1" viewbox=" 0 0 1870 1260" width="1870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -497,7 +497,7 @@ circle.Series1 {fill:Tomato;}
    <b class="err" title=" Warning! Function redefined.">!!!</b>
   </span>
  </p>
- <svg class="plot" height="948px" style="width:346.3pt; height:175.56pt;" version="1.1" viewbox=" 0 0 1870 948" width="1870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="948px" style="width:346.3pt; height:175.56pt;" version="1.1" viewbox=" 0 0 1870 948" width="1870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -599,7 +599,7 @@ circle.Series1 {fill:Tomato;}
    <b class="err" title=" Warning! Function redefined.">!!!</b>
   </span>
  </p>
- <svg class="plot" height="992px" style="width:346.3pt; height:183.7pt;" version="1.1" viewbox=" 0 0 1870 992" width="1870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="992px" style="width:346.3pt; height:183.7pt;" version="1.1" viewbox=" 0 0 1870 992" width="1870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

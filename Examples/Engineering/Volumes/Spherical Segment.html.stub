@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <!-- Volume and surface area of a spherical segment (the slab between two parallel planes cutting a sphere). -->
+ <h3>Volume and Surface Area of Spherical Segment</h3>
  <div style="max-width:130mm">
   <img alt="segment.png" class="side" src="Images/math/volume/segment.png" style="height:60pt;"/>
  </div>

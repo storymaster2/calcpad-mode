@@ -1,5 +1,4 @@
 <div class="calcpad-output">
- <!-- Section properties of a rectangular hollow section (RHS): area, $I_x$, $I_y$, section moduli and radii of gyration from outer and inner dimensions. -->
  <h3>Geometrical Properties of Rectangular Tube</h3>
  <div style="max-width:150mm">
   <img alt="rectangular-tube.png" class="side" src="Images/mechanics/sections/rectangular-tube.png" style="height:150pt;"/>
@@ -9,14 +8,14 @@
   <span class="eq">
    <var>h</var>
    =
-   <u class="input-5">300</u>
+   <u class="input-4">300</u>
   </span>
   m,
   <span class="eq">
    <var>t</var>
    <sub>w</sub>
    =
-   <u class="input-5">20</u>
+   <u class="input-4">20</u>
   </span>
   m
  </p>
@@ -24,14 +23,14 @@
   <span class="eq">
    <var>b</var>
    =
-   <u class="input-6">200</u>
+   <u class="input-5">200</u>
   </span>
   m,
   <span class="eq">
    <var>t</var>
    <sub>f</sub>
    =
-   <u class="input-6">30</u>
+   <u class="input-5">30</u>
   </span>
   m
  </p>

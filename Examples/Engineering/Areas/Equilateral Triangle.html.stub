@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <!-- Area $A = \tfrac{\sqrt{3}}{4} a^2$ and perimeter $P = 3a$ of an equilateral triangle. -->
+ <h3>Area and Perimeter of Equilateral Triangle</h3>
  <div style="max-width:110mm;">
   <img alt="equilateral-triangle.png" class="side" src="Images/math/area/equilateral-triangle.png" style="height:60pt;"/>
  </div>

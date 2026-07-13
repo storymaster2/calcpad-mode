@@ -1,10 +1,13 @@
 <div class="calcpad-output">
- <!-- Bending capacity $M_{Rd}$ of a T-cross-section with given reinforcement: rectangular stress block, neutral-axis depth from horizontal equilibrium and lever arm to the resultant of the compressed concrete. -->
- <small>
-  According to
-  <strong>Eurocode</strong>
-  : EN 1992-1-1
- </small>
+ <h3>
+  Bending Capacity of RC Tee Section
+  <hr/>
+  <small>
+   According to
+   <strong>Eurocode</strong>
+   : EN 1992-1-1
+  </small>
+ </h3>
  <div style="max-width:180mm">
   <img alt="tbeam-bending.png" src="Images/structures/rc/design/tbeam-bending.png" style="width:400pt;"/>
   <p>
@@ -13,7 +16,7 @@
     <var>M</var>
     <sub>Ed</sub>
     =
-    <u class="input-5">800</u>
+    <u class="input-4">800</u>
    </span>
    kN·m
   </p>
@@ -24,14 +27,14 @@
     <var>b</var>
     <sub>w</sub>
     =
-    <u class="input-7">300</u>
+    <u class="input-6">300</u>
    </span>
    mm,
    <span class="eq">
     <var>h</var>
     <sub>w</sub>
     =
-    <u class="input-7">650</u>
+    <u class="input-6">650</u>
    </span>
    mm
   </p>
@@ -41,14 +44,14 @@
     <var>b</var>
     <sub>f</sub>
     =
-    <u class="input-8">1200</u>
+    <u class="input-7">1200</u>
    </span>
    mm,
    <span class="eq">
     <var>h</var>
     <sub>f</sub>
     =
-    <u class="input-8">120</u>
+    <u class="input-7">120</u>
    </span>
    mm
   </p>
@@ -97,14 +100,14 @@
     <var>d</var>
     <sub>1</sub>
     =
-    <u class="input-14">50</u>
+    <u class="input-13">50</u>
    </span>
    mm,    Top -
    <span class="eq">
     <var>d</var>
     <sub>2</sub>
     =
-    <u class="input-14">50</u>
+    <u class="input-13">50</u>
    </span>
    mm
   </p>
@@ -131,14 +134,14 @@
     <var>A</var>
     <sub>s1</sub>
     =
-    <u class="input-19">3700</u>
+    <u class="input-18">3700</u>
    </span>
    mm²,    Top -
    <span class="eq">
     <var>A</var>
     <sub>s2</sub>
     =
-    <u class="input-19">0</u>
+    <u class="input-18">0</u>
    </span>
    mm²
   </p>
@@ -206,7 +209,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-28">20</u>
+    <u class="input-27">20</u>
    </span>
    MPa
   </p>
@@ -222,7 +225,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-29">0.85</u>
+    <u class="input-28">0.85</u>
    </span>
   </p>
   <p>
@@ -307,7 +310,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-37">500</u>
+    <u class="input-36">500</u>
    </span>
    MPa
   </p>
@@ -361,7 +364,7 @@
   <table>
    <tr>
     <td>
-     <svg class="plot" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
+     <svg class="plot" data-plot="svg" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -437,7 +440,7 @@ circle.Series1 {fill:Tomato;}
      </svg>
     </td>
     <td>
-     <svg class="plot" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
+     <svg class="plot" data-plot="svg" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -874,7 +877,7 @@ circle.Series1 {fill:Tomato;}
      )
     </span>
    </p>
-   <svg class="plot" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
+   <svg class="plot" data-plot="svg" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

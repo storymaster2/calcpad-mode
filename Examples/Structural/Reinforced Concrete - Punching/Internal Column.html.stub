@@ -1,10 +1,13 @@
 <div class="calcpad-output">
- <!-- Punching shear verification of a flat slab around an internal column: closed control perimeter, slab strength without and with shear reinforcement, and required area of stirrups, studs or bent-up bars. -->
- <small>
-  According to
-  <strong>Eurocode</strong>
-  : EN 1992-1-1
- </small>
+ <h3>
+  Punching Design of Internal Column
+  <hr/>
+  <small>
+   According to
+   <strong>Eurocode</strong>
+   : EN 1992-1-1
+  </small>
+ </h3>
  <div style="max-width:180mm">
   <img alt="punching.png" class="side" src="Images/structures/rc/design/punching.png" style="width:260pt;"/>
   <h4>Input data</h4>
@@ -17,14 +20,14 @@
     <var>c</var>
     <sub>1</sub>
     =
-    <u class="input-7">600</u>
+    <u class="input-6">600</u>
    </span>
    mm,
    <span class="eq">
     <var>c</var>
     <sub>2</sub>
     =
-    <u class="input-7">300</u>
+    <u class="input-6">300</u>
    </span>
    mm
   </p>
@@ -37,7 +40,7 @@
     <var>V</var>
     <sub>Ed</sub>
     =
-    <u class="input-9">500</u>
+    <u class="input-8">500</u>
    </span>
    kN
   </p>
@@ -47,14 +50,14 @@
     <var>M</var>
     <sub>x_Ed</sub>
     =
-    <u class="input-11">0</u>
+    <u class="input-10">0</u>
    </span>
    kNm,
    <span class="eq">
     <var>M</var>
     <sub>y_Ed</sub>
     =
-    <u class="input-11">0</u>
+    <u class="input-10">0</u>
    </span>
    kNm
   </p>
@@ -66,7 +69,7 @@
    <span class="eq">
     <var>h</var>
     =
-    <u class="input-13">200</u>
+    <u class="input-12">200</u>
    </span>
    mm
   </p>
@@ -75,7 +78,7 @@
    <span class="eq">
     <var>c</var>
     =
-    <u class="input-14">20</u>
+    <u class="input-13">20</u>
    </span>
    mm
   </p>
@@ -85,7 +88,7 @@
     <var>d</var>
     <sub>bL</sub>
     =
-    <u class="input-15">10</u>
+    <u class="input-14">10</u>
    </span>
    mm
   </p>
@@ -95,7 +98,7 @@
     <var>d</var>
     <sub>w</sub>
     =
-    <u class="input-16">6</u>
+    <u class="input-15">6</u>
    </span>
    mm
   </p>
@@ -120,14 +123,14 @@
     <var>A</var>
     <sub>sx</sub>
     =
-    <u class="input-22">1200</u>
+    <u class="input-21">1200</u>
    </span>
    mm²/m,
    <span class="eq">
     <var>A</var>
     <sub>sy</sub>
     =
-    <u class="input-22">1200</u>
+    <u class="input-21">1200</u>
    </span>
    mm²/m
   </p>
@@ -212,7 +215,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-31">25</u>
+    <u class="input-30">25</u>
    </span>
    MPa
   </p>
@@ -228,7 +231,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-32">1</u>
+    <u class="input-31">1</u>
    </span>
   </p>
   <p>
@@ -268,7 +271,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-37">500</u>
+    <u class="input-36">500</u>
    </span>
    MPa
   </p>

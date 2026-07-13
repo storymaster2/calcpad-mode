@@ -1,6 +1,4 @@
 <div class="calcpad-output">
- <!-- A reference for styling the native 2D plots in CalcpadCE: configure a chart title, axis labels, legend entries and series colours through the `PlotTitle`, `PlotLabelX`, `PlotLabelY` and per-series `Plot...` options.
-<p>Use this as the starting template for any publication-quality plot. -->
  <p>Functions</p>
  <p>
   <span class="eq">
@@ -128,7 +126,7 @@
    <center>
     <strong>Plot Title</strong>
    </center>
-   <svg class="plot" height="1040px" style="width:346.3pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1870 1040" width="1870px" xmlns="http://www.w3.org/2000/svg">
+   <svg class="plot" data-plot="svg" height="1040px" style="width:346.3pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1870 1040" width="1870px" xmlns="http://www.w3.org/2000/svg">
     <style type="text/css">
      .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

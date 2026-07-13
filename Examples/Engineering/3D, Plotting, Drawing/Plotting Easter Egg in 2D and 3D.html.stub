@@ -1,5 +1,4 @@
 <div class="calcpad-output">
- <!-- Render the same egg-shaped curve as a 2D parametric plot and as a shaded 3D surface side by side, illustrating the difference between the `$Plot` and `$Map` plot directives in CalcpadCE and the role of `PlotShadows`, `PlotPalette` and `PlotLightDir`. -->
  <p>
   <span class="eq">
    <var>a</var>
@@ -50,7 +49,7 @@
       )
      </span>
     </p>
-    <svg class="plot" height="1840px" style="width:346.3pt; height:340.74pt;" version="1.1" viewbox=" 0 0 1870 1840" width="1870px" xmlns="http://www.w3.org/2000/svg">
+    <svg class="plot" data-plot="svg" height="1840px" style="width:346.3pt; height:340.74pt;" version="1.1" viewbox=" 0 0 1870 1840" width="1870px" xmlns="http://www.w3.org/2000/svg">
      <style type="text/css">
       .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -224,7 +223,7 @@ circle.Series3 {fill:CornflowerBlue;}
      </span>
     </p>
     <div class="plot" style="width:390pt; height:345pt;">
-     <svg height="1840px" style="width:385.19pt; height:340.74pt;" version="1.1" viewbox=" 0 0 2080 1840" width="2080px" xmlns="http://www.w3.org/2000/svg">
+     <svg data-plot="svg" height="1840px" style="width:385.19pt; height:340.74pt;" version="1.1" viewbox=" 0 0 2080 1840" width="2080px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

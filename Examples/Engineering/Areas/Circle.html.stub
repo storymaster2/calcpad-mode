@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <!-- Area $A = \pi d^2/4$ and circumference $P = \pi d$ of a circle, parameterised by diameter. -->
+ <h3>Area and Circumference of Circle</h3>
  <div style="max-width:100mm;">
   <img alt="circle.png" class="side" src="Images/math/area/circle.png" style="height:70pt;"/>
  </div>

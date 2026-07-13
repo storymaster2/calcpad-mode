@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <!-- Tabulates permutations and combinations with and without repetition using the built-in $perm$ and $comb$ helpers. -->
+ <h3>Combinatorics</h3>
  <h4>1. Permutations</h4>
  (order of element matters)
  <h5>1.1. Permutations without repetitions</h5>

@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <!-- Concentrated moment $M_0$ applied at the free end, producing a constant bending moment along the beam and zero shear. -->
+ <h3>Cantilever with Concentrated Moment at the End</h3>
+ <hr/>
  <div style="max-width:180mm;">
   <img alt="cantilever-beam-concentrated-moment.png" class="side" src="Images/mechanics/beams/cantilever-beam-concentrated-moment.png" style="width:165pt;"/>
   <p>
@@ -67,7 +68,7 @@
     <var>M</var>
    </span>
   </p>
-  <svg class="plot" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -175,7 +176,7 @@ circle.Series1 {fill:Tomato;}
     )  = 0
    </span>
   </p>
-  <svg class="plot" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

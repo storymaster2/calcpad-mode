@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <!-- Evaluates $\int_{-1}^{1}\sqrt{1-x^2}\, dx$ with three quadrature rules — Boole (Newton-Cotes), Gauss-Legendre and tanh-sinh — at five nodes.
-<p>Tabulates the relative error of each scheme against the analytical result $\pi/2$. -->
+ <h3>Comparision of three quadrature formulas</h3>
  <p>
   Function -
   <span class="eq">
@@ -184,7 +183,7 @@
  <p>
   <strong>Scheme</strong>
  </p>
- <svg class="plot" height="840px" style="width:272.22pt; height:155.56pt;" version="1.1" viewbox=" 0 0 1470 840" width="1470px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="840px" style="width:272.22pt; height:155.56pt;" version="1.1" viewbox=" 0 0 1470 840" width="1470px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -512,7 +511,7 @@ circle.Series6 {fill:MediumSpringGreen;}
  <p>
   <strong>Scheme</strong>
  </p>
- <svg class="plot" height="840px" style="width:272.22pt; height:155.56pt;" version="1.1" viewbox=" 0 0 1470 840" width="1470px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="840px" style="width:272.22pt; height:155.56pt;" version="1.1" viewbox=" 0 0 1470 840" width="1470px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -888,7 +887,7 @@ circle.Series6 {fill:MediumSpringGreen;}
  <p>
   <strong>Scheme</strong>
  </p>
- <svg class="plot" height="840px" style="width:272.22pt; height:155.56pt;" version="1.1" viewbox=" 0 0 1470 840" width="1470px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="840px" style="width:272.22pt; height:155.56pt;" version="1.1" viewbox=" 0 0 1470 840" width="1470px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

@@ -1,8 +1,4 @@
 <div class="calcpad-output">
- <!-- Embed a [glTF 3D model](https://en.wikipedia.org/wiki/GlTF) directly in a CalcpadCE worksheet using the Google [`<model-viewer>`](https://modelviewer.dev) web component.
-<p>Combine the rotating CAD preview with parametric bolt resistance calculations to produce richly illustrated structural connection reports. </p>
-<p></p>
-<p>Copy the code into the Desktop application to change the parameters in real-time. -->
  <script src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.0.1/model-viewer.min.js" type="module">
  </script>
  <model-viewer alt="bolt_and_nut.glb" auto-rotate="" camera-controls="" class="side" field-of-view="8deg" shadow-intensity="0.5" src="./Models/bolt_and_nut.glb" style="height:280pt;">
@@ -14,7 +10,7 @@
    <var>F</var>
    <sub>t_Ed</sub>
    =
-   <u class="input-8">20</u>
+   <u class="input-4">20</u>
   </span>
   kN
  </p>
@@ -24,7 +20,7 @@
    <var>F</var>
    <sub>v_Ed</sub>
    =
-   <u class="input-9">10</u>
+   <u class="input-5">10</u>
   </span>
   kN
  </p>
@@ -33,7 +29,7 @@
   <span class="eq">
    <var>d</var>
    =
-   <u class="input-11">12</u>
+   <u class="input-7">12</u>
   </span>
  </p>
  <p>
@@ -101,7 +97,7 @@
   <span class="eq">
    <var>Grade</var>
    =
-   <u class="input-54">10.9</u>
+   <u class="input-50">10.9</u>
   </span>
  </p>
  Bolt steel grade - 10.9
@@ -129,7 +125,7 @@
   <span class="eq">
    <var>t</var>
    =
-   <u class="input-77">18</u>
+   <u class="input-73">18</u>
   </span>
   mm
  </p>
@@ -139,7 +135,7 @@
    <var>f</var>
    <sub>y</sub>
    =
-   <u class="input-78">355</u>
+   <u class="input-74">355</u>
   </span>
   MPa
  </p>

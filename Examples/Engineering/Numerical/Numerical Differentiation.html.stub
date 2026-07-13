@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <!-- Compares the `$Slope` operator (Richardson extrapolation) against `$Derivative` (complex-step method) on $e^x$ and $\sin(x^2)$ at large arguments.
-<p>Exposes the round-off blow-up of finite differences and the machine-precision accuracy of the complex-step trick. -->
+ <h3>Numerical Differentiation</h3>
  <p>
   Function -
   <span class="eq">

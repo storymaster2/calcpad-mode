@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <!-- Simply supported beam with a mid-span point force $F$, giving the maximum deflection $d_{max} = F l^3 / (48 E I)$ and the support rotation $\varphi_{max} = F l^2 / (16 E I)$. -->
+ <h3>Deflection and Rotation of Simply Supported Beam with Concentrated Load</h3>
+ <hr/>
  <div style="max-width: 180mm;">
   <img alt="deflection-simply-supported-beam-force.png" class="side" src="Images/mechanics/beams/deflection-simply-supported-beam-force.png" style="width:165pt;"/>
   <p>
@@ -163,7 +164,7 @@
     <span class="b1">)</span>
    </span>
   </p>
-  <svg class="plot" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="840px" style="width:494.44pt; height:155.56pt;" version="1.1" viewbox=" 0 0 2670 840" width="2670px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

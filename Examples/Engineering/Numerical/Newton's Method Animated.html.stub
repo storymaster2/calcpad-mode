@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <!-- Solves $x^x = 10$ with Newton iteration and renders an animated SVG that highlights each tangent step.
-<p>The frame loop turns convergence into a visual sequence rather than a printed iteration table. -->
+ <h3>Newton's Method Animation</h3>
  <p>
   <strong>Problem:</strong>
   Given the following equation:
@@ -70,7 +69,7 @@
  <h4>Animation</h4>
  <style>#start{height:1.8em; padding-top:0;} .fr{display:none;} .Series3, .Series6{opacity:0;} .Series7{stroke-width:6pt;}</style>
  <div class="fr" id="fr-1">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -231,7 +230,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-2">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -392,7 +391,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-3">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -553,7 +552,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-4">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -714,7 +713,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-5">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -875,7 +874,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-6">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1036,7 +1035,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-7">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1197,7 +1196,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-8">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1358,7 +1357,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-9">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1519,7 +1518,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-10">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1680,7 +1679,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-11">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1841,7 +1840,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-12">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2002,7 +2001,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-13">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2163,7 +2162,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-14">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2322,7 +2321,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-15">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2483,7 +2482,7 @@ circle.Series7 {fill:BlueViolet;}
   </svg>
  </div>
  <div class="fr" id="fr-16">
-  <svg class="plot" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1240px" style="width:420.37pt; height:229.63pt;" version="1.1" viewbox=" 0 0 2270 1240" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

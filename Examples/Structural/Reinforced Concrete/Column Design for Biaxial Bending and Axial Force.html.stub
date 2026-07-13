@@ -1,10 +1,13 @@
 <div class="calcpad-output">
- <!-- Verification of a rectangular reinforced concrete column under axial force and bending about both axes by superposition of the two uniaxial interaction surfaces with the EN 1992-1-1 power-law combination. -->
- <small>
-  According to
-  <strong>Eurocode</strong>
-  : EN 1992-1-1
- </small>
+ <h3>
+  Column Design for Biaxial Bending and Axial Force
+  <hr/>
+  <small>
+   According to
+   <strong>Eurocode</strong>
+   : EN 1992-1-1
+  </small>
+ </h3>
  <div style="max-width:180mm">
   <img alt="column-design.png" class="side" src="Images/structures/rc/design/column-design.png" style="width:150pt;"/>
   <h4>Cross section dimensions</h4>
@@ -13,13 +16,13 @@
    <span class="eq">
     <var>b</var>
     =
-    <u class="input-6">300</u>
+    <u class="input-5">300</u>
    </span>
    mm, Height -
    <span class="eq">
     <var>h</var>
     =
-    <u class="input-6">700</u>
+    <u class="input-5">700</u>
    </span>
    mm
   </p>
@@ -45,14 +48,14 @@
     <var>A</var>
     <sub>s1</sub>
     =
-    <u class="input-11">800</u>
+    <u class="input-10">800</u>
    </span>
    mm², Right -
    <span class="eq">
     <var>A</var>
     <sub>s2</sub>
     =
-    <u class="input-11">800</u>
+    <u class="input-10">800</u>
    </span>
    mm²
   </p>
@@ -91,14 +94,14 @@
     <var>d</var>
     <sub>1</sub>
     =
-    <u class="input-16">50</u>
+    <u class="input-15">50</u>
    </span>
    mm, Right -
    <span class="eq">
     <var>d</var>
     <sub>2</sub>
     =
-    <u class="input-16">50</u>
+    <u class="input-15">50</u>
    </span>
    mm
   </p>
@@ -124,7 +127,7 @@
     <var>N</var>
     <sub>Ed</sub>
     =
-    <u class="input-21">1200</u>
+    <u class="input-20">1200</u>
    </span>
    kN (positive for compression)
   </p>
@@ -134,7 +137,7 @@
     <var>M</var>
     <sub>Ed</sub>
     =
-    <u class="input-22">200</u>
+    <u class="input-21">200</u>
    </span>
    kN·m
   </p>
@@ -149,7 +152,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-26">20</u>
+    <u class="input-25">20</u>
    </span>
    MPa
   </p>
@@ -165,7 +168,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-27">0.85</u>
+    <u class="input-26">0.85</u>
    </span>
   </p>
   <p>
@@ -263,7 +266,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-36">500</u>
+    <u class="input-35">500</u>
    </span>
    MPa
   </p>
@@ -317,7 +320,7 @@
   <table>
    <tr>
     <td>
-     <svg class="plot" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
+     <svg class="plot" data-plot="svg" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -393,7 +396,7 @@ circle.Series1 {fill:Tomato;}
      </svg>
     </td>
     <td>
-     <svg class="plot" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
+     <svg class="plot" data-plot="svg" height="740px" style="width:235.19pt; height:137.04pt;" version="1.1" viewbox=" 0 0 1270 740" width="1270px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -481,7 +484,7 @@ circle.Series1 {fill:Tomato;}
     <var>K</var>
     <sub>G</sub>
     =
-    <u class="input-57">0.75</u>
+    <u class="input-56">0.75</u>
    </span>
   </p>
   <p>
@@ -501,7 +504,7 @@ circle.Series1 {fill:Tomato;}
    <span class="eq">
     <var>φ</var>
     =
-    <u class="input-62">2.5</u>
+    <u class="input-61">2.5</u>
    </span>
   </p>
   <p>
@@ -509,7 +512,7 @@ circle.Series1 {fill:Tomato;}
    <span class="eq">
     <var>L</var>
     =
-    <u class="input-63">4000</u>
+    <u class="input-62">4000</u>
    </span>
    mm
   </p>
@@ -519,11 +522,11 @@ circle.Series1 {fill:Tomato;}
     <var>L</var>
     <sub>o</sub>
     =
-    <u class="input-64">1</u>
+    <u class="input-63">1</u>
     ·
     <var>L</var>
     =
-    <u class="input-64">1</u>
+    <u class="input-63">1</u>
     · 4000 = 4000
    </span>
    mm
@@ -537,7 +540,7 @@ circle.Series1 {fill:Tomato;}
     <span class="eq">
      <var>m</var>
      =
-     <u class="input-69">1</u>
+     <u class="input-68">1</u>
     </span>
    </p>
    <p>Reduction factor for height:</p>

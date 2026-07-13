@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <!-- Bilinear-style table lookup that chains 1D Hermite splines along both axes to interpolate a tabulated $T(i,\, j)$ surface.
-<p>The canonical pattern for evaluating two-input design tables on intermediate values. -->
+ <h3>Double interpolation</h3>
  <p>Input parameters</p>
  <p>
   <span class="eq">
@@ -278,7 +277,7 @@
  </p>
  <p>Plot</p>
  <div class="plot" style="width:315pt; height:270pt;">
-  <svg height="1440px" style="width:311.11pt; height:266.67pt;" version="1.1" viewbox=" 0 0 1680 1440" width="1680px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="1440px" style="width:311.11pt; height:266.67pt;" version="1.1" viewbox=" 0 0 1680 1440" width="1680px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
