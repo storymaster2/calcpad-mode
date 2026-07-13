@@ -41,7 +41,9 @@
     ],
     "fileAssociations": [
       {
-        "ext": ["cpd"],
+        "ext": [
+          "cpd"
+        ],
         "name": "Calcpad Document",
         "description": "Calcpad calculation document",
         "mimeType": "application/x-calcpad",

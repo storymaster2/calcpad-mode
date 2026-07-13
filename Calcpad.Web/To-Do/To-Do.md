@@ -50,10 +50,10 @@
 -   Make update do var name is not default #UI id, but {varName:varRepeatNumber} is the id to handle repetitions of the same variable name.
 -   An external browser dropdown could be helpful that allows switching the puppeteer and help button browser from the settings. I think this is doable if we store both the browser name and path in an object (then only show browsers with a valid path and allow adding a browser via file select to the exe or pasted path).
 -   Submit removed jquery refactor as a PR to main.
--   Submit IsUS settings refactor as a PR to main.
--   Submit plot export Core refactor as a PR to main.
 -   Add app version to settings Vue tab.
 -   Make light mode for empty document HTML
+-   JSON html comment frontmatter containing program version,  project name, project base path, author, saved timestamp, ui overrides, file specific setting overrides. This can all be unified under a single object in the first code line, some of which get updated by the software automatically. Add UI to edit front matter fields and hide frontmatter code by default in the editor with setting to show it.
+-   Add line breaks within json html comments as valid line continuation (that ends when the closing comment is given)
 
 ### Bugs
 
@@ -68,8 +68,9 @@
             33.333; 40.333; 51.667; 75; 96.667; 108.333; 118.667; _
             23.333; 23.333; 23.333; _
             35; 35; 35; 35]*1ft
--   Make .cpd the default save extension
--   Associate .cpd filetype with CalcpadCE Web on install (is this possible with appimage? If not, wait until full deployment)
+-   Don't use | as brackets, Calcpad should override colors and not create two pipes when typed
+-   Server crashes should create dumps in the log folder similar to VS Code.
+-   Server crashing was not able to be recovered by restarting the server.
 
 ### Bugs
 

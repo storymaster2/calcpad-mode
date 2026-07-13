@@ -610,6 +610,28 @@
                 "panel": "dedicated"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "Version: Set Exact",
+            "type": "process",
+            "command": "node",
+            "args": [
+                "${workspaceFolder}/Calcpad.Web/frontend/scripts/bump-versions.mjs",
+                "patch",
+                "${input:exactVersion}"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "exactVersion",
+            "type": "promptString",
+            "description": "Exact version to set (e.g. 2.1.4 or 2.1.4-beta.3)"
         }
     ]
 }
