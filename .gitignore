@@ -365,3 +365,6 @@ MigrationBackup/
 
 # Installer output
 Calcpad.Wpf/Installer/Output/
+
+# Fetched at build time by build/wkhtmltopdf.targets
+wkhtmltopdf.exe
