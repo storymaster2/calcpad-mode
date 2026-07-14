@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Calcpad",
+  "scopeName": "source.calcpad",
+  "fileTypes": ["cpd", "cpdz"],
+  "patterns": [
+    { "include": "#html-mode" },
+    { "include": "#markdown-mode" }
+  ],
+  "repository": {
+    "html-mode": {
+      "begin": "(?i)^\\s*(#html)\\b.*$",
+      "while": "(?i)^(?!\\s*(#cpd|#md|#markdown)\\b)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.block.calcpad" }
+      },
+      "contentName": "meta.embedded.block.html",
+      "patterns": [
+        { "include": "text.html.basic" }
+      ]
+    },
+    "markdown-mode": {
+      "begin": "(?i)^\\s*(#md|#markdown)\\b.*$",
+      "while": "(?i)^(?!\\s*(#cpd|#html)\\b)",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.block.calcpad" }
+      },
+      "contentName": "meta.embedded.block.markdown",
+      "patterns": [
+        { "include": "text.html.markdown" }
+      ]
+    }
+  }
+}

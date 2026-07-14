@@ -1,0 +1,731 @@
+{
+  "name": "vscode-calcpad",
+  "displayName": "VS Code CalcPad",
+  "description": "Calculator extension for VS Code",
+  "version": "0.3.0",
+  "publisher": "imartincei",
+  "repository": "https://github.com/imartincei/vscode-calcpad",
+  "icon": "calcpad-icon.png",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "calcpad",
+        "aliases": [
+          "CalcPad",
+          "calcpad"
+        ],
+        "extensions": [
+          ".cpd",
+          ".cpdz"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "calcpad",
+        "scopeName": "source.calcpad",
+        "path": "./syntaxes/calcpad.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.html": "html",
+          "meta.embedded.block.markdown": "markdown"
+        }
+      }
+    ],
+    "semanticTokenTypes": [
+      {
+        "id": "const",
+        "description": "Numeric constants"
+      },
+      {
+        "id": "bracket",
+        "description": "Brackets: (), [], {}"
+      },
+      {
+        "id": "lineContinuation",
+        "description": "Line continuation marker"
+      },
+      {
+        "id": "localVariable",
+        "description": "Local variables (function params, loop vars)"
+      },
+      {
+        "id": "macroParameter",
+        "description": "Macro parameters in #def statements"
+      },
+      {
+        "id": "units",
+        "description": "Unit identifiers"
+      },
+      {
+        "id": "setting",
+        "description": "Setting variables"
+      },
+      {
+        "id": "controlBlockKeyword",
+        "description": "Control block keywords (#if, #for, etc.)"
+      },
+      {
+        "id": "endKeyword",
+        "description": "End keywords (#end if, #loop)"
+      },
+      {
+        "id": "command",
+        "description": "Commands starting with $"
+      },
+      {
+        "id": "include",
+        "description": "Include file paths"
+      },
+      {
+        "id": "filePath",
+        "description": "File paths in data exchange"
+      },
+      {
+        "id": "dataExchangeKeyword",
+        "description": "Sub-keywords (from, to, sep, type)"
+      },
+      {
+        "id": "htmlComment",
+        "description": "HTML comments"
+      },
+      {
+        "id": "tag",
+        "description": "HTML tags"
+      },
+      {
+        "id": "htmlContent",
+        "description": "HTML content"
+      },
+      {
+        "id": "javascript",
+        "description": "JavaScript code in comments"
+      },
+      {
+        "id": "css",
+        "description": "CSS code in comments"
+      },
+      {
+        "id": "svg",
+        "description": "SVG markup in comments"
+      },
+      {
+        "id": "input",
+        "description": "Input markers"
+      },
+      {
+        "id": "format",
+        "description": "Format specifiers"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "scopes": {
+          "const": [
+            "constant.numeric.calcpad"
+          ],
+          "operator": [
+            "keyword.operator.calcpad"
+          ],
+          "bracket": [
+            "punctuation.bracket.calcpad"
+          ],
+          "lineContinuation": [
+            "punctuation.separator.continuation.calcpad"
+          ],
+          "variable": [
+            "variable.other.calcpad"
+          ],
+          "localVariable": [
+            "variable.parameter.calcpad"
+          ],
+          "function": [
+            "support.function.calcpad"
+          ],
+          "macro": [
+            "entity.name.function.macro.calcpad"
+          ],
+          "macroParameter": [
+            "variable.parameter.macro.calcpad"
+          ],
+          "units": [
+            "support.type.units.calcpad"
+          ],
+          "setting": [
+            "variable.other.setting.calcpad"
+          ],
+          "keyword": [
+            "keyword.control.calcpad"
+          ],
+          "controlBlockKeyword": [
+            "keyword.control.block.calcpad"
+          ],
+          "endKeyword": [
+            "keyword.control.end.calcpad"
+          ],
+          "command": [
+            "support.function.command.calcpad"
+          ],
+          "include": [
+            "string.unquoted.include.calcpad"
+          ],
+          "filePath": [
+            "string.unquoted.filepath.calcpad"
+          ],
+          "dataExchangeKeyword": [
+            "keyword.other.dataexchange.calcpad"
+          ],
+          "comment": [
+            "comment.line.calcpad"
+          ],
+          "htmlComment": [
+            "comment.block.html.calcpad"
+          ],
+          "tag": [
+            "entity.name.tag.calcpad"
+          ],
+          "htmlContent": [
+            "string.unquoted.html.calcpad"
+          ],
+          "javascript": [
+            "source.js.embedded.calcpad"
+          ],
+          "css": [
+            "source.css.embedded.calcpad"
+          ],
+          "svg": [
+            "text.xml.svg.embedded.calcpad"
+          ],
+          "input": [
+            "variable.language.input.calcpad"
+          ],
+          "format": [
+            "meta.format.calcpad"
+          ]
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "vscode-calcpad.activate",
+        "title": "Activate CalcPad"
+      },
+      {
+        "command": "vscode-calcpad.previewHtml",
+        "title": "CalcPad Preview",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "vscode-calcpad.showInsert",
+        "title": "Show CalcPad Insert Panel",
+        "icon": "$(add)"
+      },
+      {
+        "command": "vscode-calcpad.exportToPdf",
+        "title": "Export CalcPad to PDF",
+        "icon": "$(file-pdf)"
+      },
+      {
+        "command": "vscode-calcpad.previewUnwrapped",
+        "title": "CalcPad Preview Unwrapped",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "vscode-calcpad.focusPreviewToLine",
+        "title": "CalcPad: Focus Preview to Line",
+        "icon": "$(target)"
+      },
+      {
+        "command": "vscode-calcpad.viewWebviewSource",
+        "title": "CalcPad: View Webview Source HTML"
+      },
+      {
+        "command": "vscode-calcpad.printToPdf",
+        "title": "Print CalcPad Preview to PDF",
+        "icon": "$(file-pdf)"
+      },
+      {
+        "command": "vscode-calcpad.saveSourceHtml",
+        "title": "CalcPad: Save Source HTML…",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "vscode-calcpad.saveDocx",
+        "title": "CalcPad: Save as Word Document…",
+        "icon": "$(file)"
+      },
+      {
+        "command": "vscode-calcpad.insertImage",
+        "title": "Insert Image",
+        "icon": "$(file-media)"
+      },
+      {
+        "command": "vscode-calcpad.formatBold",
+        "title": "CalcPad: Bold"
+      },
+      {
+        "command": "vscode-calcpad.formatItalic",
+        "title": "CalcPad: Italic"
+      },
+      {
+        "command": "vscode-calcpad.formatUnderline",
+        "title": "CalcPad: Underline"
+      },
+      {
+        "command": "vscode-calcpad.formatSubscript",
+        "title": "CalcPad: Subscript"
+      },
+      {
+        "command": "vscode-calcpad.formatSuperscript",
+        "title": "CalcPad: Superscript"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading1",
+        "title": "CalcPad: Heading 1"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading2",
+        "title": "CalcPad: Heading 2"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading3",
+        "title": "CalcPad: Heading 3"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading4",
+        "title": "CalcPad: Heading 4"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading5",
+        "title": "CalcPad: Heading 5"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading6",
+        "title": "CalcPad: Heading 6"
+      },
+      {
+        "command": "vscode-calcpad.formatParagraph",
+        "title": "CalcPad: Paragraph"
+      },
+      {
+        "command": "vscode-calcpad.formatLineBreak",
+        "title": "CalcPad: Line Break"
+      },
+      {
+        "command": "vscode-calcpad.formatBulletedList",
+        "title": "CalcPad: Bulleted List"
+      },
+      {
+        "command": "vscode-calcpad.formatNumberedList",
+        "title": "CalcPad: Numbered List"
+      },
+      {
+        "command": "vscode-calcpad.toggleComment",
+        "title": "CalcPad: Toggle Comment"
+      },
+      {
+        "command": "vscode-calcpad.uncomment",
+        "title": "CalcPad: Uncomment"
+      },
+      {
+        "command": "vscode-calcpad.pasteAsComment",
+        "title": "CalcPad: Paste as Comment"
+      },
+      {
+        "command": "vscode-calcpad.prettifyDocument",
+        "title": "CalcPad: Prettify Document",
+        "icon": "$(symbol-ruler)"
+      },
+      {
+        "command": "calcpad.refreshDocument",
+        "title": "CalcPad: Run Preview",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "calcpad.stopServer",
+        "title": "Stop CalcPad Server",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "vscode-calcpad.installJuliaMono",
+        "title": "CalcPad: Install JuliaMono Font"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "vscode-calcpad.previewHtml",
+          "when": "resourceLangId == plaintext || resourceLangId == calcpad",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-calcpad.showInsert",
+          "when": "resourceLangId == plaintext || resourceLangId == calcpad",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-calcpad.exportToPdf",
+          "when": "resourceLangId == plaintext || resourceLangId == calcpad",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-calcpad.previewUnwrapped",
+          "when": "resourceLangId == plaintext || resourceLangId == calcpad",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-calcpad.insertImage",
+          "when": "resourceLangId == plaintext || resourceLangId == calcpad",
+          "group": "navigation"
+        }
+      ],
+      "webview/context": [
+        {
+          "command": "vscode-calcpad.viewWebviewSource",
+          "when": "webviewId == htmlPreview || webviewId == htmlPreviewUnwrapped",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "calcpad.stopServer",
+          "when": "view == calcpadVueUI",
+          "group": "navigation"
+        },
+        {
+          "command": "calcpad.refreshDocument",
+          "when": "view == calcpadVueUI",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "calcpad.refreshDocument",
+          "when": "resourceLangId == calcpad || resourceLangId == plaintext",
+          "group": "calcpad@0"
+        },
+        {
+          "command": "vscode-calcpad.printToPdf",
+          "when": "resourceLangId == calcpad || resourceLangId == plaintext",
+          "group": "calcpad@1"
+        },
+        {
+          "command": "vscode-calcpad.viewWebviewSource",
+          "when": "resourceLangId == calcpad || resourceLangId == plaintext",
+          "group": "calcpad@2"
+        },
+        {
+          "command": "vscode-calcpad.focusPreviewToLine",
+          "when": "resourceLangId == calcpad || resourceLangId == plaintext",
+          "group": "calcpad@3"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "calcpad.refreshDocument",
+        "key": "ctrl+alt+x",
+        "mac": "cmd+alt+x",
+        "when": "editorLangId == 'calcpad' || editorLangId == 'plaintext'"
+      },
+      {
+        "command": "vscode-calcpad.focusPreviewToLine",
+        "key": "ctrl+`",
+        "mac": "cmd+`",
+        "when": "editorTextFocus && editorLangId == 'calcpad'"
+      },
+      {
+        "command": "vscode-calcpad.formatBold",
+        "key": "ctrl+b",
+        "mac": "cmd+b",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatItalic",
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatUnderline",
+        "key": "ctrl+u",
+        "mac": "cmd+u",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatSubscript",
+        "key": "ctrl+=",
+        "mac": "cmd+=",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatSuperscript",
+        "key": "ctrl+shift+=",
+        "mac": "cmd+shift+=",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading1",
+        "key": "ctrl+1",
+        "mac": "cmd+1",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading2",
+        "key": "ctrl+2",
+        "mac": "cmd+2",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading3",
+        "key": "ctrl+3",
+        "mac": "cmd+3",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading4",
+        "key": "ctrl+4",
+        "mac": "cmd+4",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading5",
+        "key": "ctrl+5",
+        "mac": "cmd+5",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatHeading6",
+        "key": "ctrl+6",
+        "mac": "cmd+6",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatParagraph",
+        "key": "ctrl+l",
+        "mac": "cmd+l",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatLineBreak",
+        "key": "ctrl+r",
+        "mac": "cmd+r",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatBulletedList",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.formatNumberedList",
+        "key": "ctrl+shift+n",
+        "mac": "cmd+shift+n",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.toggleComment",
+        "key": "ctrl+q",
+        "mac": "cmd+q",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.uncomment",
+        "key": "ctrl+shift+q",
+        "mac": "cmd+shift+q",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      },
+      {
+        "command": "vscode-calcpad.pasteAsComment",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorTextFocus && editorLangId == 'calcpad' && config.calcpad.enableFormattingHotkeys"
+      }
+    ],
+    "configuration": {
+      "title": "CalcPad",
+      "properties": {
+        "calcpad.enableFormattingHotkeys": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable formatting hotkeys (Ctrl+B, Ctrl+I, Ctrl+1-6, etc.) for CalcPad files. Mirrored from the active CalcPad settings config on activation — edit via the CalcPad sidebar, not here (this key exists only so keybinding `when` clauses can reference it)."
+        }
+      }
+    },
+    "views": {
+      "calcpad-ui": [
+        {
+          "id": "calcpadVueUI",
+          "name": "CalcPad",
+          "type": "webview"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "calcpad-ui",
+          "title": "CalcPad",
+          "icon": "./calcpad-icon.png"
+        }
+      ]
+    },
+    "configurationDefaults": {
+      "[calcpad]": {
+        "editor.fontFamily": "JuliaMono, Cascadia Code, Consolas, 'Courier New', monospace",
+        "editor.semanticHighlighting.enabled": true,
+        "editor.bracketPairColorization.enabled": false,
+        "editor.matchBrackets": "always",
+        "editor.unicodeHighlight.ambiguousCharacters": false,
+        "editor.unicodeHighlight.nonBasicASCII": false,
+        "editor.acceptSuggestionOnEnter": "off",
+        "editor.lightbulb.enabled": "off"
+      },
+      "editor.semanticTokenColorCustomizations": {
+        "enabled": true,
+        "rules": {
+          "const:calcpad": "#D4D4D4",
+          "operator:calcpad": "#ECC860",
+          "bracket:calcpad": "#FF69B4",
+          "lineContinuation:calcpad": "#ECC860",
+          "variable:calcpad": "#6B9FFF",
+          "localVariable:calcpad": "#8BB4FF",
+          "function:calcpad": {
+            "foreground": "#D4D4D4",
+            "bold": true
+          },
+          "macro:calcpad": "#D355D3",
+          "macroParameter:calcpad": {
+            "foreground": "#C09BDB",
+            "italic": true
+          },
+          "units:calcpad": "#00CED1",
+          "setting:calcpad": "#4FC1FF",
+          "keyword:calcpad": "#FF80FF",
+          "controlBlockKeyword:calcpad": "#FF80FF",
+          "endKeyword:calcpad": "#FF80FF",
+          "command:calcpad": "#FF80FF",
+          "include:calcpad": "#9B6BCC",
+          "filePath:calcpad": "#9B6BCC",
+          "dataExchangeKeyword:calcpad": "#FF80FF",
+          "comment:calcpad": "#57A64A",
+          "htmlComment:calcpad": {
+            "foreground": "#808B96",
+            "italic": true
+          },
+          "tag:calcpad": "#CC66FF",
+          "htmlContent:calcpad": "#6BBF5E",
+          "javascript:calcpad": "#ECC860",
+          "css:calcpad": "#6B9FFF",
+          "svg:calcpad": "#00CED1",
+          "input:calcpad": "#FF5555",
+          "format:calcpad": "#A9A9A9",
+          "stringVariable:calcpad": "#4EC9B0",
+          "stringFunction:calcpad": {
+            "foreground": "#4EC9B0",
+            "bold": true
+          },
+          "stringTable:calcpad": "#B5CEA8"
+        },
+        "[Default Light Modern][Default Light+][Default Light][Light+ (default light)][Light (Visual Studio)][Visual Studio Light][Quiet Light][Solarized Light][GitHub Light]": {
+          "enabled": true,
+          "rules": {
+            "const:calcpad": "#000000",
+            "operator:calcpad": "#DAA520",
+            "bracket:calcpad": "#FF1493",
+            "lineContinuation:calcpad": "#DAA520",
+            "variable:calcpad": "#0000FF",
+            "localVariable:calcpad": "#0066CC",
+            "function:calcpad": {
+              "foreground": "#000000",
+              "bold": true
+            },
+            "macro:calcpad": "#8B008B",
+            "macroParameter:calcpad": {
+              "foreground": "#7B2FA0",
+              "italic": true
+            },
+            "units:calcpad": "#008B8B",
+            "setting:calcpad": "#0077AA",
+            "keyword:calcpad": "#FF00FF",
+            "controlBlockKeyword:calcpad": "#FF00FF",
+            "endKeyword:calcpad": "#FF00FF",
+            "command:calcpad": "#FF00FF",
+            "include:calcpad": "#4B0082",
+            "filePath:calcpad": "#4B0082",
+            "dataExchangeKeyword:calcpad": "#FF00FF",
+            "comment:calcpad": "#228B22",
+            "htmlComment:calcpad": {
+              "foreground": "#6B7D8D",
+              "italic": true
+            },
+            "tag:calcpad": "#9932CC",
+            "htmlContent:calcpad": "#2EA043",
+            "javascript:calcpad": "#B8860B",
+            "css:calcpad": "#0000CD",
+            "svg:calcpad": "#006400",
+            "input:calcpad": "#FF0000",
+            "format:calcpad": "#A9A9A9",
+            "stringVariable:calcpad": "#267F72",
+            "stringFunction:calcpad": {
+              "foreground": "#267F72",
+              "bold": true
+            },
+            "stringTable:calcpad": "#6B8E23"
+          }
+        }
+      },
+      "emmet.excludeLanguages": [
+        "calcpad"
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run build:vue && rollup -c",
+    "watch": "concurrently \"npm run watch:vue\" \"rollup -c -w\"",
+    "sync-server": "node scripts/sync-bundled-server.mjs",
+    "sync-server:slim": "node scripts/sync-bundled-server.mjs --framework-dependent --strip-external-deps",
+    "sync-server:debug": "node scripts/sync-bundled-server.mjs --configuration=Debug",
+    "package": "npm run sync-server:slim && npm run build:vue && rollup -c --sourcemap",
+    "package:full": "npm run sync-server && npm run build:vue && rollup -c --sourcemap",
+    "package:lite": "npm run sync-server:slim && npm run build:vue && rollup -c --sourcemap",
+    "package:vsix": "npm run package && vsce package --no-dependencies",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "build:vue": "vite build",
+    "watch:vue": "vite build --watch",
+    "dev:vue": "vite build --watch --mode development",
+    "type-check:vue": "vue-tsc --noEmit --project tsconfig.vue.json"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/node": "^20.19.16",
+    "@types/vscode": "^1.82.0",
+    "@vitejs/plugin-vue": "^6.0.4",
+    "@vscode/vsce": "^3.7.1",
+    "@vue/compiler-sfc": "^3.5.21",
+    "concurrently": "^9.2.1",
+    "rollup": "^4.53.3",
+    "typescript": "^5.9.2",
+    "vite": "^7.3.1",
+    "vue-tsc": "^3.2.4"
+  },
+  "dependencies": {
+    "calcpad-frontend": "file:../calcpad-frontend",
+    "terser": "^5.46.0",
+    "vue": "^3.5.21"
+  }
+}
