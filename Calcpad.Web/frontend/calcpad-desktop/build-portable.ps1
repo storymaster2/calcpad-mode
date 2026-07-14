@@ -18,9 +18,9 @@ $RepoRoot    = Resolve-Path (Join-Path $ScriptDir '..\..\..')
 $SyncScript  = Join-Path $RepoRoot 'Calcpad.Web\frontend\vscode-calcpad\scripts\sync-bundled-server.mjs'
 $BinariesDir = Join-Path $ScriptDir 'src-tauri\binaries'
 $ReleaseDir  = Join-Path $ScriptDir "src-tauri\target\$Target\release"
-$PackagingDir = Join-Path $ScriptDir 'packaging\windows'
-$StageDir    = Join-Path $PackagingDir 'CalcPadCE-Web-portable-win64'
-$ZipPath     = Join-Path $PackagingDir 'CalcPadCE-Web-portable-win64.zip'
+$OutputDir   = Join-Path $ScriptDir 'src-tauri\target\portable'
+$StageDir    = Join-Path $OutputDir 'CalcPadCE-Web-portable-win64'
+$ZipPath     = Join-Path $OutputDir 'CalcPadCE-Web-portable-win64.zip'
 
 Write-Host ">> Cargo target: $Target"
 Write-Host ">> .NET RID:     $Rid"
