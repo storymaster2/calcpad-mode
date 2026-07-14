@@ -1,4 +1,4 @@
-﻿# Working with files
+﻿# Working with Files
 
 Input data in CalcpadCE can be saved to disk and reused multiple times.
 The supported file formats are "**\*.txt**", "**\*.cpd**" and "**\*.cpdz**". Input forms have to be saved to "**\*.cpd**" and "**\*.cpdz**" files and text scripts to "**\*.txt**" files.

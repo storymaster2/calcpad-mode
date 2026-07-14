@@ -1,4 +1,4 @@
-# How it works
+# How It Works
 
 1. **Enter** text and formulas into the "**Code**" box on the left.
 

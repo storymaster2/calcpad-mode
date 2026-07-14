@@ -1,3 +1,25 @@
+/* CalcpadCE logo: circular grey badge in header */
+.md-header__button.md-logo {
+    background: hsl(0 0% 95%);
+    border-radius: 50%;
+    border: solid 1px hsl(0, 0%, 80%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-inline-start: 0.6rem;
+    width: 2em;
+    height: 2em;
+    padding: 1.2em;
+}
+
+.md-header__button.md-logo img {
+    object-fit: contain;
+}
+
+[dir="ltr"] .md-header__title {
+    margin-left: 0.5rem;
+}
+
 /* Inline icons are exported at 2x (HiDPI). Scale them down to
    match the surrounding text and keep line spacing consistent. */
 img[height="20"] {
@@ -31,6 +53,8 @@ body {
     margin-bottom: 0;
 }
 
+/* Examples page */
+
 /* Full-width layout for Examples pages (override Material's max-width container) */
 body:has(.calcpad-output) .md-grid {
     max-width: 100rem;
@@ -40,31 +64,66 @@ body:has(.calcpad-output) .md-content {
     max-width: 100rem;
 }
 
-/* Side-by-side layout for Examples pages */
+.calcpad-output {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
 .example-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
-    align-items: start;
     margin: 1rem 0;
 }
 
-.example-source,
-.example-output {
+.example-grid figure {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    text-align: start;
+    margin: 0;
+    width: initial;
     min-width: 0;
 }
 
-.example-output {
-    overflow: auto;
+.example-grid figure img {
+    margin: initial;
 }
 
-/* Vertical scroll applied by example-layout.js to <code>; horizontal scroll
-   is left to Material's default (also on <code>). Keeping both axes on
-   <code> preserves Material's sticky copy-button placement inside <pre> and
-   keeps the code-block background extending across horizontally-scrolled
-   content. */
-.example-source pre {
-    white-space: pre;
+.example-grid figcaption {
+    font-size: 0.8em;
+    font-style: normal;
+    font-weight: bold;
+    color: hsl(0, 0%, 40%);
+    margin: 0;
+    text-align: start;
+    letter-spacing: -0.04em;
+}
+
+.example-grid .highlight {
+    position: relative;
+    display: flex;
+    flex: 1;
+}
+
+/* If the rendered output is taller than the code block, make the code block the same height */
+/* Otherwise, cut the code block at the end of the output and make it scrollable */
+.example-grid pre {
+    position: absolute;
+    display: flex;
+    flex: 1;
+    inset: 0;
+    margin: 0;
+}
+
+.example-grid code {
+    flex: 1;
+    font-size: 0.9em;
+    border-radius: 0.25rem;
+}
+
+span[title="Animated"] {
+    cursor: default;
 }
 
 /* Headings inside calcpad output (replaced from <hN> to avoid polluting MkDocs TOC) */
@@ -84,9 +143,14 @@ body:has(.calcpad-output) .md-content {
     margin: 0.5em 0 0.2em;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 750px) {
     .example-grid {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .example-grid pre {
+        position: relative;
+        width: 100%;
     }
 }
 
@@ -141,60 +205,60 @@ body:has(.calcpad-output) .md-content {
      .nt  Name.Tag         (? input fields)          -> Red
    --------------------------------------------------------------------------- */
 
-/* Apply only to Calcpad code blocks: example-source containers (rendered by
+/* Apply only to Calcpad code blocks: example-grid containers (rendered by
    render_examples.py) and ```calcpad / ```cpd fenced blocks (registered via
    calcpad_lexer.register()). Other languages keep Material's defaults. */
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) .k { color: #ff00ff; }
 
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) .nd { color: #8b008b; }
 
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) .nb { color: #000000; font-weight: bold; }
 
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) .nv { color: #0000ff; }
 
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) :is(.m, .mi, .mf, .mo, .mh, .mb) { color: #000000; }
 
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) .na { color: #008b8b; }
 
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) .o { color: #daa520; }
 
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) .p { color: #ff1493; }
 
 /* Plain comments: '...' — ForestGreen, normal weight. */
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) :is(.c, .c1) { color: #228b22; font-style: normal; }
@@ -202,7 +266,7 @@ body:has(.calcpad-output) .md-content {
 /* Title comments: "..." — ForestGreen, bold, light-green background tint
    (matches WPF TitleBackground = Color.FromRgb(245, 255, 240)). */
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) .cs {
@@ -214,7 +278,7 @@ body:has(.calcpad-output) .md-content {
 
 /* Input placeholders (?) — WPF Types.Input is Red. */
 [data-md-color-scheme="default"] :is(
-    .example-source .highlight,
+    .example-grid .highlight,
     .language-calcpad.highlight,
     .language-cpd.highlight
 ) .nt { color: #ff0000; }

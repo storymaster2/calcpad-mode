@@ -1,6 +1,6 @@
 # Vectors
 
-## Internal implementation and types of vectors
+## Internal Implementation and Types of Vectors
 
 There are two types of vectors in CalcpadCE: regular (small) and large.
 Vectors can contain only real numbers with units.
@@ -90,7 +90,7 @@ The above code will produce the following two vectors:
 $a = [1\ 4\ 9\ 16\ 25\ 36]$ and  
 $b = [0\ 1\ 4\ 9\ 16\ 25]$
 
-## Structural functions
+## Structural Functions
 
 This includes all functions that read or modify the structure of the vector.
 It means that the result does not depend on the content, i.e. the values of elements.
@@ -252,7 +252,7 @@ $\vec{i}$
     `a = [0; 1; 2; 3; 4; 5; 6]`  
     `extract(a; [2; 4; 6])` $= [1\ 3\ 5]$
 
-## Data functions
+## Data Functions
 
 This kind of functions treat the vector contents as numerical data.
 They are related mainly to sorting, ordering, searching and counting.
@@ -451,7 +451,7 @@ The possible suffixes are given in the table below:
 | \_gt | **find_gt**($\vec{a}$; *x*; *i*) | **lookup_gt**($\vec{a}$; $\vec{b}$; *x*) | \> - greater than |
 | \_ge | **find_ge**($\vec{a}$; *x*; *i*) | **lookup_ge**($\vec{a}$; $\vec{b}$; *x*) | ≥ - greater than or equal |
 
-## Math functions
+## Math Functions
 
 All standard scalar math functions accept vector arguments as well.
 The function is applied separately to each of the elements in the input vector and the results are returned in a corresponding output vector.
@@ -580,7 +580,7 @@ $\vec{a}$, $\vec{b}$
     `b = [5; 3; 1]`  
     `cross(a; b)` $= [-10\ 19\ -7]$
 
-## Aggregate and interpolation functions
+## Aggregate and Interpolation Functions
 
 All aggregate functions can work with vectors.
 Since they are multivariate, each of them can accept a single vector, but also a list of scalars, vectors and matrices, mixed in arbitrary order.

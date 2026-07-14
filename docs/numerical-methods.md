@@ -1,10 +1,10 @@
-# Numerical methods
+# Numerical Methods
 
 CalcpadCE has a built in "**Solver**" module, which can solve more difficult problems using numerical methods.
 It can work only with real numbers but not complex.
 It includes the following functions:
 
-## Root finding
+## Root Finding
 
 ```calcpad
 $Root{f(x) = const @ x = a : b}
@@ -50,7 +50,7 @@ $Sup{f(x) @ x = a : b}
 It works like the minimum finding function, but it finds the greatest value instead.
 The value of *x* where the maximum is located is stored in a variable named $x_{sup}$.
 
-## Numerical integration
+## Numerical Integration
 
 ```calcpad
 $Area{f(x) @ x = a : b}
@@ -70,7 +70,7 @@ Then, you have two options:
 1. Divide the interval \[*a*, *b*\] into smaller parts by using the points of discontinuities, apply the method for each part separately, and sum up the results;
 2. If you are not sure where the discontinuities are, use the \$Area method instead.
 
-## Numerical differentiation
+## Numerical Differentiation
 
 It finds the value of the first derivative of a real function f(*x*) at the specified point *x* = *a*. The geometric representation of derivative is the slope of the tangent to the function at point *a*. There are two methods that you can use in CalcpadCE for that purpose:
 
@@ -83,7 +83,7 @@ Although Richardson extrapolation can improve this significantly, the accuracy f
     Unlike `$Slope`, it cannot contain other numerical methods and should be defined only by analytic expressions.
     This limits the applicability of this method but, when possible, you can use it instead of `$Slope` to achieve higher accuracy, if needed.
 
-## General considerations
+## General Considerations
 
 Unlike the plotting command, you can include numerical methods in expressions.
 They return values which can be used for further calculations.

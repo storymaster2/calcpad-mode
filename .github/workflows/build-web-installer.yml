@@ -24,56 +24,34 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Build calcpad-frontend library
-        working-directory: Calcpad.Web/frontend/calcpad-frontend
-        run: |
-          npm ci
-          npm run build
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
 
-      - name: Build calcpad-web frontend
-        working-directory: Calcpad.Web/frontend/calcpad-web
-        env:
-          NEUTRALINO_BUILD: '1'
-        run: |
-          npm ci
-          npm run build
+      - name: Cache cargo build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: Calcpad.Web/frontend/calcpad-desktop/src-tauri
 
-      - name: Install calcpad-desktop dependencies
+      - name: Set version
+        run: node Calcpad.Web/frontend/scripts/bump-versions.mjs set ${{ inputs.version }}
+
+      - name: Install frontend dependencies
+        run: |
+          npm ci --prefix Calcpad.Web/frontend/calcpad-frontend
+          npm ci --prefix Calcpad.Web/frontend/calcpad-web
+          npm ci --prefix Calcpad.Web/frontend/calcpad-desktop
+
+      - name: Build desktop installers (Tauri)
         working-directory: Calcpad.Web/frontend/calcpad-desktop
-        run: npm ci
-
-      - name: Stage Calcpad.Server extension (win-x64, self-contained)
         shell: pwsh
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-        run: |
-          $extensionsDir = "Calcpad.Web/frontend/calcpad-desktop/extensions/server"
-          New-Item -ItemType Directory -Path $extensionsDir -Force | Out-Null
-          Get-ChildItem -Path $extensionsDir -Exclude ".gitkeep" -ErrorAction SilentlyContinue |
-            Remove-Item -Recurse -Force
+        run: ./build-desktop.ps1
 
-          node Calcpad.Web/frontend/vscode-calcpad/scripts/sync-bundled-server.mjs `
-            --target="$((Resolve-Path $extensionsDir).Path)" `
-            --rid=win-x64 `
-            --configuration=Release `
-            --keep-skia-natives
-
-      - name: Build Neutralino package
-        working-directory: Calcpad.Web/frontend/calcpad-desktop
-        run: npx neu build
-
-      - name: Install NSIS
-        run: choco install nsis -y --no-progress
-
-      - name: Build Installer
-        working-directory: Calcpad.Web/frontend/calcpad-desktop/Installer
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path Output -Force | Out-Null
-          & "${env:ProgramFiles(x86)}\NSIS\makensis.exe" /DAPP_VERSION="${{ inputs.version }}" CalcpadCEWeb.nsi
-
-      - name: Upload installer artifact
+      - name: Upload installer artifacts
         uses: actions/upload-artifact@v7
         with:
-          path: Calcpad.Web/frontend/calcpad-desktop/Installer/Output/CalcpadCEWeb-setup-${{ inputs.version }}.exe
+          path: |
+            Calcpad.Web/frontend/calcpad-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*-setup.exe
+            Calcpad.Web/frontend/calcpad-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
           archive: false

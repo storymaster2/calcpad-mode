@@ -33,7 +33,7 @@ The "**C**" button deletes the previous symbol and "**AC**" deletes a whole line
 If you double click this button, you will clear the whole text.
 If you have done this accidentally, you can use **Undo** <img src="./media/image14.png" alt="Undo" height="20"> to restore.
 
-### Moving inside the text
+### Moving Inside the Text
 
 Writing and editing text in CalcpadCE is not much different than any other Windows program.
 If you have some experience in that, you can skip this and go straight to "**Expressions**".
@@ -44,7 +44,7 @@ Arrows will move the cursor one symbol left or right and one line up or down.
 If you hold the "**Ctrl**" key and press an arrow, the cursor will move with a whole word. "**Home**" and "**End**" keys will send you to the beginning or the end of the current line, respectively.
 If you hold "**Ctrl**" beforehand, you will go to the beginning or the end of the entire text.
 
-### Selecting text
+### Selecting Text
 
 Most editing commands require you to select some text to which the command will be applied.
 The selected text is usually displayed with blue background (it may look different depending on your system settings). You can select text with the mouse as follows: Press the left mouse button at the start position of the text to be selected.
@@ -54,7 +54,7 @@ Alternatively, you can click at the start, press **Shift** and then click at the
 You can also use the computer keyboard.
 Hold **Shift** and press arrows or "**Home**", "**End**", "**Page Up**", "**Page Down**".
 
-### Deleting text
+### Deleting Text
 
 You can delete a single symbol by pressing the "**Delete**" ("Del") or "**Backspace**" ("Bkspc") keys.
 The difference is that "Delete" removes the symbol after the cursor, and "Backspace" - before the cursor.
@@ -120,9 +120,9 @@ By default, the case is neglected.
 
 - **Whole words**: If selected, the program will search only for sequences that represent whole words.
 
-## Coding aids
+## Coding Aids
 
-### Syntax highlighting
+### Syntax Highlighting
 
 Syntax highlighting applies different colors to different components of the programming language: functions, variables, operators, etc.
 It runs automatically in the background, each time you edit and leave the current line.
@@ -149,13 +149,13 @@ Click on the list to insert some of the other suggestions.
 Alternatively, you can press "**Down Arrow**" to browse the available suggestions and "**Enter**" to insert the selected one.
 If the list is above the current line, press "**Up Arrow**" instead.
 
-### Bracket matching
+### Bracket Matching
 
 The program can find the matching opening and closing brackets.
 If you position the cursor next or before one of them, both brackets are highlighted.
 If there is no corresponding bracket, nothing is highlighted.
 
-### Greek letters
+### Greek Letters
 
 You can insert Greek letters by clicking the respective symbol below the code editor.
 Alternatively, type the Latin equivalent from the table below and press "**Ctrl+G**". If you press it again, you will convert the letter back from Greek to Latin.

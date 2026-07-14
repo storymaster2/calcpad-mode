@@ -1,4 +1,4 @@
-﻿# Fields of application
+﻿# Fields of Application
 
 This software is suitable for engineers and other professionals that need to perform repetitive calculations and present them in official documentation such as calculation notes.
 They can automate this task efficiently by creating powerful and reliable CalcpadCE worksheets.

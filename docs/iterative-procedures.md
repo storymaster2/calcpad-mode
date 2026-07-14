@@ -1,4 +1,4 @@
-# Iterative procedures
+# Iterative Procedures
 
 There are some other commands that allow you to calculate the result iteratively.
 Unlike numerical methods, they can work with complex numbers.
@@ -81,7 +81,7 @@ $Map{abs(f(0; x + 1i*y)) @ x = -1.5:0.5 & y = -1:1}
 
 <img src="./media/image27.png" style="width:4.81217in;height:4.37051in" alt="Mandelbrot" />
 
-## Expression blocks
+## Expression Blocks
 
 An expression block encloses a list of expressions, divided by semicolons.
 All expressions can assign to local variables.

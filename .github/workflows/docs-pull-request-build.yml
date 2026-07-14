@@ -3,6 +3,11 @@ name: Build PR docs
 on:
   pull_request:
     types: [opened, reopened, synchronize]
+    paths:
+      - '.github/**'
+      - 'Examples/**'
+      - 'docs/**'
+      - 'mkdocs.yml'
 
 concurrency: preview-${{ github.ref }}
 
@@ -17,7 +22,7 @@ jobs:
         run: echo "${{ github.event.number }}" > pr-number.txt
 
       - name: Upload PR number
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pr-number
           path: pr-number.txt

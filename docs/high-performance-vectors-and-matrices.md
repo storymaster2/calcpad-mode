@@ -1,4 +1,4 @@
-﻿# High performance vectors and matrices
+﻿# High Performance Vectors and Matrices
 
 High performance (hp) vectors and matrices were introduced in Calcpad version 7.3.0 with the purpose of solving larger engineering problems faster and with less memory consumption.
 But this comes with a trade-off: all elements of an hp vector or matrix must have the same units.
@@ -46,11 +46,11 @@ Any expression that contains only hp vectors/arrays will return also an hp type.
 If the expression contains only standard vectors/arrays or mixed standard and hp, it will return a standard type.
 To check if the type of *x* is a high-performance (hp) vector or matrix you can use the function `ishp(x)`.
 
-## High performance symmetric solvers
+## High Performance Symmetric Solvers
 
 CalcpadCE also includes advanced solvers for two of the most common matrix problems – solution of linear systems of equations and finding the eigenvalues and eigenvector of a matrix:
 
-### PCG symmetric linear solver
+### PCG Symmetric Linear Solver
 
 Direct methods using Cholesky and $LDL^T$ factorizations are suitable for small to medium sized matrices.
 For larger matrices, the computational cost and solution time get too high for practical use because the asymptotic complexity of factorization is $O(n^3)$. In such cases, iterative solution methods are preferred.
@@ -74,7 +74,7 @@ In CalcpadCE, it is specified by setting the variable `Tol`. Its default value i
 If the required precision is not reached for under 1000 iterations, no convergence is assumed, so the solution is stopped with an error message.
 Preconditioning can often improve convergence by reducing the condition number *k*. In CalcpadCE, a simple Jacoby preconditioner is used for that purpose.
 
-### Symmetric Lanczos eigensolver
+### Symmetric Lanczos Eigensolver
 
 Similarly to the system of equations, the direct QL algorithm with implicit shifts we use for finding the eigenvalues and eigenvectors of matrices has a complexity of $O(n^3)$ which makes it suitable for small to medium sized problems.
 In addition, it always finds all eigenvalues and eigenvectors, which is not required in most cases.

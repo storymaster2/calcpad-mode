@@ -16,7 +16,7 @@ The following operators are supported by the CalcpadCE language:
 | - | | subtraction |
 | + | | addition |
 
-## Relational (comparison)
+## Relational (Comparison)
 
 | Operator | Shortcut | Description |
 | --- | --- | --- |
@@ -48,14 +48,14 @@ The following operators are supported by the CalcpadCE language:
 | = | | assignment or definition of a variable, function or macro |
 | ← | `<*` | assignment to an outer level or global variable in block |
 
-## Operator shortcuts
+## Operator Shortcuts
 
 Instead of "≡", "≠", "≤"- and "≥", you can use the respective C-style equivalent operators, as follows: "==", "!=", "\<=" and "\>=". They will be automatically replaced by the corresponding CalcpadCE operators.
 The shortcut “%%” will be converted to the modulo operator “⦼”. This is necessary because “%” is reserved for the percent units.
 Since this symbol is not very common, it is rendered as “mod” in the output, e.g. “7 mod 5 = 2”, instead of “7 ⦼ 5 = 2”.  in a similar way, double slash "//" is a shortcut for division bar "÷" operator.
 Boolean operators also have shortcuts for easier typing: "&&" for "∧" (AND), "\|\|" for "∨" (OR) and "^^" for "⊕" (XOR).
 
-## Operator precedence and associativity
+## Operator Precedence and Associativity
 
 The above operators are listed in the order of their precedence.
 This is the order they will be evaluated in an expression.
@@ -70,14 +70,14 @@ For example, "3 - 2 + 1" makes "(3 - 2) + 1 = 2" and not "3 - (2 + 1) = 0". Anot
 All operators in CalcpadCE are left-associative (calculations are performed from left to right). The only exception is exponentiation, which is right-associative unlike many hand calculators and spreadsheet software like Excel.
 In CalcpadCE, exponentiation is performed from right to left, which means that *x*^*a*^*b* will be evaluated as $x^{a^b}$.
 
-## Relational expressions
+## Relational Expressions
 
 Relational operators can return only two values: "**1**" for "**true**" and "**0**" for "**false**". You can use them in expressions along with arithmetic operators.
 For example, you can get the greater of two numbers *a* and *b* by the expression: "*a*\*(*a* ≥ *b*) + *b*\*(*a* < *b*)". But you need to be careful.
 If you use "≤" instead of "**<**", for the case of *a* equal to *b*, you will get *a* + *b*, which may be not exactly what you want.
 For that special purpose, it is better to use the built-in function **max**(*a*; *b*), logical operators or conditional execution (look further in this manual). Arithmetic operators are of higher precedence than relational, and both are evaluated before logical ones.
 
-## Logical expressions
+## Logical Expressions
 
 CalcpadCE operates only with numerical data and does not have special types for boolean data.
 Like relational ones, logical operators also use "**1**" for "**true**" and "**0**" for "**false**". Any input value, different than 0, is also assumed to be "**true**". You can build logical expressions by using logical operators and/or logical functions (see further in this manual). They work as follows:
@@ -86,7 +86,7 @@ Like relational ones, logical operators also use "**1**" for "**true**" and "**0
 - "**∨**" (or) returns 1 if any of the operands is 1 and 0 if both are 0;
 - "**⊕**" (xor) returns 1 if just one of the operands is 1 and 0 otherwise.
 
-## Complex arithmetic
+## Complex Arithmetic
 
 All operators support complex numbers except for factorial "**!**", integer division "**\\**", remainder "⦼" and comparison: "**<**", "**≤**", "**>**", "**≥**". The evaluation of a complex expression is a little bit more difficult than real.
 The rules for the basic complex operations are given below:

@@ -1,6 +1,6 @@
 # Matrices
 
-## Internal implementation and types of matrices
+## Internal Implementation and Types of Matrices
 
 CalcpadCE includes different types of matrices: general (rectangular) and special (column, symmetric, diagonal.
 upper/lower triangular). Internally, each type is implemented in a different way that benefits from the specific structure for better efficiency.
@@ -120,7 +120,7 @@ The inline equivalent of the above loop is the following:
 $Repeat{$Repeat{A.(i; j) = x.i^(j - 1) @ j = 1 : n_cols(A)} @ i = 1 : n_rows(A)}
 ```
 
-## Creational functions
+## Creational Functions
 
 The "square brackets" syntax is very powerful and flexible for creating small matrices with predefined sizes.
 However, it also has a lot of limitations.
@@ -434,7 +434,7 @@ $\vec{v}$
     11 & 0 & 0
     \end{bmatrix}`$
 
-## Structural functions
+## Structural Functions
 
 Structural functions are related only to the matrix structure.
 Unlike data and math functions, the result does not depend much on the values of the elements.
@@ -870,7 +870,7 @@ $j_2$
     10 & 11 & 12
     \end{bmatrix}`$
 
-## Data functions
+## Data Functions
 
 Data functions are not related to the structure of matrices but to the values of the elements.
 The following functions are available for use:
@@ -1194,7 +1194,7 @@ The possible suffixes are given in the table below:
 | \_gt | **mfind_gt**(*M*; *x*) | **hlookup_gt**(*M*; *x*; $i_1$; $i_2$) | **vlookup_gt**(*M*; *x*; $i_1$; $i_2$) | > - greater than |
 | \_ge | **mfind_ge**(*M*; *x*) | **hlookup_ge**(*M*; *x*; $i_1$; $i_2$) | **vlookup_ge**(*M*; *x*; $i_1$; $i_2$) | ≥ - greater than<br />or equal |
 
-## Math functions
+## Math Functions
 
 All standard scalar math functions accept matrix arguments as well.
 The function is applied separately to all the elements in the input matrix, even if it is of a special type.
@@ -2239,7 +2239,7 @@ $\vec{b}$
     0 & 0 & 0 & 0
     \end{bmatrix}`$
 
-## Aggregate and interpolation functions
+## Aggregate and Interpolation Functions
 
 All aggregate functions can work with matrices.
 Since they are multivariate, each of them can accept a single matrix, but also a list of scalars, vectors and matrices, mixed in arbitrary order.

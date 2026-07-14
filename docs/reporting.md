@@ -8,7 +8,7 @@ Besides math expressions, you can add headings, comments, tables and images.
 
 A heading is a text, enclosed in double quotes (**"**). It is bold and larger than the main text.
 
-## Text/comments
+## Text/Comments
 
 Comments are enclosed in single quotes (**'**). You can skip the closing quote, if it is the last symbol in the line.
 Headings and comments can contain any symbols without restrictions.
@@ -16,7 +16,7 @@ Everything outside them is assumed to be math expressions.
 However, if you put any formulas inside comments, they will not be calculated or formatted.
 Since the final output is rendered to an Html document, you can use Html and CSS in comments to provide your calculation report with additional formatting.
 
-## Units in comments
+## Units in Comments
 
 Alternatively, to native units, you can enter all values to be unitless and then put the units in the comments.
 In this case, you will have to include all unit conversion factors in the equations.
@@ -115,7 +115,7 @@ You can learn more about Html and CSS from the following links:
 
 You can also use some of the many free WYSIWYG Html editors available on the Internet.
 
-### Predefined classes
+### Predefined Classes
 
 Some formatting that is commonly used in engineering design worksheets is predefined as CSS classes and can be inserted by simply assigning the respective class to Html elements.
 
@@ -142,7 +142,7 @@ Some formatting that is commonly used in engineering design worksheets is predef
 
 `'<table class="data">...</table>`
 
-### Content folding
+### Content Folding
 
 If you have some long and detailed calculations, you can fold them optionally in the output.
 They will be hidden by default, except for the first line, which can be used for the section heading.
