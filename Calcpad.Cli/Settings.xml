@@ -19,4 +19,5 @@
     <LightDirection>NorthWest</LightDirection>
   </Plot>
   <Units>m</Units>
+  <IsUs>false</IsUs>
 </Settings>
