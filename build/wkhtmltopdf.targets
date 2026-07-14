@@ -9,6 +9,17 @@
     <WkCacheDir>$(LocalAppData)\CalcpadCE\tools\wkhtmltopdf-$(WkVersion)</WkCacheDir>
     <WkArchive>$(WkCacheDir)\wkhtmltox.7z</WkArchive>
     <WkExe>$(WkCacheDir)\wkhtmltopdf.exe</WkExe>
+
+    <!-- Prefer a standard 7-Zip install (its installer doesn't add itself to
+         PATH); otherwise bootstrap the standalone 7zr.exe extractor. Not
+         hash-pinned: a bad extractor can't produce the SHA256-verified exe. -->
+    <_Pf64>$([System.Environment]::GetEnvironmentVariable('ProgramW6432'))</_Pf64>
+    <_Pf86>$([System.Environment]::GetEnvironmentVariable('ProgramFiles(x86)'))</_Pf86>
+    <Wk7zr>$(WkCacheDir)\7zr.exe</Wk7zr>
+    <Wk7zrUrl>https://www.7-zip.org/a/7zr.exe</Wk7zrUrl>
+    <SevenZip Condition="Exists('$(_Pf64)\7-Zip\7z.exe')">$(_Pf64)\7-Zip\7z.exe</SevenZip>
+    <SevenZip Condition="'$(SevenZip)' == '' and Exists('$(_Pf86)\7-Zip\7z.exe')">$(_Pf86)\7-Zip\7z.exe</SevenZip>
+    <SevenZip Condition="'$(SevenZip)' == ''">$(Wk7zr)</SevenZip>
   </PropertyGroup>
 
   <Target Name="EnsureWkhtmltopdf"
@@ -30,8 +41,18 @@
     <Error Condition="'%(_WkArchiveHashed.FileHash)' != '$(WkArchiveSha256)'"
            Text="wkhtmltopdf archive SHA256 mismatch. Delete '$(WkArchive)' and rebuild." />
 
-    <Exec Command="7z e -y &quot;$(WkArchive)&quot; wkhtmltox/bin/wkhtmltopdf.exe -o&quot;$(WkCacheDir)&quot;"
-          WorkingDirectory="$(WkCacheDir)" />
+    <DownloadFile Condition="'$(SevenZip)' == '$(Wk7zr)' and !Exists('$(Wk7zr)')"
+                  SourceUrl="$(Wk7zrUrl)"
+                  DestinationFolder="$(WkCacheDir)"
+                  DestinationFileName="7zr.exe" />
+
+    <Exec Command="&quot;$(SevenZip)&quot; e -y &quot;$(WkArchive)&quot; wkhtmltox/bin/wkhtmltopdf.exe -o&quot;$(WkCacheDir)&quot;"
+          WorkingDirectory="$(WkCacheDir)"
+          IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_SevenZipExit" />
+    </Exec>
+    <Error Condition="'$(_SevenZipExit)' != '0'"
+           Text="Failed to extract wkhtmltopdf with '$(SevenZip)' (exit $(_SevenZipExit)). Delete '$(WkCacheDir)' and rebuild." />
 
     <GetFileHash Files="$(WkExe)" Algorithm="SHA256">
       <Output TaskParameter="Items" ItemName="_WkExeHashed" />
