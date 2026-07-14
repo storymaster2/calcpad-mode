@@ -80,6 +80,7 @@ temp_K = 293*K
 mass_oz = 16*oz
 mass_lb = 10*lb
 mass_slug = 1*slug
+mass_ton = 1*ton
 ' Imperial Length
 len_in = 12*in
 len_ft = 10*ft
@@ -123,6 +124,7 @@ convert3 = 100*°C|°F
 convert4 = 1*kip|kN
 convert5 = 1*psi|kPa
 convert6 = 3*ft + 12*in|cm
+convert7 = 1ton|lbm
 ' Custom units
 .EUR = 1
 .USD = 0.92
