@@ -545,4 +545,6 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
   </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\build\wkhtmltopdf.targets" />
 </Project>
