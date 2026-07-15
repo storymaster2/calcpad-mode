@@ -1,0 +1,69 @@
+{
+    "core": {
+        "math": {
+            "decimals": 2,
+            "degrees": 0,
+            "isComplex": false,
+            "substitute": true,
+            "formatEquations": true,
+            "zeroSmallMatrixElements": true,
+            "maxOutputCount": 20,
+            "formatString": ""
+        },
+        "plot": {
+            "isAdaptive": true,
+            "screenScaleFactor": 2,
+            "imagePath": "",
+            "imageUri": "",
+            "vectorGraphics": false,
+            "colorScale": "Rainbow",
+            "smoothScale": false,
+            "shadows": true,
+            "lightDirection": "NorthWest"
+        },
+        "server": {
+            "url": "",
+            "mode": "auto"
+        },
+        "units": "m",
+        "isUs": false
+    },
+    "extras": {
+        "previewTheme": "system",
+        "colorTheme": "System",
+        "darkBackground": "#1e1e1e",
+        "commentFormat": "auto",
+        "formattingHotkeys": true,
+        "quickTyping": true,
+        "previewCursorSync": false,
+        "linterMinSeverity": "information",
+        "maxOutputLines": 1000,
+        "libraryPath": "",
+        "prettifyIndentStyle": "tab",
+        "prettifyIndentSize": 4,
+        "prettifyTrimTrailingWhitespace": true,
+        "writeMode": "localFile",
+        "dotnetPath": "dotnet",
+        "editorFontFamily": "JuliaMono",
+        "pdfSettings": {
+            "enableHeader": true,
+            "documentTitle": "",
+            "documentSubtitle": "",
+            "headerCenter": "",
+            "author": "",
+            "enableFooter": true,
+            "footerCenter": "",
+            "company": "",
+            "project": "",
+            "showPageNumbers": true,
+            "format": "A4",
+            "orientation": "portrait",
+            "marginTop": "2cm",
+            "marginBottom": "2cm",
+            "marginLeft": "1.5cm",
+            "marginRight": "1.5cm",
+            "printBackground": true,
+            "scale": 1.0
+        }
+    }
+}

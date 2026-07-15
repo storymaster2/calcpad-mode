@@ -297,7 +297,7 @@
   </span>
  </p>
  <!-- <span class="eq"><var>PlotHeight</var> = 100</span> -->
- <svg class="plot" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -440,7 +440,7 @@ circle.Series1 {fill:Tomato;}
    </span>
   </span>
  </p>
- <svg class="plot" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

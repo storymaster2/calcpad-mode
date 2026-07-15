@@ -9,7 +9,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-Calcpad.Web
+Crashes
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -93,9 +93,6 @@ StyleCopReport.xml
 *.pidb
 *.svclog
 *.scc
-
-# Files built by Visual Studio Code
-*.csproj.lscache
 
 # Chutzpah Test files
 _Chutzpah*
@@ -279,16 +276,6 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
-# MathJax bundle (downloaded during CI build)
-docs/javascripts/mathjax/
-
-# MkDocs build output
-site/
-
-# npm artifacts from local MathJax setup
-package.json
-package-lock.json
-
 # Visual Studio 6 build log
 *.plg
 
@@ -319,6 +306,7 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+.venv/
 
 # Cake - Uncomment if you are using it
 # tools/**
@@ -363,8 +351,36 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+# Node.js build output
+dist/
+**/out/
+
+# VS Code extension
+*.vsix
+**/.vscode-test/
+
+# Test coverage
+**/.nyc_output/
+**/coverage/
+
+# MathJax bundle (downloaded during CI build)
+docs/javascripts/mathjax/
+
+# MkDocs build output
+site/
+
+# npm artifacts from local MathJax setup
+package.json
+package-lock.json
+
 # Installer output
 Calcpad.Wpf/Installer/Output/
 
 # Fetched at build time by build/wkhtmltopdf.targets
 wkhtmltopdf.exe
+
+# Node
+*.node
+
+# Claude
+**.claude/settings.local.json

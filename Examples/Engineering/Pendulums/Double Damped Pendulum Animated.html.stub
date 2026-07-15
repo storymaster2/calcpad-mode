@@ -2477,7 +2477,7 @@
      (
      <var>t</var>
      ), [°]
-     <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+     <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2586,7 +2586,7 @@ circle.Series1 {fill:Tomato;}
      (
      <var>t</var>
      ), [°]
-     <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+     <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2677,7 +2677,7 @@ circle.Series1 {fill:Tomato;}
      (
      <var>t</var>
      ), [m]
-     <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+     <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2783,7 +2783,7 @@ circle.Series6 {fill:MediumSpringGreen;}
      (
      <var>t</var>
      ), [J]
-     <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+     <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2925,7 +2925,7 @@ circle.Series6 {fill:MediumSpringGreen;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3051,7 +3051,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3220,7 +3220,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3346,7 +3346,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3515,7 +3515,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3641,7 +3641,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3810,7 +3810,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3936,7 +3936,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4105,7 +4105,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4231,7 +4231,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4400,7 +4400,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4526,7 +4526,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4695,7 +4695,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4821,7 +4821,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4990,7 +4990,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5116,7 +5116,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5285,7 +5285,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5411,7 +5411,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5580,7 +5580,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5707,7 +5707,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5876,7 +5876,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6003,7 +6003,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6172,7 +6172,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6299,7 +6299,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6468,7 +6468,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6595,7 +6595,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6764,7 +6764,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6891,7 +6891,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7060,7 +7060,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7187,7 +7187,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7356,7 +7356,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7483,7 +7483,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7652,7 +7652,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7779,7 +7779,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7948,7 +7948,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8075,7 +8075,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8244,7 +8244,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8371,7 +8371,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8512,7 +8512,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8639,7 +8639,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8783,7 +8783,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8910,7 +8910,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9054,7 +9054,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9181,7 +9181,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9325,7 +9325,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9452,7 +9452,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9596,7 +9596,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9723,7 +9723,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9867,7 +9867,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9994,7 +9994,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10138,7 +10138,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10265,7 +10265,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10409,7 +10409,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10536,7 +10536,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10680,7 +10680,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10807,7 +10807,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10954,7 +10954,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11081,7 +11081,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11229,7 +11229,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11356,7 +11356,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11506,7 +11506,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11633,7 +11633,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11783,7 +11783,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11910,7 +11910,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12060,7 +12060,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12187,7 +12187,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12337,7 +12337,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12464,7 +12464,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12614,7 +12614,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12741,7 +12741,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12891,7 +12891,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13018,7 +13018,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13156,7 +13156,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13283,7 +13283,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13424,7 +13424,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13551,7 +13551,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13692,7 +13692,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13819,7 +13819,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13963,7 +13963,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14090,7 +14090,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14234,7 +14234,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14361,7 +14361,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14506,7 +14506,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14633,7 +14633,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14780,7 +14780,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14907,7 +14907,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15054,7 +15054,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15181,7 +15181,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15328,7 +15328,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15455,7 +15455,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15602,7 +15602,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15729,7 +15729,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15876,7 +15876,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16003,7 +16003,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16150,7 +16150,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16277,7 +16277,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16424,7 +16424,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16551,7 +16551,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16698,7 +16698,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16825,7 +16825,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16972,7 +16972,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17099,7 +17099,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17246,7 +17246,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17373,7 +17373,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17520,7 +17520,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17647,7 +17647,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17794,7 +17794,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17921,7 +17921,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18068,7 +18068,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18195,7 +18195,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18342,7 +18342,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18469,7 +18469,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18635,7 +18635,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18762,7 +18762,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18929,7 +18929,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19056,7 +19056,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19226,7 +19226,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19353,7 +19353,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19494,7 +19494,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19621,7 +19621,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19762,7 +19762,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19889,7 +19889,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20030,7 +20030,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20157,7 +20157,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20298,7 +20298,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20425,7 +20425,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20566,7 +20566,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20693,7 +20693,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20834,7 +20834,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20961,7 +20961,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21102,7 +21102,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21229,7 +21229,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21370,7 +21370,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21497,7 +21497,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21638,7 +21638,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21765,7 +21765,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21906,7 +21906,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22033,7 +22033,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22174,7 +22174,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22301,7 +22301,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22442,7 +22442,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22569,7 +22569,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22710,7 +22710,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22837,7 +22837,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22978,7 +22978,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -23105,7 +23105,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -23246,7 +23246,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -23373,7 +23373,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -23514,7 +23514,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -23641,7 +23641,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -23782,7 +23782,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -23909,7 +23909,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -24050,7 +24050,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -24177,7 +24177,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -24318,7 +24318,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -24445,7 +24445,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -24586,7 +24586,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -24713,7 +24713,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -24854,7 +24854,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -24981,7 +24981,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -25122,7 +25122,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -25249,7 +25249,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -25391,7 +25391,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -25518,7 +25518,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -25662,7 +25662,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -25789,7 +25789,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -25933,7 +25933,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -26060,7 +26060,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -26204,7 +26204,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -26331,7 +26331,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -26475,7 +26475,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -26602,7 +26602,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -26747,7 +26747,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -26874,7 +26874,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -27021,7 +27021,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -27148,7 +27148,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -27295,7 +27295,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -27422,7 +27422,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -27569,7 +27569,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -27696,7 +27696,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -27843,7 +27843,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -27970,7 +27970,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -28117,7 +28117,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -28244,7 +28244,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -28391,7 +28391,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -28518,7 +28518,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -28665,7 +28665,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -28792,7 +28792,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -28939,7 +28939,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -29066,7 +29066,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -29213,7 +29213,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -29340,7 +29340,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -29487,7 +29487,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -29614,7 +29614,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -29761,7 +29761,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -29888,7 +29888,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -30035,7 +30035,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -30162,7 +30162,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -30309,7 +30309,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -30436,7 +30436,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -30583,7 +30583,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -30710,7 +30710,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -30857,7 +30857,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -30984,7 +30984,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -31131,7 +31131,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -31258,7 +31258,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -31405,7 +31405,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -31532,7 +31532,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -31679,7 +31679,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -31806,7 +31806,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -31953,7 +31953,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -32080,7 +32080,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -32227,7 +32227,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -32354,7 +32354,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -32501,7 +32501,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -32628,7 +32628,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -32775,7 +32775,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -32902,7 +32902,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -33049,7 +33049,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -33176,7 +33176,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -33323,7 +33323,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -33450,7 +33450,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -33597,7 +33597,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -33724,7 +33724,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -33871,7 +33871,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -33998,7 +33998,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -34145,7 +34145,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -34272,7 +34272,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -34419,7 +34419,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -34546,7 +34546,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -34693,7 +34693,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -34820,7 +34820,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -34967,7 +34967,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -35094,7 +35094,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -35241,7 +35241,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -35368,7 +35368,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -35515,7 +35515,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -35642,7 +35642,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -35789,7 +35789,7 @@ circle.Series4 {fill:#f0d000;}
       <var>t</var>
       ), [°]
       <br/>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -35916,7 +35916,7 @@ circle.Series4 {fill:#f0d000;}
        ), [°]
        <br/>
       </p>
-      <svg class="plot" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
+      <svg class="plot" data-plot="svg" height="800px" style="width:212.96pt; height:148.15pt;" version="1.1" viewbox=" 0 0 1150 800" width="1150px" xmlns="http://www.w3.org/2000/svg">
        <style type="text/css">
         .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

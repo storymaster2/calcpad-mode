@@ -349,7 +349,7 @@ namespace Calcpad.Core
                     penNo = 1;
             }
             if (string.IsNullOrEmpty(fileName))
-                return $"<svg class=\"plot\" {svgDrawing.ToString()[4..]}";
+                return $"<svg class=\"plot\" data-plot=\"svg\" {svgDrawing.ToString()[4..]}";
 
             SvgToFile(svgDrawing, Settings.ImagePath, fileName);
             return HtmlImg(Settings.ImageUri + fileName);

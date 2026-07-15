@@ -568,7 +568,7 @@
  </p>
  <!-- <span class="eq"><var>PlotHeight</var> = 120</span> , <span class="eq"><var>PlotSVG</var> = 1</span> , <span class="eq"><var>PlotAdaptive</var> = 0</span> -->
  <p>Input accelleration plot [cm/s²] vs time [s]</p>
- <svg class="plot" height="720px" style="width:420.37pt; height:133.33pt;" version="1.1" viewbox=" 0 0 2270 720" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="720px" style="width:420.37pt; height:133.33pt;" version="1.1" viewbox=" 0 0 2270 720" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -671,7 +671,7 @@ circle.Series1 {fill:Tomato;}
   </g>
  </svg>
  <p>Fourier amplitude spectrum (FAS) [cm/s] vs frequency [Hz] in the range of 0-10 Hz</p>
- <svg class="plot" height="720px" style="width:420.37pt; height:133.33pt;" version="1.1" viewbox=" 0 0 2270 720" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="720px" style="width:420.37pt; height:133.33pt;" version="1.1" viewbox=" 0 0 2270 720" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

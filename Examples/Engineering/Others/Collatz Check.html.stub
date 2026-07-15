@@ -93,7 +93,7 @@
   </small>
  </h4>
  <!-- <span class="eq"><var>PlotHeight</var> = 150</span> , <span class="eq"><var>PlotWidth</var> = 350</span> , <span class="eq"><var>PlotSVG</var> = 1</span> -->
- <svg class="plot" height="840px" style="width:309.26pt; height:155.56pt;" version="1.1" viewbox=" 0 0 1670 840" width="1670px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="840px" style="width:309.26pt; height:155.56pt;" version="1.1" viewbox=" 0 0 1670 840" width="1670px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

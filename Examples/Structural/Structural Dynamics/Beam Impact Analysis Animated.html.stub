@@ -1358,7 +1358,7 @@
  </p>
  <p>Impulse load diagram</p>
  <!-- <span class="eq"><var>PlotWidth</var> = 500</span> , <span class="eq"><var>PlotHeight</var> = 100</span> -->
- <svg class="plot" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1582,7 +1582,7 @@ circle.Series1 {fill:Tomato;}
  </p>
  <p>Time history of the midpoint displacement, [mm]</p>
  <!-- <span class="eq"><var>PlotHeight</var> = 200</span> -->
- <svg class="plot" height="1040px" style="width:420.37pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2270 1040" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1040px" style="width:420.37pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2270 1040" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1783,7 +1783,7 @@ circle.Series2 {fill:YellowGreen;}
   </span>
  </p>
  <!-- <span class="eq"><var>PlotHeight</var> = 100</span> -->
- <svg class="plot" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1997,7 +1997,7 @@ circle.Series3 {fill:CornflowerBlue;}
    </span>
   </span>
  </p>
- <svg class="plot" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -3797,7 +3797,7 @@ circle.Series3 {fill:CornflowerBlue;}
    </span>
   </span>
  </p>
- <svg class="plot" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4027,7 +4027,7 @@ circle.Series3 {fill:CornflowerBlue;}
   </span>
  </p>
  <!-- <span class="eq"><var>PlotWidth</var> = 300</span> -->
- <svg class="plot" height="640px" style="width:272.22pt; height:118.52pt;" version="1.1" viewbox=" 0 0 1470 640" width="1470px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="640px" style="width:272.22pt; height:118.52pt;" version="1.1" viewbox=" 0 0 1470 640" width="1470px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4349,7 +4349,7 @@ circle.Series7 {fill:BlueViolet;}
  </p>
  <!-- <span class="eq"><var>PlotWidth</var> = 500</span> , <span class="eq"><var>PlotHeight</var> = 200</span> , <span class="eq"><var>PlotAdaptive</var> = 0</span> -->
  <p>Comparison of time history records of the midpoint displacements for SDOF and MDOF systems, [mm]</p>
- <svg class="plot" height="1040px" style="width:420.37pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2270 1040" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1040px" style="width:420.37pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2270 1040" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4453,7 +4453,7 @@ circle.Series2 {fill:YellowGreen;}
   Time history records for the amplitudes of separate joints, [mm]
   <!--Turn adaptive plot off for best results-->
  </p>
- <svg class="plot" height="1040px" style="width:420.37pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2270 1040" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1040px" style="width:420.37pt; height:192.59pt;" version="1.1" viewbox=" 0 0 2270 1040" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4569,7 +4569,7 @@ circle.Series5 {fill:MediumVioletRed;}
   </g>
  </svg>
  <p>Beam deflections for the first five time steps at Δt = 1.48 ms</p>
- <svg class="plot" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="640px" style="width:420.37pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2270 640" width="2270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4697,7 +4697,7 @@ circle.Series5 {fill:MediumVioletRed;}
  <p>Animation of beam elastic response (slowed down)</p>
  <style>.fr{display:none;} circle{stroke-width: 0;} .fr circle.Series3{stroke-width:100px!Important;stroke-opacity:1; fill:none;}</style>
  <div class="fr" id="beamimpact-fr-1">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4807,7 +4807,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-2">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -4917,7 +4917,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-3">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5027,7 +5027,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-4">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5137,7 +5137,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-5">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5247,7 +5247,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-6">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5357,7 +5357,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-7">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5467,7 +5467,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-8">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5577,7 +5577,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-9">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5687,7 +5687,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-10">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5797,7 +5797,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-11">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -5907,7 +5907,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-12">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6017,7 +6017,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-13">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6127,7 +6127,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-14">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6237,7 +6237,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-15">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6347,7 +6347,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-16">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6457,7 +6457,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-17">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6567,7 +6567,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-18">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6677,7 +6677,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-19">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6787,7 +6787,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-20">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -6897,7 +6897,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-21">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7007,7 +7007,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-22">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7117,7 +7117,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-23">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7227,7 +7227,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-24">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7337,7 +7337,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-25">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7447,7 +7447,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-26">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7557,7 +7557,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-27">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7667,7 +7667,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-28">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7777,7 +7777,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-29">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7887,7 +7887,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-30">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -7997,7 +7997,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-31">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8107,7 +8107,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-32">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8217,7 +8217,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-33">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8327,7 +8327,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-34">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8437,7 +8437,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-35">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8547,7 +8547,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-36">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8657,7 +8657,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-37">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8767,7 +8767,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-38">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8877,7 +8877,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-39">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -8987,7 +8987,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-40">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9097,7 +9097,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-41">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9207,7 +9207,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-42">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9317,7 +9317,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-43">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9427,7 +9427,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-44">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9537,7 +9537,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-45">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9647,7 +9647,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-46">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9757,7 +9757,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-47">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9867,7 +9867,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-48">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -9977,7 +9977,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-49">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10087,7 +10087,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-50">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10197,7 +10197,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-51">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10307,7 +10307,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-52">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10417,7 +10417,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-53">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10527,7 +10527,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-54">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10637,7 +10637,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-55">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10747,7 +10747,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-56">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10857,7 +10857,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-57">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -10967,7 +10967,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-58">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11077,7 +11077,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-59">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11187,7 +11187,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-60">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11297,7 +11297,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-61">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11407,7 +11407,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-62">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11517,7 +11517,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-63">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11627,7 +11627,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-64">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11737,7 +11737,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-65">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11847,7 +11847,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-66">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -11957,7 +11957,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-67">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12067,7 +12067,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-68">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12177,7 +12177,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-69">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12287,7 +12287,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-70">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12397,7 +12397,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-71">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12507,7 +12507,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-72">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12617,7 +12617,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-73">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12727,7 +12727,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-74">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12837,7 +12837,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-75">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -12947,7 +12947,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-76">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13057,7 +13057,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-77">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13167,7 +13167,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-78">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13277,7 +13277,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-79">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13387,7 +13387,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-80">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13497,7 +13497,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-81">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13607,7 +13607,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-82">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13717,7 +13717,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-83">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13827,7 +13827,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-84">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -13937,7 +13937,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-85">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14047,7 +14047,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-86">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14157,7 +14157,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-87">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14267,7 +14267,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-88">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14377,7 +14377,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-89">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14487,7 +14487,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-90">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14597,7 +14597,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-91">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14707,7 +14707,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-92">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14817,7 +14817,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-93">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -14927,7 +14927,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-94">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15037,7 +15037,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-95">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15147,7 +15147,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-96">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15257,7 +15257,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-97">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15367,7 +15367,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-98">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15477,7 +15477,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-99">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15587,7 +15587,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-100">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15697,7 +15697,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-101">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15807,7 +15807,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-102">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -15917,7 +15917,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-103">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16027,7 +16027,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-104">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16137,7 +16137,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-105">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16247,7 +16247,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-106">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16357,7 +16357,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-107">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16467,7 +16467,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-108">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16577,7 +16577,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-109">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16687,7 +16687,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-110">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16797,7 +16797,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-111">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -16907,7 +16907,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-112">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17017,7 +17017,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-113">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17127,7 +17127,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-114">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17237,7 +17237,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-115">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17347,7 +17347,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-116">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17457,7 +17457,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-117">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17567,7 +17567,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-118">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17677,7 +17677,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-119">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17787,7 +17787,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-120">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -17897,7 +17897,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-121">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18007,7 +18007,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-122">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18117,7 +18117,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-123">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18227,7 +18227,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-124">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18337,7 +18337,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-125">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18447,7 +18447,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-126">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18557,7 +18557,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-127">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18667,7 +18667,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-128">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18777,7 +18777,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-129">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18887,7 +18887,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-130">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -18997,7 +18997,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-131">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19107,7 +19107,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-132">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19217,7 +19217,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-133">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19327,7 +19327,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-134">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19437,7 +19437,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-135">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19547,7 +19547,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-136">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19657,7 +19657,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-137">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19767,7 +19767,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-138">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19877,7 +19877,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-139">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -19987,7 +19987,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-140">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20097,7 +20097,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-141">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20207,7 +20207,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-142">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20317,7 +20317,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-143">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20427,7 +20427,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-144">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20537,7 +20537,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-145">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20647,7 +20647,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-146">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20757,7 +20757,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-147">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20867,7 +20867,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-148">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -20977,7 +20977,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-149">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21087,7 +21087,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-150">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21197,7 +21197,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-151">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21307,7 +21307,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-152">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21417,7 +21417,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-153">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21527,7 +21527,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-154">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21637,7 +21637,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-155">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21747,7 +21747,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-156">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21857,7 +21857,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-157">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -21967,7 +21967,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-158">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22077,7 +22077,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-159">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22187,7 +22187,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-160">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22297,7 +22297,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-161">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22407,7 +22407,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-162">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22517,7 +22517,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-163">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22627,7 +22627,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-164">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22737,7 +22737,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-165">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22847,7 +22847,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-166">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -22957,7 +22957,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-167">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -23067,7 +23067,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-168">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -23177,7 +23177,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-169">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -23287,7 +23287,7 @@ circle.Series4 {fill:#f0d000;}
   </svg>
  </div>
  <div class="fr" id="beamimpact-fr-170">
-  <svg class="plot" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
+  <svg class="plot" data-plot="svg" height="1416px" style="width:420.37pt; height:262.22pt;" version="1.1" viewbox=" 0 0 2270 1416" width="2270px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

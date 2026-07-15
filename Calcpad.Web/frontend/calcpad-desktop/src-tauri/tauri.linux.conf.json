@@ -1,0 +1,25 @@
+{
+  "build": {
+    "beforeDevCommand": "rm -rf ../calcpad-web/dist && ./local-npm.sh --prefix ../calcpad-frontend run build && (./local-npm.sh --prefix ../calcpad-frontend run watch &) && ./local-npm.sh --prefix ../calcpad-web run build:watch",
+    "beforeBuildCommand": "rm -rf ../calcpad-web/dist && ./local-npm.sh --prefix ../calcpad-frontend run build && ./local-npm.sh --prefix ../calcpad-web run build"
+  },
+  "bundle": {
+    "targets": ["deb", "appimage"],
+    "resources": {
+      "binaries/*.so": "./",
+      "binaries/*.dll": "./",
+      "binaries/*.json": "./",
+      "binaries/Calcpad.Server": "./",
+      "binaries/createdump": "./",
+      "binaries/template.html": "./",
+      "binaries/Fonts/*": "./Fonts/",
+      "binaries/bg/*": "./bg/",
+      "binaries/zh/*": "./zh/"
+    },
+    "linux": {
+      "deb": {
+        "depends": []
+      }
+    }
+  }
+}
