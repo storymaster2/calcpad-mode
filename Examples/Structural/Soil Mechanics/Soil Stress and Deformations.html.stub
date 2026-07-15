@@ -456,7 +456,7 @@
   </span>
  </p>
  <!-- <span class="eq"><var>PlotWidth</var> = 300</span> , <span class="eq"><var>PlotHeight</var> = 60</span> -->
- <svg class="plot" height="480px" style="width:272.22pt; height:88.89pt;" version="1.1" viewbox=" 0 0 1470 480" width="1470px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="480px" style="width:272.22pt; height:88.89pt;" version="1.1" viewbox=" 0 0 1470 480" width="1470px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -541,7 +541,7 @@ circle.Series1 {fill:Tomato;}
     </p>
     <!-- <span class="eq"><var>PlotHeight</var> = <span class="dvc"><var>PlotWidth</var> ·  ( <var>H</var> − <var>H</var><sub>0</sub> ) <span class="dvl"></span>2 · <var>k</var> · <var>a</var></span> = <span class="dvc">300 ·  ( 6 <i>m</i> − 0.06 <i>m</i> ) <span class="dvl"></span>2 · 1.5 · 2 <i>m</i></span> = 297</span> -->
     <div class="plot" style="width:315pt; height:266pt;">
-     <svg height="1420px" style="width:311.11pt; height:262.96pt;" version="1.1" viewbox=" 0 0 1680 1420" width="1680px" xmlns="http://www.w3.org/2000/svg">
+     <svg data-plot="svg" height="1420px" style="width:311.11pt; height:262.96pt;" version="1.1" viewbox=" 0 0 1680 1420" width="1680px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -670,7 +670,7 @@ circle.Series1 {fill:Tomato;}
      </span>
     </p>
     <!-- <span class="eq"><var>PlotWidth</var> = 60</span> -->
-    <svg class="plot" height="1428px" style="width:94.44pt; height:264.44pt;" version="1.1" viewbox=" 0 0 510 1428" width="510px" xmlns="http://www.w3.org/2000/svg">
+    <svg class="plot" data-plot="svg" height="1428px" style="width:94.44pt; height:264.44pt;" version="1.1" viewbox=" 0 0 510 1428" width="510px" xmlns="http://www.w3.org/2000/svg">
      <style type="text/css">
       .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -746,7 +746,7 @@ circle.Series1 {fill:Tomato;}
     </p>
     <!-- <span class="eq"><var>PlotWidth</var> = 300</span> -->
     <div class="plot" style="width:315pt; height:266pt;">
-     <svg height="1420px" style="width:311.11pt; height:262.96pt;" version="1.1" viewbox=" 0 0 1680 1420" width="1680px" xmlns="http://www.w3.org/2000/svg">
+     <svg data-plot="svg" height="1420px" style="width:311.11pt; height:262.96pt;" version="1.1" viewbox=" 0 0 1680 1420" width="1680px" xmlns="http://www.w3.org/2000/svg">
       <style type="text/css">
        .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -879,7 +879,7 @@ circle.Series1 {fill:Tomato;}
      </span>
     </p>
     <!-- <span class="eq"><var>PlotWidth</var> = 60</span> -->
-    <svg class="plot" height="1428px" style="width:94.44pt; height:264.44pt;" version="1.1" viewbox=" 0 0 510 1428" width="510px" xmlns="http://www.w3.org/2000/svg">
+    <svg class="plot" data-plot="svg" height="1428px" style="width:94.44pt; height:264.44pt;" version="1.1" viewbox=" 0 0 510 1428" width="510px" xmlns="http://www.w3.org/2000/svg">
      <style type="text/css">
       .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -951,7 +951,7 @@ circle.Series1 {fill:Tomato;}
  </table>
  <p>Deformations, mm</p>
  <!-- <span class="eq"><var>PlotWidth</var> = 300</span> , <span class="eq"><var>PlotHeight</var> = 60</span> -->
- <svg class="plot" height="480px" style="width:272.22pt; height:88.89pt;" version="1.1" viewbox=" 0 0 1470 480" width="1470px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="480px" style="width:272.22pt; height:88.89pt;" version="1.1" viewbox=" 0 0 1470 480" width="1470px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

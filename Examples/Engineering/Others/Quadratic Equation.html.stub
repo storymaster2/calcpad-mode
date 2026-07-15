@@ -123,7 +123,7 @@
    = 1
   </span>
  </p>
- <svg class="plot" height="1040px" style="width:316.67pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1710 1040" width="1710px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1040px" style="width:316.67pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1710 1040" width="1710px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

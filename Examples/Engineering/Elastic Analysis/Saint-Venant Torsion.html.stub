@@ -395,7 +395,7 @@
  <p>Stress surface plots</p>
  <p>τ_zx</p>
  <div class="plot" style="width:390pt; height:225pt;">
-  <svg height="1200px" style="width:385.19pt; height:222.22pt;" version="1.1" viewbox=" 0 0 2080 1200" width="2080px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="1200px" style="width:385.19pt; height:222.22pt;" version="1.1" viewbox=" 0 0 2080 1200" width="2080px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -563,7 +563,7 @@
  </div>
  <p>τ_zy</p>
  <div class="plot" style="width:390pt; height:225pt;">
-  <svg height="1200px" style="width:385.19pt; height:222.22pt;" version="1.1" viewbox=" 0 0 2080 1200" width="2080px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="1200px" style="width:385.19pt; height:222.22pt;" version="1.1" viewbox=" 0 0 2080 1200" width="2080px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -730,7 +730,7 @@
   </svg>
  </div>
  <p>Stress line plots</p>
- <svg class="plot" height="1200px" style="width:346.3pt; height:222.22pt;" version="1.1" viewbox=" 0 0 1870 1200" width="1870px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1200px" style="width:346.3pt; height:222.22pt;" version="1.1" viewbox=" 0 0 1870 1200" width="1870px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

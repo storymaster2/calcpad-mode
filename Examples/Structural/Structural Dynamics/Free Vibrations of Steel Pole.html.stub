@@ -918,7 +918,7 @@
   </span>
  </p>
  <!-- <span class="eq"><var>PlotWidth</var> = 200</span> , <span class="eq"><var>PlotHeight</var> = 200</span> -->
- <svg class="plot" height="1040px" style="width:198.15pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1070 1040" width="1070px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1040px" style="width:198.15pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1070 1040" width="1070px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1037,7 +1037,7 @@ circle.Series6 {fill:MediumSpringGreen;}
    </polyline>
   </g>
  </svg>
- <svg class="plot" height="1040px" style="width:198.15pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1070 1040" width="1070px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1040px" style="width:198.15pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1070 1040" width="1070px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -2696,7 +2696,7 @@ circle.Series6 {fill:MediumSpringGreen;}
    </span>
   </span>
  </p>
- <svg class="plot" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="1840px" style="width:138.89pt; height:340.74pt;" version="1.1" viewbox=" 0 0 750 1840" width="750px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

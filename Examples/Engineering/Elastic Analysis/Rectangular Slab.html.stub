@@ -849,7 +849,7 @@
  <h3>Results</h3>
  <p>Deflections</p>
  <div class="plot" style="width:315pt; height:195pt;">
-  <svg height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1053,7 +1053,7 @@
  </p>
  <p>Bending moments - Mx, kNm/m</p>
  <div class="plot" style="width:315pt; height:195pt;">
-  <svg height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1261,7 +1261,7 @@
  </p>
  <p>Bending moments - My, kNm/m</p>
  <div class="plot" style="width:315pt; height:195pt;">
-  <svg height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1469,7 +1469,7 @@
  </p>
  <p>Bending moments - Mxy, kNm/m</p>
  <div class="plot" style="width:315pt; height:195pt;">
-  <svg height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1646,7 +1646,7 @@
  </p>
  <p>Principal bending moments - Mmax, kNm/m</p>
  <div class="plot" style="width:315pt; height:195pt;">
-  <svg height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -1854,7 +1854,7 @@
  </p>
  <p>Principal bending moments - Mmin, kNm/m</p>
  <div class="plot" style="width:315pt; height:195pt;">
-  <svg height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="1040px" style="width:311.11pt; height:192.59pt;" version="1.1" viewbox=" 0 0 1680 1040" width="1680px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}

@@ -436,7 +436,7 @@
    <i>cm</i>
   </span>
  </p>
- <svg class="plot" height="640px" style="width:494.44pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2670 640" width="2670px" xmlns="http://www.w3.org/2000/svg">
+ <svg class="plot" data-plot="svg" height="640px" style="width:494.44pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2670 640" width="2670px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
@@ -528,7 +528,7 @@ circle.Series1 {fill:Tomato;}
   </g>
  </svg>
  <div class="plot" style="width:540pt; height:120pt;">
-  <svg height="640px" style="width:533.33pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2880 640" width="2880px" xmlns="http://www.w3.org/2000/svg">
+  <svg data-plot="svg" height="640px" style="width:533.33pt; height:118.52pt;" version="1.1" viewbox=" 0 0 2880 640" width="2880px" xmlns="http://www.w3.org/2000/svg">
    <style type="text/css">
     .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}
 .plot text.left {text-anchor: start;}
