@@ -1,4 +1,4 @@
-"Cubic Equation
+'<!-- Solves $x^3 + a x^2 + b x + c = 0$ with the built-in numerical root finder, recovering all real and complex roots from the user-supplied coefficients. -->
 f(x) = x^3 + a*x^2 + b*x + c'= 0
 'Coefficients:
 a = ? {-6}','b = ? {11}','c = ? {-6}

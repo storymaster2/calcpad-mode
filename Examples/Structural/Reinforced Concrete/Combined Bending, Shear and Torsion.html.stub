@@ -1,13 +1,10 @@
 <div class="calcpad-output">
- <h3>
-  Combined Bending, Shear and Torsion Design of RC Beam
-  <hr/>
-  <small>
-   According to
-   <strong>Eurocode</strong>
-   : EN 1992-1-1
-  </small>
- </h3>
+ <!-- Combined bending, shear and torsion design of a T-beam: variable-strut-inclination model for the shear contribution, space-truss model for the torsional resistance and superposition for the longitudinal reinforcement. -->
+ <small>
+  According to
+  <strong>Eurocode</strong>
+  : EN 1992-1-1
+ </small>
  <div style="width:180mm">
   <img alt="torsion.png" src="Images/structures/rc/design/torsion.png" style="width:400pt;"/>
   <h4>Cross section dimensions</h4>
@@ -16,14 +13,14 @@
     <var>b</var>
     <sub>w</sub>
     =
-    <u class="input-5">250</u>
+    <u class="input-6">250</u>
    </span>
    mm,
    <span class="eq">
     <var>h</var>
     <sub>w</sub>
     =
-    <u class="input-5">500</u>
+    <u class="input-6">500</u>
    </span>
    mm
   </p>
@@ -32,14 +29,14 @@
     <var>b</var>
     <sub>f</sub>
     =
-    <u class="input-6">1200</u>
+    <u class="input-7">1200</u>
    </span>
    mm,
    <span class="eq">
     <var>h</var>
     <sub>f</sub>
     =
-    <u class="input-6">120</u>
+    <u class="input-7">120</u>
    </span>
    mm
   </p>
@@ -49,7 +46,7 @@
     <var>n</var>
     <sub>w</sub>
     =
-    <u class="input-7">2</u>
+    <u class="input-8">2</u>
    </span>
   </p>
   <p>
@@ -58,7 +55,7 @@
     <var>Φ</var>
     <sub>b</sub>
     =
-    <u class="input-8">20</u>
+    <u class="input-9">20</u>
    </span>
    mm
   </p>
@@ -68,7 +65,7 @@
     <var>Φ</var>
     <sub>t</sub>
     =
-    <u class="input-9">12</u>
+    <u class="input-10">12</u>
    </span>
    mm
   </p>
@@ -78,7 +75,7 @@
     <var>Φ</var>
     <sub>s</sub>
     =
-    <u class="input-10">8</u>
+    <u class="input-11">8</u>
    </span>
    mm
   </p>
@@ -88,7 +85,7 @@
     <var>c</var>
     <sub>nom</sub>
     =
-    <u class="input-11">25</u>
+    <u class="input-12">25</u>
    </span>
    mm
   </p>
@@ -130,7 +127,7 @@
     <var>n</var>
     <sub>ef</sub>
     =
-    <u class="input-16">2</u>
+    <u class="input-17">2</u>
    </span>
   </p>
   <p class="ref">[EN 1992-1-1, § 9.2.3 (4)]</p>
@@ -142,7 +139,7 @@
     <var>T</var>
     <sub>Ed</sub>
     =
-    <u class="input-32">20</u>
+    <u class="input-33">20</u>
    </span>
    kN·m
   </p>
@@ -152,7 +149,7 @@
     <var>M</var>
     <sub>Ed</sub>
     =
-    <u class="input-33">200</u>
+    <u class="input-34">200</u>
    </span>
    kN·m
   </p>
@@ -162,7 +159,7 @@
     <var>V</var>
     <sub>Ed</sub>
     =
-    <u class="input-34">120</u>
+    <u class="input-35">120</u>
    </span>
    kN
   </p>
@@ -177,7 +174,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-37">20</u>
+    <u class="input-38">20</u>
    </span>
    MPa,
   </p>
@@ -193,7 +190,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-38">0.85</u>
+    <u class="input-39">0.85</u>
    </span>
   </p>
   <p>
@@ -299,7 +296,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-46">500</u>
+    <u class="input-47">500</u>
    </span>
    MPa
   </p>

@@ -1,4 +1,5 @@
 <div class="calcpad-output">
+ <!-- Section properties of a trapezoid: area, centroid offsets, $I_x$, $I_y$, section moduli and radii of gyration from the two parallel sides and height. -->
  <h3>Geometrical Properties of Trapezoid</h3>
  <div style="max-width:130mm">
   <img alt="Trapezoid.png" class="side" src="Images/mechanics/sections/trapezoid.png" style="height:135pt;"/>
@@ -8,13 +9,13 @@
   <span class="eq">
    <var>a</var>
    =
-   <u class="input-4">2</u>
+   <u class="input-5">2</u>
   </span>
   m,
   <span class="eq">
    <var>b</var>
    =
-   <u class="input-4">1</u>
+   <u class="input-5">1</u>
   </span>
   m
  </p>
@@ -23,7 +24,7 @@
   <span class="eq">
    <var>h</var>
    =
-   <u class="input-6">1</u>
+   <u class="input-7">1</u>
   </span>
   m
  </p>

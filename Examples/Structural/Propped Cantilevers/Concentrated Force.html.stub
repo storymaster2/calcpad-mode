@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Propped Cantilever with Concentrated Force</h3>
- <hr/>
+ <!-- Force-method solution for a propped cantilever carrying a point force $F$ at distance $a$ from the fixed support, with the in-span peak at the load position. -->
  <div style="max-width:180mm;">
   <img alt="propped-cantilever-beam-concentrated-force.png" class="side" src="Images/mechanics/beams/propped-cantilever-beam-concentrated-force.png" style="width:210pt;"/>
   <p>

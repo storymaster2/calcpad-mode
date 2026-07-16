@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <h3>Parametric 3D Drawing of RC Beam</h3>
+ <!-- Build a fully parametric 3D model of a reinforced-concrete T-beam (concrete prism plus longitudinal rebars) using [three.js](https://threejs.org) inside CalcpadCE.
+<p>Change the geometry inputs and the WebGL view, the calculations, and the report all update together. -->
  <p>
   Beam length -
   <span class="eq">

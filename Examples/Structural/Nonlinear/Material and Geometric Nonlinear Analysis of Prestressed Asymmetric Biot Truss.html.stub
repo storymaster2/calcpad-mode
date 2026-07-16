@@ -822,6 +822,7 @@ circle.Series1 {fill:Tomato;}
    = 0.000309
   </span>
  </p>
+ <!-- SVG drawing macros (lines, points, dimension marks and rotated text) included by the nonlinear truss worksheets to render undeformed and deformed configurations side by side. -->
  <svg style="font-family: Georgia Pro Cond; font-size:11px; width:420pt; height:140pt" version="1.1" viewbox="-88.89 -35.56 497.78 106.67" xmlns="http://www.w3.org/2000/svg">
   <line style="stroke:black; stroke-width:1.5; fill:none" x1="0" x2="106.67" y1="0" y2="0">
   </line>

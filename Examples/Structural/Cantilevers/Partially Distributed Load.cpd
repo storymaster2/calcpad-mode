@@ -1,5 +1,5 @@
-"Cantilever with Partially Distributed Load
-'<hr /><div style="max-width:180mm;">
+'<!-- Uniform load $q$ acting on a stretch of length $b$ adjacent to the free end, with the unloaded portion $a = l - b$ kept clear. -->
+'<div style="max-width:180mm;">
 '<img style="width:165pt;" alt="cantilever-beam-distributed-load-partial.png" class="side" src="../../Images/mechanics/beams/cantilever-beam-distributed-load-partial.png">
 '<p><b>Input data</b></p>
 'Beam Length -'l = ?'m

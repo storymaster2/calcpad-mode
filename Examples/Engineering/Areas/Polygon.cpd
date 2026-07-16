@@ -1,4 +1,4 @@
-"Area and Perimeter of Regular Polygon
+'<!-- Area and perimeter of a regular $n$-gon from side length $a$, using $A = \tfrac{n a^2}{4}\cot(\pi/n)$. -->
 '<div style="max-width:110mm;"><img style="height:70pt;" class="side" alt="polygon.png" src="../../Images/math/area/polygon.png"></div>
 'Number of sides -'n = ?
 'Side length -'a = ?

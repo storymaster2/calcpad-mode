@@ -1,4 +1,5 @@
-"Combined Bending, Shear and Torsion Design of RC Beam<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Combined bending, shear and torsion design of a T-beam: variable-strut-inclination model for the shear contribution, space-truss model for the torsional resistance and superposition for the longitudinal reinforcement. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="width:180mm">
 '<img style="width:400pt;" src="../../Images/structures/rc/design/torsion.png" alt="torsion.png">
 '<h4>Cross section dimensions</h4>

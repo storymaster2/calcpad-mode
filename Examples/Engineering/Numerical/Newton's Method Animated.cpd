@@ -1,5 +1,6 @@
+'<!-- Solves $x^x = 10$ with Newton iteration and renders an animated SVG that highlights each tangent step.
+'The frame loop turns convergence into a visual sequence rather than a printed iteration table. -->
 #md on
-"Newton's Method Animation
 #noc
 '**Problem:** Given the following equation:'x^x = 10'. Find'x'= ?              </p><p>
 #equ

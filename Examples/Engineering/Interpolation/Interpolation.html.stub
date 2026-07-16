@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <h3>Interpolation</h3>
+ <!-- Compares `take()`, `line()` and `spline()` on a single dataset, then derives wind-load height factors $k_z$ for two terrain categories by interpolating tabulated code values.
+<p>A compact reference for picking the right scheme when working with discrete engineering tables. -->
  <h4>Data functions in CalcpadCE</h4>
  <p>
   <span class="eq">

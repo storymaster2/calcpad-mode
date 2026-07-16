@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Quadratic Equation</h3>
+ <!-- Solves $a x^2 + b x + c = 0$ with the built-in numerical root finder, returning both real or complex roots from the user-supplied coefficients. -->
  <p>
   <span class="eq">
    <var>f</var>

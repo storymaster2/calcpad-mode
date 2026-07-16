@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Area and Perimeter of Rectangle</h3>
+ <!-- Area $A = a\, b$ and perimeter $P = 2(a + b)$ of a rectangle from its two side lengths. -->
  <div style="max-width:100mm;">
   <img alt="rectangle.png" class="side" src="Images/math/area/rectangle.png" style="height:55pt;"/>
  </div>

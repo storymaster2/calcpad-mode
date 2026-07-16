@@ -1,4 +1,5 @@
 <div class="calcpad-output">
+ <!-- Section properties of a hollow elliptical pipe: area, $I_x$, $I_y$, section moduli and radii of gyration from the four semi-axes. -->
  <h3>Geometrical Properties of Elliptical Pipe</h3>
  <div style="max-width:120mm">
   <img alt="elliptical-pipe.png" class="side" src="Images/mechanics/sections/elliptical-pipe.png" style="height:112pt;"/>
@@ -9,13 +10,13 @@
   <span class="eq">
    <var>a</var>
    =
-   <u class="input-5">20</u>
+   <u class="input-6">20</u>
   </span>
   m,
   <span class="eq">
    <var>b</var>
    =
-   <u class="input-5">10</u>
+   <u class="input-6">10</u>
   </span>
   m
  </p>
@@ -23,7 +24,7 @@
   <span class="eq">
    <var>t</var>
    =
-   <u class="input-6">2</u>
+   <u class="input-7">2</u>
   </span>
   m
  </p>

@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Propped Cantilever with Concentrated Moment</h3>
- <hr/>
+ <!-- Propped cantilever loaded by a concentrated moment $M$ at distance $a$, giving a constant shear and a bending diagram with a jump of $M$ across the load section. -->
  <div style="max-width:180mm;">
   <img alt="propped-cantilever-beam-concentrated-moment.png" class="side" src="Images/mechanics/beams/propped-cantilever-beam-concentrated-moment.png" style="width:210pt;"/>
   <p>

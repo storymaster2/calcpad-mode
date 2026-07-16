@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Rose Curve</h3>
+ <!-- Polar [rose curve](https://en.wikipedia.org/wiki/Rose_(mathematics)) $r = a\, \cos(k\theta)$ with petal count controlled by integer or rational $k$. -->
  <p>General equation:</p>
  <p>
   <span class="eq">

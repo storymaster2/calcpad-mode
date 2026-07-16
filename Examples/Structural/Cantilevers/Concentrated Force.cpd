@@ -1,5 +1,5 @@
-"Cantilever with Concentrated Force at the End
-'<hr /><div style="max-width:180mm;">
+'<!-- Concentrated force $F$ applied at the free end, giving the linear bending diagram $M(x) = -F (l - x)$ and constant shear $V = F$. -->
+'<div style="max-width:180mm;">
 '<img style="width:165pt;" alt="cantilever-beam-concentrated-force.png" class="side" src="../../Images/mechanics/beams/cantilever-beam-concentrated-force.png">
 '<p><b>Input data</b></p>
 'Beam Length -'l = ?'m

@@ -1,13 +1,10 @@
 <div class="calcpad-output">
- <h3>
-  Column Design for Bending and Axial Force
-  <hr/>
-  <small>
-   According to
-   <strong>Eurocode</strong>
-   : EN 1992-1-1
-  </small>
- </h3>
+ <!-- Verification of a rectangular reinforced concrete column under bending and axial force from the strain compatibility, with symmetric or asymmetric reinforcement and the strut compression check. -->
+ <small>
+  According to
+  <strong>Eurocode</strong>
+  : EN 1992-1-1
+ </small>
  <div style="max-width:180mm">
   <img alt="column-design.png" class="side" src="Images/structures/rc/design/column-design.png" style="width:150pt;"/>
   <h4>Cross section dimensions</h4>
@@ -16,13 +13,13 @@
    <span class="eq">
     <var>b</var>
     =
-    <u class="input-5">300</u>
+    <u class="input-6">300</u>
    </span>
    mm, Height -
    <span class="eq">
     <var>h</var>
     =
-    <u class="input-5">700</u>
+    <u class="input-6">700</u>
    </span>
    mm
   </p>
@@ -48,7 +45,7 @@
     <var>A</var>
     <sub>s1</sub>
     =
-    <u class="input-10">800</u>
+    <u class="input-11">800</u>
    </span>
    mm², Right -
    <span class="eq">
@@ -96,7 +93,7 @@
     <var>d</var>
     <sub>1</sub>
     =
-    <u class="input-15">50</u>
+    <u class="input-16">50</u>
    </span>
    mm, Right -
    <span class="eq">
@@ -131,7 +128,7 @@
       <var>M</var>
       <sub>Ed_1</sub>
       =
-      <u class="input-21">100</u>
+      <u class="input-22">100</u>
      </span>
      kN·m,
     </td>
@@ -140,7 +137,7 @@
       <var>N</var>
       <sub>Ed_1</sub>
       =
-      <u class="input-21">500</u>
+      <u class="input-22">500</u>
      </span>
      kN
     </td>
@@ -152,7 +149,7 @@
       <var>M</var>
       <sub>Ed_2</sub>
       =
-      <u class="input-22">100</u>
+      <u class="input-23">100</u>
      </span>
      kN·m,
     </td>
@@ -161,7 +158,7 @@
       <var>N</var>
       <sub>Ed_2</sub>
       =
-      <u class="input-22">1000</u>
+      <u class="input-23">1000</u>
      </span>
      kN
     </td>
@@ -173,7 +170,7 @@
       <var>M</var>
       <sub>Ed_3</sub>
       =
-      <u class="input-23">100</u>
+      <u class="input-24">100</u>
      </span>
      kN·m,
     </td>
@@ -182,7 +179,7 @@
       <var>N</var>
       <sub>Ed_3</sub>
       =
-      <u class="input-23">1500</u>
+      <u class="input-24">1500</u>
      </span>
      kN
     </td>
@@ -194,7 +191,7 @@
       <var>M</var>
       <sub>Ed_4</sub>
       =
-      <u class="input-24">100</u>
+      <u class="input-25">100</u>
      </span>
      kN·m,
     </td>
@@ -203,7 +200,7 @@
       <var>N</var>
       <sub>Ed_4</sub>
       =
-      <u class="input-24">2000</u>
+      <u class="input-25">2000</u>
      </span>
      kN
     </td>
@@ -215,7 +212,7 @@
       <var>M</var>
       <sub>Ed_5</sub>
       =
-      <u class="input-25">100</u>
+      <u class="input-26">100</u>
      </span>
      kN·m,
     </td>
@@ -224,7 +221,7 @@
       <var>N</var>
       <sub>Ed_5</sub>
       =
-      <u class="input-25">2500</u>
+      <u class="input-26">2500</u>
      </span>
      kN
     </td>
@@ -242,7 +239,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-34">20</u>
+    <u class="input-35">20</u>
    </span>
    MPa
   </p>
@@ -258,7 +255,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-35">0.85</u>
+    <u class="input-36">0.85</u>
    </span>
   </p>
   <p>
@@ -360,7 +357,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-43">500</u>
+    <u class="input-44">500</u>
    </span>
    MPa
   </p>
@@ -578,7 +575,7 @@ circle.Series1 {fill:Tomato;}
     <var>K</var>
     <sub>G</sub>
     =
-    <u class="input-63">0.75</u>
+    <u class="input-64">0.75</u>
    </span>
   </p>
   <p>
@@ -598,7 +595,7 @@ circle.Series1 {fill:Tomato;}
    <span class="eq">
     <var>φ</var>
     =
-    <u class="input-68">2.5</u>
+    <u class="input-69">2.5</u>
    </span>
   </p>
   <p>
@@ -606,7 +603,7 @@ circle.Series1 {fill:Tomato;}
    <span class="eq">
     <var>L</var>
     =
-    <u class="input-69">4000</u>
+    <u class="input-70">4000</u>
    </span>
    mm
   </p>
@@ -616,11 +613,11 @@ circle.Series1 {fill:Tomato;}
     <var>L</var>
     <sub>o</sub>
     =
-    <u class="input-70">2</u>
+    <u class="input-71">2</u>
     ·
     <var>L</var>
     =
-    <u class="input-70">2</u>
+    <u class="input-71">2</u>
     · 4000 = 8000
    </span>
    mm
@@ -630,7 +627,7 @@ circle.Series1 {fill:Tomato;}
    <span class="eq">
     <var>m</var>
     =
-    <u class="input-71">1</u>
+    <u class="input-72">1</u>
    </span>
   </p>
   <h4>Interaction diagram</h4>

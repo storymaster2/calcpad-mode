@@ -1,4 +1,4 @@
-"Cornu Spiral
+'<!-- Plots the [Cornu (Euler) spiral](https://en.wikipedia.org/wiki/Euler_spiral) from the Fresnel integrals $C(t)$ and $S(t)$, the clothoid used as a transition curve in highway and railway alignment. -->
 '(also <strong>Clothoid</strong> or <strong>Euler Spiral</strong>)
 #rad
 'The equations is defined by the Fresnel integrals:

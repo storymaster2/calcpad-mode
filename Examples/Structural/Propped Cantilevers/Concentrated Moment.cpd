@@ -1,5 +1,5 @@
-"Propped Cantilever with Concentrated Moment
-'<hr /><div style="max-width:180mm;">
+'<!-- Propped cantilever loaded by a concentrated moment $M$ at distance $a$, giving a constant shear and a bending diagram with a jump of $M$ across the load section. -->
+'<div style="max-width:180mm;">
 '<img style="width:210pt;" alt="propped-cantilever-beam-concentrated-moment.png" class="side" src="../../Images/mechanics/beams/propped-cantilever-beam-concentrated-moment.png">
 '<p><b>Input data</b></p>
 'Beam Length -'l = ?'m

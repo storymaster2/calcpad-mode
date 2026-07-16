@@ -1,4 +1,5 @@
-"Column Design for Biaxial Bending and Axial Force<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Verification of a rectangular reinforced concrete column under axial force and bending about both axes by superposition of the two uniaxial interaction surfaces with the EN 1992-1-1 power-law combination. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm">
 '<img class="side" style="width:150pt;" src="../../Images/structures/rc/design/column-design.png" alt="column-design.png">
 '<h4>Cross section dimensions</h4>

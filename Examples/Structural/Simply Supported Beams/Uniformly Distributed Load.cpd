@@ -1,5 +1,5 @@
-"Simply Supported Beam with Uniformly Distributed Load
-'<hr /><div style = "max-width:180mm;">
+'<!-- Full-span uniform load $q$, recovering the textbook results $M_{max} = q l^2 / 8$ and $V_{max} = q l / 2$. -->
+'<div style = "max-width:180mm;">
 '<img style="width:190pt;" alt = simply-supported-beam-distributed-load-uniform.png" class="side" src = "../../Images/mechanics/beams/simply-supported-beam-distributed-load-uniform.png">
 '<p><b>Input data</b></p>
 'Beam length -'l = ?'m

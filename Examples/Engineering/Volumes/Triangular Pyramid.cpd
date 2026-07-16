@@ -1,4 +1,4 @@
-"Volume of Triangular Pyramid
+'<!-- Volume $V = \tfrac{1}{3} A_b\, h$ of a pyramid with a general triangular base. -->
 '<div style = "max-width:110mm"><img style="height:60pt;" class="side" alt="triangular-pyramid.png" src = "../../Images/math/volume/triangular-pyramid.png"></div>
 'Dimensions of base
 a = ?','b = ?','c = ?

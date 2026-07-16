@@ -1,4 +1,4 @@
-"Common Spirals
+'<!-- Side-by-side plots of the [Archimedean](https://en.wikipedia.org/wiki/Archimedean_spiral), [logarithmic](https://en.wikipedia.org/wiki/Logarithmic_spiral), hyperbolic and Fermat spirals on the same canvas, parameterised in polar form $r(\theta)$. -->
 #hide
 #rad
 r(θ) = 1

@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <h3>Least squares fitting</h3>
+ <!-- Fits a 10-point dataset with linear, quadratic and quintic polynomial models built from the normal equations $X^T\, X\, a = X^T y$.
+<p>All three curves are then plotted together so the residual pattern of each model is immediately visible. -->
  <p>Point coordinates</p>
  <p>
   <span class="eq">

@@ -7,6 +7,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   build-windows-installer:
     uses: ./.github/workflows/build-windows-installer.yml

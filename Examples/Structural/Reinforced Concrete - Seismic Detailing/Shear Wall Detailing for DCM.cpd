@@ -1,4 +1,5 @@
-"Shear Wall Detailing for Ductility Class DCM<hr/><small>According to <strong>Eurocode</strong>: EN 1998-1</small>
+'<!-- Eurocode 8 detailing of a primary seismic shear wall for medium ductility class: confined boundary elements at the wall ends, web horizontal and vertical reinforcement and curvature ductility check at the wall base. -->
+'<small>According to <strong>Eurocode</strong>: EN 1998-1</small>
 '<div style="max-width:180mm">
 '<img class="side" src="../../Images/structures/rc/detailing/shear-wall-section.png" alt="shear-wall-section.png" style="width:260pt;">
 '<p><b>Shear wall dimensions</b></p>

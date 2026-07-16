@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Cubic Equation</h3>
+ <!-- Solves $x^3 + a x^2 + b x + c = 0$ with the built-in numerical root finder, recovering all real and complex roots from the user-supplied coefficients. -->
  <p>
   <span class="eq">
    <var>f</var>

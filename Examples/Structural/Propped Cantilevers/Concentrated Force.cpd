@@ -1,5 +1,5 @@
-"Propped Cantilever with Concentrated Force
-'<hr /><div style="max-width:180mm;">
+'<!-- Force-method solution for a propped cantilever carrying a point force $F$ at distance $a$ from the fixed support, with the in-span peak at the load position. -->
+'<div style="max-width:180mm;">
 '<img style="width:210pt;" alt="propped-cantilever-beam-concentrated-force.png" class="side" src="../../Images/mechanics/beams/propped-cantilever-beam-concentrated-force.png">
 '<p><b>Input data</b></p>
 'Beam Length -'l = ?'m

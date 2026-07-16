@@ -1,6 +1,6 @@
 <div class="calcpad-output">
- <h3>Analysis of multi-story multi-bay RC plane frame</h3>
- <hr/>
+ <!-- Five-storey three-bay reinforced concrete frame with T-section beams, programmatically generated joints and elements, and Eurocode load combinations on dead, live and self-weight contributions. -->
+ <!-- SVG drawing macros (lines, rectangles, circles, text and dimension marks) included by the frame worksheets to render the structural scheme directly into the report. -->
  <h4>Input data</h4>
  <p>
   Number of stories -

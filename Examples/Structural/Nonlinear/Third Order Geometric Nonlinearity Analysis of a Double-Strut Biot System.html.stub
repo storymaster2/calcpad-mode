@@ -8,49 +8,733 @@
 <p>Area - <span class="eq"><var>A</var> = <span class="dvc"><var>π</var> · <var>Φ</var><sup>2</sup><span class="dvl"></span>4</span> = <span class="dvc">3.14 ·  ( 20 <i>mm</i> ) <sup>2</sup><span class="dvl"></span>4</span> = 3.14 <i>cm</i><sup class="unit">2</sup></span></p>
 <p>Axial stiffness - <span class="eq"><var>EA</var> = <var>E</var> · <var>A</var> = 210 <i>GPa</i> · 3.14 <i>cm</i><sup class="unit">2</sup> = 65973.4 <i>kN</i></span></p>
 <p>Vertical force - <span class="eq"><var>F</var><sub>y</sub> = 20 <i>kN</i></span></p>
-<svg viewbox="-50 -50 300 100" xmlns="http://www.w3.org/2000/svg" version="1.1" style="font-family: Georgia Pro; font-size:8px; width:450pt; height:150pt"><line x1="0" y1="0" x2="100" y2="0" style="stroke:black; stroke-width:1.5; fill:none"/><line x1="100" y1="0" x2="200" y2="0" style="stroke:black; stroke-width:1.5; fill:none"/><line x1="-8" y1="9" x2="8" y2="9" style="stroke:darkcyan; stroke-width:3; fill:none"/><line x1="-8" y1="9" x2="0" y2="1" style="stroke:darkcyan; stroke-width:1; fill:none"/><line x1="8" y1="9" x2="0" y2="1" style="stroke:darkcyan; stroke-width:1; fill:none"/><line x1="192" y1="9" x2="208" y2="9" style="stroke:darkcyan; stroke-width:3; fill:none"/><line x1="192" y1="9" x2="200" y2="1" style="stroke:darkcyan; stroke-width:1; fill:none"/><line x1="208" y1="9" x2="200" y2="1" style="stroke:darkcyan; stroke-width:1; fill:none"/><polygon points="100,-32 100,-2.56 97.44,-11.2 102.56,-11.2 100,-2.56" style="stroke:deepskyblue; stroke-width:1; fill:deepskyblue;" /><text x="120" y="-25.6" text-anchor="middle">Fy=20kN</text><line x1="0" y1="15" x2="0" y2="25" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod"/><line x1="100" y1="15" x2="100" y2="25" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod"/><line x1="-5" y1="20" x2="105" y2="20" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod"/><circle cx="100" cy="20" r="2" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod"/><circle cx="0" cy="20" r="2" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod"/><text x="50" y="18" text-anchor="middle">2m</text><line x1="100" y1="15" x2="100" y2="25" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod"/><line x1="200" y1="15" x2="200" y2="25" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod"/><line x1="95" y1="20" x2="205" y2="20" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod"/><circle cx="200" cy="20" r="2" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod"/><circle cx="100" cy="20" r="2" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod"/><text x="150" y="18" text-anchor="middle">2m</text><circle cx="0" cy="0" r="2.5" style="stroke:red; stroke-width:1; fill:white"/><circle cx="100" cy="0" r="2.5" style="stroke:red; stroke-width:1; fill:white"/><circle cx="200" cy="0" r="2.5" style="stroke:red; stroke-width:1; fill:white"/></svg><h4>Solution</h4>
-<p>Because of the symmetry, the horizontal displacement in the middle is <span class="eq"><var>u</var> = 0 <i>m</i></span> . </p>
-<p>The vertical displacement is the only unknown - <var>v</var> = ? </p>
-<p>Since the system is linearly unstable, we use 3-rd order geometric nonlinearity theory for the solution. The equilibrium equations are then derived for the deformed state of the structure, as follows: </p>
-<p>Length and elongation in deformed state </p>
-<p><span class="eq"><var>l′</var> ( <var>v</var> )  = &ensp;&hairsp;&hairsp;<span class="o0"><span class="r">√</span>&hairsp; ( <var>l</var> + <var>u</var> ) <sup>2</sup> + <var>v</var><sup>2</sup></span></span> , <span class="eq"><var>Δl</var> ( <var>v</var> )  = <var>l′</var>  ( <var>v</var> )  − <var>l</var></span></p>
-<p>Horizontal reaction - <span class="eq"><var>F</var><sub>x</sub> ( <var>v</var> )  = <var>EA</var> · <span class="dvc"><var>Δl</var>  ( <var>v</var> ) <span class="dvl"></span><var>l</var></span> · <span class="dvc"><var>l</var> + <var>u</var><span class="dvl"></span><var>l′</var>  ( <var>v</var> ) </span></span></p>
-<p>Vertical reaction - <span class="eq"><var>F</var><sub>y</sub> ( <var>v</var> )  = <var>EA</var> · <span class="dvc"><var>Δl</var>  ( <var>v</var> ) <span class="dvl"></span><var>l</var></span> · <span class="dvc"><var>v</var><span class="dvl"></span><var>l′</var>  ( <var>v</var> ) </span></span></p>
-<p>Vertical reaction derivative - <span class="eq"><var>F′</var><sub>yv</sub> ( <var>v</var> )  = <var>EA</var> · <span class="b1">(</span><span class="dvc">1<span class="dvl"></span><var>l</var></span> − <span class="dvc"> ( <var>l</var> + <var>u</var> ) <sup>2</sup><span class="dvl"></span><var>l′</var>  ( <var>v</var> ) <sup>3</sup></span><span class="b1">)</span></span></p>
-<h4>1. Fixed point iteration method</h4>
-<p>Relative strain - <span class="eq"><var>ε</var> = <span class="dvc"><var>F</var><sub>y</sub><span class="dvl"></span>2 · <var>EA</var></span> = <span class="dvc">20 <i>kN</i><span class="dvl"></span>2 · 65973.4 <i>kN</i></span> = 0.000152</span></p>
-<p>Relative precision - <span class="eq"><var>δ</var><sub>max</sub> = 10<sup>-4</sup> = 0.0001</span></p>
-<p>Initial value - <span class="eq"><var>v</var><sub>0</sub> = 200 <i>mm</i></span></p>
-<p>We express the unknown vertical displacement at the middle joint as a function of the vertical force: </p>
-<p><span class="eq"><var>v</var> = &emsp;&thinsp;<span class="o2"><span class="r2"></span><span class="dvc up"><span class="dvc down">1<span class="dvl"></span><span class="b1">(</span><span class="dvc">1<span class="dvl"></span><var>l</var></span> − <span class="dvc"><var>ε</var><span class="dvl"></span><var>v</var><sub>0</sub></span><span class="b1">)</span><sup class="raised">2</sup></span> −  ( <var>l</var> + <var>u</var> ) <sup>2</sup></span></span> = &emsp;&thinsp;<span class="o2"><span class="r2"></span><span class="dvc up"><span class="dvc down">1<span class="dvl"></span><span class="b1">(</span><span class="dvc">1<span class="dvl"></span>2 <i>m</i></span> − <span class="dvc">0.000152<span class="dvl"></span>200 <i>mm</i></span><span class="b1">)</span><sup class="raised">2</sup></span> −  ( 2 <i>m</i> + 0 <i>m</i> ) <sup>2</sup></span></span> = 110.24 <i>mm</i></span></p>
-<p>After calculating the above expression iteratively <span class="eq"><var>n</var> = 13</span> times, we get: </p>
-<p><span class="eq"><var>v</var> = 134.51 <i>mm</i></span></p>
-<p>Relative error - <span class="eq"><var>δ</var> = <span class="dvc"><b class="b0">|</b>&hairsp;<var>v</var> − <var>v</var><sub>0</sub>&hairsp;<b class="b0">|</b><span class="dvl"></span><b class="b0">|</b>&hairsp;<var>v</var>&hairsp;<b class="b0">|</b></span> = <span class="dvc"><b class="b0">|</b>&hairsp;134.51 <i>mm</i> − 134.5 <i>mm</i>&hairsp;<b class="b0">|</b><span class="dvl"></span><b class="b0">|</b>&hairsp;134.51 <i>mm</i>&hairsp;<b class="b0">|</b></span> = 7.6×10
-   <sup>-5</sup></span></p>
-<h4>2. Newton-Raphson′s method</h4>
-<p>Initial value - <span class="eq"><var>v</var><sub>0</sub> = 200 <i>mm</i></span></p>
-<p>We repeatedly calculate the following expression: </p>
-<p><span class="eq"><var>v</var> = <var>v</var><sub>0</sub> − <span class="dvc">2 · <var>F</var><sub>y</sub>  ( <var>v</var><sub>0</sub> )  − <var>F</var><sub>y</sub><span class="dvl"></span><var>F′</var><sub>yv</sub>  ( <var>v</var><sub>0</sub> ) </span> = 200 <i>mm</i> − <span class="dvc">2 · <var>F</var><sub>y</sub>  ( 200 <i>mm</i> )  − 20 <i>kN</i><span class="dvl"></span><var>F′</var><sub>yv</sub>  ( 200 <i>mm</i> ) </span> = 106.93 <i>mm</i></span></p>
-<p>After <span class="eq"><var>n</var> = 4</span> iterations we get: <span class="eq"><var>v</var> = 134.51 <i>mm</i></span></p>
-<p>Relative error - <span class="eq"><var>δ</var> = <span class="dvc"><b class="b0">|</b>&hairsp;<var>v</var> − <var>v</var><sub>0</sub>&hairsp;<b class="b0">|</b><span class="dvl"></span><b class="b0">|</b>&hairsp;<var>v</var>&hairsp;<b class="b0">|</b></span> = <span class="dvc"><b class="b0">|</b>&hairsp;134.51 <i>mm</i> − 134.51 <i>mm</i>&hairsp;<b class="b0">|</b><span class="dvl"></span><b class="b0">|</b>&hairsp;134.51 <i>mm</i>&hairsp;<b class="b0">|</b></span> = 9×10
-   <sup>-6</sup></span></p>
-<h4>3. Secant method</h4>
-<p>Slope reduction factor - <span class="eq"><var>α</var> = 1</span></p>
-<p>Initial value - <span class="eq"><var>v</var><sub>0</sub> = 200 <i>mm</i></span></p>
-<p>Force value - <span class="eq"><var>F</var><sub>y0</sub> = 2 · <var>F</var><sub>y</sub>  ( <var>v</var><sub>0</sub> )  = 2 · <var>F</var><sub>y</sub>  ( 200 <i>mm</i> )  = 65.48 <i>kN</i></span></p>
-<p>We calculate the first approximation using Newton-Raphson′s method </p>
-<p><span class="eq"><var>v</var><sub>1</sub> = <var>v</var><sub>0</sub> − <var>α</var> · <span class="dvc"><var>F</var><sub>y0</sub> − <var>F</var><sub>y</sub><span class="dvl"></span>2 · <var>F′</var><sub>yv</sub>  ( <var>v</var><sub>0</sub> ) </span> = 200 <i>mm</i> − 1 · <span class="dvc">65.48 <i>kN</i> − 20 <i>kN</i><span class="dvl"></span>2 · <var>F′</var><sub>yv</sub>  ( 200 <i>mm</i> ) </span> = 153.46 <i>mm</i></span></p>
-<p>Force value - <span class="eq"><var>F</var><sub>y1</sub> = 2 · <var>F</var><sub>y</sub>  ( <var>v</var><sub>1</sub> )  = 2 · <var>F</var><sub>y</sub>  ( 153.46 <i>mm</i> )  = 29.67 <i>kN</i></span></p>
-<p>The next approximation is evaluated by the formula: </p>
-<p><span class="eq"><var>v</var><sub>2</sub> = <var>v</var><sub>1</sub> − <var>α</var> ·  ( <var>F</var><sub>y1</sub> − <var>F</var><sub>y</sub> )  · <span class="dvc"><var>v</var><sub>1</sub> − <var>v</var><sub>0</sub><span class="dvl"></span><var>F</var><sub>y1</sub> − <var>F</var><sub>y0</sub></span> = 153.46 <i>mm</i> − 1 ·  ( 29.67 <i>kN</i> − 20 <i>kN</i> )  · <span class="dvc">153.46 <i>mm</i> − 200 <i>mm</i><span class="dvl"></span>29.67 <i>kN</i> − 65.48 <i>kN</i></span> = 140.89 <i>mm</i></span></p>
-<p>We continue the calculations iteratively until we reach convergence. </p>
-<p>After <span class="eq"><var>n</var> = 4</span> iterations we get: <span class="eq"><var>v</var><sub>2</sub> = 134.51 <i>mm</i></span></p>
-<p>Relative error - <span class="eq"><var>δ</var> = <span class="dvc"><b class="b0">|</b>&hairsp;<var>v</var><sub>2</sub> − <var>v</var><sub>1</sub>&hairsp;<b class="b0">|</b><span class="dvl"></span><b class="b0">|</b>&hairsp;<var>v</var><sub>2</sub>&hairsp;<b class="b0">|</b></span> = <span class="dvc"><b class="b0">|</b>&hairsp;134.51 <i>mm</i> − 134.51 <i>mm</i>&hairsp;<b class="b0">|</b><span class="dvl"></span><b class="b0">|</b>&hairsp;134.51 <i>mm</i>&hairsp;<b class="b0">|</b></span> = 1.57×10
-   <sup>-6</sup></span></p>
-<h4>4. Solution with Calcpad <small>(modified Anderson-Bjork′s method)</small></h4>
-<p><span class="eq"><var>v</var> = <span class="cond">$Root</span>{2 · <var>F</var><sub>y</sub>  ( <var>v</var> )  = <var>F</var><sub>y</sub>; <var>v</var> ∈ [0 <i>mm</i>; 200 <i>m</i>]} = 134.51 <i>mm</i></span></p>
-<p>System behavior graph (force-displacement) </p>
-<!-- <span class="eq"><var>v</var><sub>2</sub> = <var>v</var> = 134.51 <i>mm</i></span> , <span class="eq"><var>PlotWidth</var> = 250</span> , <span class="eq"><var>PlotHeight</var> = 150</span> -->
+<!-- SVG drawing macros (lines, points, dimension marks and rotated text) included by the nonlinear truss worksheets to render undeformed and deformed configurations side by side. -->
+ <svg style="font-family: Georgia Pro; font-size:8px; width:450pt; height:150pt" version="1.1" viewbox="-50 -50 300 100" xmlns="http://www.w3.org/2000/svg">
+  <line style="stroke:black; stroke-width:1.5; fill:none" x1="0" x2="100" y1="0" y2="0">
+  </line>
+  <line style="stroke:black; stroke-width:1.5; fill:none" x1="100" x2="200" y1="0" y2="0">
+  </line>
+  <line style="stroke:darkcyan; stroke-width:3; fill:none" x1="-8" x2="8" y1="9" y2="9">
+  </line>
+  <line style="stroke:darkcyan; stroke-width:1; fill:none" x1="-8" x2="0" y1="9" y2="1">
+  </line>
+  <line style="stroke:darkcyan; stroke-width:1; fill:none" x1="8" x2="0" y1="9" y2="1">
+  </line>
+  <line style="stroke:darkcyan; stroke-width:3; fill:none" x1="192" x2="208" y1="9" y2="9">
+  </line>
+  <line style="stroke:darkcyan; stroke-width:1; fill:none" x1="192" x2="200" y1="9" y2="1">
+  </line>
+  <line style="stroke:darkcyan; stroke-width:1; fill:none" x1="208" x2="200" y1="9" y2="1">
+  </line>
+  <polygon points="100,-32 100,-2.56 97.44,-11.2 102.56,-11.2 100,-2.56" style="stroke:deepskyblue; stroke-width:1; fill:deepskyblue;">
+  </polygon>
+  <text text-anchor="middle" x="120" y="-25.6">Fy=20kN</text>
+  <line style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod" x1="0" x2="0" y1="15" y2="25">
+  </line>
+  <line style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod" x1="100" x2="100" y1="15" y2="25">
+  </line>
+  <line style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod" x1="-5" x2="105" y1="20" y2="20">
+  </line>
+  <circle cx="100" cy="20" r="2" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod">
+  </circle>
+  <circle cx="0" cy="20" r="2" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod">
+  </circle>
+  <text text-anchor="middle" x="50" y="18">2m</text>
+  <line style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod" x1="100" x2="100" y1="15" y2="25">
+  </line>
+  <line style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod" x1="200" x2="200" y1="15" y2="25">
+  </line>
+  <line style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod" x1="95" x2="205" y1="20" y2="20">
+  </line>
+  <circle cx="200" cy="20" r="2" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod">
+  </circle>
+  <circle cx="100" cy="20" r="2" style="stroke:goldenrod; stroke-width:0.5; fill:goldenrod">
+  </circle>
+  <text text-anchor="middle" x="150" y="18">2m</text>
+  <circle cx="0" cy="0" r="2.5" style="stroke:red; stroke-width:1; fill:white">
+  </circle>
+  <circle cx="100" cy="0" r="2.5" style="stroke:red; stroke-width:1; fill:white">
+  </circle>
+  <circle cx="200" cy="0" r="2.5" style="stroke:red; stroke-width:1; fill:white">
+  </circle>
+ </svg>
+ <h4>Solution</h4>
+ <p>
+  Because of the symmetry, the horizontal displacement in the middle is
+  <span class="eq">
+   <var>u</var>
+   = 0
+   <i>m</i>
+  </span>
+  .
+ </p>
+ <p>
+  The vertical displacement is the only unknown -
+  <var>v</var>
+  = ?
+ </p>
+ <p>Since the system is linearly unstable, we use 3-rd order geometric nonlinearity theory for the solution. The equilibrium equations are then derived for the deformed state of the structure, as follows:</p>
+ <p>Length and elongation in deformed state</p>
+ <p>
+  <span class="eq">
+   <var>l′</var>
+   (
+   <var>v</var>
+   )  =
+   <span class="o0">
+    <span class="r">√</span>
+    (
+    <var>l</var>
+    +
+    <var>u</var>
+    )
+    <sup>2</sup>
+    +
+    <var>v</var>
+    <sup>2</sup>
+   </span>
+  </span>
+  ,
+  <span class="eq">
+   <var>Δl</var>
+   (
+   <var>v</var>
+   )  =
+   <var>l′</var>
+   (
+   <var>v</var>
+   )  −
+   <var>l</var>
+  </span>
+ </p>
+ <p>
+  Horizontal reaction -
+  <span class="eq">
+   <var>F</var>
+   <sub>x</sub>
+   (
+   <var>v</var>
+   )  =
+   <var>EA</var>
+   ·
+   <span class="dvc">
+    <var>Δl</var>
+    (
+    <var>v</var>
+    )
+    <span class="dvl">
+    </span>
+    <var>l</var>
+   </span>
+   ·
+   <span class="dvc">
+    <var>l</var>
+    +
+    <var>u</var>
+    <span class="dvl">
+    </span>
+    <var>l′</var>
+    (
+    <var>v</var>
+    )
+   </span>
+  </span>
+ </p>
+ <p>
+  Vertical reaction -
+  <span class="eq">
+   <var>F</var>
+   <sub>y</sub>
+   (
+   <var>v</var>
+   )  =
+   <var>EA</var>
+   ·
+   <span class="dvc">
+    <var>Δl</var>
+    (
+    <var>v</var>
+    )
+    <span class="dvl">
+    </span>
+    <var>l</var>
+   </span>
+   ·
+   <span class="dvc">
+    <var>v</var>
+    <span class="dvl">
+    </span>
+    <var>l′</var>
+    (
+    <var>v</var>
+    )
+   </span>
+  </span>
+ </p>
+ <p>
+  Vertical reaction derivative -
+  <span class="eq">
+   <var>F′</var>
+   <sub>yv</sub>
+   (
+   <var>v</var>
+   )  =
+   <var>EA</var>
+   ·
+   <span class="b1">(</span>
+   <span class="dvc">
+    1
+    <span class="dvl">
+    </span>
+    <var>l</var>
+   </span>
+   −
+   <span class="dvc">
+    (
+    <var>l</var>
+    +
+    <var>u</var>
+    )
+    <sup>2</sup>
+    <span class="dvl">
+    </span>
+    <var>l′</var>
+    (
+    <var>v</var>
+    )
+    <sup>3</sup>
+   </span>
+   <span class="b1">)</span>
+  </span>
+ </p>
+ <h4>1. Fixed point iteration method</h4>
+ <p>
+  Relative strain -
+  <span class="eq">
+   <var>ε</var>
+   =
+   <span class="dvc">
+    <var>F</var>
+    <sub>y</sub>
+    <span class="dvl">
+    </span>
+    2 ·
+    <var>EA</var>
+   </span>
+   =
+   <span class="dvc">
+    20
+    <i>kN</i>
+    <span class="dvl">
+    </span>
+    2 · 65973.4
+    <i>kN</i>
+   </span>
+   = 0.000152
+  </span>
+ </p>
+ <p>
+  Relative precision -
+  <span class="eq">
+   <var>δ</var>
+   <sub>max</sub>
+   = 10
+   <sup>-4</sup>
+   = 0.0001
+  </span>
+ </p>
+ <p>
+  Initial value -
+  <span class="eq">
+   <var>v</var>
+   <sub>0</sub>
+   = 200
+   <i>mm</i>
+  </span>
+ </p>
+ <p>We express the unknown vertical displacement at the middle joint as a function of the vertical force:</p>
+ <p>
+  <span class="eq">
+   <var>v</var>
+   =
+   <span class="o2">
+    <span class="r2">
+    </span>
+    <span class="dvc up">
+     <span class="dvc down">
+      1
+      <span class="dvl">
+      </span>
+      <span class="b1">(</span>
+      <span class="dvc">
+       1
+       <span class="dvl">
+       </span>
+       <var>l</var>
+      </span>
+      −
+      <span class="dvc">
+       <var>ε</var>
+       <span class="dvl">
+       </span>
+       <var>v</var>
+       <sub>0</sub>
+      </span>
+      <span class="b1">)</span>
+      <sup class="raised">2</sup>
+     </span>
+     −  (
+     <var>l</var>
+     +
+     <var>u</var>
+     )
+     <sup>2</sup>
+    </span>
+   </span>
+   =
+   <span class="o2">
+    <span class="r2">
+    </span>
+    <span class="dvc up">
+     <span class="dvc down">
+      1
+      <span class="dvl">
+      </span>
+      <span class="b1">(</span>
+      <span class="dvc">
+       1
+       <span class="dvl">
+       </span>
+       2
+       <i>m</i>
+      </span>
+      −
+      <span class="dvc">
+       0.000152
+       <span class="dvl">
+       </span>
+       200
+       <i>mm</i>
+      </span>
+      <span class="b1">)</span>
+      <sup class="raised">2</sup>
+     </span>
+     −  ( 2
+     <i>m</i>
+     + 0
+     <i>m</i>
+     )
+     <sup>2</sup>
+    </span>
+   </span>
+   = 110.24
+   <i>mm</i>
+  </span>
+ </p>
+ <p>
+  After calculating the above expression iteratively
+  <span class="eq">
+   <var>n</var>
+   = 13
+  </span>
+  times, we get:
+ </p>
+ <p>
+  <span class="eq">
+   <var>v</var>
+   = 134.51
+   <i>mm</i>
+  </span>
+ </p>
+ <p>
+  Relative error -
+  <span class="eq">
+   <var>δ</var>
+   =
+   <span class="dvc">
+    <b class="b0">|</b>
+    <var>v</var>
+    −
+    <var>v</var>
+    <sub>0</sub>
+    <b class="b0">|</b>
+    <span class="dvl">
+    </span>
+    <b class="b0">|</b>
+    <var>v</var>
+    <b class="b0">|</b>
+   </span>
+   =
+   <span class="dvc">
+    <b class="b0">|</b>
+    134.51
+    <i>mm</i>
+    − 134.5
+    <i>mm</i>
+    <b class="b0">|</b>
+    <span class="dvl">
+    </span>
+    <b class="b0">|</b>
+    134.51
+    <i>mm</i>
+    <b class="b0">|</b>
+   </span>
+   = 7.6×10
+   <sup>-5</sup>
+  </span>
+ </p>
+ <h4>2. Newton-Raphson′s method</h4>
+ <p>
+  Initial value -
+  <span class="eq">
+   <var>v</var>
+   <sub>0</sub>
+   = 200
+   <i>mm</i>
+  </span>
+ </p>
+ <p>We repeatedly calculate the following expression:</p>
+ <p>
+  <span class="eq">
+   <var>v</var>
+   =
+   <var>v</var>
+   <sub>0</sub>
+   −
+   <span class="dvc">
+    2 ·
+    <var>F</var>
+    <sub>y</sub>
+    (
+    <var>v</var>
+    <sub>0</sub>
+    )  −
+    <var>F</var>
+    <sub>y</sub>
+    <span class="dvl">
+    </span>
+    <var>F′</var>
+    <sub>yv</sub>
+    (
+    <var>v</var>
+    <sub>0</sub>
+    )
+   </span>
+   = 200
+   <i>mm</i>
+   −
+   <span class="dvc">
+    2 ·
+    <var>F</var>
+    <sub>y</sub>
+    ( 200
+    <i>mm</i>
+    )  − 20
+    <i>kN</i>
+    <span class="dvl">
+    </span>
+    <var>F′</var>
+    <sub>yv</sub>
+    ( 200
+    <i>mm</i>
+    )
+   </span>
+   = 106.93
+   <i>mm</i>
+  </span>
+ </p>
+ <p>
+  After
+  <span class="eq">
+   <var>n</var>
+   = 4
+  </span>
+  iterations we get:
+  <span class="eq">
+   <var>v</var>
+   = 134.51
+   <i>mm</i>
+  </span>
+ </p>
+ <p>
+  Relative error -
+  <span class="eq">
+   <var>δ</var>
+   =
+   <span class="dvc">
+    <b class="b0">|</b>
+    <var>v</var>
+    −
+    <var>v</var>
+    <sub>0</sub>
+    <b class="b0">|</b>
+    <span class="dvl">
+    </span>
+    <b class="b0">|</b>
+    <var>v</var>
+    <b class="b0">|</b>
+   </span>
+   =
+   <span class="dvc">
+    <b class="b0">|</b>
+    134.51
+    <i>mm</i>
+    − 134.51
+    <i>mm</i>
+    <b class="b0">|</b>
+    <span class="dvl">
+    </span>
+    <b class="b0">|</b>
+    134.51
+    <i>mm</i>
+    <b class="b0">|</b>
+   </span>
+   = 9×10
+   <sup>-6</sup>
+  </span>
+ </p>
+ <h4>3. Secant method</h4>
+ <p>
+  Slope reduction factor -
+  <span class="eq">
+   <var>α</var>
+   = 1
+  </span>
+ </p>
+ <p>
+  Initial value -
+  <span class="eq">
+   <var>v</var>
+   <sub>0</sub>
+   = 200
+   <i>mm</i>
+  </span>
+ </p>
+ <p>
+  Force value -
+  <span class="eq">
+   <var>F</var>
+   <sub>y0</sub>
+   = 2 ·
+   <var>F</var>
+   <sub>y</sub>
+   (
+   <var>v</var>
+   <sub>0</sub>
+   )  = 2 ·
+   <var>F</var>
+   <sub>y</sub>
+   ( 200
+   <i>mm</i>
+   )  = 65.48
+   <i>kN</i>
+  </span>
+ </p>
+ <p>We calculate the first approximation using Newton-Raphson′s method</p>
+ <p>
+  <span class="eq">
+   <var>v</var>
+   <sub>1</sub>
+   =
+   <var>v</var>
+   <sub>0</sub>
+   −
+   <var>α</var>
+   ·
+   <span class="dvc">
+    <var>F</var>
+    <sub>y0</sub>
+    −
+    <var>F</var>
+    <sub>y</sub>
+    <span class="dvl">
+    </span>
+    2 ·
+    <var>F′</var>
+    <sub>yv</sub>
+    (
+    <var>v</var>
+    <sub>0</sub>
+    )
+   </span>
+   = 200
+   <i>mm</i>
+   − 1 ·
+   <span class="dvc">
+    65.48
+    <i>kN</i>
+    − 20
+    <i>kN</i>
+    <span class="dvl">
+    </span>
+    2 ·
+    <var>F′</var>
+    <sub>yv</sub>
+    ( 200
+    <i>mm</i>
+    )
+   </span>
+   = 153.46
+   <i>mm</i>
+  </span>
+ </p>
+ <p>
+  Force value -
+  <span class="eq">
+   <var>F</var>
+   <sub>y1</sub>
+   = 2 ·
+   <var>F</var>
+   <sub>y</sub>
+   (
+   <var>v</var>
+   <sub>1</sub>
+   )  = 2 ·
+   <var>F</var>
+   <sub>y</sub>
+   ( 153.46
+   <i>mm</i>
+   )  = 29.67
+   <i>kN</i>
+  </span>
+ </p>
+ <p>The next approximation is evaluated by the formula:</p>
+ <p>
+  <span class="eq">
+   <var>v</var>
+   <sub>2</sub>
+   =
+   <var>v</var>
+   <sub>1</sub>
+   −
+   <var>α</var>
+   ·  (
+   <var>F</var>
+   <sub>y1</sub>
+   −
+   <var>F</var>
+   <sub>y</sub>
+   )  ·
+   <span class="dvc">
+    <var>v</var>
+    <sub>1</sub>
+    −
+    <var>v</var>
+    <sub>0</sub>
+    <span class="dvl">
+    </span>
+    <var>F</var>
+    <sub>y1</sub>
+    −
+    <var>F</var>
+    <sub>y0</sub>
+   </span>
+   = 153.46
+   <i>mm</i>
+   − 1 ·  ( 29.67
+   <i>kN</i>
+   − 20
+   <i>kN</i>
+   )  ·
+   <span class="dvc">
+    153.46
+    <i>mm</i>
+    − 200
+    <i>mm</i>
+    <span class="dvl">
+    </span>
+    29.67
+    <i>kN</i>
+    − 65.48
+    <i>kN</i>
+   </span>
+   = 140.89
+   <i>mm</i>
+  </span>
+ </p>
+ <p>We continue the calculations iteratively until we reach convergence.</p>
+ <p>
+  After
+  <span class="eq">
+   <var>n</var>
+   = 4
+  </span>
+  iterations we get:
+  <span class="eq">
+   <var>v</var>
+   <sub>2</sub>
+   = 134.51
+   <i>mm</i>
+  </span>
+ </p>
+ <p>
+  Relative error -
+  <span class="eq">
+   <var>δ</var>
+   =
+   <span class="dvc">
+    <b class="b0">|</b>
+    <var>v</var>
+    <sub>2</sub>
+    −
+    <var>v</var>
+    <sub>1</sub>
+    <b class="b0">|</b>
+    <span class="dvl">
+    </span>
+    <b class="b0">|</b>
+    <var>v</var>
+    <sub>2</sub>
+    <b class="b0">|</b>
+   </span>
+   =
+   <span class="dvc">
+    <b class="b0">|</b>
+    134.51
+    <i>mm</i>
+    − 134.51
+    <i>mm</i>
+    <b class="b0">|</b>
+    <span class="dvl">
+    </span>
+    <b class="b0">|</b>
+    134.51
+    <i>mm</i>
+    <b class="b0">|</b>
+   </span>
+   = 1.57×10
+   <sup>-6</sup>
+  </span>
+ </p>
+ <h4>
+  4. Solution with Calcpad
+  <small>(modified Anderson-Bjork′s method)</small>
+ </h4>
+ <p>
+  <span class="eq">
+   <var>v</var>
+   =
+   <span class="cond">$Root</span>
+   {2 ·
+   <var>F</var>
+   <sub>y</sub>
+   (
+   <var>v</var>
+   )  =
+   <var>F</var>
+   <sub>y</sub>
+   ;
+   <var>v</var>
+   ∈ [0
+   <i>mm</i>
+   ; 200
+   <i>m</i>
+   ]} = 134.51
+   <i>mm</i>
+  </span>
+ </p>
+ <p>System behavior graph (force-displacement)</p>
+ <!-- <span class="eq"><var>v</var><sub>2</sub> = <var>v</var> = 134.51 <i>mm</i></span> , <span class="eq"><var>PlotWidth</var> = 250</span> , <span class="eq"><var>PlotHeight</var> = 150</span> -->
  <svg class="plot" data-plot="svg" height="840px" style="width:235.19pt; height:155.56pt;" version="1.1" viewbox=" 0 0 1270 840" width="1270px" xmlns="http://www.w3.org/2000/svg">
   <style type="text/css">
    .plot text {fill:Black; font-family:'Segoe UI', Sans; font-size:44px}

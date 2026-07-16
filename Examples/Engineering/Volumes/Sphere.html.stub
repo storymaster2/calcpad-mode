@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Volume and Surface Area of Sphere</h3>
+ <!-- Volume $V = \tfrac{4}{3}\pi r^3$ and surface area $S = 4\pi r^2$ of a sphere from its radius. -->
  <div style="max-width:100mm">
   <img alt="sphere.png" class="side" src="Images/math/volume/sphere.png" style="height:60pt;"/>
  </div>

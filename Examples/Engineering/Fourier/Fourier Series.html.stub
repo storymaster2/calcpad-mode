@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <h3>Fourier series expansion</h3>
+ <!-- Analytical Fourier-series expansion of a user-defined function on a finite interval, computing each coefficient by direct numerical integration.
+<p>Reconstructs the function for any chosen number of terms and overlays the truncated series against the original to show convergence. -->
  <p>
   Interval length -
   <span class="eq">

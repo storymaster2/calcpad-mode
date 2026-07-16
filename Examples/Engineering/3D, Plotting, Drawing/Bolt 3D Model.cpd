@@ -1,3 +1,7 @@
+'<!-- Embed a [glTF 3D model](https://en.wikipedia.org/wiki/GlTF) directly in a CalcpadCE worksheet using the Google [`<model-viewer>`](https://modelviewer.dev) web component.
+'Combine the rotating CAD preview with parametric bolt resistance calculations to produce richly illustrated structural connection reports.
+'
+'Copy the code into the Desktop application to change the parameters in real-time. -->
 '<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.0.1/model-viewer.min.js"></script>
 '<model-viewer style="height:280pt;" class="side" src="./Models/bolt_and_nut.glb" alt="bolt_and_nut.glb" auto-rotate camera-controls shadow-intensity="0.5" field-of-view="8deg"></model-viewer>
 '<h4>Loads (for one bolt)</h4>

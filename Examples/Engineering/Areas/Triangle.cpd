@@ -1,4 +1,4 @@
-"Area and Perimeter of Triangle
+'<!-- Area and perimeter of a general triangle from three side lengths via Heron formula, with a triangle-inequality guard. -->
 '<div style="max-width:110mm;"><img style="height:55pt;" class="side" alt="triangle.png" src="../../Images/math/area/triangle.png"></div>
 'Side lengths
 a = ?','b = ?','c = ?

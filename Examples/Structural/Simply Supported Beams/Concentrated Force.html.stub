@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Simply Supported Beam with Concentrated Force</h3>
- <hr/>
+ <!-- Single point force $F$ at distance $a$ from the left support, with reactions $V_A = F (l - a) / l$, $V_B = -F a / l$ and the bending peak $M_{max} = F (l - a) a / l$ at the load. -->
  <div style="max-width:180mm;">
   <img alt="simply-supported-beam-concentrated-force.png" class="side" src="Images/mechanics/beams/simply-supported-beam-concentrated-force.png" style="width:190pt;"/>
   <p>

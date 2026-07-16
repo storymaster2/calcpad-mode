@@ -1,4 +1,5 @@
-"Rayleigh quotient iteration
+'<!-- Computes the dominant eigenpair of a $3\times 3$ symmetric matrix via Rayleigh-quotient iteration.
+'Each step solves a shifted linear system, normalises the iterate and rebuilds the eigenvalue from the quotient, achieving cubic convergence within a handful of steps. -->
 'Input matrix
 A = copy( _
     [4; 12; -16| _

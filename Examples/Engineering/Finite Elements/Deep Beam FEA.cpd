@@ -1,5 +1,5 @@
-"Finite Element Analysis of Deep Beam
- '<hr/>
+'<!-- Plane-stress FEA of a deep beam using rectangular 8-DOF elements, with a partial uniform load and elastic supports modelled by a distributed-stiffness function.
+'Recovers the $σ_x$, $σ_y$ and $τ_{xy}$ stress fields and the deflected shape on a parametric mesh. -->
 '<h3>Input data</h3>
 '<table><tr><td style="padding:0;">
 'Length -'l = 4'm, Height -'h = 2'm

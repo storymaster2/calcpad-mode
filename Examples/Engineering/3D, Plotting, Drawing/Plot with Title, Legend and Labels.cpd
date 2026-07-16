@@ -1,3 +1,5 @@
+'<!-- A reference for styling the native 2D plots in CalcpadCE: configure a chart title, axis labels, legend entries and series colours through the `PlotTitle`, `PlotLabelX`, `PlotLabelY` and per-series `Plot...` options.
+'Use this as the starting template for any publication-quality plot. -->
 'Functions
 f_1(x) = 1'; 'f_2(x) = -1'; 'f_3(x) = x
 f_4(x) = 2 - 2*x'; 'f_5(x) = 2 - x'; 'f_6(x) = 2*x - 2

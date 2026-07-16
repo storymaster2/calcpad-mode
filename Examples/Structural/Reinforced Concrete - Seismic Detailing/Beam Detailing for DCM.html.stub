@@ -1,13 +1,10 @@
 <div class="calcpad-output">
- <h3>
-  Beam Detailing for Ductility Class DCM
-  <hr/>
-  <small>
-   According to
-   <strong>Eurocode</strong>
-   : EN 1998-1
-  </small>
- </h3>
+ <!-- Eurocode 8 detailing of a primary seismic beam for medium ductility class: critical region length $l_{cr}$, longitudinal ratio limits, spacing of closed stirrups and lap-splice requirements. -->
+ <small>
+  According to
+  <strong>Eurocode</strong>
+  : EN 1998-1
+ </small>
  <div style="max-width:180mm">
   <img alt="beam.png" src="Images/structures/rc/detailing/beam.png" style="max-width:100%;"/>
   <p>
@@ -19,14 +16,14 @@
     <var>b</var>
     <sub>w</sub>
     =
-    <u class="input-5">350</u>
+    <u class="input-6">350</u>
    </span>
    mm,
    <span class="eq">
     <var>h</var>
     <sub>w</sub>
     =
-    <u class="input-5">650</u>
+    <u class="input-6">650</u>
    </span>
    mm
   </p>
@@ -36,7 +33,7 @@
     <var>l</var>
     <sub>cl</sub>
     =
-    <u class="input-6">5000</u>
+    <u class="input-7">5000</u>
    </span>
    mm
   </p>
@@ -46,7 +43,7 @@
     <var>h</var>
     <sub>f</sub>
     =
-    <u class="input-7">130</u>
+    <u class="input-8">130</u>
    </span>
    mm
   </p>
@@ -71,14 +68,14 @@
     <var>b</var>
     <sub>c</sub>
     =
-    <u class="input-11">500</u>
+    <u class="input-12">500</u>
    </span>
    mm,
    <span class="eq">
     <var>h</var>
     <sub>c</sub>
     =
-    <u class="input-11">500</u>
+    <u class="input-12">500</u>
    </span>
    mm
   </p>
@@ -88,7 +85,7 @@
     <var>N</var>
     <sub>Ed</sub>
     =
-    <u class="input-12">0</u>
+    <u class="input-13">0</u>
    </span>
    kN
   </p>
@@ -103,7 +100,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-15">25</u>
+    <u class="input-16">25</u>
    </span>
    MPa
   </p>
@@ -125,7 +122,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-16">1</u>
+    <u class="input-17">1</u>
    </span>
   </p>
   <p>
@@ -342,7 +339,7 @@
    <span class="eq">
     <var>C</var>
     =
-    <u class="input-45">0</u>
+    <u class="input-46">0</u>
    </span>
   </p>
   <p>
@@ -351,7 +348,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-46">500</u>
+    <u class="input-47">500</u>
    </span>
    MPa
   </p>
@@ -408,7 +405,7 @@
     <var>d</var>
     <sub>bL1</sub>
     =
-    <u class="input-67">16</u>
+    <u class="input-68">16</u>
    </span>
    mm
   </p>
@@ -418,7 +415,7 @@
     <var>d</var>
     <sub>1</sub>
     =
-    <u class="input-68">590</u>
+    <u class="input-69">590</u>
    </span>
    mm
   </p>
@@ -428,7 +425,7 @@
     <var>A</var>
     <sub>s1</sub>
     =
-    <u class="input-69">1005</u>
+    <u class="input-70">1005</u>
    </span>
    mm²
   </p>
@@ -743,7 +740,7 @@
     <var>d</var>
     <sub>bL2</sub>
     =
-    <u class="input-104">20</u>
+    <u class="input-105">20</u>
    </span>
    mm
   </p>
@@ -753,7 +750,7 @@
     <var>d</var>
     <sub>2</sub>
     =
-    <u class="input-105">590</u>
+    <u class="input-106">590</u>
    </span>
    mm
   </p>
@@ -763,7 +760,7 @@
     <var>A</var>
     <sub>s2</sub>
     =
-    <u class="input-106">1571</u>
+    <u class="input-107">1571</u>
    </span>
    mm²
   </p>
@@ -800,7 +797,7 @@
     <var>T</var>
     <sub>1</sub>
     =
-    <u class="input-110">0.55</u>
+    <u class="input-111">0.55</u>
    </span>
    s
   </p>
@@ -810,7 +807,7 @@
     <var>T</var>
     <sub>C</sub>
     =
-    <u class="input-111">0.60</u>
+    <u class="input-112">0.60</u>
    </span>
    s
   </p>
@@ -820,7 +817,7 @@
     <var>q</var>
     <sub>0</sub>
     =
-    <u class="input-112">3.9</u>
+    <u class="input-113">3.9</u>
    </span>
   </p>
   <p>Curvature ductility factor</p>
@@ -1030,7 +1027,7 @@
     <var>ν</var>
     <sub>d</sub>
     =
-    <u class="input-156">0.14</u>
+    <u class="input-157">0.14</u>
    </span>
    (
    <var>ν</var>
@@ -1131,7 +1128,7 @@
      <var>ν</var>
      <sub>d</sub>
      =
-     <u class="input-167">0.07</u>
+     <u class="input-168">0.07</u>
     </span>
    </p>
    <p>
@@ -1199,7 +1196,7 @@
      <var>d</var>
      <sub>bw</sub>
      =
-     <u class="input-179">6</u>
+     <u class="input-180">6</u>
     </span>
     mm
    </p>
@@ -1209,7 +1206,7 @@
      <var>f</var>
      <sub>ywk</sub>
      =
-     <u class="input-180">500</u>
+     <u class="input-181">500</u>
     </span>
     MPa
    </p>

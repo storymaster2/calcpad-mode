@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Propped Cantilever with Linearly Distributed Load</h3>
- <hr/>
+ <!-- Propped cantilever under a trapezoidal load defined by end intensities $q_1$ and $q_2$, locating the in-span peak from the zero of the shear $V(x)$. -->
  <div style="max-width:180mm;">
   <p>
    <b>Input data</b>

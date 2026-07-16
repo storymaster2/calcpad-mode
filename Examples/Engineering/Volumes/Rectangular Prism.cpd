@@ -1,4 +1,4 @@
-"Volume and Surface Area of Rectangular Prism
+'<!-- Volume $V = a\, b\, c$ and surface area $S = 2(a b + b c + c a)$ of a rectangular prism (box). -->
 '<div style = "max-width:130mm"><img style="height:65pt;" class="side" alt="rectangular-prism.png" src = "../../Images/math/volume/rectangular-prism.png"></div>
 'Dimensions of base
 a = ?','b = ?

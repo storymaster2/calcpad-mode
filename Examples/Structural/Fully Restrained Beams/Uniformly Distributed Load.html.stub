@@ -1,7 +1,6 @@
 <div class="calcpad-output">
- <h3>Fully Restrained Beam with Uniformly Distributed Load</h3>
+ <!-- Full-span uniform load $q$, recovering $M_A = M_B = q l^2 / 12$, $V_A = V_B = q l / 2$ and the mid-span $M_{max} = q l^2 / 24$. -->
  <div style="max-width:180mm">
-  <hr/>
   <img alt="fixed-beam-distributed-load-uniform.png" class="side" src="Images/mechanics/beams/fixed-beam-distributed-load-uniform.png" style="width:210pt;"/>
   <p>
    <b>Input data</b>

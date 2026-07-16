@@ -1,5 +1,6 @@
 <div class="calcpad-output">
  <!-- Plane frame with linearly tapered members: each element stiffness coefficient is obtained by integrating $1 / EA(x)$, $x / EI(x)$ and $1 / GA_Q(x)$ along the element length. -->
+ <!-- SVG drawing macros (lines, rectangles, circles, text and dimension marks) included by the frame worksheets to render the structural scheme directly into the report. -->
  <h4>Joint coordinates - xJ; yJ</h4>
  <p>
   <span class="eq">

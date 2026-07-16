@@ -1,4 +1,5 @@
-"Least squares fitting
+'<!-- Fits a 10-point dataset with linear, quadratic and quintic polynomial models built from the normal equations $X^T\, X\, a = X^T y$.
+'All three curves are then plotted together so the residual pattern of each model is immediately visible. -->
 'Point coordinates
 x = [0; 1; 2; 3; 4; 5; 6; 7; 8; 9]
 y = [400; 450; 440; 400; 380; 330; 250; 200; 150; 160]

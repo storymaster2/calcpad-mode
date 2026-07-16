@@ -1,13 +1,10 @@
 <div class="calcpad-output">
- <h3>
-  Bending Design of RC Rectangular Section
-  <hr/>
-  <small>
-   According to
-   <strong>Eurocode</strong>
-   : EN 1992-1-1
-  </small>
- </h3>
+ <!-- Required tension reinforcement $A_s$ of a rectangular section under a design moment $M_{Ed}$, with compression reinforcement added when the relative neutral-axis depth exceeds the ductility limit. -->
+ <small>
+  According to
+  <strong>Eurocode</strong>
+  : EN 1992-1-1
+ </small>
  <div style="max-width:180mm;">
   <img alt="beam-bending.png" src="Images/structures/rc/design/beam-bending.png" style="width:330pt;"/>
   <p>
@@ -16,7 +13,7 @@
     <var>M</var>
     <sub>Ed</sub>
     =
-    <u class="input-4">340</u>
+    <u class="input-5">340</u>
    </span>
    kN·m
   </p>
@@ -26,13 +23,13 @@
    <span class="eq">
     <var>b</var>
     =
-    <u class="input-6">300</u>
+    <u class="input-7">300</u>
    </span>
    mm, Height -
    <span class="eq">
     <var>h</var>
     =
-    <u class="input-6">500</u>
+    <u class="input-7">500</u>
    </span>
    mm
   </p>
@@ -42,7 +39,7 @@
     <var>d</var>
     <sub>1</sub>
     =
-    <u class="input-7">50</u>
+    <u class="input-8">50</u>
    </span>
    mm
   </p>
@@ -70,7 +67,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-14">20</u>
+    <u class="input-15">20</u>
    </span>
    MPa
   </p>
@@ -86,7 +83,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-15">0.85</u>
+    <u class="input-16">0.85</u>
    </span>
   </p>
   <p>
@@ -177,7 +174,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-24">500</u>
+    <u class="input-25">500</u>
    </span>
    MPa
   </p>
@@ -372,7 +369,7 @@
     <var>ξ</var>
     <sub>lim</sub>
     =
-    <u class="input-38">0.62</u>
+    <u class="input-39">0.62</u>
    </span>
   </p>
   <p>

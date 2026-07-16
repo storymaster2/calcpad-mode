@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Hypocycloid</h3>
+ <!-- Trace of a [hypocycloid](https://en.wikipedia.org/wiki/Hypocycloid): the curve swept by a point on a small circle rolling inside a fixed circle, including the astroid and deltoid as special cases. -->
  <div style="max-width:150mm">
   <img alt="hypocycloid.png" class="side" src="Images/math/hypocycloid.png"/>
   <p style="max-width:90mm">

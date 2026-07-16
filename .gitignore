@@ -383,4 +383,4 @@ wkhtmltopdf.exe
 *.node
 
 # Claude
-.claude/settings.local.json
+**.claude/settings.local.json

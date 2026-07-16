@@ -1,5 +1,5 @@
-"Simply Supported Beam with Partially Distributed Load
-'<hr /><div style = "max-width:180mm;">
+'<!-- Uniform load $q$ acting on a stretch of length $b$ between offsets $a$ and $c = l - a - b$, with a guard against an invalid load length when $a + b > l$. -->
+'<div style = "max-width:180mm;">
 '<img style="width:190pt;" alt = "simply-supported-beam-distributed-load-partial.png" class="side" src = "../../Images/mechanics/beams/simply-supported-beam-distributed-load-partial.png">
 '<p><b>Input data</b></p>
 'Beam length -'l = ?'m

@@ -1,4 +1,5 @@
-"Restrained Slab Panel with Unrestrained Shorter Edge<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Two-way slab panel restrained on three sides with the shorter edge left free, typical of a balcony or canopy oriented across the short span. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm;">
 '<img alt="fsff-span-cl.png" class="side" style="height:180pt;" src="../../Images/structures/rc/spans/fsff-span-cl.png">
 '<h4>Dimensions</h4>

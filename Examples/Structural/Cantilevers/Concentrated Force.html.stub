@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Cantilever with Concentrated Force at the End</h3>
- <hr/>
+ <!-- Concentrated force $F$ applied at the free end, giving the linear bending diagram $M(x) = -F (l - x)$ and constant shear $V = F$. -->
  <div style="max-width:180mm;">
   <img alt="cantilever-beam-concentrated-force.png" class="side" src="Images/mechanics/beams/cantilever-beam-concentrated-force.png" style="width:165pt;"/>
   <p>

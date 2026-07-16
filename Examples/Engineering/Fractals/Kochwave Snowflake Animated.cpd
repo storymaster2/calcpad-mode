@@ -1,4 +1,4 @@
-"Kochwave Snowflake Animation
+'<!-- Closed-loop Kochwave: the wave-style subdivision rule is applied to a triangular seed, producing an inverted snowflake whose seven iterations are rendered as a CSS-driven SVG animation. -->
 'Initial coordinates
 #def a$ = sqrt(3)/2
 x = hp([0; 1; 0.5; 0])', 'y = hp([0; 0; -a$; 0])

@@ -1,4 +1,5 @@
 <div class="calcpad-output">
+ <!-- Showcases the variadic helpers $min$, $max$, $gcd$ and $lcm$, which accept any number of comma- or semicolon-separated arguments. -->
  <h3>Functions of multiple variables</h3>
  <p>
   <span class="eq">

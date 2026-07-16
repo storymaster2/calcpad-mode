@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Cantilever with Concentrated Moment at the End</h3>
- <hr/>
+ <!-- Concentrated moment $M_0$ applied at the free end, producing a constant bending moment along the beam and zero shear. -->
  <div style="max-width:180mm;">
   <img alt="cantilever-beam-concentrated-moment.png" class="side" src="Images/mechanics/beams/cantilever-beam-concentrated-moment.png" style="width:165pt;"/>
   <p>

@@ -1,6 +1,6 @@
-"Fully Restrained Beam with Uniformly Distributed Load
+'<!-- Full-span uniform load $q$, recovering $M_A = M_B = q l^2 / 12$, $V_A = V_B = q l / 2$ and the mid-span $M_{max} = q l^2 / 24$. -->
 '<div style="max-width:180mm">
-'<hr /><img style="width:210pt;" alt="fixed-beam-distributed-load-uniform.png" class="side" src="../../Images/mechanics/beams/fixed-beam-distributed-load-uniform.png">
+'<img style="width:210pt;" alt="fixed-beam-distributed-load-uniform.png" class="side" src="../../Images/mechanics/beams/fixed-beam-distributed-load-uniform.png">
 '<p><b>Input data</b></p>
 'Beam Length -'l=?'m
 'Load -'q=?'kN/m

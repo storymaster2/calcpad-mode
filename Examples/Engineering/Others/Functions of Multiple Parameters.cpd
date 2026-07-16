@@ -1,3 +1,4 @@
+'<!-- Showcases the variadic helpers $min$, $max$, $gcd$ and $lcm$, which accept any number of comma- or semicolon-separated arguments. -->
 "Functions of multiple variables
 a = min(2; 3; -1; 5; 7; -4)' - minimum
 b = max(2; 3; -1; 5; 7; -4; 9; 6)' - maximum

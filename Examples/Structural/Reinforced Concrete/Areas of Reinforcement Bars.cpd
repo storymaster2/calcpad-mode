@@ -1,5 +1,4 @@
-"Areas of Reinforcement Bars
-'<hr/>
+'<!-- Lookup table that returns the total reinforcement area $A_s$ for a chosen bar diameter and bar count, with the cells highlighting the picked combination on hover. -->
 '<style>td:hover {color:red;} table {cursor:default;}</style>
 'Required reinforcement area -'A_s,req = ? {7}'cm²
 #pre

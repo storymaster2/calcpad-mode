@@ -1,4 +1,4 @@
-"Area and Circumference of Ellipse
+'<!-- Area $A = \pi\, a\, b$ and approximate circumference of an ellipse from its two semi-axes. -->
 '<div style="max-width:110mm;"><img style="height:65pt;" class="side" alt="ellipse.png" src="../../Images/math/area/ellipse.png"></div>
 'Dimensions
 a = ?','b = ?

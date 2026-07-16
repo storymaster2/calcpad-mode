@@ -1,4 +1,5 @@
-"Fourier series expansion
+'<!-- Analytical Fourier-series expansion of a user-defined function on a finite interval, computing each coefficient by direct numerical integration.
+'Reconstructs the function for any chosen number of terms and overlays the truncated series against the original to show convergence. -->
 #rad
 'Interval length -'l = 10
 'Function -'f(x) = (e^x - x^2 - 2*x^4)/l

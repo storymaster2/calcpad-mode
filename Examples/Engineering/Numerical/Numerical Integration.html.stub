@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <h3>Comparision of three quadrature formulas</h3>
+ <!-- Evaluates $\int_{-1}^{1}\sqrt{1-x^2}\, dx$ with three quadrature rules — Boole (Newton-Cotes), Gauss-Legendre and tanh-sinh — at five nodes.
+<p>Tabulates the relative error of each scheme against the analytical result $\pi/2$. -->
  <p>
   Function -
   <span class="eq">

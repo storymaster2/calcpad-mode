@@ -47,6 +47,7 @@
    <i>kN</i>
   </span>
  </p>
+ <!-- SVG drawing macros (lines, points, dimension marks and rotated text) included by the nonlinear truss worksheets to render undeformed and deformed configurations side by side. -->
  <svg style="font-family: Georgia Pro; font-size:7px; width:420pt; height:200pt" version="1.1" viewbox="-60 -50 320 50" xmlns="http://www.w3.org/2000/svg">
   <line style="stroke:#ddd; stroke-width:1; stroke-dasharray: 7 3; fill:none;" x1="0" x2="100" y1="0" y2="-50">
   </line>

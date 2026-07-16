@@ -1,13 +1,10 @@
 <div class="calcpad-output">
- <h3>
-  Shear Wall Detailing for Ductility Class DCM
-  <hr/>
-  <small>
-   According to
-   <strong>Eurocode</strong>
-   : EN 1998-1
-  </small>
- </h3>
+ <!-- Eurocode 8 detailing of a primary seismic shear wall for medium ductility class: confined boundary elements at the wall ends, web horizontal and vertical reinforcement and curvature ductility check at the wall base. -->
+ <small>
+  According to
+  <strong>Eurocode</strong>
+  : EN 1998-1
+ </small>
  <div style="max-width:180mm">
   <img alt="shear-wall-section.png" class="side" src="Images/structures/rc/detailing/shear-wall-section.png" style="width:260pt;"/>
   <p>
@@ -19,7 +16,7 @@
     <var>l</var>
     <sub>w</sub>
     =
-    <u class="input-5">4000</u>
+    <u class="input-6">4000</u>
    </span>
    mm
   </p>
@@ -29,7 +26,7 @@
     <var>b</var>
     <sub>wo</sub>
     =
-    <u class="input-6">300</u>
+    <u class="input-7">300</u>
    </span>
    mm
   </p>
@@ -39,7 +36,7 @@
     <var>h</var>
     <sub>w</sub>
     =
-    <u class="input-7">19000</u>
+    <u class="input-8">19000</u>
    </span>
    mm
   </p>
@@ -49,7 +46,7 @@
     <var>h</var>
     <sub>s</sub>
     =
-    <u class="input-8">3820</u>
+    <u class="input-9">3820</u>
    </span>
    mm
   </p>
@@ -59,7 +56,7 @@
     <var>n</var>
     <sub>s</sub>
     =
-    <u class="input-9">6</u>
+    <u class="input-10">6</u>
    </span>
   </p>
   <p>Confined zone dimensions</p>
@@ -68,14 +65,14 @@
     <var>b</var>
     <sub>c</sub>
     =
-    <u class="input-11">300</u>
+    <u class="input-12">300</u>
    </span>
    mm,
    <span class="eq">
     <var>h</var>
     <sub>c</sub>
     =
-    <u class="input-11">875</u>
+    <u class="input-12">875</u>
    </span>
    mm
   </p>
@@ -134,7 +131,7 @@
     <var>N</var>
     <sub>Ed</sub>
     =
-    <u class="input-21">2254</u>
+    <u class="input-22">2254</u>
    </span>
    kN
   </p>
@@ -150,7 +147,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-25">25</u>
+    <u class="input-26">25</u>
    </span>
    MPa
   </p>
@@ -172,7 +169,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-26">1</u>
+    <u class="input-27">1</u>
    </span>
   </p>
   <p>Mean value of axial tensile strength</p>
@@ -270,7 +267,7 @@
    <span class="eq">
     <var>C</var>
     =
-    <u class="input-41">0</u>
+    <u class="input-42">0</u>
    </span>
   </p>
   <p>
@@ -279,7 +276,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-42">500</u>
+    <u class="input-43">500</u>
    </span>
    MPa
   </p>
@@ -336,7 +333,7 @@
     <var>d</var>
     <sub>bL</sub>
     =
-    <u class="input-63">25</u>
+    <u class="input-64">25</u>
    </span>
    mm
   </p>
@@ -356,7 +353,7 @@
     <var>n</var>
     <sub>b</sub>
     =
-    <u class="input-71">13</u>
+    <u class="input-72">13</u>
    </span>
   </p>
   <p>
@@ -368,7 +365,7 @@
     <var>n</var>
     <sub>b1</sub>
     =
-    <u class="input-72">6</u>
+    <u class="input-73">6</u>
    </span>
   </p>
   <p>
@@ -493,7 +490,7 @@
     <var>d</var>
     <sub>bv</sub>
     =
-    <u class="input-93">10</u>
+    <u class="input-94">10</u>
    </span>
    mm
   </p>
@@ -503,7 +500,7 @@
     <var>s</var>
     <sub>v</sub>
     =
-    <u class="input-94">250</u>
+    <u class="input-95">250</u>
    </span>
    mm
   </p>
@@ -607,7 +604,7 @@
     <var>d</var>
     <sub>bh</sub>
     =
-    <u class="input-114">12</u>
+    <u class="input-115">12</u>
    </span>
    mm
   </p>
@@ -617,7 +614,7 @@
     <var>s</var>
     <sub>h</sub>
     =
-    <u class="input-115">150</u>
+    <u class="input-116">150</u>
    </span>
    mm
   </p>
@@ -714,7 +711,7 @@
     <var>f</var>
     <sub>ywk</sub>
     =
-    <u class="input-133">500</u>
+    <u class="input-134">500</u>
    </span>
    MPa
   </p>
@@ -748,7 +745,7 @@
    <span class="eq">
     <var>c</var>
     =
-    <u class="input-135">42</u>
+    <u class="input-136">42</u>
    </span>
    mm
   </p>
@@ -758,7 +755,7 @@
     <var>d</var>
     <sub>bw</sub>
     =
-    <u class="input-136">8</u>
+    <u class="input-137">8</u>
    </span>
    mm
   </p>
@@ -2090,7 +2087,7 @@
     <var>T</var>
     <sub>1</sub>
     =
-    <u class="input-310">0.6795</u>
+    <u class="input-311">0.6795</u>
    </span>
    s
   </p>
@@ -2100,7 +2097,7 @@
     <var>T</var>
     <sub>C</sub>
     =
-    <u class="input-311">0.4</u>
+    <u class="input-312">0.4</u>
    </span>
    s
   </p>
@@ -2110,7 +2107,7 @@
     <var>q</var>
     <sub>0</sub>
     =
-    <u class="input-312">3</u>
+    <u class="input-313">3</u>
    </span>
   </p>
   <p>
@@ -2119,7 +2116,7 @@
     <var>M</var>
     <sub>Ed</sub>
     =
-    <u class="input-313">9591</u>
+    <u class="input-314">9591</u>
    </span>
    kNm
   </p>
@@ -2129,7 +2126,7 @@
     <var>M</var>
     <sub>Rd</sub>
     =
-    <u class="input-314">13268</u>
+    <u class="input-315">13268</u>
    </span>
    kNm
   </p>

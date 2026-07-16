@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <h3>Koch Snowflake Generation</h3>
+ <!-- Static construction of the [Koch snowflake](https://en.wikipedia.org/wiki/Koch_snowflake) up to five iterations, with each level rendered as a separate SVG polygon.
+<p>Each segment is split into four by inserting two intermediate points and a tip rotated by $60°$. -->
  <p>Initial triangle coordinates</p>
  <p>
   <span class="eq">

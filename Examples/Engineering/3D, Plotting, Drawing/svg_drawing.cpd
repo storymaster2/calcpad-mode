@@ -1,3 +1,5 @@
+'<!-- A small library of reusable CalcpadCE `#def` macros that emit SVG primitives (line, rect, circle, text, dimensions).
+'Include this file with `#include svg_drawing.cpd` in any worksheet that needs to draw a parametric structural detail. -->
 #def line$(x1$; y1$; x2$; y2$; style$) = '<line x1="'x1$'" y1="'y1$'" x2="'x2$'" y2="'y2$'" style$/>
 #def rect$(x$; y$; w$; h$; style$) = '<rect x="'x$'" y="'y$'" width="'w$'" height="'h$'" style$/>
 #def circle$(x$; y$; style$) = '<circle cx="'x$'" cy="'y$'" r="12" style$/>

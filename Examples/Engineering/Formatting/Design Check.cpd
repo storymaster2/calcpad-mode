@@ -1,3 +1,4 @@
+'<!-- Reusable check function that flips between `ok` and `err` CSS classes based on a utilisation ratio, the canonical pattern for engineering design checks. -->
 "Design check example
 #def check$(s$; f$)
 	#if s$ < f$

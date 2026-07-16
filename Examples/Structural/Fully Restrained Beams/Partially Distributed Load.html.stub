@@ -1,7 +1,6 @@
 <div class="calcpad-output">
- <h3>Fully Restrained Beam with Partially Distributed Load</h3>
+ <!-- Uniform load $q$ over a stretch of length $b$ between offsets $a$ and $c = l - a - b$, with a guard against an invalid configuration when $a + b > l$. -->
  <div style="max-width:180mm;">
-  <hr/>
   <img alt="fixed-beam-distributed-load-partial.png" class="side" src="Images/mechanics/beams/fixed-beam-distributed-load-partial.png" style="width:210pt;"/>
   <p>
    <b>Input data</b>

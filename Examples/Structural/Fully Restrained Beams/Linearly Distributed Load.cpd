@@ -1,6 +1,6 @@
-"Fully Restrained Beam with Linearly Distributed Load
+'<!-- Trapezoidal load between intensities $q_1$ and $q_2$, with the support moments split as $(3 q_1 + 2 q_2) l^2 / 60$ and $(2 q_1 + 3 q_2) l^2 / 60$. -->
 '<div style="max-width:180mm;">
-'<hr /><img style="width:210pt;" alt="fixed-beam-distributed-load-linear.png" class="side" src="../../Images/mechanics/beams/fixed-beam-distributed-load-linear.png">
+'<img style="width:210pt;" alt="fixed-beam-distributed-load-linear.png" class="side" src="../../Images/mechanics/beams/fixed-beam-distributed-load-linear.png">
 '<p><b>Input data</b></p>
 'Beam Length -'l = ?'m
 'Load -'q_1 = ?'kN/m,'q_2 = ?'kN/m

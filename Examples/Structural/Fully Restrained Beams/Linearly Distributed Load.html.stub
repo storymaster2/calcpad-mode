@@ -1,7 +1,6 @@
 <div class="calcpad-output">
- <h3>Fully Restrained Beam with Linearly Distributed Load</h3>
+ <!-- Trapezoidal load between intensities $q_1$ and $q_2$, with the support moments split as $(3 q_1 + 2 q_2) l^2 / 60$ and $(2 q_1 + 3 q_2) l^2 / 60$. -->
  <div style="max-width:180mm;">
-  <hr/>
   <img alt="fixed-beam-distributed-load-linear.png" class="side" src="Images/mechanics/beams/fixed-beam-distributed-load-linear.png" style="width:210pt;"/>
   <p>
    <b>Input data</b>

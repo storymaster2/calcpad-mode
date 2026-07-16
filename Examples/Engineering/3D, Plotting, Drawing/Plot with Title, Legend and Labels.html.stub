@@ -1,4 +1,6 @@
 <div class="calcpad-output">
+ <!-- A reference for styling the native 2D plots in CalcpadCE: configure a chart title, axis labels, legend entries and series colours through the `PlotTitle`, `PlotLabelX`, `PlotLabelY` and per-series `Plot...` options.
+<p>Use this as the starting template for any publication-quality plot. -->
  <p>Functions</p>
  <p>
   <span class="eq">

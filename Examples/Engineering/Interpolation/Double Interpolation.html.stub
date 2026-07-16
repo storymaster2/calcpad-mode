@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <h3>Double interpolation</h3>
+ <!-- Bilinear-style table lookup that chains 1D Hermite splines along both axes to interpolate a tabulated $T(i,\, j)$ surface.
+<p>The canonical pattern for evaluating two-input design tables on intermediate values. -->
  <p>Input parameters</p>
  <p>
   <span class="eq">

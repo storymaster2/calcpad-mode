@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Volume and Surface Area of Rectangular Prism</h3>
+ <!-- Volume $V = a\, b\, c$ and surface area $S = 2(a b + b c + c a)$ of a rectangular prism (box). -->
  <div style="max-width:130mm">
   <img alt="rectangular-prism.png" class="side" src="Images/math/volume/rectangular-prism.png" style="height:65pt;"/>
  </div>

@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Simply Supported Beam with Uniformly Distributed Load</h3>
- <hr/>
+ <!-- Full-span uniform load $q$, recovering the textbook results $M_{max} = q l^2 / 8$ and $V_{max} = q l / 2$. -->
  <div style="max-width:180mm;">
   <img alt='simply-supported-beam-distributed-load-uniform.png"' class="side" src="Images/mechanics/beams/simply-supported-beam-distributed-load-uniform.png" style="width:190pt;"/>
   <p>

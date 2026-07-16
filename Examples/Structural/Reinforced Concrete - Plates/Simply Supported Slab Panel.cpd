@@ -1,4 +1,5 @@
-"Simply Supported Slab Panel Design<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Two-way slab panel simply supported on all four edges, the limiting case of the family with the highest span moments and no support reinforcement requirement. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm;">
 '<img alt="ss-span-cl.png" style="height:170pt;" class="side" src="../../Images/structures/rc/spans/ss-span-cl.png">
 '<h4>Dimensions</h4>

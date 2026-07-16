@@ -1,4 +1,5 @@
-"Punching Design of Edge Column<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Punching shear verification of a flat slab around an edge column: open control perimeter on three sides, eccentricity factor for an edge support and design of the punching reinforcement. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm">
 '<img class="side" style="width:225pt;" src="../../Images/structures/rc/design/punching-edge-column.png" alt="punching-edge-column.png">
 '<h4>Input data</h4>

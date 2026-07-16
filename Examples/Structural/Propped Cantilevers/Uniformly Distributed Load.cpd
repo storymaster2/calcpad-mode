@@ -1,5 +1,5 @@
-"Propped Cantilever with Uniformly Distributed Load
-'<hr /><div style="max-width:180mm;">
+'<!-- Full-span uniform load $q$ on a propped cantilever, giving the textbook results $M_A = q l^2 / 8$, $V_A = 5 q l / 8$ and $M_{max} = 9 q l^2 / 128$ at $x = 5 l / 8$. -->
+'<div style="max-width:180mm;">
 '<img style="width:210pt;" alt="propped-cantilever-beam-distributed-load.png" class="side" src="../../Images/mechanics/beams/propped-cantilever-beam-distributed-load.png">
 '<p><b>Input data</b></p>
 'Beam Length -'l = ?'m

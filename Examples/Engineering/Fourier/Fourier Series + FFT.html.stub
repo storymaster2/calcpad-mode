@@ -1,4 +1,6 @@
 <div class="calcpad-output">
+ <!-- Side-by-side comparison of the same function expanded by classical Fourier-coefficient integration and by the discrete FFT.
+<p>Highlights where the two reconstructions agree and how the sample count $n$ controls FFT-based aliasing. -->
  <h3>Fourier series expansion (classic)</h3>
  <p>
   Number of iterations -

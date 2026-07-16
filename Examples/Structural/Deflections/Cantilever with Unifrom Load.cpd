@@ -1,5 +1,5 @@
-"Deflection and Rotation of Cantilever with Uniformly Distributed Load
-'<hr /><div style = "max-width: 180mm;">
+'<!-- Cantilever under a full-span uniform load $q$, integrating the curvature to obtain $\varphi(x)$ and $d(x)$ with the tip deflection $d_{max} = q l^4 / (8 E I)$. -->
+'<div style = "max-width: 180mm;">
 '<img style="width:165pt;" class="side" src="../../Images/mechanics/beams/deflection-cantilever-distributed-load.png" alt="deflection-cantilever-distributed-load.png">
 'Beam length - 'l = ?'m
 'Load - 'q = ?'kN/m

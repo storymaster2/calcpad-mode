@@ -1,5 +1,5 @@
-"Finite Element Analysis of Flat Slab
-'<hr/>
+'<!-- Multi-span flat-slab analysis with the 16-DOF Bogner–Fox–Schmit plate element using numerical Gauss integration of the stiffness matrix.
+'Handles arbitrary column grids and returns deflection together with the $M_x$ and $M_y$ bending-moment fields. -->
 'Using numerical formulation of Bogner-Fox-Schmit (BFS)  plate element
 '<h4>Input data</h4>
 'Span lengths

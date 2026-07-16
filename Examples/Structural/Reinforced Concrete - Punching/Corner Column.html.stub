@@ -1,13 +1,10 @@
 <div class="calcpad-output">
- <h3>
-  Punching Design of Corner Column
-  <hr/>
-  <small>
-   According to
-   <strong>Eurocode</strong>
-   : EN 1992-1-1
-  </small>
- </h3>
+ <!-- Punching shear verification of a flat slab around a corner column: control perimeter on two sides only, eccentricity factor for a corner support and required punching reinforcement when the slab capacity is exceeded. -->
+ <small>
+  According to
+  <strong>Eurocode</strong>
+  : EN 1992-1-1
+ </small>
  <div style="max-width:180mm">
   <img alt="punching-corner-column.png" class="side" src="Images/structures/rc/design/punching-corner-column.png" style="width:225pt;"/>
   <h4>Input data</h4>
@@ -20,14 +17,14 @@
     <var>c</var>
     <sub>1</sub>
     =
-    <u class="input-6">600</u>
+    <u class="input-7">600</u>
    </span>
    mm,
    <span class="eq">
     <var>c</var>
     <sub>2</sub>
     =
-    <u class="input-6">300</u>
+    <u class="input-7">300</u>
    </span>
    mm
   </p>
@@ -40,7 +37,7 @@
     <var>V</var>
     <sub>Ed</sub>
     =
-    <u class="input-8">125</u>
+    <u class="input-9">125</u>
    </span>
    kN
   </p>
@@ -52,7 +49,7 @@
    <span class="eq">
     <var>h</var>
     =
-    <u class="input-10">200</u>
+    <u class="input-11">200</u>
    </span>
    mm
   </p>
@@ -61,7 +58,7 @@
    <span class="eq">
     <var>c</var>
     =
-    <u class="input-11">20</u>
+    <u class="input-12">20</u>
    </span>
    mm
   </p>
@@ -71,7 +68,7 @@
     <var>d</var>
     <sub>bL</sub>
     =
-    <u class="input-12">10</u>
+    <u class="input-13">10</u>
    </span>
    mm
   </p>
@@ -81,7 +78,7 @@
     <var>d</var>
     <sub>w</sub>
     =
-    <u class="input-13">6</u>
+    <u class="input-14">6</u>
    </span>
    mm
   </p>
@@ -106,14 +103,14 @@
     <var>A</var>
     <sub>sx</sub>
     =
-    <u class="input-19">1200</u>
+    <u class="input-20">1200</u>
    </span>
    mm²/m,
    <span class="eq">
     <var>A</var>
     <sub>sy</sub>
     =
-    <u class="input-19">600</u>
+    <u class="input-20">600</u>
    </span>
    mm²/m
   </p>
@@ -198,7 +195,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-28">25</u>
+    <u class="input-29">25</u>
    </span>
    MPa
   </p>
@@ -214,7 +211,7 @@
     <var>α</var>
     <sub>cc</sub>
     =
-    <u class="input-29">1</u>
+    <u class="input-30">1</u>
    </span>
   </p>
   <p>
@@ -254,7 +251,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-34">500</u>
+    <u class="input-35">500</u>
    </span>
    MPa
   </p>

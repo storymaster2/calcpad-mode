@@ -1,5 +1,5 @@
-"Finite Element Analysis of Flat Slab
-'<hr/>
+'<!-- Same Bogner–Fox–Schmit flat-slab model, but with closed-form analytically integrated element matrices instead of Gauss quadrature.
+'An order of magnitude faster on dense meshes — well suited for parametric studies and mesh-refinement sweeps. -->
 'Using analytical formulation of Bogner-Fox-Schmit (BFS)  plate element
 '<h4>Input data</h4>
 'Span lengths

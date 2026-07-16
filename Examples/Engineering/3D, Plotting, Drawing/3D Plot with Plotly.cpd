@@ -1,3 +1,5 @@
+'<!-- Render an interactive 3D surface plot in CalcpadCE by computing a height matrix and embedding it in a [Plotly.js](https://plotly.com/javascript/) chart via inline `<script>`.
+'Use this when you need pan, zoom, hover read-outs, or surface shading beyond the built-in plot options. -->
 #hide
 #rad
 n = 100

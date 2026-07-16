@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Simply Supported Beam with Linearly Distributed Load</h3>
- <hr/>
+ <!-- Trapezoidal load defined by end intensities $q_1$ and $q_2$, locating the in-span peak from the zero of $V(x)$ and falling back to the uniform and triangular special cases. -->
  <div style="max-width:180mm;">
   <img alt="simply-supported-beam-distributed-load-linear.png" class="side" src="Images/mechanics/beams/simply-supported-beam-distributed-load-linear.png" style="width:190pt;"/>
   <p>

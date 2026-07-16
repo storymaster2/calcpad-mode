@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Free vibrations of steel pole with variable cross-section of arbitrary shape</h3>
- <hr/>
+ <!-- Tapered steel pole free-vibration analysis with the mode shapes animated in the browser by Plotly, smoothly interpolating between the positive and negative amplitude of each mode. -->
  <h3>Static scheme</h3>
  <p>
   Cantilever with length -

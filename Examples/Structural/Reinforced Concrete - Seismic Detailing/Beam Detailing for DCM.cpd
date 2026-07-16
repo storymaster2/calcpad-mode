@@ -1,4 +1,5 @@
-"Beam Detailing for Ductility Class DCM<hr/><small>According to <strong>Eurocode</strong>: EN 1998-1</small>
+'<!-- Eurocode 8 detailing of a primary seismic beam for medium ductility class: critical region length $l_{cr}$, longitudinal ratio limits, spacing of closed stirrups and lap-splice requirements. -->
+'<small>According to <strong>Eurocode</strong>: EN 1998-1</small>
 '<div style="max-width:180mm">
 '<img style="width:375pt;" style="max-width:100%;" src="../../Images/structures/rc/detailing/beam.png" alt="beam.png">
 '<p><b>Beam dimensions</b></p>

@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Volume and Surface Area of Tetrahedron</h3>
+ <!-- Volume $V = \tfrac{a^3}{6\sqrt{2}}$ and surface area $S = \sqrt{3}\, a^2$ of a regular tetrahedron from its edge length. -->
  <div style="max-width:110mm">
   <img alt="tetrahedron.png" class="side" src="Images/math/volume/tetrahedron.png" style="height:60pt;"/>
  </div>

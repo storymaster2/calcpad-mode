@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Cantilever with Linearly Distributed Load</h3>
- <hr/>
+ <!-- Distributed load varying linearly between intensities $q_1$ at the support and $q_2$ at the tip, giving a cubic bending diagram and quadratic shear. -->
  <div style="max-width:180mm;">
   <img alt="cantilever-beam-distributed-load-linear.png" class="side" src="Images/mechanics/beams/cantilever-beam-distributed-load-linear.png" style="width:165pt;"/>
   <p>

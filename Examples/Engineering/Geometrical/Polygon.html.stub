@@ -1,4 +1,5 @@
 <div class="calcpad-output">
+ <!-- Section properties of an arbitrary polygon from a list of vertex coordinates: signed area, centroid and second moments of area via the shoelace formulas. -->
  <h3>Geometrical properties of arbitrary polygon</h3>
  <h4>Point coordinates</h4>
  <p>

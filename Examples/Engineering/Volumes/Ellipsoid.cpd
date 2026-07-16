@@ -1,4 +1,4 @@
-"Volume and Surface Area of Ellipsoid
+'<!-- Volume $V = \tfrac{4}{3}\pi\, a\, b\, c$ and approximate surface area of an ellipsoid from its three semi-axes. -->
 '<div style = "max-width:110mm"><img style="height:70pt;" class="side" alt="ellipsoid.png" src = "../../Images/math/volume/ellipsoid.png"></div>
 'Dimensions
 a = ?

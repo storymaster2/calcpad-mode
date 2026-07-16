@@ -1,4 +1,5 @@
-"Double interpolation
+'<!-- Bilinear-style table lookup that chains 1D Hermite splines along both axes to interpolate a tabulated $T(i,\, j)$ surface.
+'The canonical pattern for evaluating two-input design tables on intermediate values. -->
 'Input parameters
 x(j) = spline(j; 2; 4; 8)'- x values
 y(i) = spline(i; 3; 9; 27)'- y values

@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Cornu Spiral</h3>
+ <!-- Plots the [Cornu (Euler) spiral](https://en.wikipedia.org/wiki/Euler_spiral) from the Fresnel integrals $C(t)$ and $S(t)$, the clothoid used as a transition curve in highway and railway alignment. -->
  <p>
   (also
   <strong>Clothoid</strong>

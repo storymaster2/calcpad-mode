@@ -1,4 +1,5 @@
-"Comparision of three quadrature formulas
+'<!-- Evaluates $\int_{-1}^{1}\sqrt{1-x^2}\, dx$ with three quadrature rules — Boole (Newton-Cotes), Gauss-Legendre and tanh-sinh — at five nodes.
+'Tabulates the relative error of each scheme against the analytical result $\pi/2$. -->
 'Function -'f(x) = sqrt(1 - x^2)
 'Theoretical value of the integral - 'I = π/2
 'Number of nodes -'n = 5

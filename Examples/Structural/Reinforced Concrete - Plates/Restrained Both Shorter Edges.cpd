@@ -1,4 +1,5 @@
-"Slab Panel with Restrained Shorter Edges<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Two-way slab panel with both shorter edges restrained and the two longer edges simply supported, typical of an end panel oriented across the short span. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm;">
 '<img alt="sfsf-span-cl.png" class="side" style="height:190pt;" src="../../Images/structures/rc/spans/sfsf-span-cl.png">
 '<h4>Dimensions</h4>

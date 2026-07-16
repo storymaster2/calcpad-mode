@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Volume and Surface Area of Spherical Cap</h3>
+ <!-- Volume and surface area of a spherical cap from sphere radius and cap height. -->
  <div style="max-width:120mm">
   <img alt="cap.png" class="side" src="Images/math/volume/cap.png" style="height:55pt;"/>
  </div>

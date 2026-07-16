@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Volume of Triangular Pyramid</h3>
+ <!-- Volume $V = \tfrac{1}{3} A_b\, h$ of a pyramid with a general triangular base. -->
  <div style="max-width:110mm">
   <img alt="triangular-pyramid.png" class="side" src="Images/math/volume/triangular-pyramid.png" style="height:60pt;"/>
  </div>

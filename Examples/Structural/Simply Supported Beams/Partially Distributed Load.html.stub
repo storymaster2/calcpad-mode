@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Simply Supported Beam with Partially Distributed Load</h3>
- <hr/>
+ <!-- Uniform load $q$ acting on a stretch of length $b$ between offsets $a$ and $c = l - a - b$, with a guard against an invalid load length when $a + b > l$. -->
  <div style="max-width:180mm;">
   <img alt="simply-supported-beam-distributed-load-partial.png" class="side" src="Images/mechanics/beams/simply-supported-beam-distributed-load-partial.png" style="width:190pt;"/>
   <p>

@@ -1,3 +1,4 @@
+'<!-- Reference for the built-in CSS classes ($ref$, $ok$, $err$, $warn$, $note$) and how to define custom classes for highlighting design-check results inline. -->
 "CSS Classes in CalcpadCE
 '<p class="ref">[ref (No)]</p>
 '<p>Design checks: <span class="ok">ok</span> / <span class="err">fail</span>.

@@ -1,13 +1,10 @@
 <div class="calcpad-output">
- <h3>
-  Snow Drift on a Roof, Abutting a Taller Construction
-  <hr/>
-  <small>
-   According to
-   <strong>Eurocode</strong>
-   : EN 1991-1-3, § 5.3.6
-  </small>
- </h3>
+ <!-- Eurocode EN 1991-1-3 snow drift on a roof abutting a taller construction: drift length $l_s$, sliding coefficient $\mu_s$ and wind coefficient $\mu_w$ from the geometry of the higher and lower roofs. -->
+ <small>
+  According to
+  <strong>Eurocode</strong>
+  : EN 1991-1-3, § 5.3.6
+ </small>
  <div style="max-width:180mm">
   <img alt="snow-drift.png" class="side" src="Images/structures/loads/snow-drift.png" style="width:210pt;"/>
   <p>
@@ -16,7 +13,7 @@
     <var>s</var>
     <sub>k</sub>
     =
-    <u class="input-4">1.5</u>
+    <u class="input-5">1.5</u>
    </span>
    kN/m
    <sup>2</sup>
@@ -27,7 +24,7 @@
     <var>b</var>
     <sub>1</sub>
     =
-    <u class="input-5">18</u>
+    <u class="input-6">18</u>
    </span>
    m
   </p>
@@ -37,7 +34,7 @@
     <var>b</var>
     <sub>s</sub>
     =
-    <u class="input-6">9</u>
+    <u class="input-7">9</u>
    </span>
    m
   </p>
@@ -47,7 +44,7 @@
     <var>b</var>
     <sub>2</sub>
     =
-    <u class="input-7">36</u>
+    <u class="input-8">36</u>
    </span>
    m
   </p>
@@ -56,7 +53,7 @@
    <span class="eq">
     <var>h</var>
     =
-    <u class="input-8">6.2</u>
+    <u class="input-9">6.2</u>
    </span>
    m
   </p>
@@ -65,7 +62,7 @@
    <span class="eq">
     <var>α</var>
     =
-    <u class="input-9">3</u>
+    <u class="input-10">3</u>
    </span>
    <sup>o</sup>
   </p>

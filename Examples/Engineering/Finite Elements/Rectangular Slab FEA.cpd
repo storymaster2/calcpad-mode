@@ -1,5 +1,5 @@
-"Finite Element Analysis of Rectangular Slab
-'<hr/>
+'<!-- Single-panel simply-supported rectangular slab solved with the 16-DOF Bogner–Fox–Schmit plate element under uniform load.
+'Returns deflection plus the bending moments $M_x$ and $M_y$ on a user-defined mesh — a compact testbed for convergence studies. -->
 '<h4>Input data</h4>
 '<table><tr><td>
 'Slab dimensions -'a = 6'm,'b = 4'm

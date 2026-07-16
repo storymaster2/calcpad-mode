@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Area and Circumference of Ellipse</h3>
+ <!-- Area $A = \pi\, a\, b$ and approximate circumference of an ellipse from its two semi-axes. -->
  <div style="max-width:110mm;">
   <img alt="ellipse.png" class="side" src="Images/math/area/ellipse.png" style="height:65pt;"/>
  </div>

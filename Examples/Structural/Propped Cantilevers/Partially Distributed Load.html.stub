@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Propped Cantilever with Partially Distributed Load</h3>
- <hr/>
+ <!-- Propped cantilever with a uniform load $q$ acting on a stretch of length $b$ between offsets $a$ and $c = l - a - b$ from the supports. -->
  <div style="max-width:180mm;">
   <img alt="propped-cantilever-beam-distributed-load-p.png" class="side" src="Images/mechanics/beams/propped-cantilever-beam-distributed-load-p.png" style="width:210pt;"/>
   <p>

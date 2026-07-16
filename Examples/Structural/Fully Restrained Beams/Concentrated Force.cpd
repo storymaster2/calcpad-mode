@@ -1,6 +1,6 @@
-"Fully Restrained Beam with Concentrated Force
+'<!-- Fixed-end moments $M_A = F a b^2 / l^2$ and $M_B = F a^2 b / l^2$ for a clamped-clamped beam carrying a point force $F$ at distance $a$ from the left support. -->
 '<div style="max-width:180mm">
-'<hr /><img style="width:210pt;" alt="fixed-beam-concentrated-force.png" class="side" src="../../Images/mechanics/beams/fixed-beam-concentrated-force.png">
+'<img style="width:210pt;" alt="fixed-beam-concentrated-force.png" class="side" src="../../Images/mechanics/beams/fixed-beam-concentrated-force.png">
 '<p><b>Input data</b></p>
 'Beam Length -'l=?'m
 'Load -'F=?'kN

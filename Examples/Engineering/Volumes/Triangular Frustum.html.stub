@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Volume of Triangular Frustum</h3>
+ <!-- Volume of a triangular frustum from the two parallel triangular faces and height. -->
  <div style="max-width:120mm">
   <img alt="triangular-frustum.png" class="side" src="Images/math/volume/triangular-frustum.png" style="height:60pt;"/>
  </div>

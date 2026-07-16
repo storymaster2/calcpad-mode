@@ -1,6 +1,5 @@
+'<!-- Five-storey three-bay reinforced concrete frame with T-section beams, programmatically generated joints and elements, and Eurocode load combinations on dead, live and self-weight contributions. -->
 #include svg_drawing.cpd
-"Analysis of multi-story multi-bay RC plane frame
-'<hr/>
 '<h4>Input data</h4>
 'Number of stories -'n_st = 5',  Number of bays - 'n_b = 3
 'Story height - 'h_st = 2.85m',ㅤBay length - 'l_b = 4m

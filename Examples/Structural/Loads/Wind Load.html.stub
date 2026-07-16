@@ -1,13 +1,10 @@
 <div class="calcpad-output">
- <h3>
-  Wind Load for Rectangular Building with Duopitch Roof
-  <hr/>
-  <small>
-   According to
-   <strong>Eurocode</strong>
-   : EN 1991-1-4
-  </small>
- </h3>
+ <!-- Eurocode EN 1991-1-4 wind on a rectangular building with duopitch roof: peak velocity pressure, zone-by-zone external pressure coefficients and reduction to line loads on columns, beams and purlins. -->
+ <small>
+  According to
+  <strong>Eurocode</strong>
+  : EN 1991-1-4
+ </small>
  <div style="max-width:180mm">
   <img alt="wind-3d.png" class="side" src="Images/structures/loads/wind-3d.png" style="width:225pt;"/>
   <p>
@@ -20,7 +17,7 @@
    <span class="eq">
     <var>B</var>
     =
-    <u class="input-7">12</u>
+    <u class="input-8">12</u>
    </span>
    m
   </p>
@@ -29,7 +26,7 @@
    <span class="eq">
     <var>L</var>
     =
-    <u class="input-8">30</u>
+    <u class="input-9">30</u>
    </span>
    m
   </p>
@@ -39,7 +36,7 @@
     <var>h</var>
     <sub>1</sub>
     =
-    <u class="input-9">9</u>
+    <u class="input-10">9</u>
    </span>
    m
   </p>
@@ -49,7 +46,7 @@
     <var>h</var>
     <sub>2</sub>
     =
-    <u class="input-10">8</u>
+    <u class="input-11">8</u>
    </span>
    m
   </p>
@@ -93,7 +90,7 @@
    <span class="eq">
     <var>a</var>
     =
-    <u class="input-14">6</u>
+    <u class="input-15">6</u>
    </span>
    m
   </p>
@@ -102,7 +99,7 @@
    <span class="eq">
     <var>b</var>
     =
-    <u class="input-15">4</u>
+    <u class="input-16">4</u>
    </span>
    m
   </p>
@@ -112,7 +109,7 @@
     <var>c</var>
     <sub>s</sub>
     =
-    <u class="input-16">2</u>
+    <u class="input-17">2</u>
    </span>
    m
   </p>
@@ -122,7 +119,7 @@
     <var>c</var>
     <sub>p</sub>
     =
-    <u class="input-17">1</u>
+    <u class="input-18">1</u>
    </span>
    m
   </p>
@@ -177,7 +174,7 @@
     <var>v</var>
     <sub>b_0</sub>
     =
-    <u class="input-30">26</u>
+    <u class="input-31">26</u>
    </span>
    kN/m²
   </p>
@@ -492,7 +489,7 @@
     <var>C</var>
     <sub>pi</sub>
     =
-    <u class="input-97">-0.3</u>
+    <u class="input-98">-0.3</u>
    </span>
   </p>
   <p class="ref">[EN 1991-1-4 Fig.7.13, Note 2]</p>

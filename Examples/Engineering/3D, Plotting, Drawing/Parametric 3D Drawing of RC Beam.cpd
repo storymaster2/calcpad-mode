@@ -1,4 +1,5 @@
-"Parametric 3D Drawing of RC Beam
+'<!-- Build a fully parametric 3D model of a reinforced-concrete T-beam (concrete prism plus longitudinal rebars) using [three.js](https://threejs.org) inside CalcpadCE.
+'Change the geometry inputs and the WebGL view, the calculations, and the report all update together. -->
 'Beam length -'l = 6m
 'Web width -'b = 0.25m', height -'h = 0.8m
 'Flange width -'b_f = 1.0m', height -'h_f = 0.14m

@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Areas of Reinforcement Bars</h3>
- <hr/>
+ <!-- Lookup table that returns the total reinforcement area $A_s$ for a chosen bar diameter and bar count, with the cells highlighting the picked combination on hover. -->
  <style>td:hover {color:red;} table {cursor:default;}</style>
  <p>
   Required reinforcement area -
@@ -8,7 +7,7 @@
    <var>A</var>
    <sub>s,req</sub>
    =
-   <u class="input-4">7</u>
+   <u class="input-3">7</u>
   </span>
   cm²
  </p>

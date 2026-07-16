@@ -1,4 +1,5 @@
-"Punching Design of Corner Column<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Punching shear verification of a flat slab around a corner column: control perimeter on two sides only, eccentricity factor for a corner support and required punching reinforcement when the slab capacity is exceeded. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm">
 '<img class="side" style="width:225pt;" src="../../Images/structures/rc/design/punching-corner-column.png" alt="punching-corner-column.png">
 '<h4>Input data</h4>

@@ -1,4 +1,4 @@
-"Volume of Triangular Frustum
+'<!-- Volume of a triangular frustum from the two parallel triangular faces and height. -->
 '<div style = "max-width:120mm"><img style="height:60pt;" class="side" alt="triangular-frustum.png" src = "../../Images/math/volume/triangular-frustum.png"></div>
 '<p><b>Dimensions:</b></p>
 'Bottom base

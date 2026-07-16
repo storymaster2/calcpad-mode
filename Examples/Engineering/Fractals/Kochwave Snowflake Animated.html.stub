@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Kochwave Snowflake Animation</h3>
+ <!-- Closed-loop Kochwave: the wave-style subdivision rule is applied to a triangular seed, producing an inverted snowflake whose seven iterations are rendered as a CSS-driven SVG animation. -->
  <p>Initial coordinates</p>
  <p>
   <span class="eq">

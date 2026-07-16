@@ -1,4 +1,5 @@
-"Column Detailing for Ductility Class DCM<hr/><small>According to <strong>Eurocode</strong>: EN 1998-1</small>
+'<!-- Eurocode 8 detailing of a primary seismic column for medium ductility class: cross-section dimensions, longitudinal ratio, confinement of the boundary regions and minimum mechanical volumetric ratio of the hoops. -->
+'<small>According to <strong>Eurocode</strong>: EN 1998-1</small>
 '<div style="max-width:180mm">
 '<img class="side" style="width:220pt;" src="../../Images/structures/rc/detailing/column-section.png" alt="column-section.png">
 '<p><b>Column dimensions</b></p>

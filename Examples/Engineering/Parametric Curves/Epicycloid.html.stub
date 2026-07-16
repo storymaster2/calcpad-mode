@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Epicycloid</h3>
+ <!-- Trace of an [epicycloid](https://en.wikipedia.org/wiki/Epicycloid): the curve swept by a point on a small circle rolling on the outside of a fixed circle, with rational radius ratios producing closed figures. -->
  <div style="max-width:150mm">
   <img alt="epicycloid.png" class="side" src="Images/math/epicycloid.png"/>
   <p style="max-width:85mm">

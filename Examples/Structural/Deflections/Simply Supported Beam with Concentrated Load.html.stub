@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Deflection and Rotation of Simply Supported Beam with Concentrated Load</h3>
- <hr/>
+ <!-- Simply supported beam with a mid-span point force $F$, giving the maximum deflection $d_{max} = F l^3 / (48 E I)$ and the support rotation $\varphi_{max} = F l^2 / (16 E I)$. -->
  <div style="max-width: 180mm;">
   <img alt="deflection-simply-supported-beam-force.png" class="side" src="Images/mechanics/beams/deflection-simply-supported-beam-force.png" style="width:165pt;"/>
   <p>

@@ -1,4 +1,4 @@
-"Kochwave Animation
+'<!-- Open-curve cousin of the Koch snowflake — a single horizontal segment subdivided seven times, animated step by step to show the wavefront fractalising into a self-similar coastline. -->
 'Initial coordinates
 #def a$ = sqrt(3)/2
 x = hp([0; 1])', 'y = hp([0; 0])

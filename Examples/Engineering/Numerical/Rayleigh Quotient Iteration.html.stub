@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <h3>Rayleigh quotient iteration</h3>
+ <!-- Computes the dominant eigenpair of a $3\times 3$ symmetric matrix via Rayleigh-quotient iteration.
+<p>Each step solves a shifted linear system, normalises the iterate and rebuilds the eigenvalue from the quotient, achieving cubic convergence within a handful of steps. -->
  <p>Input matrix</p>
  <p>
   <span class="eq">

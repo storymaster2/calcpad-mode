@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Dynamic response of an RC beam to a drop weight impact (steel ball)</h3>
- <hr/>
+ <!-- Drop-weight impact of a steel ball on a simply supported reinforced concrete beam: SDOF and 11-node MDOF modal superposition with Rayleigh damping, Hertzian impact contact duration and Duhamel integration of the impulse force. -->
  <p>
   Ball mass -
   <span class="eq">

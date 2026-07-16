@@ -1,4 +1,5 @@
-"Interpolation of functions
+'<!-- Reconstructs an exponential and a trigonometric function from coarse samples using nearest-value, linear and Hermite-spline interpolation.
+'A side-by-side accuracy comparison that quickly reveals overshoot, kinks and where the smooth spline pays off. -->
 '<h4>Exponential function</h4>
 f(x) = e^x
 'Values

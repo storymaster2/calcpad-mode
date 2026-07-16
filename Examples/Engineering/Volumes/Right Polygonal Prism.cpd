@@ -1,4 +1,4 @@
-"Volume and Surface Area of Right Polygonal Prism
+'<!-- Volume and surface area of a right prism with a regular $n$-gon base, from side length and height. -->
 '<div style = "max-width:130mm"><img style="height:65pt;" class="side" alt="polygonal-prism.png" src = "../../Images/math/volume/polygonal-prism.png"></div>
 'Dimensions
 'Number of sides -'n = ?

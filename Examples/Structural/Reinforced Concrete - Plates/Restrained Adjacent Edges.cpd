@@ -1,4 +1,5 @@
-"Slab Panel with Restrained Adjacent Edges<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Two-way slab panel with two adjacent edges restrained and the other two simply supported, typical of a corner panel of a floor system. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm;">
 '<img alt="sffs-span-cl.png" class="side" style="height:180pt;" src="../../Images/structures/rc/spans/sffs-span-cl.png">
 '<h4>Dimensions</h4>

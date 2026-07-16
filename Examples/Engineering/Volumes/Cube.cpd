@@ -1,4 +1,4 @@
-"Volume and Surface Area of Cube
+'<!-- Volume $V = a^3$ and surface area $S = 6 a^2$ of a cube from a single edge length. -->
 '<div style = "max-width:90mm"><img style="height:65pt;" class="side" alt="cube.png" src = "../../Images/math/volume/cube.png"></div>
 'Side length
 a = ?

@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Cantilever with Partially Distributed Load</h3>
- <hr/>
+ <!-- Uniform load $q$ acting on a stretch of length $b$ adjacent to the free end, with the unloaded portion $a = l - b$ kept clear. -->
  <div style="max-width:180mm;">
   <img alt="cantilever-beam-distributed-load-partial.png" class="side" src="Images/mechanics/beams/cantilever-beam-distributed-load-partial.png" style="width:165pt;"/>
   <p>

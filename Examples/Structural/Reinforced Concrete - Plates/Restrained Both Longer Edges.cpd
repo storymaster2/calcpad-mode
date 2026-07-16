@@ -1,4 +1,5 @@
-"Slab Panel with Restrained Longer Edges<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Two-way slab panel with both longer edges restrained and the two shorter edges simply supported, typical of an interior panel of a one-way-spanning floor strip. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm;">
 '<img alt="fsfs-span-cl.png" class="side" style="height:180pt;" src="../../Images/structures/rc/spans/fsfs-span-cl.png">
 '<h4>Dimensions</h4>

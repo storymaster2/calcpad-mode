@@ -1,4 +1,5 @@
-"Snow Drift on a Roof, Abutting a Taller Construction<hr/><small>According to <strong>Eurocode</strong>: EN 1991-1-3, § 5.3.6</small>
+'<!-- Eurocode EN 1991-1-3 snow drift on a roof abutting a taller construction: drift length $l_s$, sliding coefficient $\mu_s$ and wind coefficient $\mu_w$ from the geometry of the higher and lower roofs. -->
+'<small>According to <strong>Eurocode</strong>: EN 1991-1-3, § 5.3.6</small>
 '<div style="max-width:180mm">
 '<img class="side" style="width:210pt;" src="../../Images/structures/loads/snow-drift.png" alt="snow-drift.png">
 'Characteristic snow load on the ground -'s_k = ?'kN/m<sup>2</sup>

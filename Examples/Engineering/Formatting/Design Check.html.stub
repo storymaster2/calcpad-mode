@@ -1,4 +1,5 @@
 <div class="calcpad-output">
+ <!-- Reusable check function that flips between `ok` and `err` CSS classes based on a utilisation ratio, the canonical pattern for engineering design checks. -->
  <h3>Design check example</h3>
  <p>
  </p>

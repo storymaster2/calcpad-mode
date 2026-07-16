@@ -1,5 +1,6 @@
 <div class="calcpad-output">
- <h3>Newton's Method Animation</h3>
+ <!-- Solves $x^x = 10$ with Newton iteration and renders an animated SVG that highlights each tangent step.
+<p>The frame loop turns convergence into a visual sequence rather than a printed iteration table. -->
  <p>
   <strong>Problem:</strong>
   Given the following equation:

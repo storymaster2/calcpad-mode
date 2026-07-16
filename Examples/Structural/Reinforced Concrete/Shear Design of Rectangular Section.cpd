@@ -1,4 +1,5 @@
-"Shear Design of RC Rectangular Section<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Shear design of a rectangular section under EN 1992-1-1: shear strength without links $V_{Rd,c}$, required link area for a strut angle $\theta$ and check of the maximum strut compression. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm;">
 '<img class="side" style="width:270pt;" src="../../Images/structures/rc/design/beam-shear.png" alt="beam-shear.png">
 '<h4>Cross section dimensions</h4>

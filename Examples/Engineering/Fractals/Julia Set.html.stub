@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Julia set</h3>
+ <!-- Plots a [Julia set](https://en.wikipedia.org/wiki/Julia_set) for $c = -0.4 + 0.6i$ via `$Map` over a complex grid, with `$Find` locating the escape iteration of the quadratic map $z \mapsto z^2 + c$. -->
  <p>
   Function:
   <span class="eq">

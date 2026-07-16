@@ -1,5 +1,5 @@
-"Simply Supported Beam with Concentrated Forces
-'<hr /><div style = "max-width:180mm;">
+'<!-- Series of $n$ equal forces $F$ spaced at $a = l / (n + 1)$, with $M_{max}$ taken at mid-span and switching between the odd-$n$ and even-$n$ closed forms. -->
+'<div style = "max-width:180mm;">
 '<img style="width:190pt;" alt = "simply-supported-beam-forces.png" class="side" src = "../../Images/mechanics/beams/simply-supported-beam-forces.png">
 '<p><b>Input data</b></p>
 'Beam length -'l = ?'m

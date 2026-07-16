@@ -1,4 +1,4 @@
-"Area and Perimeter of Equilateral Triangle
+'<!-- Area $A = \tfrac{\sqrt{3}}{4} a^2$ and perimeter $P = 3a$ of an equilateral triangle. -->
 '<div style="max-width:110mm;"><img style="height:60pt;" class="side" alt="equilateral-triangle.png" src="../../Images/math/area/equilateral-triangle.png"></div>
 'Side length
 a = ?

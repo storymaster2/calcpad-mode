@@ -1,4 +1,5 @@
 <div class="calcpad-output">
+ <!-- Section properties of a regular hexagon: area, $I_x = I_y$, section moduli and radii of gyration in closed form. -->
  <h3>Geometrical Properties of Regular Hexagon</h3>
  <div style="max-width:120mm">
   <img alt="hexagon.png" class="side" src="Images/mechanics/sections/hexagon.png" style="height:135pt;"/>
@@ -8,7 +9,7 @@
   <span class="eq">
    <var>a</var>
    =
-   <u class="input-4">1</u>
+   <u class="input-5">1</u>
   </span>
   m
  </p>

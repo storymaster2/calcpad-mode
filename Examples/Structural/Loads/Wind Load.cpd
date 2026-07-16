@@ -1,4 +1,5 @@
-"Wind Load for Rectangular Building with Duopitch Roof<hr/><small>According to <strong>Eurocode</strong>: EN 1991-1-4</small>
+'<!-- Eurocode EN 1991-1-4 wind on a rectangular building with duopitch roof: peak velocity pressure, zone-by-zone external pressure coefficients and reduction to line loads on columns, beams and purlins. -->
+'<small>According to <strong>Eurocode</strong>: EN 1991-1-4</small>
 '<div style="max-width:180mm">
 '<img style="width:225pt;" class="side" src="../../Images/structures/loads/wind-3d.png" alt="wind-3d.png">'
 '

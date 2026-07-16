@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Volume and Surface Area of Rectangular Frustum (Obelisk)</h3>
+ <!-- Volume and surface area of a rectangular frustum (obelisk) from the two parallel rectangular faces and height. -->
  <div style="max-width:130mm">
   <img alt="rectangular-frustum.png" class="side" src="Images/math/volume/rectangular-frustum.png" style="height:70pt;"/>
  </div>

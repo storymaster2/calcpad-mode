@@ -1,3 +1,5 @@
+'<!-- Generate a fully parametric SVG cross-section of a prestressed double-tee panel by composing reusable `#def` shape templates from [`svg_drawing.cpd`](https://github.com/imartincei/CalcpadCE/blob/main/Examples/Engineering/3D%2C%20Plotting%2C%20Drawing/svg_drawing.cpd).
+'Adjust any dimension and the drawing redraws itself — ideal for standardised structural detail libraries. -->
 #include svg_drawing.cpd
 "Prestressed TT Panel - Parametric SVG Generation
 #deg

@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Volume and Surface Area of Right Polygonal Prism</h3>
+ <!-- Volume and surface area of a right prism with a regular $n$-gon base, from side length and height. -->
  <div style="max-width:130mm">
   <img alt="polygonal-prism.png" class="side" src="Images/math/volume/polygonal-prism.png" style="height:65pt;"/>
  </div>

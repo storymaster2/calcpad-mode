@@ -1,3 +1,4 @@
+'<!-- SVG drawing macros included by the steel I-section worksheets to render the cross-section with its flange widths, web thickness and root radius. -->
 #def line$(x1$; y1$; x2$; y2$; style$) = '<line x1="'x1$'" y1="'y1$'" x2="'x2$'" y2="'y2$'" style$/>
 #def rect$(x$; y$; w$; h$; style$) = '<rect x="'x$'" y="'y$'" width="'w$'" height="'h$'" style$/>
 #def circle$(x$; y$; style$) = '<circle cx="'x$'" cy="'y$'" r="'dist*3/10'" style$/>

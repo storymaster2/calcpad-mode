@@ -1,4 +1,5 @@
 <div class="calcpad-output">
+ <!-- Section properties of a channel (U) profile: area, centroid, $I_x$, $I_y$, section moduli and radii of gyration. -->
  <h3>Geometrical Properties of Channel Section</h3>
  <div style="max-width:120mm">
   <img alt="channel.png" class="side" src="Images/mechanics/sections/channel.png" style="height:150pt;"/>
@@ -8,14 +9,14 @@
   <span class="eq">
    <var>h</var>
    =
-   <u class="input-4">20</u>
+   <u class="input-5">20</u>
   </span>
   m,
   <span class="eq">
    <var>t</var>
    <sub>w</sub>
    =
-   <u class="input-4">1</u>
+   <u class="input-5">1</u>
   </span>
   m
  </p>
@@ -24,14 +25,14 @@
    <var>b</var>
    <sub>f</sub>
    =
-   <u class="input-5">10</u>
+   <u class="input-6">10</u>
   </span>
   m,
   <span class="eq">
    <var>t</var>
    <sub>f</sub>
    =
-   <u class="input-5">2</u>
+   <u class="input-6">2</u>
   </span>
   m
  </p>

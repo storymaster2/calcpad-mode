@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Area and Perimeter of Triangle</h3>
+ <!-- Area and perimeter of a general triangle from three side lengths via Heron formula, with a triangle-inequality guard. -->
  <div style="max-width:110mm;">
   <img alt="triangle.png" class="side" src="Images/math/area/triangle.png" style="height:55pt;"/>
  </div>

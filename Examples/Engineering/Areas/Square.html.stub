@@ -1,5 +1,5 @@
 <div class="calcpad-output">
- <h3>Area and Perimeter of Square</h3>
+ <!-- Area $A = a^2$ and perimeter $P = 4a$ of a square from a single side length. -->
  <div style="max-width:80mm;">
   <img alt="square.png" class="side" src="Images/math/area/square.png" style="height:60pt;"/>
  </div>

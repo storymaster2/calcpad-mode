@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Deflection and Rotation of Simply Supported Beam with Uniformly Distributed Load</h3>
- <hr/>
+ <!-- Simply supported beam under a full-span uniform load $q$, recovering the serviceability-relevant mid-span deflection $d_{max} = 5 q l^4 / (384 E I)$ and the support rotation $\varphi_{max} = q l^3 / (24 E I)$. -->
  <div style="max-width: 180mm;">
   <img alt="deflection-simply-supported-beam-distributed-load.png" class="side" src="Images/mechanics/beams/deflection-simply-supported-beam-distributed-load.png" style="width:165pt;"/>
   <p>

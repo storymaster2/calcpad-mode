@@ -1,6 +1,5 @@
 <div class="calcpad-output">
- <h3>Deflection and Rotation of Cantilever with Concentrated Load</h3>
- <hr/>
+ <!-- Rotation $\varphi(x)$ and deflection $d(x)$ along a cantilever loaded by a tip force $F$, recovering the textbook tip values $\varphi_{max} = F l^2 / (2 E I)$ and $d_{max} = F l^3 / (3 E I)$. -->
  <div style="max-width: 180mm;">
   <img alt="deflection-cantilever-force.png" class="side" src="Images/mechanics/beams/deflection-cantilever-force.png" style="width:165pt;"/>
   <p>

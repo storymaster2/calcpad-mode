@@ -1,5 +1,5 @@
-"Simply Supported Beam with Concentrated Moment
-'<hr /><div style = "max-width:180mm;">
+'<!-- Concentrated moment $M$ applied at distance $a$, giving a constant shear $V = M / l$ and a bending diagram with a step of $M$ at the load section. -->
+'<div style = "max-width:180mm;">
 '<img style="width:190pt;" alt = "simply-supported-beam-concentrated-moment.png" class="side" src = "../../Images/mechanics/beams/simply-supported-beam-concentrated-moment.png">
 '<p><b>Input data</b></p>
 'Beam length -'l = ?'m

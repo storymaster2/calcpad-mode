@@ -1,4 +1,5 @@
-"Bending Design of RC Rectangular Section<hr/><small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
+'<!-- Required tension reinforcement $A_s$ of a rectangular section under a design moment $M_{Ed}$, with compression reinforcement added when the relative neutral-axis depth exceeds the ductility limit. -->
+'<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style = "max-width:180mm;">
 '<img style="width:330pt;" src="../../Images/structures/rc/design/beam-bending.png" alt="beam-bending.png">
 'Design bending moment -'M_Ed = ? {340}'kN·m

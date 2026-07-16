@@ -1,5 +1,4 @@
-"Free ibrations of steel pole with variable cross-section of arbitrary shape
-'<hr/>
+'<!-- Tapered cantilever pole with selectable cross-section shape; flexibility matrix built by integration of bending and shear along the height, three lowest natural frequencies, with the fundamental period checked against ASCE SEI 7/22. -->
 #rad
 '<h3>Static scheme</h3>
 'Cantilever with length -'L = 110m
