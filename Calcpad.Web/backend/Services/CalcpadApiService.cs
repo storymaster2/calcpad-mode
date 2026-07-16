@@ -12,7 +12,11 @@ namespace Calcpad.Server.Services
         /// </summary>
         public static WebApplicationBuilder ConfigureBuilder(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                Args = args,
+                ContentRootPath = AppContext.BaseDirectory
+            });
 
             builder.Services.AddControllers()
                 .AddApplicationPart(typeof(CalcpadApiService).Assembly);
