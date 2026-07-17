@@ -104,10 +104,14 @@ export class CommentFormatter {
         const format = this.getFormat();
         const [prefix, suffix] = format === 'html' ? HTML_INLINE[type] : MARKDOWN_INLINE[type];
 
-        const linesNeedingPrefix = new Set(editor.selections.map(s => s.start.line));
+        const startCharByLine = new Map<number, number>();
+        for (const sel of editor.selections) {
+            const prev = startCharByLine.get(sel.start.line);
+            if (prev === undefined || sel.start.character < prev) startCharByLine.set(sel.start.line, sel.start.character);
+        }
         const prefixInserts: Array<[line: number, col: number]> = [];
-        for (const line of linesNeedingPrefix) {
-            const insertCol = getCommentPrefixInsertColumn(editor.document.lineAt(line).text);
+        for (const [line, startChar] of startCharByLine) {
+            const insertCol = getCommentPrefixInsertColumn(editor.document.lineAt(line).text, startChar);
             if (insertCol !== null) prefixInserts.push([line, insertCol - 1]);
         }
         if (prefixInserts.length > 0) {

@@ -53,14 +53,17 @@ function getServerUrl(): string {
 
 /** Idle-state preview HTML — same content the VS Code extension shows when
  *  the editor buffer is empty. Quick reference for formatting hotkeys. */
-function getEmptyPreviewHtml(): string {
+function getEmptyPreviewHtml(theme: 'light' | 'dark'): string {
+    const c = theme === 'light'
+        ? { fg: '#6e6e6e', bg: '#ffffff', link: '#0066cc' }
+        : { fg: '#858585', bg: '#1e1e1e', link: '#4FC1FF' };
     return `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>CalcPad Preview</title>
     <style>
-        body { color: #858585; background: var(--vscode-editor-background, #1e1e1e); padding: 20px; font-family: var(--vscode-font-family, system-ui, sans-serif); }
+        body { color: ${c.fg}; background: ${c.bg}; padding: 20px; font-family: var(--vscode-font-family, system-ui, sans-serif); }
         h3 { text-align: center; }
         p { text-align: center; }
         table { margin: 1em auto; border-collapse: collapse; text-align: left; font-size: 0.9em; }
@@ -68,7 +71,7 @@ function getEmptyPreviewHtml(): string {
         th { text-align: right; font-weight: normal; opacity: 0.7; }
         td { font-family: var(--vscode-editor-font-family, monospace); }
         h4 { text-align: center; margin-top: 1.5em; margin-bottom: 0.3em; }
-        a { color: #4FC1FF; }
+        a { color: ${c.link}; }
     </style>
 </head>
 <body>
@@ -326,6 +329,8 @@ async function bootstrap(): Promise<void> {
     // by the wrapped->unwrapped two-step in the 'navigateToLine' handler.
     const pendingPreviewScrollLine = new Map<string, number>();
 
+    const PREVIEW_LOADING_DELAY_MS = 400;
+
     async function refreshPreviewFor(group: EditorGroup): Promise<void> {
         if (!appInstance.isPreviewVisible()) return;
 
@@ -336,15 +341,27 @@ async function bootstrap(): Promise<void> {
         const theme = resolvePreviewTheme();
 
         if (!content.trim()) {
-            appInstance.setPreviewHtml(group.id, getEmptyPreviewHtml());
+            appInstance.setPreviewHtml(group.id, getEmptyPreviewHtml(theme));
             return;
         }
 
         const fileContext = getFileContext ? await getFileContext(content) : {};
 
-        const result = mode === 'unwrapped'
-            ? await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath, theme)
-            : await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath, theme);
+        // Show the "Calculating…" overlay only if the round-trip runs long, so
+        // fast renders never flash it (mirrors Calcpad.Wpf's delayed spinner).
+        const loadingTimer = window.setTimeout(
+            () => appInstance.setPreviewLoading(group.id, true),
+            PREVIEW_LOADING_DELAY_MS,
+        );
+        let result;
+        try {
+            result = mode === 'unwrapped'
+                ? await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath, theme)
+                : await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath, theme);
+        } finally {
+            window.clearTimeout(loadingTimer);
+            appInstance.setPreviewLoading(group.id, false);
+        }
 
         // Consume any pending two-step scroll target for this group: only the
         // unwrapped view it was set for should honor it, and only once.

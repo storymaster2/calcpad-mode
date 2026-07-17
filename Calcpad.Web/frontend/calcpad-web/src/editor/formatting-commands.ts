@@ -90,18 +90,26 @@ function detectFormatAtCursor(editor: monaco.editor.IStandaloneCodeEditor): Comm
 }
 
 /**
- * Insert a comment quote on every given line that's missing one, right after
- * its indentation (same rule headings use). Returns the 1-based column each
- * quote was inserted at, keyed by line number, for shifting selections.
+ * Insert a comment quote on every selected line that needs one, right after
+ * its indentation (same rule headings use). A line is skipped when it already
+ * opens a comment or when the selection already lands inside a text region
+ * mid-line. Returns the 1-based column each quote was inserted at, keyed by
+ * line number, for shifting selections.
  */
 function ensureCommentPrefixes(
     model: monaco.editor.ITextModel,
-    lineNumbers: Iterable<number>,
+    selections: readonly monaco.Selection[],
     edits: monaco.editor.IIdentifiedSingleEditOperation[],
 ): Map<number, number> {
+    const startColByLine = new Map<number, number>();
+    for (const sel of selections) {
+        const prev = startColByLine.get(sel.startLineNumber);
+        if (prev === undefined || sel.startColumn < prev) startColByLine.set(sel.startLineNumber, sel.startColumn);
+    }
+
     const insertedAt = new Map<number, number>();
-    for (const lineNumber of new Set(lineNumbers)) {
-        const insertCol = getCommentPrefixInsertColumn(model.getLineContent(lineNumber));
+    for (const [lineNumber, startColumn] of startColByLine) {
+        const insertCol = getCommentPrefixInsertColumn(model.getLineContent(lineNumber), startColumn - 1);
         if (insertCol === null) continue;
         edits.push({
             range: new monaco.Range(lineNumber, insertCol, lineNumber, insertCol),
@@ -128,7 +136,7 @@ function wrapInline(
     const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];
     // Bold/italic/etc. need the line wrapped in a comment for the HTML tags
     // to render, same as headings — add one if missing.
-    const insertedAt = ensureCommentPrefixes(model, selections.map(s => s.startLineNumber), edits);
+    const insertedAt = ensureCommentPrefixes(model, selections, edits);
 
     const newSelections: monaco.Selection[] = [];
 

@@ -24,8 +24,8 @@
 
 ### Enhancements
 
--   Add desc metadata for variables
--   Make a Vue panel that activates when the cursor is inside a JSON HTML comment. Where you can edit properties and then the line gets updated based on what you put into the UI.
+-   Make a Vue panel that activates when the cursor is inside a JSON HTML comment. Where you can edit properties and then the line gets updated based on what you put into the UI. =
+    - This is partially implemented but still needs polished.
 -   Add the ability to focus the preview to the line selected in the code. Add a toggle to automatically sync this in the Vue panel.
 -   Switch Vue tabs from text to icons now that they are getting longer.
 -   Add quick typing for macros (~1 macro 1, ~2 macro 2, etc.). Add macro mapping to vscode config using json object {macroMapping:{"1": "macroName$", ...}}. Have VS code set cursor position to within () and before first param.
@@ -34,16 +34,24 @@
 
 ### Bugs
 
+
 ### Testing
 
--   Fix base64 syntax highlighting by sending the last characters that close the img tag.
+-   Fix base64 syntax highlighting by sending the last characters that
+close the img tag.
 -   Make sure long API calls are awaited and do not freeze the UI
 -   Check if the cache needs cleared on intervals
--   Have variables use the tokenizer for recognition when you highlight text when clicking, commas are not handled properly currently.
+-   Have variables use the tokenizer for recognition when you
+highlight text when clicking, commas are not handled properly
+currently.
 -   UI state persists across code changes where possible.
+-   Fix PDF plotting opening CMD windows for Windows
+-   Add desc metadata for variables
+
 
 ## Calcpad.Web
 
+-   Make #hide work for Calcpad.Web - it does, investigate complex case it wasn't working more closely.
 -   Write/Append: prompt a download (ZIP for multiple files) when running under the Linux build instead of writing to the local filepath. Add a setting in Calcpad.Core to control whether write/append output is cached for download or applied directly to disk.
 -   Add support for other languages, especially Chinese as there is a large Chinese community.
 -   Add #UI features to main branch
@@ -51,7 +59,6 @@
 -   An external browser dropdown could be helpful that allows switching the puppeteer and help button browser from the settings. I think this is doable if we store both the browser name and path in an object (then only show browsers with a valid path and allow adding a browser via file select to the exe or pasted path).
 -   Submit removed jquery refactor as a PR to main.
 -   Add app version to settings Vue tab.
--   Make light mode for empty document HTML
 -   JSON html comment frontmatter containing program version,  project name, project base path, author, saved timestamp, ui overrides, file specific setting overrides. This can all be unified under a single object in the first code line, some of which get updated by the software automatically. Add UI to edit front matter fields and hide frontmatter code by default in the editor with setting to show it.
 -   Add line breaks within json html comments as valid line continuation (that ends when the closing comment is given)
 -   Add a way to favorite snippets or macros/custom functions and have that show up in its own dropdown.
@@ -61,6 +68,9 @@
 ### Testing
 
 -   Test snippet updates
+-   Bold, subscript, etc. HTML formatting needs to check if in a
+string based on tokenizer results, not just check beginning of line.
+-   Make light mode for empty document HTML
 
 ## Calcpad.Web Desktop App
 
@@ -72,6 +82,7 @@
 -   Don't use | as brackets, Calcpad should override colors and not create two pipes when typed
 -   Server crashes should create dumps in the log folder similar to VS Code.
 -   Server crashing was not able to be recovered by restarting the server.
+-   Wire up Metadata Vue tab
 
 ### Bugs
 
@@ -89,6 +100,7 @@
 
 ## Calcpad.Highlighter
 
+-   Examples are a good source of linter issues, go through them and fix issues until all files run clean. Use this as another source of linter tests once all issues are fixed.
 -   Add page break to HTML snippets
 -   Order greek symbols by greek alphabet instead of english
 -   Add linting for HTML/markdown mode
@@ -99,6 +111,7 @@
 -   Add undefined macro linter check
 -   Allow rename of global variables inside macro defs - this may be an undefined variable linter bug? But this should not run at stage 2 anyways.
 -   Scan for #if/#else mismatches in macro definitions, and in general improve macro definition linting where possible.
+-   Add test for Directive states and #noc not triggering undefined vvariables check
 
 ### Testing
 

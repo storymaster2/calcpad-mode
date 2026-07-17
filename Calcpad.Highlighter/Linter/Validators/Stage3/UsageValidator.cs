@@ -191,6 +191,11 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
         private void ValidateUndefinedIdentifiers(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
+            // #noc renders equations without evaluating them, so referencing an undefined
+            // identifier is legitimate. Track the output mode as we go and skip the check
+            // while it stays in the #noc region (until the next #val/#equ).
+            var directives = new DirectiveState();
+
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
                 if (!tokenProvider.IsCpdMode(i)) continue;
@@ -203,6 +208,12 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 var trimmed = line.Trim();
 
                 if (LineParser.IsDirectiveLine(trimmed))
+                {
+                    directives.Apply(trimmed);
+                    continue;
+                }
+
+                if (directives.Output == OutputMode.NoCalculation)
                     continue;
 
                 // Skip undefined variable checks for function definitions with command blocks

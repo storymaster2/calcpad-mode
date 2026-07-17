@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { parseHeadings, DEFAULT_PDF_SETTINGS, extractPlotsFromHtml, buildZip } from 'calcpad-frontend';
-import type { CalcpadError, ExtractedPlot } from 'calcpad-frontend';
+import { parseHeadings, DEFAULT_PDF_SETTINGS, extractPlotsFromHtml, buildZip, serializeMetadataComment, findMetadataCommentBlock, analyzeMetadataLine } from 'calcpad-frontend';
+import type { CalcpadError, ExtractedPlot, MetadataCommentBlock, MetadataCommentData } from 'calcpad-frontend';
 import { CalcpadSettingsManager } from './calcpadSettings';
 import { CalcpadInsertManager } from './calcpadInsertManager';
 
@@ -300,6 +300,14 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     this._settingsManager.setExtra('prettifyTrimTrailingWhitespace', data.value);
                     break;
 
+                case 'getMetadataContext':
+                    this.updateMetadataContext(this._computeMetadataBlock());
+                    break;
+
+                case 'updateMetadata':
+                    await this._handleUpdateMetadata(data);
+                    break;
+
                 case 'debug':
                     this._outputChannel.appendLine(`[Vue Debug] ${data.message}`);
                     break;
@@ -485,6 +493,51 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
     public updateConvertErrors(errors: CalcpadError[]) {
         this._view?.webview.postMessage({ type: 'updateConvertErrors', errors });
+    }
+
+    /** Push the metadata comment (or null) the cursor currently sits in to the panel. */
+    public updateMetadataContext(block: MetadataCommentBlock | null) {
+        this._view?.webview.postMessage({ type: 'metadataContext', block });
+    }
+
+    /** Detect the single-line metadata comment at the source editor's cursor. */
+    private _computeMetadataBlock(): MetadataCommentBlock | null {
+        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
+        if (!editor || (editor.document.languageId !== 'calcpad' && editor.document.languageId !== 'plaintext')) {
+            return null;
+        }
+        const lines = editor.document.getText().split(/\r?\n/);
+        const line = editor.selection.active.line;
+        const block = findMetadataCommentBlock(lines, line);
+        if (block) block.context = analyzeMetadataLine(lines, line);
+        return block;
+    }
+
+    /** Ask the panel to switch to a given tab id. */
+    public focusTab(tab: string) {
+        this._view?.webview.postMessage({ type: 'focusTab', tab });
+    }
+
+    /**
+     * Rewrite the metadata comment line the panel edited. The panel sends the
+     * 0-based line, its original indentation and trailing quote, and the new
+     * data object; we serialize and replace the whole line.
+     */
+    private async _handleUpdateMetadata(data: {
+        line: number;
+        indent?: string;
+        trailingQuote?: string;
+        data: MetadataCommentData;
+    }): Promise<void> {
+        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
+        if (!editor || typeof data.line !== 'number') return;
+        if (data.line < 0 || data.line >= editor.document.lineCount) return;
+
+        const newText = serializeMetadataComment(data.data, data.indent ?? '', data.trailingQuote ?? '');
+        const lineRange = editor.document.lineAt(data.line).range;
+        await editor.edit(editBuilder => {
+            editBuilder.replace(lineRange, newText);
+        });
     }
 
     public dispose() {

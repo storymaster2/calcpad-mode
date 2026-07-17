@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { CalcpadApiClient, DEFAULT_PDF_SETTINGS, parseConvertErrorHeader } from 'calcpad-frontend';
-import type { PdfSettings as FrontendPdfSettings } from 'calcpad-frontend';
+import { CalcpadApiClient, DEFAULT_PDF_SETTINGS, parseConvertErrorHeader, findMetadataCommentBlock, serializeMetadataComment, analyzeMetadataLine, parseDefinitionParamCount } from 'calcpad-frontend';
+import type { PdfSettings as FrontendPdfSettings, MetadataCommentData } from 'calcpad-frontend';
 import { CalcpadServerLinter } from './calcpadServerLinter';
 import { CalcpadSemanticTokensProvider, semanticTokensLegend } from './calcpadSemanticTokensProvider';
 import { CalcpadVueUIProvider } from './calcpadVueUIProvider';
@@ -39,6 +39,86 @@ let calcpadOutputHtmlChannel: vscode.OutputChannel;
 let calcpadWebviewConsoleChannel: vscode.OutputChannel;
 let extensionContext: vscode.ExtensionContext;
 let vueUiProvider: CalcpadVueUIProvider | undefined;
+
+const PREVIEW_BUSY_DELAY_MS = 400;
+
+/**
+ * Detect whether the cursor sits inside a metadata comment (`'<!--{...}-->`)
+ * and push it to the Vue panel's Metadata tab. Also drives the
+ * `calcpad.inMetadataComment` context key that gates the editor context-menu
+ * command. Single-line only, matching the shared detector.
+ */
+function updateMetadataContext(editor: vscode.TextEditor | undefined): void {
+    let block = null;
+    if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
+        const lines = editor.document.getText().split(/\r?\n/);
+        const line = editor.selection.active.line;
+        const detected = findMetadataCommentBlock(lines, line);
+        if (detected) {
+            detected.context = analyzeMetadataLine(lines, line);
+            block = detected;
+        }
+    }
+    vscode.commands.executeCommand('setContext', 'calcpad.inMetadataComment', block !== null);
+    vueUiProvider?.updateMetadataContext(block);
+}
+
+/**
+ * A "Calculating…" page shown in the preview webview during long renders,
+ * mirroring the spinner overlay in calcpad-web.
+ */
+function getPreviewLoadingHtml(): string {
+    return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Calculating</title>
+    <style>
+        html, body { height: 100%; margin: 0; }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            background: #fff;
+            color: #333;
+            font: 14px/1.4 var(--vscode-font-family, 'Segoe UI', sans-serif);
+        }
+        .preview-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(0, 0, 0, 0.15);
+            border-top-color: #0078d4;
+            border-radius: 50%;
+            animation: preview-spin 0.8s linear infinite;
+        }
+        @keyframes preview-spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="preview-spinner"></div>
+    <span>Calculating…</span>
+</body>
+</html>`;
+}
+
+/**
+ * Shows the loading page in the preview webview only if the render outlasts
+ * PREVIEW_BUSY_DELAY_MS, so fast renders never flash it (mirrors Calcpad.Wpf's
+ * delayed spinner). Returns a function that must be called when the render ends.
+ */
+function showPreviewLoading(panel: vscode.WebviewPanel): () => void {
+    const timer = setTimeout(() => {
+        panel.webview.html = getPreviewLoadingHtml();
+    }, PREVIEW_BUSY_DELAY_MS);
+    let ended = false;
+    return () => {
+        if (ended) return;
+        ended = true;
+        clearTimeout(timer);
+    };
+}
 
 // Extends the shared PdfSettings with additional server-side fields
 interface FullPdfSettings extends FrontendPdfSettings {
@@ -538,6 +618,10 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
     // Check if content is empty
     if (!content || content.trim().length === 0) {
         outputChannel.appendLine('Content is empty - showing empty state');
+        const emptyTheme = getEffectivePreviewTheme();
+        const c = emptyTheme === 'light'
+            ? { fg: '#6e6e6e', bg: '#ffffff', link: '#0066cc' }
+            : { fg: '#858585', bg: '#1e1e1e', link: '#4FC1FF' };
         panel.webview.html = `
             <!DOCTYPE html>
             <html>
@@ -545,7 +629,7 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
                 <meta charset="UTF-8">
                 <title>CalcPad Preview${unwrapped ? ' Unwrapped' : ''}</title>
                 <style>
-                    body { color: #858585; background: var(--vscode-editor-background); padding: 20px; font-family: var(--vscode-font-family); }
+                    body { color: ${c.fg}; background: ${c.bg}; padding: 20px; font-family: var(--vscode-font-family); }
                     h3 { text-align: center; }
                     p { text-align: center; }
                     table { margin: 1em auto; border-collapse: collapse; text-align: left; font-size: 0.9em; }
@@ -553,6 +637,7 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
                     th { text-align: right; font-weight: normal; opacity: 0.7; }
                     td { font-family: var(--vscode-editor-font-family, monospace); }
                     h4 { text-align: center; margin-top: 1.5em; margin-bottom: 0.3em; }
+                    a { color: ${c.link}; }
                 </style>
             </head>
             <body>
@@ -582,6 +667,7 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         return;
     }
 
+    const endPreviewLoading = showPreviewLoading(panel);
     try {
         outputChannel.appendLine('Getting settings...');
         const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
@@ -688,6 +774,8 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         `;
 
         panel.webview.html = errorHtml;
+    } finally {
+        endPreviewLoading();
     }
 }
 
@@ -1490,6 +1578,79 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.executeCommand('workbench.view.extension.calcpad-ui');
     });
 
+    const editMetadataPropertiesCommand = vscode.commands.registerCommand('vscode-calcpad.editMetadataProperties', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) return;
+        const doc = editor.document;
+        const curLine = editor.selection.active.line;
+        const curText = doc.lineAt(curLine).text;
+
+        const revealPanel = () => {
+            vscode.commands.executeCommand('workbench.view.extension.calcpad-ui');
+            // The webview may need a beat to resolve before it can switch tabs.
+            setTimeout(() => {
+                vueUiProvider?.focusTab('metadata');
+                updateMetadataContext(vscode.window.activeTextEditor);
+            }, 200);
+        };
+
+        const moveCursorTo = (line: number) => {
+            const pos = new vscode.Position(line, doc.lineAt(line).text.length);
+            editor.selection = new vscode.Selection(pos, pos);
+        };
+
+        // Already on a metadata comment — just open the editor for it.
+        if (findMetadataCommentBlock([curText], 0)) {
+            revealPanel();
+            return;
+        }
+
+        // A metadata comment already sits directly above — move onto it.
+        if (curLine > 0 && findMetadataCommentBlock([doc.lineAt(curLine - 1).text], 0)) {
+            moveCursorTo(curLine - 1);
+            revealPanel();
+            return;
+        }
+
+        // No comment yet — seed one based on what's on this line.
+        const indent = (curText.match(/^[ \t]*/)?.[0]) ?? '';
+        const seed: MetadataCommentData = {};
+        const paramCount = parseDefinitionParamCount(curText.slice(indent.length));
+
+        if (paramCount === null) {
+            // Generic / blank line — let the user pick which property to add.
+            const lines = doc.getText().split(/\r?\n/);
+            const insideLintRegion = analyzeMetadataLine(lines, curLine).insideOpenLintRegion;
+            const options: Array<vscode.QuickPickItem & { id: string }> = [
+                { label: 'Description', detail: 'A short description', id: 'desc' },
+                { label: 'Parameter types & descriptions', detail: 'For a function or macro', id: 'params' },
+                { label: 'Settings override', detail: 'File settings applied from here on', id: 'settings' },
+                { label: 'Lint ignore', detail: 'Start a linter-suppression region', id: 'lint' },
+            ];
+            if (insideLintRegion) {
+                options.push({ label: 'End lint-ignore region', detail: 'Close the open suppression region', id: 'endlint' });
+            }
+            const pick = await vscode.window.showQuickPick(options, { placeHolder: 'Add metadata property…' });
+            if (!pick) return;
+            if (pick.id === 'params') { seed.paramTypes = ['']; seed.paramDesc = ['']; }
+            else if (pick.id === 'lint') seed.LintIgnore = [];
+            else if (pick.id === 'endlint') seed.EndLintIgnore = [];
+            // 'desc' and 'settings' create an empty comment; those sections are
+            // always available in the panel.
+        } else if (paramCount > 0) {
+            seed.paramTypes = Array<string>(paramCount).fill('');
+            seed.paramDesc = Array<string>(paramCount).fill('');
+        }
+
+        const newLineText = serializeMetadataComment(seed, indent, '');
+        await editor.edit(edit => {
+            edit.insert(new vscode.Position(curLine, 0), newLineText + '\n');
+        });
+        // The inserted comment now occupies the original line index.
+        moveCursorTo(curLine);
+        revealPanel();
+    });
+
 
     const printToPdfCommand = vscode.commands.registerCommand('vscode-calcpad.printToPdf', () => {
         runPdfExportCommand();
@@ -1707,6 +1868,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Update preview and variables when active editor changes
     const onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(editor => {
+        updateMetadataContext(editor);
         if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
             // Update preview if any panel is open
             if (wrappedPanel || unwrappedPanel) {
@@ -1719,9 +1881,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Auto-sync the preview to the cursor's source line (gated on the setting).
     let cursorSyncTimeout: NodeJS.Timeout | undefined;
+    let metadataContextTimeout: NodeJS.Timeout | undefined;
     const onDidChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(event => {
         const doc = event.textEditor.document;
         if (doc.languageId !== 'calcpad' && doc.languageId !== 'plaintext') return;
+
+        if (metadataContextTimeout) clearTimeout(metadataContextTimeout);
+        metadataContextTimeout = setTimeout(() => updateMetadataContext(event.textEditor), 150);
+
         if (!wrappedPanel && !unwrappedPanel) return;
         if (!CalcpadSettingsManager.getInstance().getExtraBool('previewCursorSync', false)) return;
         if (cursorSyncTimeout) clearTimeout(cursorSyncTimeout);
@@ -1750,6 +1917,7 @@ export async function activate(context: vscode.ExtensionContext) {
             focusPreviewToLineCommand,
             onDidChangeTextEditorSelection,
             showInsertCommand,
+            editMetadataPropertiesCommand,
             printToPdfCommand,
             saveSourceHtmlCommand,
             saveDocxCommand,

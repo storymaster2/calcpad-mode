@@ -142,8 +142,26 @@ export {
     splitIndent,
     stripCommentPrefix,
     lineHasCommentPrefix,
+    isColumnInTextContext,
     getCommentPrefixInsertColumn,
     buildHeadingLine,
     buildParagraphLine,
     buildListLines,
 } from './text/comment-formatting';
+export type {
+    MetadataCommentData,
+    MetadataCommentBlock,
+    MetadataLineContext,
+    MetadataSettingKey,
+    LintCode,
+} from './text/metadata-comment';
+export {
+    FUNCTION_PARAM_TYPES,
+    MACRO_PARAM_TYPES,
+    METADATA_SETTINGS_KEYS,
+    LINT_CODES,
+    findMetadataCommentBlock,
+    serializeMetadataComment,
+    parseDefinitionParamCount,
+    analyzeMetadataLine,
+} from './text/metadata-comment';

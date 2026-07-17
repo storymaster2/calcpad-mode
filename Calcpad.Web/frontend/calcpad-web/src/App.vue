@@ -259,6 +259,10 @@
             aria-orientation="horizontal"
           ></div>
         </template>
+        <div v-if="previewLoading" class="preview-loading-overlay">
+          <div class="preview-spinner"></div>
+          <span>Calculating…</span>
+        </div>
       </div>
     </div>
 
@@ -563,6 +567,9 @@ function gotoProblem(problem: ProblemItem): void {
 const serverConnected = ref(false)
 const sidebarVisible = ref(true)
 const previewVisible = ref(false)
+// Groups with an in-flight preview render; drives the "Calculating…" overlay.
+const previewLoadingGroups = ref(new Set<string>())
+const previewLoading = computed(() => previewLoadingGroups.value.size > 0)
 const bottomPanelOpen = ref(false)
 const activeBottomTab = ref<'problems' | 'output'>('problems')
 
@@ -732,6 +739,11 @@ function setPreviewMode(mode: PreviewMode): void {
 
 function getPreviewMode(): PreviewMode {
   return previewMode.value
+}
+
+function setPreviewLoading(groupId: string, loading: boolean): void {
+  if (loading) previewLoadingGroups.value.add(groupId)
+  else previewLoadingGroups.value.delete(groupId)
 }
 
 function setPreviewHtml(groupId: string, html: string, scrollToLine?: number): void {
@@ -1057,6 +1069,7 @@ defineExpose({
   togglePreview,
   isPreviewVisible,
   setPreviewHtml,
+  setPreviewLoading,
   scrollPreviewToSourceLine,
   setProblems,
   onGotoProblem,
