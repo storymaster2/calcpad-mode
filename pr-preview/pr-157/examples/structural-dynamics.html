@@ -2783,11 +2783,14 @@ Time-history responses are then obtained from the <a href="https://en.wikipedia.
 An <a href="#free-vibrations-of-steel-pole">animated SVG variant</a> and a <a href="#free-vibrations-of-steel-pole-plotly">Plotly variant</a> replay the mode shapes in the browser without re-running the numerical solution.</p>
 <p>The <a href="#beam-impact-analysis">beam impact sheet</a> couples a steel ball drop with a simply supported reinforced concrete beam: the perfectly inelastic collision sets the post-impact velocity from momentum conservation, the contact duration follows the <a href="https://en.wikipedia.org/wiki/Contact_mechanics#Hertzian_theory_of_non-adhesive_elastic_contact">Hertzian impact contact-duration formula</a>, and the time-history of the mid-span deflection is computed both as a single-degree-of-freedom approximation and as a full 11-node modal-superposition response with mass at every joint.</p>
 <h2 id="beam-impact-analysis">Beam Impact Analysis <span title="Animated" aria-label="Animated">🎬</span><a class="headerlink" href="#beam-impact-analysis" title="Permanent link">&para;</a></h2>
-<p>Drop-weight impact of a steel ball on a simply supported reinforced concrete beam: SDOF and 11-node MDOF modal superposition with Rayleigh damping, Hertzian impact contact duration and Duhamel integration of the impulse force.</p>
 <div class="example-grid">
 <figure>
 <figcaption>Code:</figcaption>
-<div class="highlight"><pre><span></span><code><span class="c1">&#39;Ball mass -&#39;</span><span class="nv">M_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2.1045</span><span class="na">t</span>
+<div class="highlight"><pre><span></span><code><span class="k">#val</span>
+<span class="c1">&#39;&lt;script src=&quot;https://code.jquery.com/jquery-3.6.3.min.js&quot;&gt;&lt;/script&gt;</span>
+<span class="k">#equ</span>
+<span class="c1">&#39;&lt;!-- Drop-weight impact of a steel ball on a simply supported reinforced concrete beam: SDOF and 11-node MDOF modal superposition with Rayleigh damping, Hertzian impact contact duration and Duhamel integration of the impulse force. --&gt;</span>
+<span class="c1">&#39;Ball mass -&#39;</span><span class="nv">M_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2.1045</span><span class="na">t</span>
 <span class="c1">&#39;Ball material - steel</span>
 <span class="c1">&#39;Modulus of elasticity -&#39;</span><span class="nv">E_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">206</span><span class="na">GPa</span>
 <span class="c1">&#39;Poisson′s ratio - &#39;</span><span class="nv">ν_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.3</span>
@@ -3047,7 +3050,7 @@ An <a href="#free-vibrations-of-steel-pole">animated SVG variant</a> and a <a hr
 </figure>
 <figure class="example-output">
 <figcaption>Rendered Output:</figcaption>
-<div class="calcpad-output"><!-- Drop-weight impact of a steel ball on a simply supported reinforced concrete beam: SDOF and 11-node MDOF modal superposition with Rayleigh damping, Hertzian impact contact duration and Duhamel integration of the impulse force. --> 
+<div class="calcpad-output"><script src="https://code.jquery.com/jquery-3.6.3.min.js"></script><!-- Drop-weight impact of a steel ball on a simply supported reinforced concrete beam: SDOF and 11-node MDOF modal superposition with Rayleigh damping, Hertzian impact contact duration and Duhamel integration of the impulse force. --> 
 <p>Ball mass - <span class="eq"><var>M</var><sub>s</sub> = 2.1 <i>t</i></span></p>
 <p>Ball material - steel </p>
 <p>Modulus of elasticity - <span class="eq"><var>E</var><sub>s</sub> = 206 <i>GPa</i></span></p>
@@ -17366,11 +17369,14 @@ circle.Series4 {fill:#f0d000;}
 </div>
 
 <h2 id="free-vibrations-of-steel-pole">Free Vibrations of Steel Pole <span title="Animated" aria-label="Animated">🎬</span><a class="headerlink" href="#free-vibrations-of-steel-pole" title="Permanent link">&para;</a></h2>
-<p>Same tapered steel pole as the static variant, with the lower mode shapes animated in pure SVG by frame switching driven by a small inline jQuery script.</p>
 <div class="example-grid">
 <figure>
 <figcaption>Code:</figcaption>
-<div class="highlight"><pre><span></span><code><span class="cs">&quot;Free vibrations of steel pole with variable cross-section of arbitrary shape</span>
+<div class="highlight"><pre><span></span><code><span class="k">#val</span>
+<span class="c1">&#39;&lt;script src=&quot;https://code.jquery.com/jquery-3.6.3.min.js&quot;&gt;&lt;/script&gt;</span>
+<span class="k">#equ</span>
+<span class="c1">&#39;&lt;!-- Same tapered steel pole as the static variant, with the lower mode shapes animated in pure SVG by frame switching driven by a small inline jQuery script. --&gt;</span>
+<span class="cs">&quot;Free vibrations of steel pole with variable cross-section of arbitrary shape</span>
 <span class="c1">&#39;&lt;hr/&gt;</span>
 <span class="k">#rad</span>
 <span class="c1">&#39;&lt;h3&gt;Static scheme&lt;/h3&gt;</span>
@@ -17544,7 +17550,7 @@ circle.Series4 {fill:#f0d000;}
 </figure>
 <figure class="example-output">
 <figcaption>Rendered Output:</figcaption>
-<div class="calcpad-output"><!-- Same tapered steel pole as the static variant, with the lower mode shapes animated in pure SVG by frame switching driven by a small inline jQuery script. --> 
+<div class="calcpad-output"><script src="https://code.jquery.com/jquery-3.6.3.min.js"></script><!-- Same tapered steel pole as the static variant, with the lower mode shapes animated in pure SVG by frame switching driven by a small inline jQuery script. --> 
 <div class="calcpad-h3">Free vibrations of steel pole with variable cross-section of arbitrary shape </div>
 <hr/> 
 <div class="calcpad-h3">Static scheme</div> 

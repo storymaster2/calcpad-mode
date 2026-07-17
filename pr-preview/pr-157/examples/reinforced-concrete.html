@@ -2959,11 +2959,14 @@
 <p>Serviceability is addressed by stress, crack-width and deflection checks for <a href="#sls-design-of-beam-with-rectangular-section">rectangular</a> and <a href="#sls-design-of-beam-with-tee-section">T-cross-sections</a>, with the static scheme picked from a drop-down list.
 A small <a href="#areas-of-reinforcement-bars">reinforcement-area picker</a> returns the total area <span class="arithmatex">\(A_s\)</span> for a chosen bar diameter and count.</p>
 <h2 id="areas-of-reinforcement-bars">Areas of Reinforcement Bars<a class="headerlink" href="#areas-of-reinforcement-bars" title="Permanent link">&para;</a></h2>
-<p>Lookup table that returns the total reinforcement area <span class="arithmatex">\(A_s\)</span> for a chosen bar diameter and bar count, with the cells highlighting the picked combination on hover.</p>
 <div class="example-grid">
 <figure>
 <figcaption>Code:</figcaption>
-<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;style&gt;td:hover {color:red;} table {cursor:default;}&lt;/style&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="k">#val</span>
+<span class="c1">&#39;&lt;script src=&quot;https://code.jquery.com/jquery-3.6.3.min.js&quot;&gt;&lt;/script&gt;</span>
+<span class="k">#equ</span>
+<span class="c1">&#39;&lt;!-- Lookup table that returns the total reinforcement area $A_s$ for a chosen bar diameter and bar count, with the cells highlighting the picked combination on hover. --&gt;</span>
+<span class="c1">&#39;&lt;style&gt;td:hover {color:red;} table {cursor:default;}&lt;/style&gt;</span>
 <span class="c1">&#39;Required reinforcement area -&#39;</span><span class="nv">A_s,req</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">7</span><span class="p">}</span><span class="c1">&#39;cm²</span>
 <span class="k">#pre</span>
 <span class="c1">&#39;&lt;img style=&quot;height:104pt; width:122pt;&quot; src=&quot;../../Images/structures/rc/design/bars.png&quot; alt=&quot;bars.png&quot;&gt;</span>
@@ -3020,9 +3023,9 @@ A small <a href="#areas-of-reinforcement-bars">reinforcement-area picker</a> ret
 </figure>
 <figure class="example-output">
 <figcaption>Rendered Output:</figcaption>
-<div class="calcpad-output"><!-- Lookup table that returns the total reinforcement area $A_s$ for a chosen bar diameter and bar count, with the cells highlighting the picked combination on hover. --> 
+<div class="calcpad-output"><script src="https://code.jquery.com/jquery-3.6.3.min.js"></script><!-- Lookup table that returns the total reinforcement area $A_s$ for a chosen bar diameter and bar count, with the cells highlighting the picked combination on hover. --> 
 <style>td:hover {color:red;} table {cursor:default;}</style> 
-<p>Required reinforcement area - <span class="eq"><var>A</var><sub>s,req</sub> = <u class="input-3">7</u> </span> cm² </p>
+<p>Required reinforcement area - <span class="eq"><var>A</var><sub>s,req</sub> = <u class="input-6">7</u> </span> cm² </p>
 <table class="bordered"><tr><th>Count</th><!--00--><th id="c1">1</th><th id="c2">2</th><th id="c3">3</th><th id="c4">4</th><th id="c5">5</th><th id="c6">6</th><th id="c7">6.67</th><th id="c8">7</th><th id="c9">8</th><th id="c10">8.33</th><th id="c11">9</th><th id="c12">10</th></tr><!--60--><!--01--><tr><th id="r1">Ø8</th><td align="right">0.5</td><td align="right">1.01</td><td align="right">1.51</td><td align="right">2.01</td><td align="right">2.51</td><td align="right">3.02</td><td align="right">3.35</td><td align="right">3.52</td><td align="right">4.02</td><td align="right">4.19</td><td align="right">4.52</td><td align="right">5.03</td><!--02--><tr><th id="r2">Ø10</th><td align="right">0.79</td><td align="right">1.57</td><td align="right">2.36</td><td align="right">3.14</td><td align="right">3.93</td><td align="right">4.71</td><td align="right">5.24</td><td align="right">5.5</td><td align="right">6.28</td><td align="right">6.54</td><td style="background:#EAFFCA" align="right">7.07</td><td style="background:#EAFFCA" align="right">7.85</td><!--03--><tr><th id="r3">Ø12</th><td align="right">1.13</td><td align="right">2.26</td><td align="right">3.39</td><td align="right">4.52</td><td align="right">5.65</td><td align="right">6.79</td><td style="background:#EAFFCA" align="right">7.54</td><td style="background:#EAFFCA" align="right">7.92</td><td style="background:#EAFFCA" align="right">9.05</td><td style="background:#EAFFCA" align="right">9.42</td><td style="background:#EAFFCA" align="right">10.18</td><td style="background:#EAFFCA" align="right">11.31</td><!--04--><tr><th id="r4">Ø14</th><td align="right">1.54</td><td align="right">3.08</td><td align="right">4.62</td><td align="right">6.16</td><td style="background:#EAFFCA" align="right">7.7</td><td style="background:#EAFFCA" align="right">9.24</td><td style="background:#EAFFCA" align="right">10.26</td><td style="background:#EAFFCA" align="right">10.78</td><td style="background:#EAFFCA" align="right">12.32</td><td style="background:#EAFFCA" align="right">12.83</td><td style="background:#EAFFCA" align="right">13.85</td><td style="background:#EAFFCA" align="right">15.39</td><!--05--><tr><th id="r5">Ø16</th><td align="right">2.01</td><td align="right">4.02</td><td align="right">6.03</td><td style="background:#EAFFCA" align="right">8.04</td><td style="background:#EAFFCA" align="right">10.05</td><td style="background:#EAFFCA" align="right">12.06</td><td style="background:#EAFFCA" align="right">13.4</td><td style="background:#EAFFCA" align="right">14.07</td><td style="background:#EAFFCA" align="right">16.08</td><td style="background:#EAFFCA" align="right">16.76</td><td style="background:#EAFFCA" align="right">18.1</td><td style="background:#EAFFCA" align="right">20.11</td><!--06--><tr><th id="r6">Ø18</th><td align="right">2.54</td><td align="right">5.09</td><td style="background:#EAFFCA" align="right">7.63</td><td style="background:#EAFFCA" align="right">10.18</td><td style="background:#EAFFCA" align="right">12.72</td><td style="background:#EAFFCA" align="right">15.27</td><td style="background:#EAFFCA" align="right">16.96</td><td style="background:#EAFFCA" align="right">17.81</td><td style="background:#EAFFCA" align="right">20.36</td><td style="background:#EAFFCA" align="right">21.21</td><td style="background:#EAFFCA" align="right">22.9</td><td style="background:#EAFFCA" align="right">25.45</td><!--07--><tr><th id="r7">Ø20</th><td align="right">3.14</td><td align="right">6.28</td><td style="background:#EAFFCA" align="right">9.42</td><td style="background:#EAFFCA" align="right">12.57</td><td style="background:#EAFFCA" align="right">15.71</td><td style="background:#EAFFCA" align="right">18.85</td><td style="background:#EAFFCA" align="right">20.94</td><td style="background:#EAFFCA" align="right">21.99</td><td style="background:#EAFFCA" align="right">25.13</td><td style="background:#EAFFCA" align="right">26.18</td><td style="background:#EAFFCA" align="right">28.27</td><td style="background:#EAFFCA" align="right">31.42</td><!--08--><tr><th id="r8">Ø22</th><td align="right">3.8</td><td style="background:#EAFFCA" align="right">7.6</td><td style="background:#EAFFCA" align="right">11.4</td><td style="background:#EAFFCA" align="right">15.21</td><td style="background:#EAFFCA" align="right">19.01</td><td style="background:#EAFFCA" align="right">22.81</td><td style="background:#EAFFCA" align="right">25.34</td><td style="background:#EAFFCA" align="right">26.61</td><td style="background:#EAFFCA" align="right">30.41</td><td style="background:#EAFFCA" align="right">31.68</td><td style="background:#EAFFCA" align="right">34.21</td><td style="background:#EAFFCA" align="right">38.01</td><!--09--><tr><th id="r9">Ø25</th><td align="right">4.91</td><td style="background:#EAFFCA" align="right">9.82</td><td style="background:#EAFFCA" align="right">14.73</td><td style="background:#EAFFCA" align="right">19.63</td><td style="background:#EAFFCA" align="right">24.54</td><td style="background:#EAFFCA" align="right">29.45</td><td style="background:#EAFFCA" align="right">32.72</td><td style="background:#EAFFCA" align="right">34.36</td><td style="background:#EAFFCA" align="right">39.27</td><td style="background:#EAFFCA" align="right">40.91</td><td style="background:#EAFFCA" align="right">44.18</td><td style="background:#EAFFCA" align="right">49.09</td><!--010--><tr><th id="r10">Ø28</th><td align="right">6.16</td><td style="background:#EAFFCA" align="right">12.32</td><td style="background:#EAFFCA" align="right">18.47</td><td style="background:#EAFFCA" align="right">24.63</td><td style="background:#EAFFCA" align="right">30.79</td><td style="background:#EAFFCA" align="right">36.95</td><td style="background:#EAFFCA" align="right">41.05</td><td style="background:#EAFFCA" align="right">43.1</td><td style="background:#EAFFCA" align="right">49.26</td><td style="background:#EAFFCA" align="right">51.31</td><td style="background:#EAFFCA" align="right">55.42</td><td style="background:#EAFFCA" align="right">61.58</td><!--011--><tr><th id="r11">Ø32</th><td style="background:#EAFFCA" align="right">8.04</td><td style="background:#EAFFCA" align="right">16.08</td><td style="background:#EAFFCA" align="right">24.13</td><td style="background:#EAFFCA" align="right">32.17</td><td style="background:#EAFFCA" align="right">40.21</td><td style="background:#EAFFCA" align="right">48.25</td><td style="background:#EAFFCA" align="right">53.62</td><td style="background:#EAFFCA" align="right">56.3</td><td style="background:#EAFFCA" align="right">64.34</td><td style="background:#EAFFCA" align="right">67.02</td><td style="background:#EAFFCA" align="right">72.38</td><td style="background:#EAFFCA" align="right">80.42</td></table><script>var col=0;var row=0;$("td").hover(function(){$("#r"+row+",#c"+col).css("color","black").css("background-color","#F0F0F0");col=$(this).parent().children().index($(this));row=$(this).parent().parent().children().index($(this).parent());$("#r"+row+",#c"+col).css("color","red").css("background-color","#FFF0A0");;});</script></div>
 </figure>
 </div>
@@ -5224,11 +5227,14 @@ Provide <b>doubly closed links</b>: Ø8/140mm with total area A<sub>s,w</sub> = 
 </div>
 
 <h2 id="sls-design-of-beam-with-rectangular-section">SLS Design of Beam with Rectangular Section<a class="headerlink" href="#sls-design-of-beam-with-rectangular-section" title="Permanent link">&para;</a></h2>
-<p>Serviceability checks for a rectangular beam: stress in the concrete and reinforcement, crack-width and long-term deflection, with the static scheme selected from a drop-down list (only in the Desktop version) of cantilevers and simply supported beams.</p>
 <div class="example-grid">
 <figure>
 <figcaption>Code:</figcaption>
-<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1992-1-1&lt;/small&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="k">#val</span>
+<span class="c1">&#39;&lt;script src=&quot;https://code.jquery.com/jquery-3.6.3.min.js&quot;&gt;&lt;/script&gt;</span>
+<span class="k">#equ</span>
+<span class="c1">&#39;&lt;!-- Serviceability checks for a rectangular beam: stress in the concrete and reinforcement, crack-width and long-term deflection, with the static scheme selected from a drop-down list (only in the Desktop version) of cantilevers and simply supported beams. --&gt;</span>
+<span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1992-1-1&lt;/small&gt;</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Static scheme&lt;/h4&gt;</span>
 <span class="c1">&#39;&lt;p id=&quot;type&quot; class=&quot;flip_base&quot; style=&quot;display:none&quot;&gt;&#39;</span><span class="nv">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;&lt;/p&gt;</span>
@@ -5615,45 +5621,45 @@ Provide <b>doubly closed links</b>: Ø8/140mm with total area A<sub>s,w</sub> = 
 </figure>
 <figure class="example-output">
 <figcaption>Rendered Output:</figcaption>
-<div class="calcpad-output"><!-- Serviceability checks for a rectangular beam: stress in the concrete and reinforcement, crack-width and long-term deflection, with the static scheme selected from a drop-down list (only in the Desktop version) of cantilevers and simply supported beams. --> 
+<div class="calcpad-output"><script src="https://code.jquery.com/jquery-3.6.3.min.js"></script><!-- Serviceability checks for a rectangular beam: stress in the concrete and reinforcement, crack-width and long-term deflection, with the static scheme selected from a drop-down list (only in the Desktop version) of cantilevers and simply supported beams. --> 
 <small>According to <strong>Eurocode</strong>: EN 1992-1-1</small> 
 <div style="max-width:180mm"> 
 <div class="calcpad-h4">Static scheme</div> 
-<p id="type" class="flip_base" style="display:none"> <span class="eq"><var>type</var> = <u class="input-5">0</u> </span> </p> 
+<p id="type" class="flip_base" style="display:none"> <span class="eq"><var>type</var> = <u class="input-8">0</u> </span> </p> 
 <img class="side flip flip_0" src="Images/structures/rc/design/deflection-beam-uniform.png" alt="deflection-beam-uniform.png" style="width:150pt;"> 
 <p>Simply supported beam with uniformly distributed load </p>
-<p>Beam length - <span class="eq"><var>L</var> = <u class="input-40">7</u> </span> m </p>
+<p>Beam length - <span class="eq"><var>L</var> = <u class="input-43">7</u> </span> m </p>
 <p>Exposure class: </p>
-<p id="w_max" style="display:none"> <span class="eq"><var>w</var><sub>max</sub> = <u class="input-42">0.4</u> </span> </p> 
+<p id="w_max" style="display:none"> <span class="eq"><var>w</var><sub>max</sub> = <u class="input-45">0.4</u> </span> </p> 
 <p>X0 or XC1 </p>
 <p></p>
 <div class="calcpad-h4">Bending moments</div> 
-<p>Characteristic combination (<i>g</i> + <i>q</i>) - <span class="eq"><var>M</var><sub>k</sub> = <u class="input-57">200</u> </span> kNm </p>
-<p>Quasi-permanent combination (<i>g</i> + <i>ψ</i><sub>2</sub><i>q</i>) - <span class="eq"><var>M</var><sub>qp</sub> = <u class="input-58">150</u> </span> kNm </p>
+<p>Characteristic combination (<i>g</i> + <i>q</i>) - <span class="eq"><var>M</var><sub>k</sub> = <u class="input-60">200</u> </span> kNm </p>
+<p>Quasi-permanent combination (<i>g</i> + <i>ψ</i><sub>2</sub><i>q</i>) - <span class="eq"><var>M</var><sub>qp</sub> = <u class="input-61">150</u> </span> kNm </p>
 <p></p>
 <img class="side" src="Images/structures/rc/design/beam-section.png" alt="beam-section.png" style="width:120pt;"> 
 <div class="calcpad-h4">Cross section dimensions</div> 
-<p>Width - <span class="eq"><var>b</var> = <u class="input-62">300</u> </span> mm, Height - <span class="eq"><var>h</var> = <u class="input-62">650</u> </span> mm </p>
-<p>Concrete cover - <span class="eq"><var>c</var> = <u class="input-63">30</u> </span> mm (to bars surface) </p>
+<p>Width - <span class="eq"><var>b</var> = <u class="input-65">300</u> </span> mm, Height - <span class="eq"><var>h</var> = <u class="input-65">650</u> </span> mm </p>
+<p>Concrete cover - <span class="eq"><var>c</var> = <u class="input-66">30</u> </span> mm (to bars surface) </p>
 <p><b>Tension reinforcement</b></p> 
-<p>Bar count - <span class="eq"><var>n</var><sub>1</sub> = <u class="input-65">4</u> </span> with diameter - <span class="eq"><var>Φ</var><sub>1</sub> = <u class="input-65">20</u> </span> mm </p>
+<p>Bar count - <span class="eq"><var>n</var><sub>1</sub> = <u class="input-68">4</u> </span> with diameter - <span class="eq"><var>Φ</var><sub>1</sub> = <u class="input-68">20</u> </span> mm </p>
 <p>Reinforcement area - <span class="eq"><var>A</var><sub>s1</sub> = <span class="dvc"><var>n</var><sub>1</sub> · <var>π</var> · <var>Φ</var><sub>1</sub><sup>2</sup><span class="dvl"></span>4</span> = <span class="dvc">4 · 3.14 · 20<sup>2</sup><span class="dvl"></span>4</span> = 1256.64</span> mm² </p>
-<p>Concrete cover to the center of reinforcement - <span class="eq"><var>d</var><sub>1</sub> = <u class="input-69">45</u> </span> mm </p>
+<p>Concrete cover to the center of reinforcement - <span class="eq"><var>d</var><sub>1</sub> = <u class="input-72">45</u> </span> mm </p>
 <p>Effective cross section depth - <span class="eq"><var>d</var> = <var>h</var> − <var>d</var><sub>1</sub> = 650 − 45 = 605</span> mm </p>
-<p>Spacing between bar centers - <span class="eq"><var>s</var> = <u class="input-73">74</u> </span> mm </p>
+<p>Spacing between bar centers - <span class="eq"><var>s</var> = <u class="input-76">74</u> </span> mm </p>
 <p><b>Compression reinforcement</b></p> 
-<p>Bar count - <span class="eq"><var>n</var><sub>2</sub> = <u class="input-75">2</u> </span> with diameter - <span class="eq"><var>Φ</var><sub>2</sub> = <u class="input-75">14</u> </span> mm </p>
+<p>Bar count - <span class="eq"><var>n</var><sub>2</sub> = <u class="input-78">2</u> </span> with diameter - <span class="eq"><var>Φ</var><sub>2</sub> = <u class="input-78">14</u> </span> mm </p>
 <p>Reinforcement area - <span class="eq"><var>A</var><sub>s2</sub> = <span class="dvc"><var>n</var><sub>2</sub> · <var>π</var> · <var>Φ</var><sub>2</sub><sup>2</sup><span class="dvl"></span>4</span> = <span class="dvc">2 · 3.14 · 14<sup>2</sup><span class="dvl"></span>4</span> = 307.88</span> mm² </p>
-<p>Concrete cover to the center of reinforcement - <span class="eq"><var>d</var><sub>2</sub> = <u class="input-79">45</u> </span> mm </p>
+<p>Concrete cover to the center of reinforcement - <span class="eq"><var>d</var><sub>2</sub> = <u class="input-82">45</u> </span> mm </p>
 <p></p>
 <div class="calcpad-h4">Material properties</div> 
 <p><b>Concrete</b> [EN 1992-1-1, Table 3.1]</p> 
-<p>Characteristic compressive cylinder strength - <span class="eq"><var>f</var><sub>ck</sub> = <u class="input-83">20</u> </span> MPa </p>
+<p>Characteristic compressive cylinder strength - <span class="eq"><var>f</var><sub>ck</sub> = <u class="input-86">20</u> </span> MPa </p>
 <p>Mean value of cylinder compressive strength - <span class="eq"><var>f</var><sub>cm</sub> = <var>f</var><sub>ck</sub> + 8 = 20 + 8 = 28</span> MPa </p>
 <p>Mean value of axial tensile strength - <span class="eq"><var>f</var><sub>ctm</sub> = 0.3 · <var>f</var><sub>ck</sub><sup><span class="dvc">2<span class="dvl"></span>3</span></sup> = 0.3 · 20<sup><span class="dvc">2<span class="dvl"></span>3</span></sup> = 2.21</span> MPa </p>
 <p>Secant modulus of elasticity - <span class="eq"><var>E</var><sub>cm</sub> = 22 · <span class="b1">(</span><span class="dvc"><var>f</var><sub>cm</sub><span class="dvl"></span>10</span><span class="b1">)</span><sup class="raised">0.3</sup> = 22 · <span class="b1">(</span><span class="dvc">28<span class="dvl"></span>10</span><span class="b1">)</span><sup class="raised">0.3</sup> = 29.96</span> GPa </p>
 <p><b>Steel</b></p> 
-<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>yk</sub> = <u class="input-90">500</u> </span> MPa </p>
+<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>yk</sub> = <u class="input-93">500</u> </span> MPa </p>
 <p>Modulus of elasticity - <span class="eq"><var>E</var><sub>s</sub> = 200</span> GPa </p>
 <p>Ratio of steel to conrete moduli of elasticity - <span class="eq"><var>α</var> = <span class="dvc"><var>E</var><sub>s</sub><span class="dvl"></span><var>E</var><sub>cm</sub></span> = <span class="dvc">200<span class="dvl"></span>29.96</span> = 6.68</span></p>
 <p></p>
@@ -5661,7 +5667,7 @@ Provide <b>doubly closed links</b>: Ø8/140mm with total area A<sub>s,w</sub> = 
 <div class="calcpad-h4">Concrete creep and shrinkage</div> 
 <p class = "ref">[EN 1992-1-1 B.1(1)]</p> 
 <p><b>Creep</b></p> 
-<p>Relative humidity of the environment - <span class="eq"><var>RH</var> = <u class="input-100">50</u> </span> % </p>
+<p>Relative humidity of the environment - <span class="eq"><var>RH</var> = <u class="input-103">50</u> </span> % </p>
 <p>Perimeter of cross section in contact with the atmosphere </p>
 <p><span class="eq"><var>u</var> = 2 ·  ( <var>b</var> + <var>h</var> )  = 2 ·  ( 300 + 650 )  = 1900</span> mm </p>
 <p>Cross section area - <span class="eq"><var>A</var><sub>c</sub> = <var>b</var> · <var>h</var> = 300 · 650 = 195000</span> mm² </p>
@@ -5847,11 +5853,14 @@ Provide <b>doubly closed links</b>: Ø8/140mm with total area A<sub>s,w</sub> = 
 </div>
 
 <h2 id="sls-design-of-beam-with-tee-section">SLS Design of Beam with Tee Section<a class="headerlink" href="#sls-design-of-beam-with-tee-section" title="Permanent link">&para;</a></h2>
-<p>Serviceability checks for a T-beam: same stress, crack-width and deflection verifications as the rectangular variant, with the cracked-section second moment of area derived for both flange-in-compression and web-in-compression cases.</p>
 <div class="example-grid">
 <figure>
 <figcaption>Code:</figcaption>
-<div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1992-1-1&lt;/small&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="k">#val</span>
+<span class="c1">&#39;&lt;script src=&quot;https://code.jquery.com/jquery-3.6.3.min.js&quot;&gt;&lt;/script&gt;</span>
+<span class="k">#equ</span>
+<span class="c1">&#39;&lt;!-- Serviceability checks for a T-beam: same stress, crack-width and deflection verifications as the rectangular variant, with the cracked-section second moment of area derived for both flange-in-compression and web-in-compression cases. --&gt;</span>
+<span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1992-1-1&lt;/small&gt;</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Static scheme&lt;/h4&gt;</span>
 <span class="c1">&#39;&lt;p id=&quot;type&quot; class=&quot;flip_base&quot; style=&quot;display:none&quot;&gt;&#39;</span><span class="nv">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;&lt;/p&gt;</span>
@@ -6249,46 +6258,46 @@ Provide <b>doubly closed links</b>: Ø8/140mm with total area A<sub>s,w</sub> = 
 </figure>
 <figure class="example-output">
 <figcaption>Rendered Output:</figcaption>
-<div class="calcpad-output"><!-- Serviceability checks for a T-beam: same stress, crack-width and deflection verifications as the rectangular variant, with the cracked-section second moment of area derived for both flange-in-compression and web-in-compression cases. --> 
+<div class="calcpad-output"><script src="https://code.jquery.com/jquery-3.6.3.min.js"></script><!-- Serviceability checks for a T-beam: same stress, crack-width and deflection verifications as the rectangular variant, with the cracked-section second moment of area derived for both flange-in-compression and web-in-compression cases. --> 
 <small>According to <strong>Eurocode</strong>: EN 1992-1-1</small> 
 <div style="max-width:180mm"> 
 <div class="calcpad-h4">Static scheme</div> 
-<p id="type" class="flip_base" style="display:none"> <span class="eq"><var>type</var> = <u class="input-5">0</u> </span> </p> 
+<p id="type" class="flip_base" style="display:none"> <span class="eq"><var>type</var> = <u class="input-8">0</u> </span> </p> 
 <img class="side flip flip_0" src="Images/structures/rc/design/deflection-beam-uniform.png" alt="deflection-beam-uniform.png" style="width:150pt;"> 
 <p>Simply supported beam with uniformly distributed load </p>
-<p>Beam length - <span class="eq"><var>L</var> = <u class="input-40">5.75</u> </span> m </p>
+<p>Beam length - <span class="eq"><var>L</var> = <u class="input-43">5.75</u> </span> m </p>
 <p>Exposure class: </p>
-<p id="w_max" style="display:none"> <span class="eq"><var>w</var><sub>max</sub> = <u class="input-42">0.4</u> </span> </p> 
+<p id="w_max" style="display:none"> <span class="eq"><var>w</var><sub>max</sub> = <u class="input-45">0.4</u> </span> </p> 
 <p>X0 or XC1 </p>
 <p></p>
 <div class="calcpad-h4">Bending moments</div> 
-<p>Characteristic combination (<i>g</i> + <i>q</i>) - <span class="eq"><var>M</var><sub>k</sub> = <u class="input-57">200</u> </span> kNm </p>
-<p>Quasi-permanent combination (<i>g</i> + <i>ψ</i><sub>2</sub><i>q</i>) - <span class="eq"><var>M</var><sub>qp</sub> = <u class="input-58">157</u> </span> kNm </p>
+<p>Characteristic combination (<i>g</i> + <i>q</i>) - <span class="eq"><var>M</var><sub>k</sub> = <u class="input-60">200</u> </span> kNm </p>
+<p>Quasi-permanent combination (<i>g</i> + <i>ψ</i><sub>2</sub><i>q</i>) - <span class="eq"><var>M</var><sub>qp</sub> = <u class="input-61">157</u> </span> kNm </p>
 <p></p>
 <img class="side" src="Images/structures/rc/design/beam-tsection.png" alt="beam-tsection.png" style="width:150pt;"> 
 <div class="calcpad-h4">Cross section dimensions</div> 
-<p>Stem: <span class="eq"><var>b</var> = <u class="input-62">250</u> </span> mm, <span class="eq"><var>h</var> = <u class="input-62">550</u> </span> mm </p>
-<p>Flange: <span class="eq"><var>b</var><sub>f</sub> = <u class="input-63">2400</u> </span> mm, <span class="eq"><var>h</var><sub>f</sub> = <u class="input-63">140</u> </span> mm </p>
-<p>Concrete cover - <span class="eq"><var>c</var> = <u class="input-64">30</u> </span> mm (to bars surface) </p>
+<p>Stem: <span class="eq"><var>b</var> = <u class="input-65">250</u> </span> mm, <span class="eq"><var>h</var> = <u class="input-65">550</u> </span> mm </p>
+<p>Flange: <span class="eq"><var>b</var><sub>f</sub> = <u class="input-66">2400</u> </span> mm, <span class="eq"><var>h</var><sub>f</sub> = <u class="input-66">140</u> </span> mm </p>
+<p>Concrete cover - <span class="eq"><var>c</var> = <u class="input-67">30</u> </span> mm (to bars surface) </p>
 <p><b>Tension reinforcement</b></p> 
-<p>Bar count - <span class="eq"><var>n</var><sub>1</sub> = <u class="input-66">4</u> </span> with diameter - <span class="eq"><var>Φ</var><sub>1</sub> = <u class="input-66">20</u> </span> mm </p>
+<p>Bar count - <span class="eq"><var>n</var><sub>1</sub> = <u class="input-69">4</u> </span> with diameter - <span class="eq"><var>Φ</var><sub>1</sub> = <u class="input-69">20</u> </span> mm </p>
 <p>Reinforcement area - <span class="eq"><var>A</var><sub>s1</sub> = <span class="dvc"><var>n</var><sub>1</sub> · <var>π</var> · <var>Φ</var><sub>1</sub><sup>2</sup><span class="dvl"></span>4</span> = <span class="dvc">4 · 3.14 · 20<sup>2</sup><span class="dvl"></span>4</span> = 1256.64</span> mm² </p>
-<p>Concrete cover to the center of reinforcement - <span class="eq"><var>d</var><sub>1</sub> = <u class="input-70">45</u> </span> mm </p>
+<p>Concrete cover to the center of reinforcement - <span class="eq"><var>d</var><sub>1</sub> = <u class="input-73">45</u> </span> mm </p>
 <p>Effective cross section depth - <span class="eq"><var>d</var> = <var>h</var> − <var>d</var><sub>1</sub> = 550 − 45 = 505</span> mm </p>
-<p>Spacing between bar centers - <span class="eq"><var>s</var> = <u class="input-74">50</u> </span> mm </p>
+<p>Spacing between bar centers - <span class="eq"><var>s</var> = <u class="input-77">50</u> </span> mm </p>
 <p><b>Compression reinforcement</b></p> 
-<p>Bar count - <span class="eq"><var>n</var><sub>2</sub> = <u class="input-76">2</u> </span> with diameter - <span class="eq"><var>Φ</var><sub>2</sub> = <u class="input-76">8</u> </span> mm </p>
+<p>Bar count - <span class="eq"><var>n</var><sub>2</sub> = <u class="input-79">2</u> </span> with diameter - <span class="eq"><var>Φ</var><sub>2</sub> = <u class="input-79">8</u> </span> mm </p>
 <p>Reinforcement area - <span class="eq"><var>A</var><sub>s2</sub> = <span class="dvc"><var>n</var><sub>2</sub> · <var>π</var> · <var>Φ</var><sub>2</sub><sup>2</sup><span class="dvl"></span>4</span> = <span class="dvc">2 · 3.14 · 8<sup>2</sup><span class="dvl"></span>4</span> = 100.53</span> mm² </p>
-<p>Concrete cover to the center of reinforcement - <span class="eq"><var>d</var><sub>2</sub> = <u class="input-80">45</u> </span> mm </p>
+<p>Concrete cover to the center of reinforcement - <span class="eq"><var>d</var><sub>2</sub> = <u class="input-83">45</u> </span> mm </p>
 <p></p>
 <div class="calcpad-h4">Material properties</div> 
 <p><b>Concrete</b> [EN 1992-1-1, Table 3.1]</p> 
-<p>Characteristic compressive cylinder strength - <span class="eq"><var>f</var><sub>ck</sub> = <u class="input-84">25</u> </span> MPa </p>
+<p>Characteristic compressive cylinder strength - <span class="eq"><var>f</var><sub>ck</sub> = <u class="input-87">25</u> </span> MPa </p>
 <p>Mean value of cylinder compressive strength - <span class="eq"><var>f</var><sub>cm</sub> = <var>f</var><sub>ck</sub> + 8 = 25 + 8 = 33</span> MPa </p>
 <p>Mean value of axial tensile strength - <span class="eq"><var>f</var><sub>ctm</sub> = 0.3 · <var>f</var><sub>ck</sub><sup><span class="dvc">2<span class="dvl"></span>3</span></sup> = 0.3 · 25<sup><span class="dvc">2<span class="dvl"></span>3</span></sup> = 2.56</span> MPa </p>
 <p>Secant modulus of elasticity - <span class="eq"><var>E</var><sub>cm</sub> = 22 · <span class="b1">(</span><span class="dvc"><var>f</var><sub>cm</sub><span class="dvl"></span>10</span><span class="b1">)</span><sup class="raised">0.3</sup> = 22 · <span class="b1">(</span><span class="dvc">33<span class="dvl"></span>10</span><span class="b1">)</span><sup class="raised">0.3</sup> = 31.48</span> GPa </p>
 <p><b>Steel</b></p> 
-<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>yk</sub> = <u class="input-91">500</u> </span> MPa </p>
+<p>Characteristic yield strength - <span class="eq"><var>f</var><sub>yk</sub> = <u class="input-94">500</u> </span> MPa </p>
 <p>Modulus of elasticity - <span class="eq"><var>E</var><sub>s</sub> = 200</span> GPa </p>
 <p>Ratio of steel to concrete moduli of elasticity - <span class="eq"><var>α</var> = <span class="dvc"><var>E</var><sub>s</sub><span class="dvl"></span><var>E</var><sub>cm</sub></span> = <span class="dvc">200<span class="dvl"></span>31.48</span> = 6.35</span></p>
 <p></p>
@@ -6296,7 +6305,7 @@ Provide <b>doubly closed links</b>: Ø8/140mm with total area A<sub>s,w</sub> = 
 <div class="calcpad-h4">Concrete creep and shrinkage</div> 
 <p class = "ref">[EN 1992-1-1 B.1(1)]</p> 
 <p><b>Creep</b></p> 
-<p>Relative humidity of the environment - <span class="eq"><var>RH</var> = <u class="input-101">60</u> </span> % </p>
+<p>Relative humidity of the environment - <span class="eq"><var>RH</var> = <u class="input-104">60</u> </span> % </p>
 <p>Perimeter of cross section in contact with the atmosphere </p>
 <p><span class="eq"><var>u</var> = 2 ·  ( <var>b</var> + <var>h</var> )  = 2 ·  ( 250 + 550 )  = 1600</span> mm </p>
 <p>Cross section area - <span class="eq"><var>A</var><sub>c</sub> = <var>b</var> · <var>h</var> = 250 · 550 = 137500</span> mm² </p>
