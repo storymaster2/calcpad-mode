@@ -1,3 +1,6 @@
+#val
+'<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+#equ
 '<!-- Time-swept animation of two circular surface waves with different amplitudes and frequencies, summed on a 2D grid via `$Map` and rendered as a sequence of CSS-toggled SVG frames. -->
 'Assoc. prof. Tadeusz Szumiata, PhD, Radom University, Poland
 

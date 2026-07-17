@@ -1,3 +1,6 @@
+#val
+'<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+#equ
 '<!-- Serviceability checks for a T-beam: same stress, crack-width and deflection verifications as the rectangular variant, with the cracked-section second moment of area derived for both flange-in-compression and web-in-compression cases. -->
 '<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm">

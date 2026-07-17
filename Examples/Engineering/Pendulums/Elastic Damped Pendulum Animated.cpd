@@ -1,3 +1,6 @@
+#val
+'<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+#equ
 '<!-- Two-DOF elastic pendulum: the rigid rod is replaced by an axial spring of stiffness $k_s$, giving coupled radial and angular equations of motion with independent damping factors.
 'RK4 integration drives the SVG animation. -->
 #rad
