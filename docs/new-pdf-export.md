@@ -34,20 +34,6 @@ On Linux, if no browser is found the app shows you the exact package to install 
 - **Scale** — a zoom factor from 0.1 to 2.0 for shrinking or enlarging the content.
 - **Background** — colors and background images are printed by default.
 
-## Headers and footers
-
-Turn headers and/or footers on in the PDF tab and fill in the fields you want:
-
-**Header** — document title (bold, top-left), a subtitle beneath it, custom center text, and a timestamp (top-right). A thin separator line sits below it.
-
-**Footer** — author and company (left), custom center text, and page numbers with the project name (right). A thin separator line sits above it.
-
-The timestamp uses a standard .NET date/time format string (defaults to a short date-and-time format).
-
-## Letterhead background
-
-Point the **background PDF** option at a PDF file and it's drawn behind every page, stretched to fit — perfect for company letterhead or a title-block template.
-
 ## Excluding sections from the PDF (NoPrint)
 
 Wrap sections you want visible on screen but omitted from the PDF in `NoPrintStart` / `NoPrintEnd` markers:
@@ -56,8 +42,9 @@ Wrap sections you want visible on screen but omitted from the PDF in `NoPrintSta
 '<!--{"NoPrintStart": true}-->
 'These lines are visible in the preview but stripped from the PDF.
 debug_x = 5
-debug_y = x + 1
+debug_y = debug_x + 1
 '<!--{"NoPrintEnd": true}-->
+'This prints!'
 ```
 
 Good to know:

@@ -43,7 +43,6 @@ interface CalcpadRequest {
   settings?: Settings;          // Optional Calcpad settings (math, plot, units)
   forceUnwrappedCode?: boolean; // If true, return code without calculation (default: false)
   theme?: string;               // "light" or "dark" (default: "light")
-  apiTimeoutMs?: number;        // Timeout for remote URL fetches in ms (default: 10000)
   sourceFilePath?: string;      // Full path of source file on client (used to resolve relative #include against the parent file's directory)
 }
 ```
@@ -267,7 +266,6 @@ Lint Calcpad source code and return diagnostics (errors, warnings, and informati
 ```typescript
 interface LintRequest {
   content: string;          // The Calcpad source code to lint
-  apiTimeoutMs?: number;    // Timeout for remote URL fetches in ms (default: 10000)
   sourceFilePath?: string;  // Full path of source file on client
 }
 ```
@@ -390,7 +388,6 @@ Get detailed definitions (macros, functions, variables, custom units) from Calcp
 ```typescript
 interface DefinitionsRequest {
   content: string;          // The Calcpad source code to analyze
-  apiTimeoutMs?: number;    // Timeout for remote URL fetches in ms (default: 10000)
   sourceFilePath?: string;  // Full path of source file on client
 }
 ```
@@ -722,15 +719,13 @@ GET /api/calcpad/snippets?category=Functions/Trigonometric
 
 2. **Source file path** — Pass `sourceFilePath` when the client knows the full path of the source file. This is used to resolve relative `#include` and `#read` paths against the parent file's directory.
 
-3. **Remote `#include`** — `#include https://…` and `#include http://…` are fetched server-side via [`Router.FetchUrlAsync`](Services/Router.cs) with a 10-second default timeout (overridable per request via `apiTimeoutMs`). Non-HTTP/HTTPS URLs are rejected. There is no API routing layer, no auth headers, no domain allowlist, and no server-side remote-content cache on this branch.
+3. **Token positions** — For syntax highlighting, use `column` and `length` to determine the exact span of each token for colorization.
 
-4. **Token positions** — For syntax highlighting, use `column` and `length` to determine the exact span of each token for colorization.
+4. **Error ranges** — For the linter, use `column` and `endColumn` to underline or highlight the problematic code region.
 
-5. **Error ranges** — For the linter, use `column` and `endColumn` to underline or highlight the problematic code region.
+5. **Incremental updates** — Use `/highlight-line` for real-time syntax highlighting as the user types, then periodically call `/lint` for full validation.
 
-6. **Incremental updates** — Use `/highlight-line` for real-time syntax highlighting as the user types, then periodically call `/lint` for full validation.
-
-7. **PDF / DOCX generation** — Call `/convert` to obtain HTML and pass it to `/pdf`, or call `/docx` directly with Calcpad source. Check `/pdf/health` to verify the PDF service is available.
+6. **PDF / DOCX generation** — Call `/convert` to obtain HTML and pass it to `/pdf`, or call `/docx` directly with Calcpad source. Check `/pdf/health` to verify the PDF service is available.
 
 ---
 

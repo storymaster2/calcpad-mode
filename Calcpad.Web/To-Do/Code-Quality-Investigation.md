@@ -27,11 +27,6 @@ Findings from an investigation of `Calcpad.Web/frontend` (monorepo: `calcpad-fro
 
 ## Backend findings
 
-### High severity
-
--   **Sync-over-async.** [CalcpadService.cs:36](../backend/Services/CalcpadService.cs#L36) uses `Router.FetchUrlAsync().GetAwaiter().GetResult()` inside an async context — deadlock / thread-pool foot-gun.
--   **`HttpClient` per request** at [Router.cs:25](../backend/Services/Router.cs#L25) and [CalcpadApiService.cs:88](../backend/Services/CalcpadApiService.cs#L88). Should be `IHttpClientFactory` or a static instance.
-
 ### Medium severity
 
 -   **Shadowed endpoints.** `/convert` and `/convert-unwrapped` in [CalcpadController.cs:31-73](../backend/Controllers/CalcpadController.cs#L31-L73) differ only by one flag; merge with a query param.

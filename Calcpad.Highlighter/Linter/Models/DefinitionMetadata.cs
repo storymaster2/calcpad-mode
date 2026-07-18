@@ -16,7 +16,10 @@ namespace Calcpad.Highlighter.Linter.Models
         public List<string> ParamTypes { get; set; }
         public List<string> ParamDescriptions { get; set; }
 
-        /// <summary>Valid paramType values for custom functions (f(x;y) = ...)</summary>
+        /// <summary>User-declared return type for custom functions (value/vector/matrix/any).</summary>
+        public string ReturnType { get; set; }
+
+        /// <summary>Valid paramType and returnType values for custom functions (f(x;y) = ...)</summary>
         public static readonly HashSet<string> ValidFunctionParamTypes = new(StringComparer.OrdinalIgnoreCase)
             { "value", "vector", "matrix", "any" };
 
@@ -25,7 +28,25 @@ namespace Calcpad.Highlighter.Linter.Models
             new(Enum.GetNames(typeof(TokenType)), StringComparer.OrdinalIgnoreCase);
 
         /// <summary>All known JSON property names for metadata comments</summary>
-        public static readonly string[] KnownProperties = { "desc", "paramTypes", "paramDesc" };
+        public static readonly string[] KnownProperties = { "desc", "paramTypes", "paramDesc", "returnType" };
+
+        /// <summary>
+        /// Maps a metadata returnType string to a <see cref="CalcpadType"/>, or null when
+        /// the value isn't a recognized function return type. "any" maps to Various.
+        /// </summary>
+        public static CalcpadType? ParseFunctionReturnType(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return null;
+            return value.ToLowerInvariant() switch
+            {
+                "value" => CalcpadType.Value,
+                "vector" => CalcpadType.Vector,
+                "matrix" => CalcpadType.Matrix,
+                "any" => CalcpadType.Various,
+                _ => null
+            };
+        }
 
         /// <summary>
         /// Attempts to parse a metadata comment from a line of text.
@@ -101,6 +122,12 @@ namespace Calcpad.Highlighter.Linter.Models
                     result.ParamDescriptions = new List<string>();
                     foreach (var item in descsProp.EnumerateArray())
                         result.ParamDescriptions.Add(item.GetString() ?? string.Empty);
+                    hasAny = true;
+                }
+
+                if (root.TryGetProperty("returnType", out var returnProp) && returnProp.ValueKind == JsonValueKind.String)
+                {
+                    result.ReturnType = returnProp.GetString();
                     hasAny = true;
                 }
 

@@ -5,7 +5,7 @@
  * Why: vscode-calcpad and calcpad-desktop both ship the .NET server
  * alongside their frontend. Hand-syncing a single Calcpad.Server.dll
  * across the package boundary has been the source of every
- * "AWSSDK.S3 not found", "endpoint 404", and "deps.json out of date"
+ * "PuppeteerSharp not found", "endpoint 404", and "deps.json out of date"
  * bug we've hit. This script publishes the backend with `dotnet publish`,
  * then mirrors the output into the chosen target so the deps.json,
  * runtimeconfig.json, native apphost, and every transitive dependency
@@ -31,7 +31,7 @@
  *   --strip-external-deps  After mirroring, delete the managed NuGet DLLs that
  *                          the VS Code extension downloads at first activation
  *                          (DocumentFormat.OpenXml, PuppeteerSharp, EF Core,
- *                          AWSSDK, PDFsharp). Trims ~20 MB from the VSIX.
+ *                          PDFsharp). Trims ~20 MB from the VSIX.
  *                          Pair with --framework-dependent for vscode-calcpad;
  *                          do NOT pass for calcpad-desktop.
  *
@@ -63,10 +63,6 @@ const EXTERNAL_DEP_DLLS = [
     'DocumentFormat.OpenXml.Framework.dll',
     'PuppeteerSharp.dll',
     'WebDriverBiDi.dll',
-    'Microsoft.EntityFrameworkCore.dll',
-    'Microsoft.EntityFrameworkCore.Relational.dll',
-    'AWSSDK.Core.dll',
-    'AWSSDK.S3.dll',
     'PdfSharp.dll',
     'PdfSharp.BarCodes.dll',
     'PdfSharp.Charting.dll',
