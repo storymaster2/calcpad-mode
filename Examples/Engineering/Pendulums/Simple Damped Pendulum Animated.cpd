@@ -1,3 +1,6 @@
+#val
+'<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+#equ
 '<!-- Adds linear viscous damping $b = β\, b_{cr}$ to the simple pendulum and integrates the resulting nonlinear ODE with RK4.
 'The animation shows amplitude decay toward equilibrium for an arbitrary damping ratio. -->
 #rad

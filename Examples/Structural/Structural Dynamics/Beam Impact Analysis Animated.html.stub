@@ -1,4 +1,6 @@
 <div class="calcpad-output">
+ <script src="https://code.jquery.com/jquery-3.6.3.min.js">
+ </script>
  <!-- Drop-weight impact of a steel ball on a simply supported reinforced concrete beam: SDOF and 11-node MDOF modal superposition with Rayleigh damping, Hertzian impact contact duration and Duhamel integration of the impulse force. -->
  <p>
   Ball mass -

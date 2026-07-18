@@ -1,3 +1,6 @@
+#val
+'<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+#equ
 '<!-- Damped [double pendulum](https://en.wikipedia.org/wiki/Double_pendulum): two coupled rotational ODEs in $θ_1$ and $θ_2$ integrated with RK4.
 'The chaotic trajectory of the lower bob is animated in SVG and traced as a phase plot. -->
 #rad

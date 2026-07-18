@@ -54,6 +54,7 @@
 -   Make light mode for empty document HTML
 -   JSON html comment frontmatter containing program version,  project name, project base path, author, saved timestamp, ui overrides, file specific setting overrides. This can all be unified under a single object in the first code line, some of which get updated by the software automatically. Add UI to edit front matter fields and hide frontmatter code by default in the editor with setting to show it.
 -   Add line breaks within json html comments as valid line continuation (that ends when the closing comment is given)
+-   Add a way to favorite snippets or macros/custom functions and have that show up in its own dropdown.
 
 ### Bugs
 
@@ -88,6 +89,7 @@
 
 ## Calcpad.Highlighter
 
+-   Add page break to HTML snippets
 -   Order greek symbols by greek alphabet instead of english
 -   Add linting for HTML/markdown mode
 -   Add information check for re-defining a variable as a different type

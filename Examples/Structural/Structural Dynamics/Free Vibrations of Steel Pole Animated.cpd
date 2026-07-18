@@ -1,3 +1,6 @@
+#val
+'<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+#equ
 '<!-- Same tapered steel pole as the static variant, with the lower mode shapes animated in pure SVG by frame switching driven by a small inline jQuery script. -->
 "Free vibrations of steel pole with variable cross-section of arbitrary shape
 '<hr/>

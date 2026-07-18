@@ -1,4 +1,6 @@
 <div class="calcpad-output">
+ <script src="https://code.jquery.com/jquery-3.6.3.min.js">
+ </script>
  <!-- Animated variant of the Koch snowflake: every iteration becomes an SVG layer, toggled in sequence by CSS so the limit curve emerges over time. -->
  <p>Initial triangle coordinates</p>
  <p>

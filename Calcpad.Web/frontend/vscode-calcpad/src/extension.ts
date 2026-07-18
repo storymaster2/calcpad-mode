@@ -1195,6 +1195,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         settingsManager.setLocalServerUrl(serverUrl);
                         apiClient.setBaseUrl(serverUrl);
                         outputChannel.appendLine(`Local server started at ${serverUrl}`);
+                        void refreshAllComponents();
                     }).catch((err) => {
                         const message = err instanceof Error ? err.message : String(err);
                         outputChannel.appendLine(`Failed to start local server: ${message}`);

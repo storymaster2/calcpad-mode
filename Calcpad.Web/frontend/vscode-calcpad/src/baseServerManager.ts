@@ -269,6 +269,7 @@ export class BaseServerManager {
             stdio: ['pipe', 'pipe', 'pipe'] as ['pipe', 'pipe', 'pipe'],
             detached: true,
             env: childEnv,
+            cwd: path.join(this.basePath, 'bin'),
         };
         this.serverProcess = useAppHost
             ? spawn(exePath, ['--urls', serverUrl], spawnOpts)

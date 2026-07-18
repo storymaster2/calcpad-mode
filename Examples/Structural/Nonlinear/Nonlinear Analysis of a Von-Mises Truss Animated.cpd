@@ -1,3 +1,6 @@
+#val
+'<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+#equ
 '<!-- Shallow Von-Mises truss with circular pipe section, animated load-displacement curve passing through a limit point, solved by fixed-point iteration, Newton-Raphson, the secant method and the built-in `Root` solver. -->
 '(solved by four different numerical methods)
 '<h4>Input data</h4>

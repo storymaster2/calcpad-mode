@@ -1,3 +1,6 @@
+#val
+'<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+#equ
 '<!-- Solves $x^x = 10$ with Newton iteration and renders an animated SVG that highlights each tangent step.
 'The frame loop turns convergence into a visual sequence rather than a printed iteration table. -->
 #md on

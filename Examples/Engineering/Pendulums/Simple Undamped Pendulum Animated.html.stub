@@ -1,4 +1,6 @@
 <div class="calcpad-output">
+ <script src="https://code.jquery.com/jquery-3.6.3.min.js">
+ </script>
  <!-- Single-degree-of-freedom undamped pendulum integrated with classical RK4 from a near-inverted initial angle.
 <p>Each time step is rendered as an SVG frame so the swing builds up live, alongside an angle-versus-time plot. -->
  <table>
