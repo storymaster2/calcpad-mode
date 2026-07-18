@@ -5,6 +5,7 @@ import CalcpadAppVue from 'calcpad-frontend/vue/components/CalcpadApp.vue';
 import { initMessaging } from 'calcpad-frontend/vue/services/messaging';
 import { MessageBridge } from './services/message-bridge';
 import { buildApiSettings } from 'calcpad-frontend/types/settings';
+import { findMetadataCommentBlock, serializeMetadataComment, buildDefinitionResolver } from 'calcpad-frontend';
 import { registerCalcpadLanguage, registerCalcpadTheme, remeasureEditorFontsWhenReady, resolveEditorFontFamily } from './editor/setup';
 import { setAppTheme, coerceAppTheme } from './editor/app-theme';
 import { registerSemanticTokensProvider } from './editor/semantic-tokens';
@@ -477,6 +478,67 @@ async function bootstrap(): Promise<void> {
             run: () => { void runRefresh(); },
         });
 
+        // Edit-metadata context action: open the Metadata tab for the comment at
+        // the cursor, moving onto (or seeding) one when needed. Mirrors the VS
+        // Code `editMetadataProperties` command.
+        ed.addAction({
+            id: 'calcpad.editMetadata',
+            label: 'Edit Metadata Properties',
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.6,
+            run: (edEditor) => {
+                const model = edEditor.getModel();
+                const pos = edEditor.getPosition();
+                if (!model || !pos) return;
+                const curLine = pos.lineNumber;
+                const curText = model.getLineContent(curLine);
+
+                const focusMetadata = () => {
+                    sidebarInstance.switchView?.('calcpad');
+                    // switchTab('metadata') posts getMetadataContext, which the
+                    // bridge resolves against the (now-updated) cursor line.
+                    sidebarInstance.switchTab?.('metadata');
+                };
+
+                // Already on a metadata comment — just open the editor for it.
+                if (findMetadataCommentBlock([curText], 0)) {
+                    focusMetadata();
+                    return;
+                }
+
+                // A metadata comment already sits directly above — move onto it.
+                if (curLine > 1 && findMetadataCommentBlock([model.getLineContent(curLine - 1)], 0)) {
+                    const above = curLine - 1;
+                    edEditor.setPosition({ lineNumber: above, column: model.getLineMaxColumn(above) });
+                    focusMetadata();
+                    return;
+                }
+
+                // On a definition, the panel shows a virtual block from real
+                // highlighter results (correct params) and Apply creates the
+                // comment — no seeding, so definition line numbers stay valid.
+                const resolve = buildDefinitionResolver(
+                    editorBridge.definitions.getCachedDefinitions(docKeyFor(group))
+                    ?? { functions: [], macros: [], variables: [], customUnits: [] });
+                if (resolve(curLine - 1)) {
+                    focusMetadata();
+                    return;
+                }
+
+                // Otherwise seed an empty comment so settings/lint markers can be
+                // added on a non-definition line.
+                const indent = curText.match(/^[ \t]*/)?.[0] ?? '';
+                const newLineText = serializeMetadataComment({}, indent, '');
+                edEditor.executeEdits('calcpad-metadata-seed', [{
+                    range: new monaco.Range(curLine, 1, curLine, 1),
+                    text: newLineText + '\n',
+                }]);
+                // The inserted comment now occupies the original line index.
+                edEditor.setPosition({ lineNumber: curLine, column: model.getLineMaxColumn(curLine) });
+                focusMetadata();
+            },
+        });
+
         // Content changes: refresh this group's definitions cache + preview,
         // and (only when this is the active group) the sidebar TOC.
         let definitionsTimer: ReturnType<typeof setTimeout> | null = null;
@@ -497,10 +559,19 @@ async function bootstrap(): Promise<void> {
             }),
         );
 
-        // Cursor moves: preview sync (only when this group is active/visible).
+        // Cursor moves: preview sync (only when this group is active/visible),
+        // plus a debounced metadata-context refresh so the Metadata tab tracks
+        // the comment under the cursor (mirrors the VS Code selection handler).
         let cursorSyncTimer: ReturnType<typeof setTimeout> | null = null;
+        let metadataContextTimer: ReturnType<typeof setTimeout> | null = null;
         group.disposables.push(
             ed.onDidChangeCursorPosition(() => {
+                if (group === activeGroup) {
+                    if (metadataContextTimer) clearTimeout(metadataContextTimer);
+                    metadataContextTimer = setTimeout(() => {
+                        activeBridge.handleMessage({ type: 'getMetadataContext' });
+                    }, 150);
+                }
                 if (editorBridge.getExtraSetting('previewCursorSync') !== 'true') return;
                 if (!appInstance.isPreviewVisible()) return;
                 if (cursorSyncTimer) clearTimeout(cursorSyncTimer);

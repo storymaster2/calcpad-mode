@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { CalcpadApiClient, DEFAULT_PDF_SETTINGS, parseConvertErrorHeader, findMetadataCommentBlock, serializeMetadataComment, analyzeMetadataLine, parseDefinitionParamCount } from 'calcpad-frontend';
-import type { PdfSettings as FrontendPdfSettings, MetadataCommentData } from 'calcpad-frontend';
+import { CalcpadApiClient, DEFAULT_PDF_SETTINGS, parseConvertErrorHeader, findMetadataCommentBlock, serializeMetadataComment, computeMetadataBlock, buildDefinitionResolver } from 'calcpad-frontend';
+import type { PdfSettings as FrontendPdfSettings } from 'calcpad-frontend';
 import { CalcpadServerLinter } from './calcpadServerLinter';
 import { CalcpadSemanticTokensProvider, semanticTokensLegend } from './calcpadSemanticTokensProvider';
 import { CalcpadVueUIProvider } from './calcpadVueUIProvider';
@@ -53,13 +53,12 @@ function updateMetadataContext(editor: vscode.TextEditor | undefined): void {
     if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
         const lines = editor.document.getText().split(/\r?\n/);
         const line = editor.selection.active.line;
-        const detected = findMetadataCommentBlock(lines, line);
-        if (detected) {
-            detected.context = analyzeMetadataLine(lines, line);
-            block = detected;
-        }
+        const resolve = buildDefinitionResolver(
+            definitionsService.getCachedDefinitions(editor.document.uri.toString())
+            ?? { functions: [], macros: [], variables: [], customUnits: [] });
+        block = computeMetadataBlock(lines, line, resolve);
     }
-    vscode.commands.executeCommand('setContext', 'calcpad.inMetadataComment', block !== null);
+    vscode.commands.executeCommand('setContext', 'calcpad.inMetadataComment', block !== null && !block.isNew);
     vueUiProvider?.updateMetadataContext(block);
 }
 
@@ -1524,6 +1523,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     vueUiProvider = new CalcpadVueUIProvider(context.extensionUri, context, settingsManager, insertManager);
     vueUiProvider.getSourceEditor = () => vscode.window.activeTextEditor ?? previewSourceEditor;
+    vueUiProvider.getDefinitions = (uri: string) => definitionsService.getCachedDefinitions(uri);
     vueUiProvider.onPreviewThemeChanged = async () => {
         const activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor) return;
@@ -1612,37 +1612,21 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        // No comment yet — seed one based on what's on this line.
-        const indent = (curText.match(/^[ \t]*/)?.[0]) ?? '';
-        const seed: MetadataCommentData = {};
-        const paramCount = parseDefinitionParamCount(curText.slice(indent.length));
-
-        if (paramCount === null) {
-            // Generic / blank line — let the user pick which property to add.
-            const lines = doc.getText().split(/\r?\n/);
-            const insideLintRegion = analyzeMetadataLine(lines, curLine).insideOpenLintRegion;
-            const options: Array<vscode.QuickPickItem & { id: string }> = [
-                { label: 'Description', detail: 'A short description', id: 'desc' },
-                { label: 'Parameter types & descriptions', detail: 'For a function or macro', id: 'params' },
-                { label: 'Settings override', detail: 'File settings applied from here on', id: 'settings' },
-                { label: 'Lint ignore', detail: 'Start a linter-suppression region', id: 'lint' },
-            ];
-            if (insideLintRegion) {
-                options.push({ label: 'End lint-ignore region', detail: 'Close the open suppression region', id: 'endlint' });
-            }
-            const pick = await vscode.window.showQuickPick(options, { placeHolder: 'Add metadata property…' });
-            if (!pick) return;
-            if (pick.id === 'params') { seed.paramTypes = ['']; seed.paramDesc = ['']; }
-            else if (pick.id === 'lint') seed.LintIgnore = [];
-            else if (pick.id === 'endlint') seed.EndLintIgnore = [];
-            // 'desc' and 'settings' create an empty comment; those sections are
-            // always available in the panel.
-        } else if (paramCount > 0) {
-            seed.paramTypes = Array<string>(paramCount).fill('');
-            seed.paramDesc = Array<string>(paramCount).fill('');
+        // On a definition, the panel shows a virtual block from real highlighter
+        // results (correct params) and Apply creates the comment — no seeding, so
+        // definition line numbers stay valid.
+        const resolve = buildDefinitionResolver(
+            definitionsService.getCachedDefinitions(doc.uri.toString())
+            ?? { functions: [], macros: [], variables: [], customUnits: [] });
+        if (resolve(curLine)) {
+            revealPanel();
+            return;
         }
 
-        const newLineText = serializeMetadataComment(seed, indent, '');
+        // Otherwise seed an empty comment so settings/lint markers can be added on
+        // a non-definition line.
+        const indent = (curText.match(/^[ \t]*/)?.[0]) ?? '';
+        const newLineText = serializeMetadataComment({}, indent, '');
         await editor.edit(edit => {
             edit.insert(new vscode.Position(curLine, 0), newLineText + '\n');
         });

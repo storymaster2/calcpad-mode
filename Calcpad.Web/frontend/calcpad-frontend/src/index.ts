@@ -152,6 +152,9 @@ export type {
     MetadataCommentData,
     MetadataCommentBlock,
     MetadataLineContext,
+    MetadataDefKind,
+    MetadataDefinition,
+    DefinitionResolver,
     MetadataSettingKey,
     LintCode,
 } from './text/metadata-comment';
@@ -161,7 +164,8 @@ export {
     METADATA_SETTINGS_KEYS,
     LINT_CODES,
     findMetadataCommentBlock,
+    computeMetadataBlock,
     serializeMetadataComment,
-    parseDefinitionParamCount,
+    buildDefinitionResolver,
     analyzeMetadataLine,
 } from './text/metadata-comment';

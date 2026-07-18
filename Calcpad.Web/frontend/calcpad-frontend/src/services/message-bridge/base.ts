@@ -2,6 +2,9 @@ import { CalcpadApiClient } from '../../api/client';
 import { CalcpadSnippetService } from '../snippets';
 import { CalcpadDefinitionsService } from '../definitions';
 import { parseHeadings } from '../headings';
+import { findMetadataCommentBlock, analyzeMetadataLine, serializeMetadataComment, computeMetadataBlock, buildDefinitionResolver } from '../../text/metadata-comment';
+import type { MetadataCommentData, MetadataCommentBlock, DefinitionResolver } from '../../text/metadata-comment';
+import type { DefinitionsResponse } from '../../types/api';
 import { getDefaultSettings, buildApiSettings } from '../../types/settings';
 import type { CalcpadSettings } from '../../types/settings';
 import { DEFAULT_PDF_SETTINGS } from '../../types/pdf-settings';
@@ -190,6 +193,12 @@ export abstract class BaseMessageBridge {
             case 'getHeadings':
                 this.refreshHeadings();
                 break;
+            case 'getMetadataContext':
+                this.handleGetMetadataContext();
+                break;
+            case 'updateMetadata':
+                this.handleUpdateMetadata(message);
+                break;
             case 'goToLine':
                 this.handleGoToLine(message.line);
                 break;
@@ -230,6 +239,19 @@ export abstract class BaseMessageBridge {
     protected abstract saveExportedFile(req: ExportRequest): Promise<void>;
     protected abstract buildFileContext(content: string): Promise<{ sourceFilePath?: string }>;
     protected abstract getVariablesOrigin(): string;
+
+    /**
+     * The cached highlighter definitions for the active document, used to resolve
+     * definition kinds/param counts for the metadata panel. Subclasses key the
+     * definitions cache differently, so each supplies the correct lookup.
+     */
+    protected abstract getActiveDefinitions(): DefinitionsResponse | undefined;
+
+    /** Definition resolver over the active document's real highlighter results. */
+    private definitionResolver(): DefinitionResolver {
+        const defs = this.getActiveDefinitions();
+        return buildDefinitionResolver(defs ?? { functions: [], macros: [], variables: [], customUnits: [] });
+    }
     protected abstract generatePdfBytes(
         content: string,
         apiSettings: unknown,
@@ -530,24 +552,96 @@ export abstract class BaseMessageBridge {
 
     private handleGoToLine(line: number): void {
         if (typeof line !== 'number') return;
-        // Prefer the host's active editor (set per focused editor group in the
-        // desktop split layout); fall back to the first registered editor.
-        const active = (window as { calcpadActiveEditor?: MonacoEditorLike }).calcpadActiveEditor;
-        const editors = (window as { monaco?: MonacoLike }).monaco?.editor?.getEditors?.();
-        const editor = active ?? editors?.[0];
+        const editor = this.getActiveMonacoEditor();
         if (editor) {
             editor.revealLineInCenter(line);
             editor.setPosition({ lineNumber: line, column: 1 });
             editor.focus();
         }
     }
+
+    /**
+     * Prefer the host's active editor (set per focused editor group in the
+     * desktop split layout); fall back to the first registered editor.
+     */
+    private getActiveMonacoEditor(): MonacoEditorLike | undefined {
+        const active = (window as { calcpadActiveEditor?: MonacoEditorLike }).calcpadActiveEditor;
+        const editors = (window as { monaco?: MonacoLike }).monaco?.editor?.getEditors?.();
+        return active ?? editors?.[0];
+    }
+
+    /**
+     * Detect the single-line metadata comment at the active editor's cursor and
+     * push it (with its definition context) to the Vue panel's Metadata tab.
+     * Mirrors the VS Code provider's `_computeMetadataBlock`.
+     */
+    private handleGetMetadataContext(): void {
+        const editor = this.getActiveMonacoEditor();
+        const model = editor?.getModel();
+        const pos = editor?.getPosition();
+        let block: MetadataCommentBlock | null = null;
+        if (model && pos) {
+            const lines = model.getValue().split(/\r?\n/);
+            block = computeMetadataBlock(lines, pos.lineNumber - 1, this.definitionResolver());
+        }
+        this.postToVue({ type: 'metadataContext', block });
+    }
+
+    /**
+     * Rewrite the metadata comment line the panel edited. The panel sends the
+     * 0-based line, its original indentation and trailing quote, and the new
+     * data object; we serialize and replace the whole line.
+     */
+    private handleUpdateMetadata(msg: {
+        line: number;
+        indent?: string;
+        trailingQuote?: string;
+        data: MetadataCommentData;
+        isNew?: boolean;
+    }): void {
+        const editor = this.getActiveMonacoEditor();
+        const model = editor?.getModel();
+        if (!editor || !model || typeof msg.line !== 'number') return;
+        const lineNumber = msg.line + 1;
+        if (lineNumber < 1 || lineNumber > model.getLineCount()) return;
+        const newText = serializeMetadataComment(msg.data, msg.indent ?? '', msg.trailingQuote ?? '');
+        const range = msg.isNew
+            ? { startLineNumber: lineNumber, startColumn: 1, endLineNumber: lineNumber, endColumn: 1 }
+            : {
+                startLineNumber: lineNumber, startColumn: 1,
+                endLineNumber: lineNumber, endColumn: model.getLineMaxColumn(lineNumber),
+            };
+        editor.executeEdits('calcpad-metadata', [{
+            range,
+            text: msg.isNew ? newText + '\n' : newText,
+        }]);
+
+        // Re-emit context for the persisted comment so a repeated Apply edits it
+        // in place instead of inserting a duplicate.
+        const lines = model.getValue().split(/\r?\n/);
+        const block = findMetadataCommentBlock(lines, msg.line);
+        if (block) block.context = analyzeMetadataLine(lines, msg.line, this.definitionResolver());
+        this.postToVue({ type: 'metadataContext', block });
+    }
 }
 
-interface MonacoModelLike { getValue(): string; }
+interface MonacoModelLike {
+    getValue(): string;
+    getLineCount(): number;
+    getLineMaxColumn(line: number): number;
+}
+interface MonacoRangeLike {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+}
 interface MonacoEditorLike {
     getModel(): MonacoModelLike | null;
+    getPosition(): { lineNumber: number; column: number } | null;
     revealLineInCenter(line: number): void;
     setPosition(pos: { lineNumber: number; column: number }): void;
+    executeEdits(source: string, edits: { range: MonacoRangeLike; text: string }[]): void;
     focus(): void;
 }
 interface MonacoLike {

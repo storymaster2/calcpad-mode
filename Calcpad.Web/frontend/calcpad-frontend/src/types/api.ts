@@ -238,6 +238,7 @@ export interface CustomUnitDefinition {
     lineNumber: number;  // Zero-based line number
     source: string;
     sourceFile?: string;
+    description?: string;
 }
 
 export interface SymbolLocation {

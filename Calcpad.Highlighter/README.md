@@ -134,15 +134,13 @@ Processes the Stage 2 output in two phases:
 
 The `ContentResolver` itself does not perform any I/O. The caller (Calcpad.Web backend) is responsible for pre-fetching all file contents and passing them in:
 
-1. **`includeFiles`** — a `Dictionary<string, string>` mapping filenames to plain-text content. The caller populates this from the filesystem, remote URLs, or API routes before calling `GetStagedContent`.
+1. **`includeFiles`** — a `Dictionary<string, string>` mapping filenames to plain-text content. The caller populates this from the filesystem before calling `GetStagedContent`.
 
 2. **`clientFileCache`** — a `Dictionary<string, byte[]>` mapping filenames to raw bytes. Used when the client (e.g., a VS Code extension) has files in memory that the server can't access directly. Decoded as UTF-8.
 
 3. **Filesystem fallback** — Stage 2 also tries `Path.GetFullPath()` with environment variable expansion for local file resolution.
 
 Resolution priority: filesystem > `includeFiles` > `clientFileCache`. If a file can't be found, an error comment is injected into the content and processing continues.
-
-For remote content (URLs and API routes), Calcpad.Web's backend pre-fetches into a global cache via `CalcpadService.PreFetchRemoteContentAsync()` before calling the resolver.
 
 ### Source Mapping
 

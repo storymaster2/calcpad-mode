@@ -43,7 +43,6 @@ Most POST endpoints accept a request with these fields:
 - `content` — the Calcpad source code
 - `settings` — math / plot / unit configuration
 - `theme` — `"light"` or `"dark"`
-- `apiTimeoutMs` — timeout for fetching remote `#include`/`#read` URLs (default `10000`)
 - `sourceFilePath` — the document's file path, used to resolve relative `#include` paths against the file's folder
 - `forPrint` — when `true`, `NoPrint` regions are stripped before conversion (used by PDF export)
 
@@ -111,11 +110,7 @@ See [Linter and Diagnostics](new-linter.md) for what each code means.
 
 Filter with a query string, e.g. `?category=Functions/Trigonometric`.
 
-## Remote `#include` / `#read`
-
-The server can fetch `#include` and `#read` content from `http://` and `https://` URLs, with a 10-second default timeout you can override per request via `apiTimeoutMs`. Only HTTP and HTTPS addresses are accepted. See [Includes and Remote Files](new-includes.md).
-
 ## See also
 
-- [Includes and Remote Files](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [PDF Export](new-pdf-export.md)
+- [Includes and File Reads](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [PDF Export](new-pdf-export.md)
 - [Using the Desktop App](new-desktop-app.md) · [Using the VS Code Extension](new-vscode-extension.md)

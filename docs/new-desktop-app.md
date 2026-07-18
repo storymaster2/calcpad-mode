@@ -12,9 +12,8 @@ The app ships as a per-platform download:
 
 | Platform | Format |
 |----------|--------|
-| Windows | `.msi` or `.exe` installer, or a portable `.zip` build (no install) |
-| macOS | `.dmg` (requires macOS 11 or later) |
-| Linux | `.deb` package or `.AppImage` (run directly, no install) |
+| Windows | Portable `.zip` build (no install for beta) |
+| Linux | AppImage (run directly, no install for beta) |
 
 The calculation engine and its fonts and templates are bundled inside the app — you do **not** need .NET installed separately. On Linux, the `.AppImage` includes what it needs to run; the `.deb` package expects WebKitGTK to already be present on the system.
 
@@ -161,14 +160,13 @@ If calculations stop responding, use the **Server** menu:
 
 | Symptom | Fix |
 |---------|-----|
-| Preview blank or not updating | **Server → Refresh**, then **Server → Restart Server** if needed. Check **Server → Show Server Log**. |
+| Preview blank or not updating | **Server → Refresh**, then **Server → Restart Server** if needed. Check **Server → Show Server Log** to see messages from the calculation engine. Click **Open Log Folder** in the **Settings** tab to submit logs showing an error as a Github Issue. |
 | PDF export fails | Install a Chromium browser. On Linux the app names the package to install — see [PDF Export](new-pdf-export.md). |
 | Unsaved work after a crash | The app writes backup copies of unsaved files; reopen them from the Files tab. |
-| Symbols not found across files | Confirm the `#include` path resolves relative to the current document. |
 
 ## See also
 
 - [The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md) — the shared sidebar and all settings
 - [Using the VS Code Extension](new-vscode-extension.md)
-- [PDF Export](new-pdf-export.md) · [Includes and Remote Files](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [Table of Contents](new-table-of-contents.md)
+- [PDF Export](new-pdf-export.md) · [Includes and File Reads](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [Table of Contents](new-table-of-contents.md)
 - [Writing Math](writing-math.md) · [Quick Reference](quick-reference.md)

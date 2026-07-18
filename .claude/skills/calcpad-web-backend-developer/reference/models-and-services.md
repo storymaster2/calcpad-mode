@@ -11,8 +11,6 @@ public class CalcpadRequest
     public bool ForceUnwrappedCode { get; set; }
     public string? Theme { get; set; }
     public Dictionary<string, string>? ClientFileCache { get; set; }  // base64-encoded
-    public AuthSettings? AuthSettings { get; set; }
-    public int? ApiTimeoutMs { get; set; }
 }
 ```
 
@@ -62,7 +60,6 @@ public class CalcpadService
     // Convert source to HTML using Calcpad.Core MathParser
     public async Task<string> ConvertAsync(string content, Settings? settings,
         bool forceUnwrapped, string? theme, WebFetchContext ctx);
-    // Remote content caching for #include URLs
     // Sample content generation
 }
 ```
@@ -77,7 +74,7 @@ public static class CalcpadApiService
     public static (WebApplication, string) CreateConfiguredApp(string[] args);
 }
 ```
-Configures: Controllers, Swagger, CORS, DI (CalcpadService, PdfGeneratorService), optional JWT auth, SQLite.
+Configures: Controllers, Swagger, CORS, DI (CalcpadService, PdfGeneratorService).
 
 ### PdfGeneratorService (Singleton)
 Browser instance pooling for PDF generation:

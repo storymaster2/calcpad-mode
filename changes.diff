@@ -1,0 +1,3761 @@
+diff --git a/.claude/agents/explore.md b/.claude/agents/explore.md
+new file mode 100644
+index 0000000..7bc2ae5
+--- /dev/null
++++ b/.claude/agents/explore.md
+@@ -0,0 +1,13 @@
++---
++name: Explore
++description: Read-only search agent for broad fan-out searches — when answering means sweeping many files, directories, or naming conventions and you only need the conclusion, not the file dumps. It reads excerpts rather than whole files, so it locates code; it doesn't review or audit it. Specify search breadth: "medium" for moderate exploration, "very thorough" for multiple locations and naming conventions.
++model: sonnet
++tools: Bash, Glob, Grep, Read, WebFetch, WebSearch, TodoWrite
++---
++
++You are a read-only exploration agent. Your job is to locate code and answer questions by sweeping across the codebase efficiently, then return concise conclusions rather than dumping raw file contents.
++
++- Read excerpts, not whole files, unless a full read is clearly necessary.
++- Fan out across many files, directories, and naming conventions to find what's relevant.
++- Report back with file paths and line numbers (`path:line`) plus a tight summary of what you found.
++- Do not modify, review, or audit code — only locate and describe it.
+diff --git a/Calcpad.Highlighter/ContentResolution/ContentResolver.Stage2.cs b/Calcpad.Highlighter/ContentResolution/ContentResolver.Stage2.cs
+index aec9f97..5f41356 100644
+--- a/Calcpad.Highlighter/ContentResolution/ContentResolver.Stage2.cs
++++ b/Calcpad.Highlighter/ContentResolution/ContentResolver.Stage2.cs
+@@ -281,21 +281,13 @@ namespace Calcpad.Highlighter.ContentResolution
+         }
+ 
+         /// <summary>
+-        /// Tests whether a trimmed line span is a #local directive.
+-        /// Matches Core's Validator.IsKeyword(line, "#local").
++        /// Tests whether a trimmed line span is a #local or #global directive.
++        /// Matches Core's Validator.IsKeyword(line, ...).
+         /// </summary>
+-        private static bool IsLocalDirective(ReadOnlySpan<char> trimmedSpan)
++        private static bool IsLocalOrGlobalDirective(ReadOnlySpan<char> trimmedSpan)
+         {
+-            return trimmedSpan.StartsWith("#local", StringComparison.OrdinalIgnoreCase);
+-        }
+-
+-        /// <summary>
+-        /// Tests whether a trimmed line span is a #global directive.
+-        /// Matches Core's Validator.IsKeyword(line, "#global").
+-        /// </summary>
+-        private static bool IsGlobalDirective(ReadOnlySpan<char> trimmedSpan)
+-        {
+-            return trimmedSpan.StartsWith("#global", StringComparison.OrdinalIgnoreCase);
++            return trimmedSpan.StartsWith("#local", StringComparison.OrdinalIgnoreCase) ||
++                   trimmedSpan.StartsWith("#global", StringComparison.OrdinalIgnoreCase);
+         }
+ 
+         /// <summary>
+@@ -363,26 +355,20 @@ namespace Calcpad.Highlighter.ContentResolution
+ 
+             // Process each line, filtering #local sections and recursing for nested #include.
+             // Matches Core's CalcpadReader.Include: #local sections are excluded from includes.
+-            var isLocal = false;
++            var directives = new DirectiveState();
+ 
+             for (int j = 0; j < includedStage1.Lines.Count; j++)
+             {
+                 var line = includedStage1.Lines[j];
+                 var trimmedSpan = line.AsSpan().Trim();
+ 
+-                if (IsLocalDirective(trimmedSpan))
+-                {
+-                    isLocal = true;
+-                    continue;
+-                }
+-
+-                if (IsGlobalDirective(trimmedSpan))
++                if (IsLocalOrGlobalDirective(trimmedSpan))
+                 {
+-                    isLocal = false;
++                    directives.Apply(trimmedSpan);
+                     continue;
+                 }
+ 
+-                if (isLocal)
++                if (directives.Scope == ScopeMode.Local)
+                     continue;
+ 
+                 if (IsIncludeDirective(trimmedSpan))
+diff --git a/Calcpad.Highlighter/Linter/Helpers/DirectiveState.cs b/Calcpad.Highlighter/Linter/Helpers/DirectiveState.cs
+new file mode 100644
+index 0000000..7676f86
+--- /dev/null
++++ b/Calcpad.Highlighter/Linter/Helpers/DirectiveState.cs
+@@ -0,0 +1,80 @@
++using System;
++
++namespace Calcpad.Highlighter.Linter.Helpers
++{
++    /// <summary>
++    /// Output-value mode set by the #equ / #val / #noc directives (mirrors ExpressionParser's
++    /// _isVal of 0 / 1 / -1). Under <see cref="NoCalculation"/> equations are rendered but not
++    /// evaluated, so identifiers need not resolve to a definition.
++    /// </summary>
++    public enum OutputMode
++    {
++        Equations,
++        Values,
++        NoCalculation
++    }
++
++    /// <summary>
++    /// Scope mode set by the #local / #global directives. A #local section is excluded when the
++    /// file is pulled in through #include (mirrors Core's CalcpadReader.Include filtering).
++    /// </summary>
++    public enum ScopeMode
++    {
++        Global,
++        Local
++    }
++
++    /// <summary>
++    /// Tracks the running state of Calcpad's mode directives as lines are visited in order.
++    /// Calcpad has several independent directive categories, and within each the most recent
++    /// directive wins (see ExpressionParser.ParseKeyword):
++    ///   - output value:  #equ / #val / #noc
++    ///   - scope:          #global / #local
++    ///   - markdown:       #md [on] / #md off
++    ///   - substitution:   #varsub / #nosub / #novar
++    ///   - angle:          #rad / #deg / #gra
++    ///   - line breaking:  #wrap / #split
++    ///   - number type:    #complex / #phasor
++    ///   - visibility:     #show / #hide / #pre / #post
++    /// Only the categories consumed by the tooling are tracked; the rest are ignored.
++    /// </summary>
++    public sealed class DirectiveState
++    {
++        public OutputMode Output { get; private set; } = OutputMode.Equations;
++        public ScopeMode Scope { get; private set; } = ScopeMode.Global;
++        public bool IsMarkdownOn { get; private set; }
++
++        /// <summary>
++        /// Updates the tracked state from a trimmed directive line. Non-tracked directives are ignored.
++        /// Prefix matching mirrors Core's Validator.IsKeyword / ExpressionParser.GetKeyword.
++        /// </summary>
++        public void Apply(ReadOnlySpan<char> trimmedLine)
++        {
++            if (Matches(trimmedLine, "#equ"))
++                Output = OutputMode.Equations;
++            else if (Matches(trimmedLine, "#val"))
++                Output = OutputMode.Values;
++            else if (Matches(trimmedLine, "#noc"))
++                Output = OutputMode.NoCalculation;
++            else if (Matches(trimmedLine, "#global"))
++                Scope = ScopeMode.Global;
++            else if (Matches(trimmedLine, "#local"))
++                Scope = ScopeMode.Local;
++            else if (Matches(trimmedLine, "#md"))
++                ApplyMarkdown(trimmedLine);
++        }
++
++        // #md and #md on enable markdown; #md off disables it (mirrors ExpressionParser.ParseKeywordMd).
++        private void ApplyMarkdown(ReadOnlySpan<char> trimmedLine)
++        {
++            var arg = trimmedLine.Length > 3 ? trimmedLine[3..].Trim() : ReadOnlySpan<char>.Empty;
++            if (arg.Equals("off", StringComparison.OrdinalIgnoreCase))
++                IsMarkdownOn = false;
++            else if (arg.IsEmpty || arg.Equals("on", StringComparison.OrdinalIgnoreCase))
++                IsMarkdownOn = true;
++        }
++
++        private static bool Matches(ReadOnlySpan<char> trimmedLine, ReadOnlySpan<char> directive) =>
++            trimmedLine.StartsWith(directive, StringComparison.OrdinalIgnoreCase);
++    }
++}
+diff --git a/Calcpad.Highlighter/Linter/Validators/Stage3/UsageValidator.cs b/Calcpad.Highlighter/Linter/Validators/Stage3/UsageValidator.cs
+index f14c474..6a0389b 100644
+--- a/Calcpad.Highlighter/Linter/Validators/Stage3/UsageValidator.cs
++++ b/Calcpad.Highlighter/Linter/Validators/Stage3/UsageValidator.cs
+@@ -191,6 +191,11 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
+ 
+         private void ValidateUndefinedIdentifiers(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
+         {
++            // #noc renders equations without evaluating them, so referencing an undefined
++            // identifier is legitimate. Track the output mode as we go and skip the check
++            // while it stays in the #noc region (until the next #val/#equ).
++            var directives = new DirectiveState();
++
+             for (int i = 0; i < stage3.Lines.Count; i++)
+             {
+                 if (!tokenProvider.IsCpdMode(i)) continue;
+@@ -203,6 +208,12 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
+                 var trimmed = line.Trim();
+ 
+                 if (LineParser.IsDirectiveLine(trimmed))
++                {
++                    directives.Apply(trimmed);
++                    continue;
++                }
++
++                if (directives.Output == OutputMode.NoCalculation)
+                     continue;
+ 
+                 // Skip undefined variable checks for function definitions with command blocks
+diff --git a/Calcpad.Web/To-Do/To-Do.md b/Calcpad.Web/To-Do/To-Do.md
+deleted file mode 100644
+index 838917d..0000000
+--- a/Calcpad.Web/To-Do/To-Do.md
++++ /dev/null
+@@ -1,151 +0,0 @@
+-# To-Do
+-
+-> Hosted/Docker/multi-user/auth/S3 deployment work has moved to the `calcpad-experimental` branch. This branch is localhost-only; items below are scoped to the local-mode runtime.
+-
+-## General
+-
+--   Audit Calcpad.Core for shared mutable state that races under concurrent local requests. Known offender: `MacroParser.Macros` is a `static` dictionary cleared and repopulated per `Parse(..., includeLine == 0)` call, so two simultaneous requests stomp each other. Less acute in single-user local mode but still a correctness bug if two editor panes hit the server concurrently.
+--   Related: `Unit.IsUs` is another `static` that rebuilds the shared `Units` FrozenDictionary in place whenever it flips. `Unit.Get(name)` reads that same dictionary from every parser/calculator call site. `ExpressionParser.Parse` now writes `Unit.IsUs = Settings.IsUs` at the top of every parse, so concurrent requests with different values will race the same way `MacroParser.Macros` does. Proper fix: pre-build both `UnitsUK` and `UnitsUS` FrozenDictionaries once and change `Unit.Get(name)` to a Settings-aware lookup so nothing is mutated at request time.
+-
+-### To Test/Review
+-
+--   Add HTML table styling when a table is called in the code
+--   Update documentation for new features
+-
+-## calcpad-frontend
+-
+--   Finish enhanced PDF generation
+-    -   Custom header/footers
+-    -   Custom svg backgrounds
+-    -   Custom fields with
+-    -   Add batch plot with running or restarting page numbers
+-
+-## vscode-calcpad
+-
+-### Enhancements
+-
+--   Add desc metadata for variables
+--   Make a Vue panel that activates when the cursor is inside a JSON HTML comment. Where you can edit properties and then the line gets updated based on what you put into the UI.
+--   Add the ability to focus the preview to the line selected in the code. Add a toggle to automatically sync this in the Vue panel.
+--   Switch Vue tabs from text to icons now that they are getting longer.
+--   Add quick typing for macros (~1 macro 1, ~2 macro 2, etc.). Add macro mapping to vscode config using json object {macroMapping:{"1": "macroName$", ...}}. Have VS code set cursor position to within () and before first param.
+--   Publish to Open VSX but not Visual Studio Marketplace unless I need a personal Azure account for other reasons
+--   Add intermediate step that changes the display name of a variable by using find and replace on the HTML content. This will need some processing of complex characters, for example \_ turns into a subscript in the HTML. Read how Calcpad.Core handles this and reverse-engineer it. This can use a displayName property in an HTML comment above the variable definition line. Alternatively, have a variable mapping object as part of the settings and have it change the variable name at the HTML output step in Calcpad.Core.
+-
+-### Bugs
+-
+-### Testing
+-
+--   Fix base64 syntax highlighting by sending the last characters that close the img tag.
+--   Make sure long API calls are awaited and do not freeze the UI
+--   Check if the cache needs cleared on intervals
+--   Have variables use the tokenizer for recognition when you highlight text when clicking, commas are not handled properly currently.
+--   UI state persists across code changes where possible.
+-
+-## Calcpad.Web
+-
+--   Write/Append: prompt a download (ZIP for multiple files) when running under the Linux build instead of writing to the local filepath. Add a setting in Calcpad.Core to control whether write/append output is cached for download or applied directly to disk.
+--   Add support for other languages, especially Chinese as there is a large Chinese community.
+--   Add #UI features to main branch
+--   Make update do var name is not default #UI id, but {varName:varRepeatNumber} is the id to handle repetitions of the same variable name.
+--   An external browser dropdown could be helpful that allows switching the puppeteer and help button browser from the settings. I think this is doable if we store both the browser name and path in an object (then only show browsers with a valid path and allow adding a browser via file select to the exe or pasted path).
+--   Submit removed jquery refactor as a PR to main.
+--   Add app version to settings Vue tab.
+--   Make light mode for empty document HTML
+--   JSON html comment frontmatter containing program version,  project name, project base path, author, saved timestamp, ui overrides, file specific setting overrides. This can all be unified under a single object in the first code line, some of which get updated by the software automatically. Add UI to edit front matter fields and hide frontmatter code by default in the editor with setting to show it.
+--   Add line breaks within json html comments as valid line continuation (that ends when the closing comment is given)
+--   Add a way to favorite snippets or macros/custom functions and have that show up in its own dropdown.
+-
+-### Bugs
+-
+-### Testing
+-
+--   Test snippet updates
+-
+-## Calcpad.Web Desktop App
+-
+--   Make Prettify document put brackets at same line level, add spaces before and after operators, and add one space after line delimiters (and 0 spaces before ; delimiters):
+-    x2,seg = [38.667; 48; 66.667; 80.667; 90.667; 108.667; 118.667; _
+-            33.333; 40.333; 51.667; 75; 96.667; 108.333; 118.667; _
+-            23.333; 23.333; 23.333; _
+-            35; 35; 35; 35]*1ft
+--   Don't use | as brackets, Calcpad should override colors and not create two pipes when typed
+--   Server crashes should create dumps in the log folder similar to VS Code.
+--   Server crashing was not able to be recovered by restarting the server.
+-
+-### Bugs
+-
+-
+-### Testing
+--   error buttons don't jump to error line correctly when the error occurs in a loop. I think errors should get their own id that the buttons can get mapped to for scroll anchoring
+--   create backup files of the current file state before a Tauri app crash in the project root directory. have this able to be opened via the files tab
+--   add font selector to switch between JuliaMono and system default font (or any other fonts stored in the fonts folder). add button to open fonts folder.
+--   add a max log length before it gets overwritten to help with performance
+--   Fix Ctrl without click navigating to definition when the macro comes from an included file.
+-
+-## Calcpad.Web Browser
+--   Have `calcpad-web` (pure browser build) mirror the desktop settings scheme in localStorage — same JSON shape, active-config pointer, named configs — with export/import via browser file up/download. Not urgent; pure web build isn't the active target.
+-> Hosted-mode items (DDoS hardening, file-size/rate limits, CalcpadAuth SSO, S3 backend, Docker config, OAuth, Cloudflare tunnel, `<service:endpoint>` routing, token management) live on `calcpad-experimental`.
+-
+-## Calcpad.Highlighter
+-
+--   Add page break to HTML snippets
+--   Order greek symbols by greek alphabet instead of english
+--   Add linting for HTML/markdown mode
+--   Add information check for re-defining a variable as a different type
+--   There is an issue with tokenization of global variables in macro #def statements. You need to get global scopes and properly tokenize them if it gets defined later in the file.
+--   Improve HTML/JS/CSS/SVG tokenization to use JS library. Use the node instance in vscode (also this is only needed as a vs code feature).
+--   Add HTML/JS/CSS/SVG linting using a JS library (also this is only needed as a vs code feature). This is done using the HTML preview, but I need to add a plugin config to make all of these work to the docs.
+--   Add undefined macro linter check
+--   Allow rename of global variables inside macro defs - this may be an undefined variable linter bug? But this should not run at stage 2 anyways.
+--   Scan for #if/#else mismatches in macro definitions, and in general improve macro definition linting where possible.
+-
+-### Testing
+-
+--   Make auto-indenting work inside macro definitions - this works in some cases but not others, prettifier should handle this.
+-
+-### Bugs
+-
+--   Fix HTMLComment tokenization
+--   Fix ' symbol tokenization in JS:  
+-    #def drawLine$(x1$; y1$; x2$; y2$)  
+-    '\<br/> 'if (window.dxfDrawing) { window.dxfDrawing.drawLine('x1$', 'y1$', 'x2$', 'y2$'); }\<br/> '  
+-    #end def
+--   Fix tokenization of custom units
+--   This code produces a bogus error:
+-    https://imartincei.github.io/CalcpadCE/examples/multiline-functions.html#fibonacci-numbers
+-
+-## Calcpad.Core
+-
+--   Add Unit safety for angles by having arc functions return the unit based on the default setting (instead of a number with no unit)
+--   Allows undefined in inline loops. This is because undefined is the best way to work with jagged matrices. Have the graph either show a vertical asymtote or ignore undefined values.
+--   See if Kelvin unit conversion can be made safer.
+--   Add more imperial units for engineering (ksf, plf, etc.)
+--   Add #hideRegion {cond} and #endHideRegion {cond} to replace hideC/unhideC
+--   Add a way to throw errors that Calcpad.Core uses with a built-in function.
+--   Add inline unit convsersion function on a variable (instead of per-line)
+--   Colors in unwrapped code don't match syntax highlighter
+-
+-### Bugs
+-
+--   Fix #varsub to work when using v.i = x.i + y.i, this currently treats as #nosub
+--   Calcpad's parser doesn't handle .iζ indexing on inline-substituted expressions like first(row(...)) (it parses .iζ as a unit suffix).
+-
+-
+-### Testing
+-
+--   Test Excel remote URL reading.
+--   Route write for the .cpd directory, not the pwd.
+--   Underlined line number line links for errors in unwrapped code do not route to source lines
+-
+-## Calcpad Modules
+-
+--   DXF: Is there a way to get a CDN like import for JS libraries using #include in calcpad? This version has a text fix that is not in the CDN version
+--   DXF: Add lineweight by using an offset line in the rendered version and rounding the ends by adding the length equal to the offset.
+--   Geometry: Map RFEM nodes to polylines, map RFEM polylines to surfaces. Use order of lines to determine axis and match RFEM. Use this to get pressures.
+--   Geometry needs to be tabled beyond simple use cases until this can be written in C# and have results sent to Calcpad via API.
+-
+-```
+-f(x) = $Repeat{1/i @ i = x : 10}
+-f(0)
+-```
+diff --git a/Calcpad.Web/frontend/calcpad-frontend/src/index.ts b/Calcpad.Web/frontend/calcpad-frontend/src/index.ts
+index be28d68..d1b7377 100644
+--- a/Calcpad.Web/frontend/calcpad-frontend/src/index.ts
++++ b/Calcpad.Web/frontend/calcpad-frontend/src/index.ts
+@@ -142,8 +142,26 @@ export {
+     splitIndent,
+     stripCommentPrefix,
+     lineHasCommentPrefix,
++    isColumnInTextContext,
+     getCommentPrefixInsertColumn,
+     buildHeadingLine,
+     buildParagraphLine,
+     buildListLines,
+ } from './text/comment-formatting';
++export type {
++    MetadataCommentData,
++    MetadataCommentBlock,
++    MetadataLineContext,
++    MetadataSettingKey,
++    LintCode,
++} from './text/metadata-comment';
++export {
++    FUNCTION_PARAM_TYPES,
++    MACRO_PARAM_TYPES,
++    METADATA_SETTINGS_KEYS,
++    LINT_CODES,
++    findMetadataCommentBlock,
++    serializeMetadataComment,
++    parseDefinitionParamCount,
++    analyzeMetadataLine,
++} from './text/metadata-comment';
+diff --git a/Calcpad.Web/frontend/calcpad-frontend/src/text/comment-formatting.ts b/Calcpad.Web/frontend/calcpad-frontend/src/text/comment-formatting.ts
+index 8fcd1d3..003ec51 100644
+--- a/Calcpad.Web/frontend/calcpad-frontend/src/text/comment-formatting.ts
++++ b/Calcpad.Web/frontend/calcpad-frontend/src/text/comment-formatting.ts
+@@ -52,15 +52,42 @@ export function lineHasCommentPrefix(lineText: string): boolean {
+     return rest.startsWith("'");
+ }
+ 
++/**
++ * True if the character at the given 0-based column already sits inside a
++ * text/comment region, mirroring the Calcpad tokenizer's rules: a ' switches
++ * the rest of the line to a plain-text comment, and "..." wraps an inline
++ * text string within code. Anything inside those regions is emitted as text
++ * (HTML tags render), so a formatting hotkey there needs no comment quote.
++ */
++export function isColumnInTextContext(lineText: string, column: number): boolean {
++    let inQuote = false;
++    const end = Math.min(column, lineText.length);
++    for (let i = 0; i < end; i++) {
++        const ch = lineText[i];
++        if (inQuote) {
++            if (ch === '"') inQuote = false;
++        } else if (ch === "'") {
++            return true;
++        } else if (ch === '"') {
++            inQuote = true;
++        }
++    }
++    return inQuote;
++}
++
+ /**
+  * 1-based column at which a missing comment quote should be inserted —
+- * right after the line's indentation — or null if the line already has one.
+- * HTML/markdown formatting hotkeys need every touched line wrapped in a
+- * comment for the tags to be recognized as HTML rather than literal text.
++ * right after the line's indentation — or null if none is needed.
++ * HTML/markdown formatting hotkeys need the tags to sit inside a comment to
++ * render as HTML rather than literal text. No quote is needed when the line
++ * already opens a comment, or when the selection (`selectionColumn`, 0-based)
++ * already lands inside a text region mid-line — inserting one there would
++ * wrongly comment out the code preceding it.
+  */
+-export function getCommentPrefixInsertColumn(lineText: string): number | null {
++export function getCommentPrefixInsertColumn(lineText: string, selectionColumn?: number): number | null {
+     const indentLen = getIndentLength(lineText);
+     if (lineText.slice(indentLen).startsWith("'")) return null;
++    if (selectionColumn !== undefined && isColumnInTextContext(lineText, selectionColumn)) return null;
+     return indentLen + 1;
+ }
+ 
+diff --git a/Calcpad.Web/frontend/calcpad-frontend/src/text/metadata-comment.ts b/Calcpad.Web/frontend/calcpad-frontend/src/text/metadata-comment.ts
+new file mode 100644
+index 0000000..04f3d70
+--- /dev/null
++++ b/Calcpad.Web/frontend/calcpad-frontend/src/text/metadata-comment.ts
+@@ -0,0 +1,281 @@
++import { getIndentLength } from './comment-formatting';
++
++/**
++ * Parsed shape of a Calcpad definition-metadata comment
++ * (`'<!--{...}-->`). Unknown keys are preserved via the index signature so a
++ * round-trip through the editor UI doesn't drop properties it doesn't render.
++ */
++export interface MetadataCommentData {
++    desc?: string;
++    paramTypes?: string[];
++    paramDesc?: string[];
++    settings?: Record<string, string | number | boolean>;
++    LintIgnore?: string[];
++    EndLintIgnore?: string[];
++    [key: string]: unknown;
++}
++
++/** A metadata comment located on a single document line. */
++export interface MetadataCommentBlock {
++    /** 0-based line index containing the comment */
++    line: number;
++    /** Leading whitespace of the line */
++    indent: string;
++    /** Closing comment quote (`'`) if the line ends with one, else '' */
++    trailingQuote: string;
++    /** Raw text between `<!--` and `-->`, trimmed */
++    rawJson: string;
++    /** Parsed object, or null when the JSON is malformed */
++    data: MetadataCommentData | null;
++    valid: boolean;
++    /** Which properties actually apply to this line; set by the host. */
++    context?: MetadataLineContext;
++}
++
++/**
++ * Describes which metadata properties are meaningful for a comment line, based
++ * on the surrounding document. Used to hide fields that can't apply here.
++ */
++export interface MetadataLineContext {
++    /**
++     * Parameter count of the definition this comment documents: > 0 for a
++     * function/macro, 0 for a plain variable/custom-unit definition, null when
++     * no definition follows the comment.
++     */
++    paramCount: number | null;
++    /** True when a definition (any kind) follows the comment. */
++    hasDefinition: boolean;
++    /** True when an unclosed LintIgnore region is open at this line. */
++    insideOpenLintRegion: boolean;
++}
++
++/** Valid `paramTypes` values for custom functions (f(x;y) = ...). */
++export const FUNCTION_PARAM_TYPES = ['value', 'vector', 'matrix', 'any'] as const;
++
++/** Valid `paramTypes` values for macros (#def) — TokenType enum names. */
++export const MACRO_PARAM_TYPES = [
++    'None', 'Const', 'Operator', 'Bracket', 'LineContinuation',
++    'Variable', 'LocalVariable', 'Function', 'Macro', 'MacroParameter',
++    'Units', 'Setting',
++    'Keyword', 'ControlBlockKeyword', 'EndKeyword', 'Command',
++    'Include', 'FilePath', 'DataExchangeKeyword',
++    'Comment', 'HtmlComment', 'Tag', 'HtmlContent', 'JavaScript', 'Css', 'Svg',
++    'Input', 'Format',
++] as const;
++
++export interface MetadataSettingKey {
++    key: string;
++    detail: string;
++    type: 'number' | 'boolean' | 'string' | 'enum';
++    options?: string[];
++    def: string | number | boolean;
++}
++
++/** Recognized keys for the `settings` overrides object. */
++export const METADATA_SETTINGS_KEYS: MetadataSettingKey[] = [
++    { key: 'decimals', detail: 'Decimal places in output (0-15)', type: 'number', def: 4 },
++    { key: 'degrees', detail: 'Angle unit: 0=radians, 1=degrees, 2=gradians', type: 'enum', options: ['0', '1', '2'], def: 0 },
++    { key: 'complex', detail: 'Enable complex number mode', type: 'boolean', def: false },
++    { key: 'substitute', detail: 'Substitute variable values into expressions', type: 'boolean', def: true },
++    { key: 'formatEquations', detail: 'Format equations in output', type: 'boolean', def: true },
++    { key: 'zeroSmallMatrixElements', detail: 'Zero out near-zero matrix elements', type: 'boolean', def: true },
++    { key: 'maxOutputCount', detail: 'Maximum output rows (5-100)', type: 'number', def: 20 },
++    { key: 'units', detail: 'Unit system string', type: 'string', def: 'm' },
++    { key: 'vectorGraphics', detail: 'Render plots as SVG', type: 'boolean', def: false },
++    {
++        key: 'colorScale', detail: 'Plot color scale', type: 'enum', def: 'Rainbow',
++        options: ['None', 'Gray', 'Rainbow', 'Terrain', 'VioletToYellow', 'GreenToYellow', 'Blues', 'BlueToYellow', 'BlueToRed', 'PurpleToYellow'],
++    },
++    { key: 'smoothScale', detail: 'Smooth color scale transitions', type: 'boolean', def: false },
++    { key: 'shadows', detail: 'Enable 3-D plot shadows', type: 'boolean', def: true },
++    { key: 'adaptivePlot', detail: 'Use adaptive sampling for plots', type: 'boolean', def: true },
++];
++
++export interface LintCode {
++    code: string;
++    description: string;
++}
++
++/**
++ * Linter diagnostic codes, mirroring Calcpad.Highlighter's ErrorCodes catalog.
++ * Used to populate the lint-ignore multi-select. Keep in sync with
++ * `Calcpad.Highlighter/Linter/Constants/ErrorCodes.cs`.
++ */
++export const LINT_CODES: LintCode[] = [
++    { code: 'CPD-1101', description: 'Malformed #include statement' },
++    { code: 'CPD-1102', description: 'Missing #include filename' },
++    { code: 'CPD-2201', description: 'Duplicate macro definition' },
++    { code: 'CPD-2202', description: "Macro name must end with '$'" },
++    { code: 'CPD-2203', description: "Macro parameter must end with '$'" },
++    { code: 'CPD-2204', description: 'Invalid macro name (must start with a letter)' },
++    { code: 'CPD-2205', description: 'Malformed #def syntax' },
++    { code: 'CPD-2206', description: 'Unmatched #def or #end def' },
++    { code: 'CPD-2207', description: 'Nested macro definition not allowed' },
++    { code: 'CPD-2208', description: 'Macro parameter must start with a letter' },
++    { code: 'CPD-2209', description: 'Macro definition inside control block has no effect' },
++    { code: 'CPD-2210', description: 'Invalid character in macro name' },
++    { code: 'CPD-2211', description: 'Invalid character in macro parameter' },
++    { code: 'CPD-2212', description: 'Duplicate macro parameter' },
++    { code: 'CPD-2213', description: 'Required parameter after optional parameter' },
++    { code: 'CPD-3101', description: 'Unmatched opening parenthesis' },
++    { code: 'CPD-3102', description: 'Unmatched closing parenthesis' },
++    { code: 'CPD-3103', description: 'Unmatched opening square bracket' },
++    { code: 'CPD-3104', description: 'Unmatched closing square bracket' },
++    { code: 'CPD-3105', description: 'Unmatched opening curly brace or control block' },
++    { code: 'CPD-3106', description: 'Unmatched closing curly brace' },
++    { code: 'CPD-3201', description: 'Invalid variable name (must start with letter)' },
++    { code: 'CPD-3203', description: 'Invalid function name' },
++    { code: 'CPD-3204', description: 'Function name conflicts with built-in function' },
++    { code: 'CPD-3205', description: 'Variable name conflicts with keyword' },
++    { code: 'CPD-3206', description: 'Variable name conflicts with built-in unit' },
++    { code: 'CPD-3207', description: 'Variable name conflicts with built-in constant' },
++    { code: 'CPD-3208', description: 'Function must have at least one parameter' },
++    { code: 'CPD-3215', description: 'Required parameter after optional parameter in function definition' },
++    { code: 'CPD-3301', description: 'Undefined variable' },
++    { code: 'CPD-3302', description: 'Function called with incorrect parameter count' },
++    { code: 'CPD-3303', description: 'Undefined macro' },
++    { code: 'CPD-3304', description: 'Macro called with incorrect parameter count' },
++    { code: 'CPD-3305', description: 'Undefined function' },
++    { code: 'CPD-3306', description: 'Invalid element access' },
++    { code: 'CPD-3307', description: 'Too few parameters' },
++    { code: 'CPD-3308', description: 'Too many parameters' },
++    { code: 'CPD-3309', description: 'Parameter type mismatch' },
++    { code: 'CPD-3310', description: 'Undefined unit' },
++    { code: 'CPD-3311', description: 'Empty parameter in function call' },
++    { code: 'CPD-3312', description: 'Unused variable' },
++    { code: 'CPD-3313', description: 'Unused function' },
++    { code: 'CPD-3401', description: 'Invalid operator usage' },
++    { code: 'CPD-3402', description: 'Mismatched operator' },
++    { code: 'CPD-3403', description: 'Command must be at the start of a statement' },
++    { code: 'CPD-3404', description: 'Invalid command syntax' },
++    { code: 'CPD-3405', description: 'Invalid control structure syntax' },
++    { code: 'CPD-3406', description: 'Unknown directive' },
++    { code: 'CPD-3407', description: 'Invalid assignment' },
++    { code: 'CPD-3408', description: 'Invalid CustomUnit syntax' },
++    { code: 'CPD-3409', description: '# directive not allowed inside command block' },
++    { code: 'CPD-3410', description: 'Invalid command syntax' },
++    { code: 'CPD-3411', description: 'Incomplete expression' },
++    { code: 'CPD-3412', description: 'Command variable mismatch' },
++    { code: 'CPD-3413', description: 'Reassignment of constant' },
++    { code: 'CPD-3414', description: 'Outer scope assignment to undefined variable' },
++    { code: 'CPD-3415', description: 'Invalid #UI format' },
++    { code: 'CPD-3416', description: 'Invalid paramType value' },
++    { code: 'CPD-3417', description: 'Invalid metadata comment JSON' },
++    { code: 'CPD-3601', description: 'Invalid format specifier' },
++];
++
++/**
++ * Detect a single-line metadata comment (`'<!--{...}-->`) on the cursor's line.
++ * Mirrors the tokenizer/linter rules: the line must open with a comment quote
++ * (`'` or `"`) and contain a `<!--{ ... }-->` block that closes on the same
++ * line. Multi-line blocks are out of scope (returns null) so edits round-trip
++ * losslessly. Returns null when the cursor line holds no such comment.
++ */
++export function findMetadataCommentBlock(lines: string[], cursorLine: number): MetadataCommentBlock | null {
++    if (cursorLine < 0 || cursorLine >= lines.length) return null;
++
++    const lineText = lines[cursorLine];
++    const indentLen = getIndentLength(lineText);
++    const indent = lineText.slice(0, indentLen);
++    const rest = lineText.slice(indentLen);
++
++    const quote = rest[0];
++    if (quote !== "'" && quote !== '"') return null;
++
++    const openIdx = rest.indexOf('<!--');
++    if (openIdx < 0) return null;
++    const afterOpen = rest.slice(openIdx + 4);
++    const closeIdx = afterOpen.indexOf('-->');
++    if (closeIdx < 0) return null;
++
++    const rawJson = afterOpen.slice(0, closeIdx).trim();
++    if (!rawJson.startsWith('{')) return null;
++
++    const afterClose = afterOpen.slice(closeIdx + 3).trim();
++    const trailingQuote = afterClose === quote ? quote : '';
++
++    let data: MetadataCommentData | null = null;
++    let valid = false;
++    try {
++        const parsed = JSON.parse(rawJson);
++        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
++            data = parsed as MetadataCommentData;
++            valid = true;
++        }
++    } catch {
++        // Malformed JSON — surfaced to the UI via valid === false
++    }
++
++    return { line: cursorLine, indent, trailingQuote, rawJson, data, valid };
++}
++
++/**
++ * Build a metadata-comment line from a data object, preserving the original
++ * indentation and trailing comment quote. Empty strings and empty objects are
++ * dropped so the serialized comment stays minimal. Empty arrays are kept: they
++ * are meaningful for the LintIgnore/EndLintIgnore region markers, and the panel
++ * never emits empty paramTypes/paramDesc arrays in the first place.
++ */
++export function serializeMetadataComment(data: MetadataCommentData, indent = '', trailingQuote = ''): string {
++    const clean: Record<string, unknown> = {};
++    for (const [key, value] of Object.entries(data)) {
++        if (value === undefined || value === null) continue;
++        if (typeof value === 'string' && value.length === 0) continue;
++        if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value as object).length === 0) continue;
++        clean[key] = value;
++    }
++    return `${indent}'<!--${JSON.stringify(clean)}-->${trailingQuote}`;
++}
++
++/**
++ * Classify a definition line for metadata purposes. Returns the parameter count
++ * for a function (`f(x;y)=`) or macro (`#def m$(a$;b$)`) definition, 0 for a
++ * plain variable/custom-unit definition (`name = …`), or null when the line
++ * isn't a recognizable definition.
++ */
++export function parseDefinitionParamCount(text: string): number | null {
++    const trimmed = text.trimStart();
++
++    const macro = trimmed.match(/^#def\s+[A-Za-z_]\w*\$\s*(?:\(([^)]*)\))?/);
++    if (macro) return countParams(macro[1]);
++
++    const func = trimmed.match(/^[A-Za-z_]\w*\s*\(([^)]*)\)\s*=/);
++    if (func) return countParams(func[1]);
++
++    if (/^[A-Za-z_][\w.]*\s*=/.test(trimmed)) return 0;
++
++    return null;
++}
++
++function countParams(inner: string | undefined): number {
++    if (!inner || inner.trim() === '') return 0;
++    return inner.split(';').filter(p => p.trim() !== '').length;
++}
++
++/**
++ * Analyze which metadata properties apply to a comment on the given line by
++ * inspecting the document around it: the definition it documents (the next
++ * non-blank, non-comment line) and whether a LintIgnore region opened earlier
++ * is still open here.
++ */
++export function analyzeMetadataLine(lines: string[], commentLine: number): MetadataLineContext {
++    let paramCount: number | null = null;
++    for (let i = commentLine + 1; i < lines.length; i++) {
++        const t = lines[i].trim();
++        if (t === '') continue;
++        // Skip stacked comment/metadata lines above the definition.
++        if (t.startsWith("'") || t.startsWith('"')) continue;
++        paramCount = parseDefinitionParamCount(lines[i]);
++        break;
++    }
++
++    let insideOpenLintRegion = false;
++    for (let i = 0; i < commentLine; i++) {
++        const block = findMetadataCommentBlock(lines, i);
++        if (!block?.valid || !block.data) continue;
++        if (block.data.EndLintIgnore !== undefined) insideOpenLintRegion = false;
++        if (block.data.LintIgnore !== undefined) insideOpenLintRegion = true;
++    }
++
++    return { paramCount, hasDefinition: paramCount !== null, insideOpenLintRegion };
++}
+diff --git a/Calcpad.Web/frontend/calcpad-frontend/src/vue/components/CalcpadApp.vue b/Calcpad.Web/frontend/calcpad-frontend/src/vue/components/CalcpadApp.vue
+index 258939f..75b90f2 100644
+--- a/Calcpad.Web/frontend/calcpad-frontend/src/vue/components/CalcpadApp.vue
++++ b/Calcpad.Web/frontend/calcpad-frontend/src/vue/components/CalcpadApp.vue
+@@ -135,13 +135,18 @@
+         :errors="convertErrors"
+         @go-to-line="handleGoToLine"
+       />
++      <CalcpadMetadataTab
++        v-else-if="activeTab === 'metadata'"
++        :block="metadataBlock"
++        @apply="handleApplyMetadata"
++      />
+     </div>
+     </div>
+   </div>
+ </template>
+ 
+ <script setup lang="ts">
+-import { ref, onMounted } from 'vue'
++import { ref, computed, onMounted } from 'vue'
+ import CalcpadInsertTab from './CalcpadInsertTab.vue'
+ import CalcpadTocTab from './CalcpadTocTab.vue'
+ import CalcpadSettingsTab from './CalcpadSettingsTab.vue'
+@@ -151,7 +156,9 @@ import CalcpadFormattingTab from './CalcpadFormattingTab.vue'
+ import CalcpadExportTab from './CalcpadExportTab.vue'
+ import CalcpadFilesTab from './CalcpadFilesTab.vue'
+ import CalcpadErrorsTab from './CalcpadErrorsTab.vue'
++import CalcpadMetadataTab from './CalcpadMetadataTab.vue'
+ import { postMessage } from '../services/messaging'
++import type { MetadataCommentBlock, MetadataCommentData } from '../../text/metadata-comment'
+ import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading, ThemeInfo, FileNode, VersionConfig } from '../types'
+ import { DEFAULT_VERSION_CONFIG } from '../types'
+ import type { CalcpadError } from '../../types/api'
+@@ -217,16 +224,23 @@ const prettifyIndentStyle = ref<'tab' | 'space'>('tab')
+ const prettifyIndentSize = ref(4)
+ const prettifyTrimTrailing = ref(true)
+ 
+-const tabs: Tab[] = [
+-  { id: 'insert', label: 'Insert' },
+-  { id: 'toc', label: 'TOC' },
+-  { id: 'settings', label: 'Settings' },
+-  { id: 'variables', label: 'Variables' },
+-  { id: 'pdf', label: 'PDF' },
+-  { id: 'formatting', label: 'Formatting' },
+-  { id: 'export', label: 'Export' },
+-  { id: 'errors', label: 'Errors' }
+-]
++const metadataBlock = ref<MetadataCommentBlock | null>(null)
++
++const tabs = computed<Tab[]>(() => {
++  const base: Tab[] = [
++    { id: 'insert', label: 'Insert' },
++    { id: 'toc', label: 'TOC' },
++    { id: 'settings', label: 'Settings' },
++    { id: 'variables', label: 'Variables' },
++    { id: 'pdf', label: 'PDF' },
++    { id: 'formatting', label: 'Formatting' },
++    { id: 'export', label: 'Export' },
++    { id: 'errors', label: 'Errors' }
++  ]
++  // The metadata comment editor is driven by VS Code cursor tracking.
++  if (props.versionConfig.isVSCode) base.push({ id: 'metadata', label: 'Metadata' })
++  return base
++})
+ 
+ const convertErrors = ref<CalcpadError[]>([])
+ 
+@@ -303,6 +317,11 @@ const switchTab = (tabId: string) => {
+     postMessage({ type: 'getPrettifySettings' })
+   }
+ 
++  // Refresh the metadata comment at the cursor when opening the Metadata tab
++  if (tabId === 'metadata') {
++    postMessage({ type: 'getMetadataContext' })
++  }
++
+   // Fetch the current document's plots the first time the Export tab is opened.
+   // Users can refresh manually after that.
+   if (tabId === 'export' && plots.value.length === 0 && !plotsLoading.value) {
+@@ -488,6 +507,17 @@ const handleUpdatePrettifyTrim = (enabled: boolean) => {
+   postMessage({ type: 'updatePrettifyTrim', value: enabled })
+ }
+ 
++const handleApplyMetadata = (data: MetadataCommentData) => {
++  if (!metadataBlock.value) return
++  postMessage({
++    type: 'updateMetadata',
++    line: metadataBlock.value.line,
++    indent: metadataBlock.value.indent,
++    trailingQuote: metadataBlock.value.trailingQuote,
++    data
++  })
++}
++
+ // Message handler
+ const handleMessage = (event: MessageEvent) => {
+   const message = event.data
+@@ -562,6 +592,12 @@ const handleMessage = (event: MessageEvent) => {
+       plots.value = Array.isArray(message.plots) ? message.plots : []
+       plotsLoading.value = false
+       break
++    case 'metadataContext':
++      metadataBlock.value = message.block ?? null
++      break
++    case 'focusTab':
++      if (typeof message.tab === 'string') switchTab(message.tab)
++      break
+   }
+ }
+ 
+diff --git a/Calcpad.Web/frontend/calcpad-frontend/src/vue/components/CalcpadMetadataTab.vue b/Calcpad.Web/frontend/calcpad-frontend/src/vue/components/CalcpadMetadataTab.vue
+new file mode 100644
+index 0000000..e5617dc
+--- /dev/null
++++ b/Calcpad.Web/frontend/calcpad-frontend/src/vue/components/CalcpadMetadataTab.vue
+@@ -0,0 +1,479 @@
++<template>
++  <div class="metadata-tab">
++    <div class="metadata-container p-3">
++      <h3 class="section-title">Metadata Comment</h3>
++
++      <p v-if="!block" class="section-desc">
++        Place the cursor inside a metadata comment
++        (<code>'&lt;!--{ … }--&gt;</code>) above a definition, or right-click a
++        line and choose <em>Edit Metadata Properties</em>.
++      </p>
++
++      <template v-else>
++        <p v-if="!block.valid" class="warning">
++          This comment contains invalid JSON. Applying will replace it with the
++          values below.
++        </p>
++
++        <div class="field">
++          <label>Description</label>
++          <textarea
++            v-model="model.desc"
++            rows="2"
++            placeholder="What this definition does"
++          ></textarea>
++        </div>
++
++        <div v-if="showParams" class="field">
++          <label>Parameter types</label>
++          <div v-for="(_, i) in model.paramTypes" :key="'pt' + i" class="list-row">
++            <select v-model="model.paramTypes[i]">
++              <option value="">(none)</option>
++              <optgroup label="Function">
++                <option v-for="t in functionTypes" :key="t" :value="t">{{ t }}</option>
++              </optgroup>
++              <optgroup label="Macro (TokenType)">
++                <option v-for="t in macroTypes" :key="t" :value="t">{{ t }}</option>
++              </optgroup>
++            </select>
++            <button class="icon-button" title="Remove" @click="model.paramTypes.splice(i, 1)">✕</button>
++          </div>
++          <button class="add-button" @click="model.paramTypes.push('')">+ Add type</button>
++        </div>
++
++        <div v-if="showParams" class="field">
++          <label>Parameter descriptions</label>
++          <div v-for="(_, i) in model.paramDesc" :key="'pd' + i" class="list-row">
++            <input type="text" v-model="model.paramDesc[i]" placeholder="Description" />
++            <button class="icon-button" title="Remove" @click="model.paramDesc.splice(i, 1)">✕</button>
++          </div>
++          <button class="add-button" @click="model.paramDesc.push('')">+ Add description</button>
++        </div>
++
++        <div class="field">
++          <label>Settings overrides</label>
++          <div v-for="(row, i) in model.settings" :key="'s' + i" class="list-row">
++            <select v-model="row.key" @change="onSettingKeyChange(row)">
++              <option value="">(select)</option>
++              <option v-for="s in settingKeys" :key="s.key" :value="s.key" :title="s.detail">{{ s.key }}</option>
++            </select>
++            <select v-if="settingType(row.key) === 'boolean'" v-model="row.value">
++              <option value="true">true</option>
++              <option value="false">false</option>
++            </select>
++            <select v-else-if="settingType(row.key) === 'enum'" v-model="row.value">
++              <option v-for="opt in settingOptions(row.key)" :key="opt" :value="opt">{{ opt }}</option>
++            </select>
++            <input
++              v-else
++              :type="settingType(row.key) === 'number' ? 'number' : 'text'"
++              v-model="row.value"
++            />
++            <button class="icon-button" title="Remove" @click="model.settings.splice(i, 1)">✕</button>
++          </div>
++          <button class="add-button" @click="model.settings.push({ key: '', value: '' })">+ Add setting</button>
++        </div>
++
++        <div class="field">
++          <label>Lint ignore</label>
++
++          <div class="sub-row">
++            <span class="sub-label">Start region</span>
++            <select v-model="model.startLintMode">
++              <option value="off">Off</option>
++              <option value="all">Ignore all</option>
++              <option value="specific">Ignore specific…</option>
++            </select>
++          </div>
++          <select
++            v-if="model.startLintMode === 'specific'"
++            class="code-multiselect"
++            multiple
++            size="8"
++            v-model="model.startLintCodes"
++          >
++            <option v-for="c in lintCodes" :key="c.code" :value="c.code" :title="c.description">
++              {{ c.code }} — {{ c.description }}
++            </option>
++          </select>
++
++          <template v-if="showEndLint">
++            <div class="sub-row">
++              <span class="sub-label">End region</span>
++              <select v-model="model.endLintMode">
++                <option value="off">Off</option>
++                <option value="all">End all</option>
++                <option value="specific">End specific…</option>
++              </select>
++            </div>
++            <select
++              v-if="model.endLintMode === 'specific'"
++              class="code-multiselect"
++              multiple
++              size="8"
++              v-model="model.endLintCodes"
++            >
++              <option v-for="c in lintCodes" :key="c.code" :value="c.code" :title="c.description">
++                {{ c.code }} — {{ c.description }}
++              </option>
++            </select>
++          </template>
++        </div>
++
++        <div class="actions">
++          <button class="primary-button" @click="onApply">Apply</button>
++          <button class="secondary-button" @click="populate">Reset</button>
++        </div>
++      </template>
++    </div>
++  </div>
++</template>
++
++<script setup lang="ts">
++import { reactive, computed, watch } from 'vue'
++import {
++  FUNCTION_PARAM_TYPES,
++  MACRO_PARAM_TYPES,
++  METADATA_SETTINGS_KEYS,
++  LINT_CODES,
++} from '../../text/metadata-comment'
++import type { MetadataCommentBlock, MetadataCommentData } from '../../text/metadata-comment'
++
++interface Props {
++  block?: MetadataCommentBlock | null
++}
++const props = withDefaults(defineProps<Props>(), { block: null })
++
++const emit = defineEmits<{
++  'apply': [data: MetadataCommentData]
++}>()
++
++const functionTypes = FUNCTION_PARAM_TYPES
++const macroTypes = MACRO_PARAM_TYPES
++const settingKeys = METADATA_SETTINGS_KEYS
++const lintCodes = LINT_CODES
++
++type LintMode = 'off' | 'all' | 'specific'
++
++const KNOWN_KEYS = new Set(['desc', 'paramTypes', 'paramDesc', 'settings', 'LintIgnore', 'EndLintIgnore'])
++
++interface SettingRow { key: string; value: string }
++
++const model = reactive({
++  desc: '',
++  paramTypes: [] as string[],
++  paramDesc: [] as string[],
++  settings: [] as SettingRow[],
++  startLintMode: 'off' as LintMode,
++  startLintCodes: [] as string[],
++  endLintMode: 'off' as LintMode,
++  endLintCodes: [] as string[],
++  extra: {} as Record<string, unknown>,
++})
++
++// When the host provides no context (non-VS Code), show every field.
++const noContext = computed(() => !props.block?.context)
++
++const showParams = computed(() =>
++  noContext.value
++  || (props.block?.context?.paramCount ?? 0) > 0
++  || model.paramTypes.length > 0
++  || model.paramDesc.length > 0)
++
++// The End-region control only makes sense inside an open LintIgnore region, or
++// when this comment already carries an EndLintIgnore to stay editable.
++const showEndLint = computed(() =>
++  noContext.value || !!props.block?.context?.insideOpenLintRegion || model.endLintMode !== 'off')
++
++function settingType(key: string): MetadataSettingKind {
++  return METADATA_SETTINGS_KEYS.find(s => s.key === key)?.type ?? 'string'
++}
++type MetadataSettingKind = 'number' | 'boolean' | 'string' | 'enum'
++
++function settingOptions(key: string): string[] {
++  return METADATA_SETTINGS_KEYS.find(s => s.key === key)?.options ?? []
++}
++
++function onSettingKeyChange(row: SettingRow) {
++  const def = METADATA_SETTINGS_KEYS.find(s => s.key === row.key)?.def
++  row.value = def === undefined ? '' : String(def)
++}
++
++function populate() {
++  const data = props.block?.data ?? {}
++  model.desc = typeof data.desc === 'string' ? data.desc : ''
++  model.paramTypes = Array.isArray(data.paramTypes) ? data.paramTypes.map(String) : []
++  model.paramDesc = Array.isArray(data.paramDesc) ? data.paramDesc.map(String) : []
++  model.settings = data.settings && typeof data.settings === 'object'
++    ? Object.entries(data.settings).map(([key, value]) => ({ key, value: String(value) }))
++    : []
++  ;[model.startLintMode, model.startLintCodes] = readLintField(data.LintIgnore)
++  ;[model.endLintMode, model.endLintCodes] = readLintField(data.EndLintIgnore)
++  const extra: Record<string, unknown> = {}
++  for (const [key, value] of Object.entries(data)) {
++    if (!KNOWN_KEYS.has(key)) extra[key] = value
++  }
++  model.extra = extra
++
++  // Pre-size the parameter rows to the definition's parameter count so the
++  // form matches the signature without the user adding rows by hand.
++  const paramCount = props.block?.context?.paramCount ?? 0
++  if (paramCount > 0) {
++    while (model.paramTypes.length < paramCount) model.paramTypes.push('')
++    while (model.paramDesc.length < paramCount) model.paramDesc.push('')
++  }
++}
++
++// An array value maps to 'all' (empty) or 'specific' (codes); absent → 'off'.
++function readLintField(value: unknown): [LintMode, string[]] {
++  if (!Array.isArray(value)) return ['off', []]
++  return value.length === 0 ? ['all', []] : ['specific', value.map(String)]
++}
++
++function lintFieldValue(mode: LintMode, codes: string[]): string[] | undefined {
++  if (mode === 'off') return undefined
++  if (mode === 'all') return []
++  return codes.slice()
++}
++
++function coerceSetting(key: string, value: string): string | number | boolean {
++  const type = settingType(key)
++  if (type === 'boolean') return value === 'true'
++  if (type === 'number' || type === 'enum') {
++    const n = Number(value)
++    return Number.isFinite(n) && value.trim() !== '' ? n : value
++  }
++  return value
++}
++
++function onApply() {
++  const data: MetadataCommentData = { ...model.extra }
++
++  if (model.desc.trim()) data.desc = model.desc.trim()
++
++  const types = model.paramTypes.filter(t => t !== '')
++  if (types.length) data.paramTypes = types
++
++  const descs = model.paramDesc.filter(d => d.trim() !== '')
++  if (descs.length) data.paramDesc = descs
++
++  const settings: Record<string, string | number | boolean> = {}
++  for (const row of model.settings) {
++    if (row.key) settings[row.key] = coerceSetting(row.key, row.value)
++  }
++  if (Object.keys(settings).length) data.settings = settings
++
++  const lintIgnore = lintFieldValue(model.startLintMode, model.startLintCodes)
++  if (lintIgnore !== undefined) data.LintIgnore = lintIgnore
++
++  const endLintIgnore = lintFieldValue(model.endLintMode, model.endLintCodes)
++  if (endLintIgnore !== undefined) data.EndLintIgnore = endLintIgnore
++
++  emit('apply', data)
++}
++
++watch(() => props.block, populate, { immediate: true })
++</script>
++
++<style scoped>
++.metadata-tab {
++  height: 100%;
++  display: flex;
++  flex-direction: column;
++}
++
++.metadata-container {
++  overflow-y: auto;
++  flex: 1;
++  padding: 12px;
++}
++
++.section-title {
++  margin: 0 0 8px 0;
++  font-size: 13px;
++  font-weight: 600;
++  color: var(--vscode-foreground);
++}
++
++.section-desc {
++  font-size: 12px;
++  color: var(--vscode-descriptionForeground);
++  margin: 0 0 16px 0;
++  line-height: 1.5;
++}
++
++.section-desc code {
++  background: var(--vscode-textCodeBlock-background);
++  padding: 1px 4px;
++  border-radius: 2px;
++  font-size: 11px;
++}
++
++.warning {
++  font-size: 12px;
++  color: var(--vscode-editorWarning-foreground, #cca700);
++  margin: 0 0 12px 0;
++  line-height: 1.5;
++}
++
++.field {
++  margin-bottom: 16px;
++}
++
++.field > label {
++  display: block;
++  font-size: 12px;
++  font-weight: 600;
++  color: var(--vscode-foreground);
++  margin-bottom: 6px;
++}
++
++.list-row {
++  display: flex;
++  align-items: center;
++  gap: 6px;
++  margin-bottom: 6px;
++}
++
++.sub-row {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  margin-bottom: 6px;
++}
++
++.sub-label {
++  min-width: 80px;
++  font-size: 12px;
++  color: var(--vscode-foreground);
++}
++
++.sub-row select {
++  flex: 1;
++  min-width: 0;
++  background: var(--vscode-input-background);
++  color: var(--vscode-input-foreground);
++  border: 1px solid var(--vscode-input-border, transparent);
++  padding: 4px 6px;
++  font-size: 12px;
++  font-family: var(--vscode-font-family);
++  border-radius: 2px;
++}
++
++.code-multiselect {
++  width: 100%;
++  margin-bottom: 8px;
++  background: var(--vscode-input-background);
++  color: var(--vscode-input-foreground);
++  border: 1px solid var(--vscode-input-border, transparent);
++  font-size: 11px;
++  font-family: var(--vscode-font-family);
++  border-radius: 2px;
++  padding: 2px;
++}
++
++.code-multiselect option {
++  padding: 2px 4px;
++}
++
++.field textarea,
++.field input[type="text"],
++.field input[type="number"],
++.list-row input,
++.list-row select {
++  flex: 1;
++  min-width: 0;
++  background: var(--vscode-input-background);
++  color: var(--vscode-input-foreground);
++  border: 1px solid var(--vscode-input-border, transparent);
++  padding: 4px 6px;
++  font-size: 12px;
++  font-family: var(--vscode-font-family);
++  border-radius: 2px;
++}
++
++.field textarea {
++  width: 100%;
++  resize: vertical;
++}
++
++.icon-button {
++  background: transparent;
++  border: none;
++  color: var(--vscode-descriptionForeground);
++  cursor: pointer;
++  padding: 2px 4px;
++  font-size: 11px;
++  border-radius: 2px;
++  flex: 0 0 auto;
++}
++
++.icon-button:hover {
++  background: var(--vscode-toolbar-hoverBackground);
++  color: var(--vscode-foreground);
++}
++
++.add-button {
++  background: transparent;
++  border: 1px dashed var(--vscode-input-border, var(--vscode-widget-border));
++  color: var(--vscode-foreground);
++  cursor: pointer;
++  padding: 3px 8px;
++  font-size: 11px;
++  border-radius: 2px;
++}
++
++.add-button:hover {
++  background: var(--vscode-toolbar-hoverBackground);
++}
++
++.checkbox-label {
++  display: flex;
++  align-items: center;
++  gap: 6px;
++  cursor: pointer;
++  font-size: 12px;
++  color: var(--vscode-foreground);
++  margin-top: 8px;
++}
++
++.checkbox-label input {
++  margin: 0;
++}
++
++.actions {
++  display: flex;
++  gap: 8px;
++  margin-top: 8px;
++}
++
++.primary-button {
++  background: var(--vscode-button-background);
++  color: var(--vscode-button-foreground);
++  border: none;
++  padding: 6px 14px;
++  font-size: 12px;
++  font-family: var(--vscode-font-family);
++  cursor: pointer;
++  border-radius: 2px;
++}
++
++.primary-button:hover {
++  background: var(--vscode-button-hoverBackground);
++}
++
++.secondary-button {
++  background: var(--vscode-button-secondaryBackground);
++  color: var(--vscode-button-secondaryForeground);
++  border: none;
++  padding: 6px 14px;
++  font-size: 12px;
++  font-family: var(--vscode-font-family);
++  cursor: pointer;
++  border-radius: 2px;
++}
++
++.secondary-button:hover {
++  background: var(--vscode-button-secondaryHoverBackground);
++}
++</style>
+diff --git a/Calcpad.Web/frontend/calcpad-web/src/App.vue b/Calcpad.Web/frontend/calcpad-web/src/App.vue
+index 347e99c..c5c41fd 100644
+--- a/Calcpad.Web/frontend/calcpad-web/src/App.vue
++++ b/Calcpad.Web/frontend/calcpad-web/src/App.vue
+@@ -259,6 +259,10 @@
+             aria-orientation="horizontal"
+           ></div>
+         </template>
++        <div v-if="previewLoading" class="preview-loading-overlay">
++          <div class="preview-spinner"></div>
++          <span>Calculating…</span>
++        </div>
+       </div>
+     </div>
+ 
+@@ -563,6 +567,9 @@ function gotoProblem(problem: ProblemItem): void {
+ const serverConnected = ref(false)
+ const sidebarVisible = ref(true)
+ const previewVisible = ref(false)
++// Groups with an in-flight preview render; drives the "Calculating…" overlay.
++const previewLoadingGroups = ref(new Set<string>())
++const previewLoading = computed(() => previewLoadingGroups.value.size > 0)
+ const bottomPanelOpen = ref(false)
+ const activeBottomTab = ref<'problems' | 'output'>('problems')
+ 
+@@ -734,6 +741,11 @@ function getPreviewMode(): PreviewMode {
+   return previewMode.value
+ }
+ 
++function setPreviewLoading(groupId: string, loading: boolean): void {
++  if (loading) previewLoadingGroups.value.add(groupId)
++  else previewLoadingGroups.value.delete(groupId)
++}
++
+ function setPreviewHtml(groupId: string, html: string, scrollToLine?: number): void {
+   const frame = previewEls.get(groupId)
+   if (!frame) return
+@@ -1057,6 +1069,7 @@ defineExpose({
+   togglePreview,
+   isPreviewVisible,
+   setPreviewHtml,
++  setPreviewLoading,
+   scrollPreviewToSourceLine,
+   setProblems,
+   onGotoProblem,
+diff --git a/Calcpad.Web/frontend/calcpad-web/src/editor/formatting-commands.ts b/Calcpad.Web/frontend/calcpad-web/src/editor/formatting-commands.ts
+index 99a35ea..9e6f919 100644
+--- a/Calcpad.Web/frontend/calcpad-web/src/editor/formatting-commands.ts
++++ b/Calcpad.Web/frontend/calcpad-web/src/editor/formatting-commands.ts
+@@ -90,18 +90,26 @@ function detectFormatAtCursor(editor: monaco.editor.IStandaloneCodeEditor): Comm
+ }
+ 
+ /**
+- * Insert a comment quote on every given line that's missing one, right after
+- * its indentation (same rule headings use). Returns the 1-based column each
+- * quote was inserted at, keyed by line number, for shifting selections.
++ * Insert a comment quote on every selected line that needs one, right after
++ * its indentation (same rule headings use). A line is skipped when it already
++ * opens a comment or when the selection already lands inside a text region
++ * mid-line. Returns the 1-based column each quote was inserted at, keyed by
++ * line number, for shifting selections.
+  */
+ function ensureCommentPrefixes(
+     model: monaco.editor.ITextModel,
+-    lineNumbers: Iterable<number>,
++    selections: readonly monaco.Selection[],
+     edits: monaco.editor.IIdentifiedSingleEditOperation[],
+ ): Map<number, number> {
++    const startColByLine = new Map<number, number>();
++    for (const sel of selections) {
++        const prev = startColByLine.get(sel.startLineNumber);
++        if (prev === undefined || sel.startColumn < prev) startColByLine.set(sel.startLineNumber, sel.startColumn);
++    }
++
+     const insertedAt = new Map<number, number>();
+-    for (const lineNumber of new Set(lineNumbers)) {
+-        const insertCol = getCommentPrefixInsertColumn(model.getLineContent(lineNumber));
++    for (const [lineNumber, startColumn] of startColByLine) {
++        const insertCol = getCommentPrefixInsertColumn(model.getLineContent(lineNumber), startColumn - 1);
+         if (insertCol === null) continue;
+         edits.push({
+             range: new monaco.Range(lineNumber, insertCol, lineNumber, insertCol),
+@@ -128,7 +136,7 @@ function wrapInline(
+     const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];
+     // Bold/italic/etc. need the line wrapped in a comment for the HTML tags
+     // to render, same as headings — add one if missing.
+-    const insertedAt = ensureCommentPrefixes(model, selections.map(s => s.startLineNumber), edits);
++    const insertedAt = ensureCommentPrefixes(model, selections, edits);
+ 
+     const newSelections: monaco.Selection[] = [];
+ 
+diff --git a/Calcpad.Web/frontend/calcpad-web/src/main.ts b/Calcpad.Web/frontend/calcpad-web/src/main.ts
+index 1b47ab5..9a3e797 100644
+--- a/Calcpad.Web/frontend/calcpad-web/src/main.ts
++++ b/Calcpad.Web/frontend/calcpad-web/src/main.ts
+@@ -53,14 +53,17 @@ function getServerUrl(): string {
+ 
+ /** Idle-state preview HTML — same content the VS Code extension shows when
+  *  the editor buffer is empty. Quick reference for formatting hotkeys. */
+-function getEmptyPreviewHtml(): string {
++function getEmptyPreviewHtml(theme: 'light' | 'dark'): string {
++    const c = theme === 'light'
++        ? { fg: '#6e6e6e', bg: '#ffffff', link: '#0066cc' }
++        : { fg: '#858585', bg: '#1e1e1e', link: '#4FC1FF' };
+     return `<!DOCTYPE html>
+ <html>
+ <head>
+     <meta charset="UTF-8">
+     <title>CalcPad Preview</title>
+     <style>
+-        body { color: #858585; background: var(--vscode-editor-background, #1e1e1e); padding: 20px; font-family: var(--vscode-font-family, system-ui, sans-serif); }
++        body { color: ${c.fg}; background: ${c.bg}; padding: 20px; font-family: var(--vscode-font-family, system-ui, sans-serif); }
+         h3 { text-align: center; }
+         p { text-align: center; }
+         table { margin: 1em auto; border-collapse: collapse; text-align: left; font-size: 0.9em; }
+@@ -68,7 +71,7 @@ function getEmptyPreviewHtml(): string {
+         th { text-align: right; font-weight: normal; opacity: 0.7; }
+         td { font-family: var(--vscode-editor-font-family, monospace); }
+         h4 { text-align: center; margin-top: 1.5em; margin-bottom: 0.3em; }
+-        a { color: #4FC1FF; }
++        a { color: ${c.link}; }
+     </style>
+ </head>
+ <body>
+@@ -326,6 +329,8 @@ async function bootstrap(): Promise<void> {
+     // by the wrapped->unwrapped two-step in the 'navigateToLine' handler.
+     const pendingPreviewScrollLine = new Map<string, number>();
+ 
++    const PREVIEW_LOADING_DELAY_MS = 400;
++
+     async function refreshPreviewFor(group: EditorGroup): Promise<void> {
+         if (!appInstance.isPreviewVisible()) return;
+ 
+@@ -336,15 +341,27 @@ async function bootstrap(): Promise<void> {
+         const theme = resolvePreviewTheme();
+ 
+         if (!content.trim()) {
+-            appInstance.setPreviewHtml(group.id, getEmptyPreviewHtml());
++            appInstance.setPreviewHtml(group.id, getEmptyPreviewHtml(theme));
+             return;
+         }
+ 
+         const fileContext = getFileContext ? await getFileContext(content) : {};
+ 
+-        const result = mode === 'unwrapped'
+-            ? await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath, theme)
+-            : await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath, theme);
++        // Show the "Calculating…" overlay only if the round-trip runs long, so
++        // fast renders never flash it (mirrors Calcpad.Wpf's delayed spinner).
++        const loadingTimer = window.setTimeout(
++            () => appInstance.setPreviewLoading(group.id, true),
++            PREVIEW_LOADING_DELAY_MS,
++        );
++        let result;
++        try {
++            result = mode === 'unwrapped'
++                ? await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath, theme)
++                : await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath, theme);
++        } finally {
++            window.clearTimeout(loadingTimer);
++            appInstance.setPreviewLoading(group.id, false);
++        }
+ 
+         // Consume any pending two-step scroll target for this group: only the
+         // unwrapped view it was set for should honor it, and only once.
+diff --git a/Calcpad.Web/frontend/calcpad-web/src/styles/app.css b/Calcpad.Web/frontend/calcpad-web/src/styles/app.css
+index 23dd67c..621e63f 100644
+--- a/Calcpad.Web/frontend/calcpad-web/src/styles/app.css
++++ b/Calcpad.Web/frontend/calcpad-web/src/styles/app.css
+@@ -175,12 +175,40 @@ select option {
+     min-height: 0;
+     display: flex;
+     flex-direction: column;
++    position: relative;
+ }
+ .preview-frame.active-group {
+     outline: 1px solid var(--vscode-focusBorder, #007acc);
+     outline-offset: -1px;
+ }
+ 
++/* "Calculating…" overlay shown over the preview during long server renders. */
++.preview-loading-overlay {
++    position: absolute;
++    inset: 0;
++    z-index: 5;
++    display: flex;
++    flex-direction: column;
++    align-items: center;
++    justify-content: center;
++    gap: 14px;
++    background: rgba(255, 255, 255, 0.7);
++    color: #333;
++    font-size: 14px;
++    pointer-events: none;
++}
++.preview-spinner {
++    width: 36px;
++    height: 36px;
++    border: 3px solid rgba(0, 0, 0, 0.15);
++    border-top-color: var(--vscode-progressBar-background, #0078d4);
++    border-radius: 50%;
++    animation: preview-spin 0.8s linear infinite;
++}
++@keyframes preview-spin {
++    to { transform: rotate(360deg); }
++}
++
+ .panel-scope {
+     font-size: 10px;
+     text-transform: uppercase;
+diff --git a/Calcpad.Web/frontend/vscode-calcpad/package.json b/Calcpad.Web/frontend/vscode-calcpad/package.json
+index 23343ba..5a66ab0 100644
+--- a/Calcpad.Web/frontend/vscode-calcpad/package.json
++++ b/Calcpad.Web/frontend/vscode-calcpad/package.json
+@@ -228,6 +228,11 @@
+         "title": "Show CalcPad Insert Panel",
+         "icon": "$(add)"
+       },
++      {
++        "command": "vscode-calcpad.editMetadataProperties",
++        "title": "CalcPad: Add / Edit Metadata Properties",
++        "category": "Calcpad"
++      },
+       {
+         "command": "vscode-calcpad.exportToPdf",
+         "title": "Export CalcPad to PDF",
+@@ -426,6 +431,11 @@
+           "command": "vscode-calcpad.focusPreviewToLine",
+           "when": "resourceLangId == calcpad || resourceLangId == plaintext",
+           "group": "calcpad@3"
++        },
++        {
++          "command": "vscode-calcpad.editMetadataProperties",
++          "when": "resourceLangId == calcpad || resourceLangId == plaintext",
++          "group": "calcpad@4"
+         }
+       ]
+     },
+@@ -442,6 +452,12 @@
+         "mac": "cmd+`",
+         "when": "editorTextFocus && editorLangId == 'calcpad'"
+       },
++      {
++        "command": "vscode-calcpad.editMetadataProperties",
++        "key": "ctrl+alt+q",
++        "mac": "cmd+alt+q",
++        "when": "editorTextFocus && (editorLangId == 'calcpad' || editorLangId == 'plaintext')"
++      },
+       {
+         "command": "vscode-calcpad.formatBold",
+         "key": "ctrl+b",
+diff --git a/Calcpad.Web/frontend/vscode-calcpad/src/baseServerManager.ts b/Calcpad.Web/frontend/vscode-calcpad/src/baseServerManager.ts
+index 3d10569..bd65f3c 100644
+--- a/Calcpad.Web/frontend/vscode-calcpad/src/baseServerManager.ts
++++ b/Calcpad.Web/frontend/vscode-calcpad/src/baseServerManager.ts
+@@ -221,11 +221,18 @@ export class BaseServerManager {
+             }
+         }
+ 
+-        // `detached: true` starts the child in its own process group / session,
+-        // so it survives when this VS Code window exits. We still pipe stdio
+-        // while we're alive to capture startup logs; once the owner exits,
++        // On POSIX, `detached: true` starts the child in its own process group /
++        // session so it survives when this VS Code window exits. We still pipe
++        // stdio while we're alive to capture startup logs; once the owner exits,
+         // Node's unref() lets the parent event loop close without waiting.
+         //
++        // On Windows we deliberately do NOT detach (see spawnOpts below): DETACHED_PROCESS
++        // leaves the server with no console, which forces every console-subsystem
++        // browser helper it spawns during PDF generation (crashpad_handler.exe, spawned
++        // even by system Edge/Chrome) to allocate its own visible console window. Windows
++        // keeps orphaned children alive after the parent exits anyway, so survival is
++        // preserved without detaching.
++        //
+         // DOTNET_DbgEnableMiniDump tells the runtime to write a minidump on
+         // unrecoverable crashes (StackOverflow, FailFast) — failure modes that
+         // bypass our in-process FileLogger. The .NET 6+ createdump flow handles
+@@ -265,9 +272,15 @@ export class BaseServerManager {
+         if (path.isAbsolute(this.dotnetPath)) {
+             childEnv.DOTNET_ROOT = path.dirname(this.dotnetPath);
+         }
++        // windowsHide adds CREATE_NO_WINDOW (libuv only applies it when no stdio is
++        // inherited — ours are all 'pipe'), giving the server a hidden console that its
++        // browser grandchildren inherit instead of each opening their own CMD window.
++        // It's a no-op off Windows. detached must stay off on Windows because
++        // DETACHED_PROCESS causes CREATE_NO_WINDOW to be ignored (see comment above).
+         const spawnOpts = {
+             stdio: ['pipe', 'pipe', 'pipe'] as ['pipe', 'pipe', 'pipe'],
+-            detached: true,
++            detached: process.platform !== 'win32',
++            windowsHide: true,
+             env: childEnv,
+             cwd: path.join(this.basePath, 'bin'),
+         };
+diff --git a/Calcpad.Web/frontend/vscode-calcpad/src/calcpadVueUIProvider.ts b/Calcpad.Web/frontend/vscode-calcpad/src/calcpadVueUIProvider.ts
+index c1c2d0d..9c2ba2d 100644
+--- a/Calcpad.Web/frontend/vscode-calcpad/src/calcpadVueUIProvider.ts
++++ b/Calcpad.Web/frontend/vscode-calcpad/src/calcpadVueUIProvider.ts
+@@ -1,8 +1,8 @@
+ import * as vscode from 'vscode';
+ import * as path from 'path';
+ import * as fs from 'fs';
+-import { parseHeadings, DEFAULT_PDF_SETTINGS, extractPlotsFromHtml, buildZip } from 'calcpad-frontend';
+-import type { CalcpadError, ExtractedPlot } from 'calcpad-frontend';
++import { parseHeadings, DEFAULT_PDF_SETTINGS, extractPlotsFromHtml, buildZip, serializeMetadataComment, findMetadataCommentBlock, analyzeMetadataLine } from 'calcpad-frontend';
++import type { CalcpadError, ExtractedPlot, MetadataCommentBlock, MetadataCommentData } from 'calcpad-frontend';
+ import { CalcpadSettingsManager } from './calcpadSettings';
+ import { CalcpadInsertManager } from './calcpadInsertManager';
+ 
+@@ -300,6 +300,14 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
+                     this._settingsManager.setExtra('prettifyTrimTrailingWhitespace', data.value);
+                     break;
+ 
++                case 'getMetadataContext':
++                    this.updateMetadataContext(this._computeMetadataBlock());
++                    break;
++
++                case 'updateMetadata':
++                    await this._handleUpdateMetadata(data);
++                    break;
++
+                 case 'debug':
+                     this._outputChannel.appendLine(`[Vue Debug] ${data.message}`);
+                     break;
+@@ -487,6 +495,51 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
+         this._view?.webview.postMessage({ type: 'updateConvertErrors', errors });
+     }
+ 
++    /** Push the metadata comment (or null) the cursor currently sits in to the panel. */
++    public updateMetadataContext(block: MetadataCommentBlock | null) {
++        this._view?.webview.postMessage({ type: 'metadataContext', block });
++    }
++
++    /** Detect the single-line metadata comment at the source editor's cursor. */
++    private _computeMetadataBlock(): MetadataCommentBlock | null {
++        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
++        if (!editor || (editor.document.languageId !== 'calcpad' && editor.document.languageId !== 'plaintext')) {
++            return null;
++        }
++        const lines = editor.document.getText().split(/\r?\n/);
++        const line = editor.selection.active.line;
++        const block = findMetadataCommentBlock(lines, line);
++        if (block) block.context = analyzeMetadataLine(lines, line);
++        return block;
++    }
++
++    /** Ask the panel to switch to a given tab id. */
++    public focusTab(tab: string) {
++        this._view?.webview.postMessage({ type: 'focusTab', tab });
++    }
++
++    /**
++     * Rewrite the metadata comment line the panel edited. The panel sends the
++     * 0-based line, its original indentation and trailing quote, and the new
++     * data object; we serialize and replace the whole line.
++     */
++    private async _handleUpdateMetadata(data: {
++        line: number;
++        indent?: string;
++        trailingQuote?: string;
++        data: MetadataCommentData;
++    }): Promise<void> {
++        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
++        if (!editor || typeof data.line !== 'number') return;
++        if (data.line < 0 || data.line >= editor.document.lineCount) return;
++
++        const newText = serializeMetadataComment(data.data, data.indent ?? '', data.trailingQuote ?? '');
++        const lineRange = editor.document.lineAt(data.line).range;
++        await editor.edit(editBuilder => {
++            editBuilder.replace(lineRange, newText);
++        });
++    }
++
+     public dispose() {
+         this._outputChannel.dispose();
+     }
+diff --git a/Calcpad.Web/frontend/vscode-calcpad/src/commentFormatter.ts b/Calcpad.Web/frontend/vscode-calcpad/src/commentFormatter.ts
+index 20d17b5..eba4c10 100644
+--- a/Calcpad.Web/frontend/vscode-calcpad/src/commentFormatter.ts
++++ b/Calcpad.Web/frontend/vscode-calcpad/src/commentFormatter.ts
+@@ -104,10 +104,14 @@ export class CommentFormatter {
+         const format = this.getFormat();
+         const [prefix, suffix] = format === 'html' ? HTML_INLINE[type] : MARKDOWN_INLINE[type];
+ 
+-        const linesNeedingPrefix = new Set(editor.selections.map(s => s.start.line));
++        const startCharByLine = new Map<number, number>();
++        for (const sel of editor.selections) {
++            const prev = startCharByLine.get(sel.start.line);
++            if (prev === undefined || sel.start.character < prev) startCharByLine.set(sel.start.line, sel.start.character);
++        }
+         const prefixInserts: Array<[line: number, col: number]> = [];
+-        for (const line of linesNeedingPrefix) {
+-            const insertCol = getCommentPrefixInsertColumn(editor.document.lineAt(line).text);
++        for (const [line, startChar] of startCharByLine) {
++            const insertCol = getCommentPrefixInsertColumn(editor.document.lineAt(line).text, startChar);
+             if (insertCol !== null) prefixInserts.push([line, insertCol - 1]);
+         }
+         if (prefixInserts.length > 0) {
+diff --git a/Calcpad.Web/frontend/vscode-calcpad/src/extension.ts b/Calcpad.Web/frontend/vscode-calcpad/src/extension.ts
+index 361ed1a..76aa1ec 100644
+--- a/Calcpad.Web/frontend/vscode-calcpad/src/extension.ts
++++ b/Calcpad.Web/frontend/vscode-calcpad/src/extension.ts
+@@ -1,7 +1,7 @@
+ import * as vscode from 'vscode';
+ import * as path from 'path';
+-import { CalcpadApiClient, DEFAULT_PDF_SETTINGS, parseConvertErrorHeader } from 'calcpad-frontend';
+-import type { PdfSettings as FrontendPdfSettings } from 'calcpad-frontend';
++import { CalcpadApiClient, DEFAULT_PDF_SETTINGS, parseConvertErrorHeader, findMetadataCommentBlock, serializeMetadataComment, analyzeMetadataLine, parseDefinitionParamCount } from 'calcpad-frontend';
++import type { PdfSettings as FrontendPdfSettings, MetadataCommentData } from 'calcpad-frontend';
+ import { CalcpadServerLinter } from './calcpadServerLinter';
+ import { CalcpadSemanticTokensProvider, semanticTokensLegend } from './calcpadSemanticTokensProvider';
+ import { CalcpadVueUIProvider } from './calcpadVueUIProvider';
+@@ -40,6 +40,86 @@ let calcpadWebviewConsoleChannel: vscode.OutputChannel;
+ let extensionContext: vscode.ExtensionContext;
+ let vueUiProvider: CalcpadVueUIProvider | undefined;
+ 
++const PREVIEW_BUSY_DELAY_MS = 400;
++
++/**
++ * Detect whether the cursor sits inside a metadata comment (`'<!--{...}-->`)
++ * and push it to the Vue panel's Metadata tab. Also drives the
++ * `calcpad.inMetadataComment` context key that gates the editor context-menu
++ * command. Single-line only, matching the shared detector.
++ */
++function updateMetadataContext(editor: vscode.TextEditor | undefined): void {
++    let block = null;
++    if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
++        const lines = editor.document.getText().split(/\r?\n/);
++        const line = editor.selection.active.line;
++        const detected = findMetadataCommentBlock(lines, line);
++        if (detected) {
++            detected.context = analyzeMetadataLine(lines, line);
++            block = detected;
++        }
++    }
++    vscode.commands.executeCommand('setContext', 'calcpad.inMetadataComment', block !== null);
++    vueUiProvider?.updateMetadataContext(block);
++}
++
++/**
++ * A "Calculating…" page shown in the preview webview during long renders,
++ * mirroring the spinner overlay in calcpad-web.
++ */
++function getPreviewLoadingHtml(): string {
++    return `<!DOCTYPE html>
++<html>
++<head>
++    <meta charset="UTF-8">
++    <title>Calculating</title>
++    <style>
++        html, body { height: 100%; margin: 0; }
++        body {
++            display: flex;
++            flex-direction: column;
++            align-items: center;
++            justify-content: center;
++            gap: 14px;
++            background: #fff;
++            color: #333;
++            font: 14px/1.4 var(--vscode-font-family, 'Segoe UI', sans-serif);
++        }
++        .preview-spinner {
++            width: 36px;
++            height: 36px;
++            border: 3px solid rgba(0, 0, 0, 0.15);
++            border-top-color: #0078d4;
++            border-radius: 50%;
++            animation: preview-spin 0.8s linear infinite;
++        }
++        @keyframes preview-spin { to { transform: rotate(360deg); } }
++    </style>
++</head>
++<body>
++    <div class="preview-spinner"></div>
++    <span>Calculating…</span>
++</body>
++</html>`;
++}
++
++/**
++ * Shows the loading page in the preview webview only if the render outlasts
++ * PREVIEW_BUSY_DELAY_MS, so fast renders never flash it (mirrors Calcpad.Wpf's
++ * delayed spinner). Returns a function that must be called when the render ends.
++ */
++function showPreviewLoading(panel: vscode.WebviewPanel): () => void {
++    const timer = setTimeout(() => {
++        panel.webview.html = getPreviewLoadingHtml();
++    }, PREVIEW_BUSY_DELAY_MS);
++    let ended = false;
++    return () => {
++        if (ended) return;
++        ended = true;
++        clearTimeout(timer);
++    };
++}
++
+ // Extends the shared PdfSettings with additional server-side fields
+ interface FullPdfSettings extends FrontendPdfSettings {
+     enableHeader: boolean;
+@@ -538,6 +618,10 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
+     // Check if content is empty
+     if (!content || content.trim().length === 0) {
+         outputChannel.appendLine('Content is empty - showing empty state');
++        const emptyTheme = getEffectivePreviewTheme();
++        const c = emptyTheme === 'light'
++            ? { fg: '#6e6e6e', bg: '#ffffff', link: '#0066cc' }
++            : { fg: '#858585', bg: '#1e1e1e', link: '#4FC1FF' };
+         panel.webview.html = `
+             <!DOCTYPE html>
+             <html>
+@@ -545,7 +629,7 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
+                 <meta charset="UTF-8">
+                 <title>CalcPad Preview${unwrapped ? ' Unwrapped' : ''}</title>
+                 <style>
+-                    body { color: #858585; background: var(--vscode-editor-background); padding: 20px; font-family: var(--vscode-font-family); }
++                    body { color: ${c.fg}; background: ${c.bg}; padding: 20px; font-family: var(--vscode-font-family); }
+                     h3 { text-align: center; }
+                     p { text-align: center; }
+                     table { margin: 1em auto; border-collapse: collapse; text-align: left; font-size: 0.9em; }
+@@ -553,6 +637,7 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
+                     th { text-align: right; font-weight: normal; opacity: 0.7; }
+                     td { font-family: var(--vscode-editor-font-family, monospace); }
+                     h4 { text-align: center; margin-top: 1.5em; margin-bottom: 0.3em; }
++                    a { color: ${c.link}; }
+                 </style>
+             </head>
+             <body>
+@@ -582,6 +667,7 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
+         return;
+     }
+ 
++    const endPreviewLoading = showPreviewLoading(panel);
+     try {
+         outputChannel.appendLine('Getting settings...');
+         const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
+@@ -688,6 +774,8 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
+         `;
+ 
+         panel.webview.html = errorHtml;
++    } finally {
++        endPreviewLoading();
+     }
+ }
+ 
+@@ -1490,6 +1578,79 @@ export async function activate(context: vscode.ExtensionContext) {
+         vscode.commands.executeCommand('workbench.view.extension.calcpad-ui');
+     });
+ 
++    const editMetadataPropertiesCommand = vscode.commands.registerCommand('vscode-calcpad.editMetadataProperties', async () => {
++        const editor = vscode.window.activeTextEditor;
++        if (!editor) return;
++        const doc = editor.document;
++        const curLine = editor.selection.active.line;
++        const curText = doc.lineAt(curLine).text;
++
++        const revealPanel = () => {
++            vscode.commands.executeCommand('workbench.view.extension.calcpad-ui');
++            // The webview may need a beat to resolve before it can switch tabs.
++            setTimeout(() => {
++                vueUiProvider?.focusTab('metadata');
++                updateMetadataContext(vscode.window.activeTextEditor);
++            }, 200);
++        };
++
++        const moveCursorTo = (line: number) => {
++            const pos = new vscode.Position(line, doc.lineAt(line).text.length);
++            editor.selection = new vscode.Selection(pos, pos);
++        };
++
++        // Already on a metadata comment — just open the editor for it.
++        if (findMetadataCommentBlock([curText], 0)) {
++            revealPanel();
++            return;
++        }
++
++        // A metadata comment already sits directly above — move onto it.
++        if (curLine > 0 && findMetadataCommentBlock([doc.lineAt(curLine - 1).text], 0)) {
++            moveCursorTo(curLine - 1);
++            revealPanel();
++            return;
++        }
++
++        // No comment yet — seed one based on what's on this line.
++        const indent = (curText.match(/^[ \t]*/)?.[0]) ?? '';
++        const seed: MetadataCommentData = {};
++        const paramCount = parseDefinitionParamCount(curText.slice(indent.length));
++
++        if (paramCount === null) {
++            // Generic / blank line — let the user pick which property to add.
++            const lines = doc.getText().split(/\r?\n/);
++            const insideLintRegion = analyzeMetadataLine(lines, curLine).insideOpenLintRegion;
++            const options: Array<vscode.QuickPickItem & { id: string }> = [
++                { label: 'Description', detail: 'A short description', id: 'desc' },
++                { label: 'Parameter types & descriptions', detail: 'For a function or macro', id: 'params' },
++                { label: 'Settings override', detail: 'File settings applied from here on', id: 'settings' },
++                { label: 'Lint ignore', detail: 'Start a linter-suppression region', id: 'lint' },
++            ];
++            if (insideLintRegion) {
++                options.push({ label: 'End lint-ignore region', detail: 'Close the open suppression region', id: 'endlint' });
++            }
++            const pick = await vscode.window.showQuickPick(options, { placeHolder: 'Add metadata property…' });
++            if (!pick) return;
++            if (pick.id === 'params') { seed.paramTypes = ['']; seed.paramDesc = ['']; }
++            else if (pick.id === 'lint') seed.LintIgnore = [];
++            else if (pick.id === 'endlint') seed.EndLintIgnore = [];
++            // 'desc' and 'settings' create an empty comment; those sections are
++            // always available in the panel.
++        } else if (paramCount > 0) {
++            seed.paramTypes = Array<string>(paramCount).fill('');
++            seed.paramDesc = Array<string>(paramCount).fill('');
++        }
++
++        const newLineText = serializeMetadataComment(seed, indent, '');
++        await editor.edit(edit => {
++            edit.insert(new vscode.Position(curLine, 0), newLineText + '\n');
++        });
++        // The inserted comment now occupies the original line index.
++        moveCursorTo(curLine);
++        revealPanel();
++    });
++
+ 
+     const printToPdfCommand = vscode.commands.registerCommand('vscode-calcpad.printToPdf', () => {
+         runPdfExportCommand();
+@@ -1707,6 +1868,7 @@ export async function activate(context: vscode.ExtensionContext) {
+ 
+     // Update preview and variables when active editor changes
+     const onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(editor => {
++        updateMetadataContext(editor);
+         if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
+             // Update preview if any panel is open
+             if (wrappedPanel || unwrappedPanel) {
+@@ -1719,9 +1881,14 @@ export async function activate(context: vscode.ExtensionContext) {
+ 
+     // Auto-sync the preview to the cursor's source line (gated on the setting).
+     let cursorSyncTimeout: NodeJS.Timeout | undefined;
++    let metadataContextTimeout: NodeJS.Timeout | undefined;
+     const onDidChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(event => {
+         const doc = event.textEditor.document;
+         if (doc.languageId !== 'calcpad' && doc.languageId !== 'plaintext') return;
++
++        if (metadataContextTimeout) clearTimeout(metadataContextTimeout);
++        metadataContextTimeout = setTimeout(() => updateMetadataContext(event.textEditor), 150);
++
+         if (!wrappedPanel && !unwrappedPanel) return;
+         if (!CalcpadSettingsManager.getInstance().getExtraBool('previewCursorSync', false)) return;
+         if (cursorSyncTimeout) clearTimeout(cursorSyncTimeout);
+@@ -1750,6 +1917,7 @@ export async function activate(context: vscode.ExtensionContext) {
+             focusPreviewToLineCommand,
+             onDidChangeTextEditorSelection,
+             showInsertCommand,
++            editMetadataPropertiesCommand,
+             printToPdfCommand,
+             saveSourceHtmlCommand,
+             saveDocxCommand,
+diff --git a/docs/calcpad-panel-and-settings.md b/docs/new-calcpad-panel-and-settings.md
+similarity index 96%
+rename from docs/calcpad-panel-and-settings.md
+rename to docs/new-calcpad-panel-and-settings.md
+index ba8f067..719283a 100644
+--- a/docs/calcpad-panel-and-settings.md
++++ b/docs/new-calcpad-panel-and-settings.md
+@@ -1,6 +1,6 @@
+ # The CalcPad Panel & Settings
+ 
+-> Part of Calcpad.Web. The panel described here is the same in the [VS Code extension](using-the-vscode-extension.md), the [desktop app](using-the-desktop-app.md), and the web editor — it is built from one shared set of components (`calcpad-frontend`). Where a host behaves differently, it is called out below.
++> Part of Calcpad.Web. The panel described here is the same in the [VS Code extension](new-vscode-extension.md), the [desktop app](new-desktop-app.md), and the web editor — it is built from one shared set of components (`calcpad-frontend`). Where a host behaves differently, it is called out below.
+ 
+ The **CalcPad panel** is the tabbed sidebar that sits beside the editor. It shows what your document defines, lets you insert symbols and snippets, controls the calculation and plot settings, and drives export. Because every Calcpad front end embeds the same panel, the tabs and settings are identical everywhere; only how you open it differs:
+ 
+@@ -178,6 +178,6 @@ Configurations persist between sessions in the VS Code extension and the desktop
+ 
+ ## See also
+ 
+-- [Using the VS Code Extension](using-the-vscode-extension.md)
+-- [Using the Desktop App](using-the-desktop-app.md)
++- [Using the VS Code Extension](new-vscode-extension.md)
++- [Using the Desktop App](new-desktop-app.md)
+ - [PDF Export](new-pdf-export.md) · [Linter](new-linter.md) · [Table of Contents](new-table-of-contents.md)
+diff --git a/docs/new-desktop-app.md b/docs/new-desktop-app.md
+index fba82f0..253baee 100644
+--- a/docs/new-desktop-app.md
++++ b/docs/new-desktop-app.md
+@@ -1,108 +1,174 @@
+ # Calcpad Desktop App
+ 
+-> Calcpad.Web only. The WPF desktop application is unaffected.
++> Calcpad.Web only. The standalone WPF desktop application for Windows is separate and unaffected.
+ 
+-The Calcpad desktop app (`Calcpad.Web/frontend/calcpad-desktop`) is a [Tauri](https://tauri.app/)-packaged build of the same web editor that runs in the browser, bundled with the .NET server as a sidecar binary. It exists to give users a native filesystem + native menu / save-dialog experience without giving up the Monaco editor stack.
++The **Calcpad Desktop App** is a native application for Windows, macOS, and Linux that wraps the same editor you get in the browser and bundles the calculation engine inside it. You get the full editor — multi-tab editing, syntax highlighting, autocomplete, live preview, and the CalcPad sidebar — plus native file dialogs, a native menu bar, and drag-and-drop, with no browser to open and no server to set up.
+ 
+-## Multi-tab editing
++For the Calcpad language itself, start with **[Writing Math](writing-math.md)** and the **[Quick Reference](quick-reference.md)**.
+ 
+-VS Code-style tabs let you keep several `.cpd` documents open at once.
++## Installing
++
++The app ships as a per-platform download:
++
++| Platform | Format |
++|----------|--------|
++| Windows | `.msi` or `.exe` installer, or a portable `.zip` build (no install) |
++| macOS | `.dmg` (requires macOS 11 or later) |
++| Linux | `.deb` package or `.AppImage` (run directly, no install) |
++
++The calculation engine and its fonts and templates are bundled inside the app — you do **not** need .NET installed separately. On Linux, the `.AppImage` includes what it needs to run; the `.deb` package expects WebKitGTK to already be present on the system.
++
++For PDF export you need a **Chromium-based browser** (Chrome, Edge, or Chromium) installed on the system. On Linux the app will tell you which package to install if none is found — see [PDF Export](new-pdf-export.md).
++
++## Your first document
++
++1. Launch the app. It opens with an empty **Untitled-1** tab.
++2. Type a calculation, for example:
++
++   ```calcpad
++   "Cantilever tip deflection
++   P = 5kN
++   L = 3m
++   E = 200GPa
++   I = 8.5e-5m^4
++   δ = P·L^3/(3·E·I)
++   ```
++
++3. The **preview pane** renders your report live as you type. Toggle it from **View → Toggle Preview**.
++4. Save with **Ctrl+S** (or **File → Save**). A native save dialog lets you choose the location.
++
++## Working with tabs
++
++The app uses tabs so you can keep several `.cpd` documents open at once.
+ 
+ | Action | Shortcut |
+ |--------|----------|
+ | New tab | **Ctrl+T** or **Ctrl+N**, or the **`+`** button on the tab strip |
++| Open a file | **File → Open…**, or drag a file onto the window |
+ | Close tab | **Ctrl+W**, the **✕** on the tab, or middle-click the tab |
+-| Cycle tabs | **Ctrl+Tab** (next), **Ctrl+Shift+Tab** (previous) |
+-| Jump to Nth tab | **Ctrl+1** … **Ctrl+8** |
++| Next / previous tab | **Ctrl+Tab** / **Ctrl+Shift+Tab** |
++| Jump to tab 1–8 | **Ctrl+1** … **Ctrl+8** |
+ | Jump to last tab | **Ctrl+9** |
+ 
+-Behaviour matches VS Code:
++How tabs behave:
++
++- **Cursor and scroll position are remembered** per tab and restored when you switch back.
++- **Unsaved changes** are marked with a dot on the tab; undoing back to the last saved state clears it.
++- **Opening an already-open file** activates its existing tab instead of duplicating it.
++- **Opening a file from an empty Untitled tab** replaces it in place rather than stacking a new tab.
++- **Closing a tab with unsaved changes** prompts Save / Don't Save / Cancel. Quitting the app walks through every unsaved tab; cancel any prompt to abort the quit.
++- Hover, definitions, references, the linter, the preview, and the TOC are all scoped to the active tab, so symbols and errors never bleed between unrelated documents.
++
++## Opening files
+ 
+-- **One editor, many models** — the single Monaco editor swaps its underlying model on tab activation; cursor and scroll position are saved in view state and restored on switch-back.
+-- **Per-tab dirty tracking** — based on `model.getAlternativeVersionId()`, so undoing back to the saved version clears the dirty dot.
+-- **Open-existing focus** — opening a file that's already in a tab activates that tab instead of duplicating it.
+-- **Untitled scratch reuse** — opening a file from an empty `Untitled-N` tab replaces it in place rather than stacking another tab.
+-- **Per-tab close prompt** — closing a dirty tab opens a Save / Don't Save / Cancel dialog. Window close walks every dirty tab in turn; cancel any prompt to abort the exit.
+-- **Per-tab providers** — hover, definitions, find-references, and the linter cache are scoped per tab, so symbols don't bleed between unrelated documents.
++There are several ways to open documents:
+ 
+-The Problems panel re-emits the active tab's markers on every switch, so it never shows stale data from another tab. The preview pane and TOC sidebar also repaint against the new active model.
++- **File → Open…** — native file picker.
++- **Drag and drop** — drop one or more files onto the editor; each opens in its own tab. Dropping plain text (e.g. from a browser) opens it as a new untitled tab.
++- **Files tab** in the sidebar — open a folder and browse its tree.
++- **Recent files** — tracked automatically and available from the File menu.
+ 
+-## Editor key behaviour
++## The editor
+ 
+-Two Monaco options are flipped to match the most common keyboard expectations and to stop the suggest widget from intercepting newlines:
++- **Syntax highlighting** for numbers, units, operators, variables, functions, macros, keywords, commands, and embedded HTML/Markdown in comments.
++- **Autocomplete** that prioritizes your own symbols over built-ins, with snippet placeholders for function arguments.
++- **Quick-type symbols** — `~a` + space → `α`, `~p` + space → `π`, etc.
++- **Operator replacement** — `<=` → `≤`, `>=` → `≥`, `!=` → `≠`.
++- **Auto-indentation** for `#if` / `#for` / `#def` blocks.
++- **Go to Definition**, **Find All References**, **Rename**, and **hover** for symbols, including across `#include` files.
+ 
+-- **Enter is always a newline.** `acceptSuggestionOnEnter: 'off'` and `acceptSuggestionOnCommitCharacter: false` together guarantee that pressing Enter never accepts a suggestion — it always inserts a line break.
+-- **Tab accepts suggestions.** `tabCompletion: 'on'` makes Tab the accept key when the suggest widget is open, and triggers completion when typing a partial word.
++Two key behaviors worth knowing:
+ 
+-## Export tab
++- **Enter always inserts a newline** — it never accepts a suggestion. Press **Tab** to accept a completion.
++- **Tab accepts suggestions** and triggers completion on a partial word.
+ 
+-The sidebar's **Export** tab combines document and plot exports:
++These are the same editor features as the [VS Code extension](new-vscode-extension.md), so anything you learn in one carries over to the other.
+ 
+-| Button | Behaviour (desktop) | Behaviour (web) |
+-|--------|---------------------|------------------|
+-| **Save HTML…** | Native save dialog → writes `.html` via Tauri's `plugin-fs` | Browser blob download (`calcpad-output.html`) |
+-| **Save Word…** | Native save dialog → writes `.docx` via Tauri's `plugin-fs` | Browser blob download (`calcpad-output.docx`) |
+-| **Refresh** (Plots section) | Re-runs the document and repopulates the plot list | Same |
+-| **Save…** (per plot) | Native save dialog → writes the raw PNG/SVG bytes | Browser blob download |
+-| **Download all (ZIP)** | Native save dialog → writes a single ZIP built by the shared `buildZip` helper | Browser blob download |
++## The CalcPad sidebar
+ 
+-Both HTML/Word actions go through the same backend pipeline:
++Toggle the sidebar with **View → Toggle Sidebar**. It has a **Files** view and a **Calcpad** view; the Calcpad view is split into tabs (Insert, TOC, Settings, Variables, PDF, Formatting, Export, Errors).
+ 
+-1. `POST /api/calcpad/convert` (HTML) or `POST /api/calcpad/docx` (Word)
+-2. The DOCX endpoint runs the calcpad → HTML pipeline with `forPrint: true`, then feeds the HTML through `Calcpad.OpenXml.OpenXmlWriter` and returns the `.docx` bytes
+-3. Frontend writes the result via the platform's save mechanism
++The sidebar is the same across every Calcpad front end — see **[The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md)** for a full walkthrough of each tab, including Prettify options and the Export buttons.
+ 
+-Plots are extracted from the rendered HTML by `extractPlotsFromHtml` (see `calcpad-frontend/src/services/plot-extract.ts`) — the shared base bridge caches the extracted `ExtractedPlot[]` after each `getPlots` message, so per-plot saves and the ZIP export both reuse the same in-memory copy without an extra API round-trip. This replaces the WPF app's *plot output directory* setting; on Calcpad.Web, plot files are only written on explicit user action.
++## Live preview
+ 
+-The same buttons fire on the VS Code sidebar's Export tab, where the HTML / Word buttons execute the `vscode-calcpad.saveSourceHtml` and `vscode-calcpad.saveDocx` commands (also available from the Command Palette), and the plot list is fed by `setCachedHtml` on the Vue UI provider.
++The preview pane renders your report live and re-renders as you type. From **View** you can:
+ 
+-## Embedded server lifecycle
++- **Toggle Preview** — show/hide the pane.
++- **Preview Mode: Wrapped** — the normal report view.
++- **Preview Mode: Unwrapped** — the fully expanded source, with macros and includes resolved. Useful for debugging what the engine computes.
+ 
+-The `.NET` server runs as a Tauri sidecar spawned by the Rust shell at app start (see `spawn_sidecar` in [src-tauri/src/lib.rs](../Calcpad.Web/frontend/calcpad-desktop/src-tauri/src/lib.rs)). The apphost is a framework-independent `Calcpad.Server` published for the host RID and renamed to Tauri's target-triple sidecar format (`calcpad-server-<target-triple>[.exe]`), staged into `src-tauri/binaries/` by `stage-sidecar.sh` / `stage-sidecar.ps1` before dev, and picked up by `tauri.conf.json`'s `bundle.externalBin` at build time.
++### Running on demand (Auto-Run off)
+ 
+-- **Startup args** — the shell passes `--no-exit-on-stdin-close`, `--parent-pid`, and `--port-file <temp>` so the server writes its bound port to a temp file and exits cleanly when the parent Tauri process dies. Rust polls the port file for readiness (faster than parsing Kestrel's stdout, which ASP.NET Core's ConsoleLogger can buffer for hundreds of ms).
+-- **CWD** — set to the apphost's directory so .NET's dependency resolver finds the sibling DLLs regardless of where Tauri was launched from.
+-- **Server URL** — the frontend reads the bound port from the port file. Default port is `9420` when unbound.
+-- **Stderr / logs** — captured into `<serverDir>/logs/server-stderr.log`; the `Server → Show Server Log` menu item opens this file.
++By default the preview re-renders continuously as you type. If you turn **Settings → Auto-Run Preview** off — useful for long-running documents — the preview only re-renders when you:
+ 
+-See [PDF export](new-pdf-export.md) for how the desktop detects a missing Chromium browser and the recommended Chromium packages per distribution.
++- Click **▶ Run** on the editor toolbar.
++- Press **Ctrl+Alt+X**.
++- Right-click in the editor → **Run Preview**.
++- Use **Server → Refresh** in the native menu (same shortcut).
+ 
+-## Native menu
++A manual run also re-lints the document, refreshes definitions and the table of contents, and rebuilds the Export tab's plot list.
+ 
+-Built in Rust via Tauri's `MenuBuilder` (see `build_menu` in [src-tauri/src/lib.rs](../Calcpad.Web/frontend/calcpad-desktop/src-tauri/src/lib.rs)). Menu-item ids are dispatched to the frontend as Tauri events; the corresponding TypeScript listeners live in the Tauri bridge. Menu surface:
++## Splitting the editor
++
++The **Split ⬓** button in the editor toolbar (also **View → Split Editor**) opens a second editor group stacked below the first. Each group has its own tabs, tab strip, preview, and Problems markers. Click **Unsplit** (same button) to close the bottom group; any unsaved tabs in it are walked through the save prompt first. The active group — the one you most recently clicked into — drives the sidebar (Problems, TOC, Variables).
++
++## Errors
++
++**Linter** — Calcpad checks your document as you write and flags problems before they're converted to HTML. Issues are marked in red, yellow, or blue at the spot with the problem, based on severity, and appear in the **Problems** panel with a link to the offending line. See **[Linter and Diagnostics](new-linter.md)** for the full list of codes.
++
++**Preview errors** — errors from the calculation engine (including inside hidden code) are listed in the **Errors** tab of the sidebar, each with a link to its source line.
++
++## Exporting
++
++Every export uses the app's built-in engine, so the output matches the preview exactly.
++
++| Output | How | Notes |
++|--------|-----|-------|
++| **PDF** | **File → Export PDF…** | Full-fidelity export via a native save dialog. Requires a Chromium browser — see [PDF Export](new-pdf-export.md). |
++| **HTML** | **Save HTML…** on the sidebar's **Export** tab | Native save dialog writes a standalone `.html` report. |
++| **Word (.docx)** | **Save Word…** on the sidebar's **Export** tab | Native save dialog writes a `.docx` document. |
++
++Set the document title, timestamp format, page size, and header/footer in the sidebar's **PDF** tab before exporting. The **Export** tab also has a **Plots** section that lists every plot the document produces, so you can save each one individually or all at once as a ZIP — see [The CalcPad Panel & Settings → Export](new-calcpad-panel-and-settings.md#export).
++
++## The native menu
++
++The menu bar drives the whole app:
+ 
+ - **File** — New Tab · Open… · Save · Save As… · Close Tab · Export PDF… · Quit
+ - **Edit** — Undo · Redo · Cut · Copy · Paste · Select All · Find · Replace
+ - **View** — Toggle Sidebar · Toggle Preview · Split Editor · Preview Mode: Wrapped / Unwrapped
+-- **Server** — Refresh (`Ctrl+Alt+X`) · Show Server Log · Stop Server · Restart Server
+-- **Help** — Documentation (opens the docs site via `plugin-opener`)
+-
+-`Refresh` runs the frontend's `runRefresh()`: re-lint every group, refresh definitions/TOC, redraw previews, and post `getPlots` so the Export tab's cache is repopulated. Recent files are tracked by the frontend via Tauri's `plugin-store`.
++- **Server** — Refresh (**Ctrl+Alt+X**) · Show Server Log · Stop Server · Restart Server
++- **Help** — Documentation (opens the docs site in your default browser)
+ 
+-## Manual run and auto-run
++## Settings and configurations
+ 
+-The `autoRun` extra setting (Settings tab → **Auto-Run Preview**, default on) gates the debounced content-change handler in `wireGroupCommon` — when off, `refreshPreviewFor` is not scheduled on `onDidChangeModelContent`. The preview still refreshes on preview open, tab switch, and manual run. Manual triggers:
++All calculation, plot, unit, theme, editor, and linter settings live in the **Settings** tab of the sidebar. The desktop app also supports **named configurations** — save different sets of settings (e.g. one for metric with 3 decimals, one for imperial with degrees) and switch the active configuration from the Settings tab; configurations persist between sessions.
+ 
+-- **▶ Run** button on the editor toolbar (`onRunRequest` callback → `runRefresh()`).
+-- **Ctrl+Alt+X** — bound in `wireGroupCommon` via `editor.addAction` (also shows in Monaco's right-click context menu under `navigation` group) and at the window level in `wireGroupTauri` so it fires with focus outside the editor.
+-- **Server → Refresh** — the same menu accelerator, routed through the shared `menu-click` handler.
++See **[The CalcPad Panel & Settings → Settings](new-calcpad-panel-and-settings.md#settings)** for the full list, and **[→ Formatting](new-calcpad-panel-and-settings.md#formatting-prettify)** for the Prettify options.
+ 
+-## Split editor
++## The built-in engine
+ 
+-The editor toolbar's **Split ⬓** button (also **View → Split Editor**) calls the `onSplitRequest` callback wired from `main.ts` → `splitEditor()`, which appends a second `EditorGroup` (its own tabs, Monaco instance, preview iframe, and diagnostic cache) stacked below the first. Each group is wired independently by `wireGroupCommon` / `wireGroupTauri`; the *active group* (last focused) drives the sidebar (Problems, TOC, Variables). Unsplitting closes the bottom group, walking any dirty tabs through the save prompt first. The split state is not persisted between sessions.
++The app runs the calculation engine inside it. It starts automatically when the app launches and shuts down when you close it — you never launch or configure it yourself.
+ 
+-## Drag-and-drop
++If calculations stop responding, use the **Server** menu:
+ 
+-Dropping one or more files on the editor opens each in its own tab. Native filesystem drops use the OS path; non-OS drops (e.g. text from a browser) open as untitled tabs with the dropped contents.
++- **Refresh** (**Ctrl+Alt+X**) — re-run the active document.
++- **Show Server Log** — open the engine's log file to diagnose a problem.
++- **Stop Server** / **Restart Server** — cycle the engine.
+ 
+-## Packaging
++## Troubleshooting
+ 
+-Tauri's own bundler produces per-platform installers via `tauri build`. Configured targets (see [tauri.conf.json](../Calcpad.Web/frontend/calcpad-desktop/src-tauri/tauri.conf.json) `bundle.targets`):
++| Symptom | Fix |
++|---------|-----|
++| Preview blank or not updating | **Server → Refresh**, then **Server → Restart Server** if needed. Check **Server → Show Server Log**. |
++| PDF export fails | Install a Chromium browser. On Linux the app names the package to install — see [PDF Export](new-pdf-export.md). |
++| Unsaved work after a crash | The app writes backup copies of unsaved files; reopen them from the Files tab. |
++| Symbols not found across files | Confirm the `#include` path resolves relative to the current document. |
+ 
+-| Platform | Formats | Notes |
+-|----------|---------|-------|
+-| Windows | `msi`, `nsis` | `nsis` uses `installMode: perMachine`. WiX language `en-US`. |
+-| macOS   | `app`, `dmg` | `minimumSystemVersion: 11.0`. |
+-| Linux   | `deb`, `appimage` | The AppImage bundles the WebKitGTK dependency implicitly; the `.deb` package's `depends` list is left empty (WebKitGTK is expected on the host). |
++## See also
+ 
+-The Calcpad.Server sidecar and its fonts / template resources are staged into `src-tauri/binaries/` and included via `bundle.resources`. Cross-compilation for Windows from Linux is wired up through the `Desktop: Bundle Windows (cross)` VS Code task (calls `build-desktop.sh --rid=win-x64 --target=x86_64-pc-windows-msvc`).
++- [The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md) — the shared sidebar and all settings
++- [Using the VS Code Extension](new-vscode-extension.md)
++- [PDF Export](new-pdf-export.md) · [Includes and Remote Files](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [Table of Contents](new-table-of-contents.md)
++- [Writing Math](writing-math.md) · [Quick Reference](quick-reference.md)
+diff --git a/docs/new-includes.md b/docs/new-includes.md
+index 3ca4d34..7c3aed3 100644
+--- a/docs/new-includes.md
++++ b/docs/new-includes.md
+@@ -1,12 +1,12 @@
+-# Recursive Includes
++# Includes and Remote Files
+ 
+-> Calcpad.Web only (web editor and VS Code extension). Not available in the WPF desktop application. This branch (`calcpad-web`) is localhost-only — the hosted/multi-user variant of remote routing lives on `calcpad-experimental`.
++> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
+ 
+-`#include` and `#read` support recursive resolution and direct HTTP/HTTPS URLs.
++`#include` and `#read` let you pull in other files, and both can follow chains of files and load content straight from a web URL.
+ 
+-## Recursive `#include` resolution
++## Reusing code with `#include`
+ 
+-Included files can themselves include other files. The resolver passes a shared `visited` set through the recursion:
++`#include` inlines another Calcpad file's source into your document at parse time, so you can keep shared constants, functions, and macros in one place and reuse them everywhere:
+ 
+ ```text
+ ' top.cpd
+@@ -14,44 +14,39 @@ Included files can themselves include other files. The resolver passes a shared
+ #include 'shared/helpers.cpd'
+ ```
+ 
+-### Depth limit
++An included file can include others in turn, and those can include more — the chain is followed automatically.
+ 
+-Recursion depth is capped at **20 levels**. When exceeded, the include is replaced with:
++- **Circular includes are safe.** If a file ends up including itself (directly or through another file), the repeat is skipped instead of looping forever. Filenames are matched case-insensitively.
++- **There's a depth limit.** Include chains can go up to 20 levels deep; beyond that, the include is skipped and a comment is left in its place noting the file that couldn't be included.
+ 
+-```text
+-' Error: Include file not provided: <filename>
+-```
+-
+-### Circular reference detection
++## Loading from a URL
+ 
+-A case-insensitive set tracks every filename already expanded on the current path. A second attempt to include the same file is skipped — preventing infinite loops on self-referential or mutually-referential files.
+-
+-## Remote URL support (HTTP/HTTPS)
+-
+-Include content directly from the web:
++Both `#include` and `#read` accept an `http://` or `https://` address, so you can pull shared calculations or data straight from the web:
+ 
+ ```text
+ #include "https://example.com/shared-calcs.cpd"
+ ```
+ 
+-- Only `http://` and `https://` are recognized — any other scheme is rejected
+-- Default timeout: **10 seconds** (configurable per request via `apiTimeoutMs`)
+-- User-Agent: `Calcpad/1.0`
+-- Non-2xx responses throw an error with status code and reason phrase
+-- Implemented by the single static helper [`Router.FetchUrlAsync`](../Calcpad.Web/backend/Services/Router.cs)
++- Only `http://` and `https://` addresses are accepted.
++- Requests time out after 10 seconds by default.
++- If the server returns an error, Calcpad reports the status code so you can tell what went wrong.
+ 
+-There is no `<service:endpoint>` routing layer, no JWT/auth headers, no domain allowlist, and no server-side remote-content cache on this branch.
++## `#include` vs `#read`
+ 
+-## Source mapping and error attribution
++Both bring in outside content, but they do different jobs:
+ 
+-Every expanded line tracks its origin through three maps so diagnostics trace errors back to the original file and line number, even after several layers of include and macro expansion.
++| | `#include` | `#read` |
++|--------|-----------|---------|
++| What it brings in | Calcpad source code | Data (CSV, TSV, Excel, JSON) |
++| When it happens | At parse time — the source is inlined | At run time — the data is loaded into a variable |
++| Result | The included code becomes part of your document | You get a matrix or vector variable to compute with |
++| Works with URLs | Yes | Yes |
+ 
+-## `#include` vs `#read`
++## Errors point to the right place
+ 
+-| Aspect | `#include` | `#read` |
+-|--------|-----------|---------|
+-| When processed | Parse time (substituted) | Runtime (evaluated) |
+-| Content | Calcpad source code | CSV, TSV, Excel, JSON data |
+-| Scope filtering | `#local` blocks stripped | n/a |
+-| Output | Nested source inlined | Directive preserved; produces a matrix/vector variable |
+-| Remote URL support | Yes | Yes |
++Even after several layers of includes and macro expansion, error messages and diagnostics point back to the original file and line number — so a problem in a shared file is reported where it actually lives, not at the `#include` line.
++
++## See also
++
++- [Working with Files](working-with-files.md) · [Programming](programming.md)
++- [Using the VS Code Extension](new-vscode-extension.md) — path completion for `#include` and `#read`
+diff --git a/docs/new-linter.md b/docs/new-linter.md
+index 9382445..213b493 100644
+--- a/docs/new-linter.md
++++ b/docs/new-linter.md
+@@ -1,28 +1,29 @@
+ # Linter and Diagnostics
+ 
+-> Calcpad.Web only (web editor and VS Code extension). Not available in the WPF desktop application.
++> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
+ 
+-The web backend exposes a semantic linter that emits diagnostics with stable `CPD-XXXX` codes. Diagnostics surface in VS Code as standard editor warnings/errors and in the web editor as inline marks.
++Calcpad.Web checks your document as you write and flags problems before you ever run it. Each diagnostic has a short, stable code (like `CPD-3301`) so you can look up exactly what it means.
+ 
+-## Error code conventions
++Diagnostics appear:
+ 
+-All codes follow the pattern `CPD-SCNN`:
++- In **VS Code** — as squiggles in the editor and entries in the Problems panel.
++- In the **desktop and web editors** — as colored marks (red for errors, yellow for warnings, blue for information) at the spot with the problem, and in the **Problems** panel.
+ 
+-- `S` — pipeline stage (1 pre-include, 2 macro, 3 post-include)
+-- `C` — category within the stage
+-- `NN` — sequence number
++## Diagnostic codes
+ 
+-## Stage 1: Include validation (CPD-11xx)
++Every diagnostic has a `CPD-` code. The tables below group them by the kind of problem.
+ 
+-| Code | Severity | Description |
+-|------|----------|-------------|
++### Includes
++
++| Code | Severity | Meaning |
++|------|----------|---------|
+ | CPD-1101 | Error | Malformed `#include` statement |
+ | CPD-1102 | Error | Missing `#include` filename |
+ 
+-## Stage 2: Macro definitions (CPD-22xx)
++### Macro definitions
+ 
+-| Code | Severity | Description |
+-|------|----------|-------------|
++| Code | Severity | Meaning |
++|------|----------|---------|
+ | CPD-2201 | Error | Duplicate macro definition |
+ | CPD-2202 | Error | Macro name must end with `$` |
+ | CPD-2203 | Error | Macro parameter must end with `$` |
+@@ -31,16 +32,16 @@ All codes follow the pattern `CPD-SCNN`:
+ | CPD-2206 | Error | Unmatched `#def` or `#end def` |
+ | CPD-2207 | Error | Nested macro definition not allowed |
+ | CPD-2208 | Error | Macro parameter must start with a letter |
+-| CPD-2209 | Warning | Macro definition inside control block has no effect |
++| CPD-2209 | Warning | Macro definition inside a control block has no effect |
+ | CPD-2210 | Error | Invalid character in macro name |
+ | CPD-2211 | Error | Invalid character in macro parameter |
+ | CPD-2212 | Error | Duplicate macro parameter |
+-| CPD-2213 | Error | Required parameter after optional parameter (macro) |
++| CPD-2213 | Error | Required parameter after an optional one (macro) |
+ 
+-## Stage 3: Balance (CPD-31xx)
++### Brackets and blocks
+ 
+-| Code | Severity | Description |
+-|------|----------|-------------|
++| Code | Severity | Meaning |
++|------|----------|---------|
+ | CPD-3101 | Error | Unmatched opening parenthesis |
+ | CPD-3102 | Error | Unmatched closing parenthesis |
+ | CPD-3103 | Error | Unmatched opening square bracket |
+@@ -48,61 +49,61 @@ All codes follow the pattern `CPD-SCNN`:
+ | CPD-3105 | Error | Unmatched opening curly brace or control block |
+ | CPD-3106 | Error | Unmatched closing curly brace |
+ 
+-## Stage 3: Naming (CPD-32xx)
++### Naming
+ 
+-| Code | Severity | Description |
+-|------|----------|-------------|
++| Code | Severity | Meaning |
++|------|----------|---------|
+ | CPD-3201 | Error | Invalid variable name (must start with a letter) |
+ | CPD-3203 | Error | Invalid function name |
+-| CPD-3204 | Error | Function name conflicts with built-in function |
++| CPD-3204 | Error | Function name conflicts with a built-in function |
+ | CPD-3205 | Error | Variable name conflicts with a keyword |
+ | CPD-3207 | Error | Variable name conflicts with a built-in constant |
+ | CPD-3208 | Error | Function must have at least one parameter |
+-| CPD-3215 | Error | Required parameter after optional parameter (function) |
++| CPD-3215 | Error | Required parameter after an optional one (function) |
+ 
+-## Stage 3: Usage (CPD-33xx)
++### Usage
+ 
+-| Code | Severity | Description |
+-|------|----------|-------------|
++| Code | Severity | Meaning |
++|------|----------|---------|
+ | CPD-3301 | Error | Undefined variable |
+-| CPD-3302 | Error | Function called with incorrect parameter count |
++| CPD-3302 | Error | Function called with the wrong number of parameters |
+ | CPD-3303 | Error | Undefined macro |
+-| CPD-3304 | Error | Macro called with incorrect parameter count |
++| CPD-3304 | Error | Macro called with the wrong number of parameters |
+ | CPD-3305 | Error | Undefined function |
+ | CPD-3306 | Warning | Invalid element access |
+ | CPD-3307 | Error | Too few parameters |
+ | CPD-3308 | Error | Too many parameters |
+ | CPD-3309 | Warning | Parameter type mismatch |
+ | CPD-3310 | Error | Undefined unit |
+-| CPD-3311 | Error | Empty parameter in function call |
++| CPD-3311 | Error | Empty parameter in a function call |
+ | CPD-3312 | Information | Unused variable |
+ 
+-## Stage 3: Semantic (CPD-34xx)
++### Semantics
+ 
+-| Code | Severity | Description |
+-|------|----------|-------------|
++| Code | Severity | Meaning |
++|------|----------|---------|
+ | CPD-3401 | Error | Invalid operator usage |
+ | CPD-3404 | Error | Unknown command name |
+ | CPD-3406 | Error | Unknown directive |
+ | CPD-3407 | Warning | Invalid assignment |
+-| CPD-3409 | Error | `#` directive not allowed inside command block |
++| CPD-3409 | Error | `#` directive not allowed inside a command block |
+ | CPD-3410 | Error | Invalid command syntax |
+ | CPD-3411 | Error | Incomplete expression |
+ | CPD-3412 | Error | Command variable mismatch |
+ | CPD-3413 | Error | Reassignment of a constant |
+-| CPD-3414 | Error | Outer scope assignment (`←`) to undefined variable |
+-| CPD-3416 | Warning | Invalid `paramType` value in metadata comment |
+-| CPD-3417 | Warning | Invalid metadata comment JSON |
++| CPD-3414 | Error | Outer-scope assignment (`←`) to an undefined variable |
++| CPD-3416 | Warning | Invalid `paramType` value in a metadata comment |
++| CPD-3417 | Warning | Invalid metadata-comment JSON |
+ 
+-## Stage 3: Format (CPD-36xx)
++### Formatting
+ 
+-| Code | Severity | Description |
+-|------|----------|-------------|
++| Code | Severity | Meaning |
++|------|----------|---------|
+ | CPD-3601 | Warning | Invalid format specifier |
+ 
+-## Lint-ignore regions
++## Suppressing diagnostics (lint-ignore)
+ 
+-Suppress specific diagnostics within a region using paired HTML-comment markers:
++To silence specific diagnostics in a section — for example, a prototype variable you haven't wired up yet — wrap it in `LintIgnore` / `EndLintIgnore` markers and list the codes to ignore:
+ 
+ ```text
+ '<!--{"LintIgnore": ["CPD-3301"]}-->
+@@ -110,27 +111,13 @@ prototype_var = 5
+ '<!--{"EndLintIgnore": []}-->
+ ```
+ 
+-An empty `LintIgnore` array suppresses all codes within the region.
+-
+-## Severity filtering (VS Code)
++Leave the list empty (`"LintIgnore": []`) to suppress *all* diagnostics inside the region.
+ 
+-The setting `calcpad.linter.minimumSeverity` (`error` | `warning` | `information`, default `information`) filters lower-severity diagnostics before they reach the editor.
++## Choosing how much to show (VS Code)
+ 
+-## Lint response shape
++The `calcpad.linter.minimumSeverity` setting (`error` | `warning` | `information`, default `information`) hides diagnostics below the level you choose — set it to `warning` to see only warnings and errors, or `error` for errors alone.
+ 
+-The `/api/calcpad/lint` endpoint returns:
++## See also
+ 
+-```typescript
+-{
+-  errorCount: number,
+-  warningCount: number,
+-  diagnostics: Array<{
+-    line: number, column: number, endColumn: number,
+-    code: string,        // "CPD-XXXX"
+-    message: string,
+-    severity: "error" | "warning" | "information",
+-    severityId: 0 | 1 | 2,
+-    source: "Calcpad Linter"
+-  }>
+-}
+-```
+\ No newline at end of file
++- [Using the VS Code Extension](new-vscode-extension.md) · [Using the Desktop App](new-desktop-app.md)
++- [Programming](programming.md) · [Writing Math](writing-math.md)
+diff --git a/docs/new-pdf-export.md b/docs/new-pdf-export.md
+index d22f617..ab1bb0d 100644
+--- a/docs/new-pdf-export.md
++++ b/docs/new-pdf-export.md
+@@ -1,131 +1,56 @@
+ # PDF Export
+ 
+-> Calcpad.Web only (web editor and VS Code extension). Not available in the WPF desktop application.
++> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
+ 
+-The PDF pipeline uses **PuppeteerSharp** (headless Chromium) for HTML rendering, plus **PDFsharp** for post-processing headers, footers, and background overlays.
++Calcpad.Web can export your report to a print-ready PDF that matches the on-screen preview, with configurable page size, margins, and optional headers, footers, and a letterhead background.
+ 
+-## Rendering pipeline
++Set the options below in the sidebar's **PDF** tab, then export:
+ 
+-1. Launch headless browser (singleton, locked with a semaphore)
+-2. Create page and set HTML content (`WaitUntil: Networkidle0`)
+-3. Inject print-specific CSS to force color-accurate output and fit datagrid tables
+-4. Transform DOM via JavaScript (convert inputs to underlined text, etc.)
+-5. Generate PDF bytes with Puppeteer
+-6. Post-process with PDFsharp (headers, footers, background) if enabled
++- **Desktop app** — **File → Export PDF…**
++- **VS Code** — *CalcPad: Export to PDF*
++- **Web editor** — the PDF button on the sidebar's **PDF** tab
+ 
+-## Supported paper formats
++## Browser requirement
+ 
+-Letter, Legal, Tabloid, Ledger, **A0, A1, A2, A3, A4, A5, A6**. Default: A4. Unrecognized values fall back to A4.
++PDF export renders the report using a **Chromium-based browser** (Google Chrome, Microsoft Edge, or Chromium). The app looks for one already installed on your system; if it can't find one, it downloads a minimal headless build automatically the first time you export.
+ 
+-## Margins and orientation
++On Linux, if no browser is found the app shows you the exact package to install for your distribution:
+ 
+-- Margins accept CSS unit strings: `"2cm"`, `"1.5cm"`, `"0.5in"`
+-- `orientation: "portrait"` (default) or `"landscape"`
+-- Independent per-edge margin control: `marginTop`, `marginRight`, `marginBottom`, `marginLeft`
++| Distribution | Install command |
++|--------------|-----------------|
++| Arch / CachyOS / Manjaro / EndeavourOS / Garuda | `yay -S ungoogled-chromium-bin` (or `sudo pacman -S chromium`) |
++| Debian / Ubuntu / Mint | `sudo apt install chromium` |
++| Fedora / RHEL / Rocky / Alma | `sudo dnf install chromium` |
++| openSUSE | `sudo zypper install chromium` |
++| Alpine | `sudo apk add chromium` |
++| macOS | `brew install --cask google-chrome` |
++| Windows | install Microsoft Edge or Google Chrome |
+ 
+-## Headers (when `enableHeader: true`)
++## Page setup
+ 
+-Laid out by PDFsharp:
++- **Paper size** — Letter, Legal, Tabloid, Ledger, or A0–A6. Default is A4.
++- **Orientation** — portrait (default) or landscape.
++- **Margins** — set each edge independently, using values like `2cm`, `1.5cm`, or `0.5in`.
++- **Scale** — a zoom factor from 0.1 to 2.0 for shrinking or enlarging the content.
++- **Background** — colors and background images are printed by default.
+ 
+-- Document **title** (top-left, bold 12pt)
+-- Document **subtitle** (below title, gray)
+-- **Center text** from `headerCenter`
+-- **Timestamp** (top-right, 8pt, light gray) formatted per `dateTimeFormat` (defaults to `"g"`)
+-- 1px gray separator line below the header
++## Headers and footers
+ 
+-## Footers (when `enableFooter: true`)
++Turn headers and/or footers on in the PDF tab and fill in the fields you want:
+ 
+-- **Left** — author and company
+-- **Center** — custom `footerCenter` text
+-- **Right** — page numbers (`Page N of Total`) and project field
+-- 1px gray separator line above the footer
++**Header** — document title (bold, top-left), a subtitle beneath it, custom center text, and a timestamp (top-right). A thin separator line sits below it.
+ 
+-## Background PDF overlay
++**Footer** — author and company (left), custom center text, and page numbers with the project name (right). A thin separator line sits above it.
+ 
+-```text
+-options.backgroundPdf = "C:/templates/letterhead.pdf";
+-```
+-
+-PDFsharp loads the background and draws it **behind** each page, stretching to fit page dimensions.
+-
+-## Image base64 embedding
+-
+-The VS Code extension scans generated HTML for `<img src="…">` and, for each local file path (not `http://`, `https://`, or `data:`), embeds the file as a base64 data URI before sending to `/api/calcpad/pdf`. Supported MIME types: `png`, `jpg`/`jpeg`, `gif`, `webp`, `svg`. Required because headless Chromium cannot read from the client's disk.
+-
+-## Browser detection order
+-
+-1. Explicit `browserPath` (request field, env var, or `appsettings.json`)
+-2. **Microsoft Edge** (Windows: Program Files, Program Files (x86), LocalAppData)
+-3. **Google Chrome** (same three locations)
+-4. **Linux** — `chromium`, `chromium-browser`, `ungoogled-chromium`, `google-chrome`, `google-chrome-stable`, `/snap/bin/chromium`
+-5. **macOS** — Chrome, Edge, Chromium in `/Applications`
+-6. **Fallback** — auto-download `ChromeHeadlessShell` via `BrowserFetcher` into `{AppContext.BaseDirectory}/chromium`
+-
+-## Desktop browser-missing warning (Calcpad-Desktop)
+-
+-Under Tauri the server runs as a sidecar binary and writes stderr to `<serverDir>/logs/server-stderr.log`. Before issuing a PDF request, the desktop UI scans that log; if PuppeteerSharp logged a launch failure on a previous attempt ("Could not find browser revision" / "Failed to launch the browser"), the user gets a native message box with **per-distribution install instructions** instead of waiting for a 10-second timeout:
+-
+-- **Arch / CachyOS / Manjaro / EndeavourOS / Garuda** — `yay -S ungoogled-chromium-bin` (or `sudo pacman -S chromium`)
+-- **Debian / Ubuntu / Mint** — `sudo apt install chromium`
+-- **Fedora / RHEL / Rocky / Alma** — `sudo dnf install chromium`
+-- **openSUSE** — `sudo zypper install chromium`
+-- **Alpine** — `sudo apk add chromium`
+-- **macOS** — `brew install --cask google-chrome`
+-- **Windows** — install Microsoft Edge or Google Chrome
+-
+-Distribution detection reads `ID` and `ID_LIKE` from `/etc/os-release`. The Arch packaging (`packaging/arch/PKGBUILD`) lists `ungoogled-chromium-bin` as the preferred `optdepend`.
+-
+-## Server stderr log
++The timestamp uses a standard .NET date/time format string (defaults to a short date-and-time format).
+ 
+-The desktop launcher tees the .NET server's stderr into `extensions/server/logs/server-stderr.log` (truncated per launch, preserved on the original stderr stream too). The desktop app's **Server → Show Server Log** menu item — and any failed PDF request — pipes the most recent 200 lines into the **Output** panel under the **Server** channel, mirroring how the VS Code extension's spawned-process stderr surfaces in its Output channel.
++## Letterhead background
+ 
+-## Complete `PdfOptions` reference
++Point the **background PDF** option at a PDF file and it's drawn behind every page, stretched to fit — perfect for company letterhead or a title-block template.
+ 
+-| Field | Type | Default | Purpose |
+-|-------|------|---------|---------|
+-| `format` | string | `"A4"` | Paper format |
+-| `orientation` | string | `"portrait"` | `portrait` or `landscape` |
+-| `printBackground` | bool | `true` | Render background colors/images |
+-| `scale` | float | `1.0` | Zoom factor (0.1 – 2.0) |
+-| `marginTop` | string | `"2cm"` | Top margin |
+-| `marginRight` | string | `"1.5cm"` | Right margin |
+-| `marginBottom` | string | `"2cm"` | Bottom margin |
+-| `marginLeft` | string | `"1.5cm"` | Left margin |
+-| `enableHeader` | bool | `false` | Render header |
+-| `enableFooter` | bool | `false` | Render footer |
+-| `documentTitle` | string? | `null` | Title (header, bold) |
+-| `documentSubtitle` | string? | `null` | Subtitle (header, gray) |
+-| `author` | string? | `null` | Author (footer left) |
+-| `company` | string? | `null` | Company (footer left) |
+-| `project` | string? | `null` | Project (footer right) |
+-| `headerCenter` | string? | `null` | Custom center header text |
+-| `footerCenter` | string? | `null` | Custom center footer text |
+-| `dateTimeFormat` | string? | `null` | .NET format string (null → `"g"`) |
+-| `backgroundPdf` | string? | `null` | Path to background PDF |
++## Excluding sections from the PDF (NoPrint)
+ 
+-## VS Code export flow
+-
+-Command `vscode-calcpad.exportToPdf`:
+-
+-1. Read `calcpad.pdf.*` settings
+-2. Build a `ClientFileCache` from the document's `#include`/`#read` references
+-3. `POST /api/calcpad/convert` → HTML
+-4. Embed local images as base64
+-5. `POST /api/calcpad/pdf` with 60-second timeout
+-6. Show save dialog and write the PDF
+-7. Offer to open the saved file
+-
+-## Health check
+-
+-`GET /api/calcpad/pdf/health` returns:
+-
+-```json
+-{ "status": "ok", "service": "calcpad-pdf", "version": "2.0.0" }
+-```
+-
+-## NoPrint regions
+-
+-Mark sections of a Calcpad source file to be excluded from PDF output (while remaining visible in the on-screen preview) using paired HTML-comment markers:
++Wrap sections you want visible on screen but omitted from the PDF in `NoPrintStart` / `NoPrintEnd` markers:
+ 
+ ```text
+ '<!--{"NoPrintStart": true}-->
+@@ -135,18 +60,51 @@ debug_y = x + 1
+ '<!--{"NoPrintEnd": true}-->
+ ```
+ 
+-The markers reuse the existing JSON-payload comment syntax already used by `LintIgnore`/`EndLintIgnore` and per-file `settings`.
+-
+-**Behavior:**
+-
+-- Marker lines themselves are also removed
+-- Pairing is stack-based; nested regions collapse to the outermost on close
+-- An unmatched `NoPrintStart` strips through end-of-file
+-- Property-name matching is case-insensitive
+-- The JSON value of each marker is unused; only the property's presence matters
+-
+-**Wiring:**
+-
+-- The `forPrint` parameter on `CalcpadService.ConvertAsync(...)`, when `true`, runs the stripper on the source *before* macro and expression parsing, so stripped sections never enter the rendered HTML
+-- The `ForPrint` property on `CalcpadRequest` is threaded through `/api/calcpad/convert` and `/api/calcpad/convert-unwrapped`
+-- The PDF flows in the VS Code extension and `calcpad-web` send `forPrint: true` when converting source for PDF output. On-screen preview converts default to `forPrint: false`, so NoPrint regions remain visible in the live preview
++Good to know:
++
++- The marker lines themselves are removed too.
++- Regions can be nested; the outermost pair wins.
++- A `NoPrintStart` without a matching `NoPrintEnd` strips everything through the end of the file.
++- Property names are matched case-insensitively, and the marker's value doesn't matter — only that the property is present.
++- These sections stay visible in the live preview; they're only removed from PDF (and other print) output.
++
++This uses the same comment-marker syntax as [`LintIgnore`](new-linter.md#suppressing-diagnostics-lint-ignore) and per-file settings.
++
++## Options reference
++
++Every option you can set for a PDF export:
++
++| Option | Default | Purpose |
++|--------|---------|---------|
++| `format` | `A4` | Paper size |
++| `orientation` | `portrait` | `portrait` or `landscape` |
++| `printBackground` | `true` | Print background colors and images |
++| `scale` | `1.0` | Zoom factor (0.1 – 2.0) |
++| `marginTop` | `2cm` | Top margin |
++| `marginRight` | `1.5cm` | Right margin |
++| `marginBottom` | `2cm` | Bottom margin |
++| `marginLeft` | `1.5cm` | Left margin |
++| `enableHeader` | `false` | Show the header |
++| `enableFooter` | `false` | Show the footer |
++| `documentTitle` | — | Title (header, bold) |
++| `documentSubtitle` | — | Subtitle (header) |
++| `author` | — | Author (footer, left) |
++| `company` | — | Company (footer, left) |
++| `project` | — | Project (footer, right) |
++| `headerCenter` | — | Custom center header text |
++| `footerCenter` | — | Custom center footer text |
++| `dateTimeFormat` | — | .NET date/time format string for the timestamp |
++| `backgroundPdf` | — | Path to a letterhead/background PDF |
++
++## Troubleshooting
++
++| Symptom | Fix |
++|---------|-----|
++| Export fails or times out | Install a Chromium browser (see the table above). In the desktop app, **Server → Show Server Log** shows the underlying error. |
++| Images missing in the PDF | Use paths the app can read; local images are embedded automatically before export. |
++| A debug section appears in the PDF | Wrap it in `NoPrintStart` / `NoPrintEnd` markers. |
++
++## See also
++
++- [Using the Desktop App](new-desktop-app.md) · [Using the VS Code Extension](new-vscode-extension.md)
++- [The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md)
+diff --git a/docs/new-table-of-contents.md b/docs/new-table-of-contents.md
+index d6998bb..c5a8082 100644
+--- a/docs/new-table-of-contents.md
++++ b/docs/new-table-of-contents.md
+@@ -1,12 +1,12 @@
+ # Table of Contents
+ 
+-> Available in **Calcpad.Web** (web editor and VS Code extension). The features in all `new-*.md` documents apply to Calcpad.Web only — not to the WPF desktop application.
++> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
+ 
+-Calcpad.Web documents can generate a navigable table of contents from the document headings, with automatic ID assignment and nested rendering.
++Calcpad.Web can build a navigable table of contents from your document's headings, with links that jump straight to each section.
+ 
+-## Heading comment syntax
++## Writing headings
+ 
+-Markdown-style heading comments use a leading `'` plus one to six `#` characters:
++Write a heading as a comment line that starts with `'` followed by one to six `#` characters — just like Markdown:
+ 
+ ```text
+ '# Section 1
+@@ -17,19 +17,11 @@ Markdown-style heading comments use a leading `'` plus one to six `#` characters
+ '# Section 2
+ ```
+ 
+-These render as `<h1>`–`<h6>` HTML headings in the output.
++These become `<h1>`–`<h6>` headings in your report. Every heading automatically gets a unique link target, so you can link to any section — the table of contents uses these targets to jump around the document.
+ 
+-## Automatic ID generation
++## Building the list
+ 
+-`toc.js` walks all `<h1>`–`<h6>` elements on page load. For each heading without an `id`:
+-
+-1. Snake-cases the heading text (lowercase, spaces → underscores)
+-2. Detects collisions and appends `_<n>` when necessary
+-3. Assigns the generated ID to the element
+-
+-## Nested list rendering
+-
+-Call `makeList({ target, parent })` from a `<script>` block to build a nested `<ul>` tree matching the heading levels:
++Add a small script block to your document to generate the nested list. Point it at the container where the list should appear:
+ 
+ ```js
+ window.addEventListener('load', () => {
+@@ -37,10 +29,15 @@ window.addEventListener('load', () => {
+ });
+ ```
+ 
+-- Deeper heading levels become nested `<ul>` elements
+-- Same or shallower levels pop the stack to the correct parent
+-- Each entry becomes `<li><a href="#heading_id">Heading Text</a></li>`
++- `target` — the element the list is placed into (here, an element with `id="toc"`)
++- `parent` — the region whose headings are collected (here, the report's `article`)
++
++Deeper headings become nested sub-lists, and each entry is a link that scrolls to its section.
+ 
+ ## Example
+ 
+-[Calcpad.Cli/Examples/Demos/toc.cpd](../Calcpad.Cli/Examples/Demos/toc.cpd) demonstrates the full pattern including `#md on`, custom CSS, and the JS invocation.
+\ No newline at end of file
++The demo file [Calcpad.Cli/Examples/Demos/toc.cpd](../Calcpad.Cli/Examples/Demos/toc.cpd) shows the whole pattern, including turning on Markdown comments with `#md on`, a bit of custom CSS, and the script block above.
++
++## See also
++
++- [Reporting](reporting.md) · [Writing Math](writing-math.md)
+diff --git a/docs/new-vscode-extension.md b/docs/new-vscode-extension.md
+index 920e38d..3d33655 100644
+--- a/docs/new-vscode-extension.md
++++ b/docs/new-vscode-extension.md
+@@ -1,196 +1,216 @@
+ # VS Code Extension
+ 
+-> Part of Calcpad.Web. The features in all `new-*.md` documents apply to Calcpad.Web only — the WPF desktop application is not affected.
++> Calcpad.Web only. The standalone WPF desktop application for Windows is separate and unaffected.
+ 
+-The Calcpad VS Code extension delivers IDE-grade language support for `.cpd` files: full symbol navigation, semantic syntax highlighting, autocomplete, hover documentation, three live preview panels, formatting hotkeys, and an embedded local server that runs the same conversion pipeline as the web backend.
++The **Calcpad VS Code extension** turns Visual Studio Code into a full Calcpad authoring environment. You write `.cpd` files with syntax highlighting, autocomplete, and inline error checking, then render them to a live HTML report and export to PDF, Word, or HTML — all driven by the same calculation engine as the rest of Calcpad.
+ 
+-## Language server features
++For the Calcpad language itself, start with **[Writing Math](writing-math.md)** and the **[Quick Reference](quick-reference.md)**.
+ 
+-### Go to definition
++## Requirements
+ 
+-- Trigger: **Ctrl+Click** or **F12**
+-- Covers variables, functions, macros, and custom units
+-- Works across `#include` files
+-- Jumps to the first assignment; reassignments are not targeted
++- **Visual Studio Code** 1.82 or newer.
++- **.NET runtime** on your PATH. The extension bundles a local Calcpad server that it launches automatically; it needs `dotnet` to run it. Verify with `dotnet --info` in a terminal.
++- A **Chromium-based browser** (Chrome, Edge, Chromium) for PDF export. See [PDF Export](new-pdf-export.md).
+ 
+-### Find all references
++## Installing the extension
+ 
+-- Trigger: **Shift+Alt+F12** or right-click → *Find All References*
+-- Covers the same symbol types as Go to Definition
+-- Each location includes exact column and length for precise selection
++The extension is distributed as a `.vsix` package (it is not yet on the Marketplace).
+ 
+-### Rename symbol
++1. Obtain the `vscode-calcpad-<version>.vsix` file, or build it yourself from `Calcpad.Web/frontend/vscode-calcpad` with `npm run package:vsix`.
++2. In VS Code, open the **Extensions** view (**Ctrl+Shift+X**).
++3. Click the **⋯** menu at the top of the view → **Install from VSIX…** and select the file.
++4. Reload the window if prompted.
+ 
+-- Trigger: **F2**
+-- Renames only locally-defined occurrences
+-- Does not rename across `#include` files — attempting to rename an imported symbol returns an error
++Alternatively, from a terminal: `code --install-extension vscode-calcpad-<version>.vsix`.
+ 
+-### Path completion for `#include`, `#read`, `#write`, `#append`
++## Your first document
+ 
+-- `#include`: `.cpd`, `.txt`
+-- `#read` / `#write` / `#append`: `.cpd`, `.txt`, `.csv`, `.tsv`, `.xlsx`, `.xlsm`, `.xls`
+-- Supports `/` and `\` path separators and drills into subdirectories
+-- Expands `%VAR%` (Windows) and `$VAR` (POSIX) environment variables
+-- Honors the `calcpad.libraryPath` setting — library files appear alongside workspace paths
+-- Strips `@sheet`, `type=`, `sep=` options before resolving the path
++1. Create a new file and save it with a **`.cpd`** extension (for example `beam.cpd`). VS Code detects the `calcpad` language automatically. The `.cpdz` binary format is also recognized.
++2. Type a calculation, for example:
++
++   ```calcpad
++   "Cantilever tip deflection
++   P = 5kN
++   L = 3m
++   E = 200GPa
++   I = 8.5e-5m^4
++   δ = P·L^3/(3·E·I)
++   ```
+ 
+-### Quick-type symbol insertion
++3. Click the **CalcPad Preview** button in the editor's top-right toolbar, or run **CalcPad Preview** from the Command Palette (**Ctrl+Shift+P**).
+ 
+-Type `~` followed by a key and press **space** to replace with a symbol:
++The preview opens in a side column and re-renders every time you edit. The bundled server starts automatically the first time you render — the first render may take a moment while it spins up.
+ 
+-```text
+-~a   → α         ~A   → Α
+-~b   → β         ~p   → π
+-~g   → γ         ~s   → σ
+-~t   → θ         ~S   → Σ
+-```
++## The editor
+ 
+-Controlled by the `calcpad.enableQuickTyping` setting (default `true`).
++### Syntax highlighting
+ 
+-### Hover provider
++`.cpd` files get semantic highlighting: numbers, units, operators, variables, functions, macros, keywords, commands, file paths, and embedded HTML/Markdown/CSS/JS/SVG in comments are each colored distinctly. Highlighting updates per line as you type, for both dark and light themes.
+ 
+-Rich hover tooltips for macros, functions, variables, and custom units. Content shown:
++The extension also sets a few editor defaults for `.cpd` files so the language behaves predictably:
+ 
+-- **Macros** — signature, source file, description, parameter types & defaults
+-- **Functions** — signature, source file, description, return type, per-parameter docs
+-- **Variables** — assignment expression, inferred type, source file
+-- **Custom units** — definition expression, source file
+-- **Built-in functions** — signature, description, return type, per-parameter docs, and a runnable example
++- The monospace font is **JuliaMono** (falls back to Cascadia Code / Consolas). Run **CalcPad: Install JuliaMono Font** from the Command Palette to install it if the glyphs look wrong.
++- **Enter always inserts a newline** — it never accepts a suggestion. Press **Tab** to accept a completion instead.
++- Bracket matching is always on; bracket-pair colorization is off (Calcpad colors brackets itself).
+ 
+-### Semantic tokens
++### Autocomplete
+ 
+-Server-backed semantic highlighting with 31 token types: Const, Units, Operator, Variable, Function, Keyword, Command, Bracket, Comment, Tag, Input, Include, Macro, HtmlComment, Format, LocalVariable, FilePath, DataExchangeKeyword, and more. Supports incremental per-line updates.
++As you type, the completion list offers:
+ 
+-### Completion provider
++- **Your own symbols first** — variables, functions, macros, and custom units defined in the current document (and its `#include` files) are prioritized above built-ins.
++- **Built-in functions** with snippet placeholders — accept one and press **Tab** to jump between arguments.
++- **Setting keys** (`decimals`, `degrees`, `complex`, `units`, `colorScale`, …) where a setting is expected.
++- **Metadata keys** inside an HTML-comment block placed directly above a definition.
+ 
+-- User-defined symbols prioritized above built-ins
+-- Metadata JSON completion inside HTML comment blocks above definitions
+-- Function/macro invocation snippets with `${N:param}` placeholders
+-- Settings key completion (`decimals`, `degrees`, `complex`, `units`, `colorScale`, …)
++### Quick-type symbols
+ 
+-### Diagnostics integration
++Type `~` followed by a key and press **space** to insert a Greek letter or math symbol. For example `~a` + space → `α`, `~p` + space → `π`, `~S` + space → `Σ`. The full set is shown in the **Insert** tab's Symbol Palette. Toggle this with the `quickTyping` setting in the CalcPad **Settings** tab.
+ 
+-CPD error codes surface as standard VS Code diagnostics. Severities are Error / Warning / Information. The minimum severity is filtered via `calcpad.linter.minimumSeverity` (default `information`).
++### Operator replacement and auto-indent
+ 
+-## Formatting hotkeys
++Typing ASCII operators auto-converts them to Unicode: `<=` → `≤`, `>=` → `≥`, `!=` → `≠`. Block keywords indent automatically: `#if` / `#else` / `#end if`, `#for` / `#end for`, and `#def` / `#end def`.
+ 
+-Content-aware formatting picks HTML or Markdown syntax based on `calcpad.commentFormat` (`auto` | `html` | `markdown`). Toggle the whole feature with `calcpad.enableFormattingHotkeys`.
++### Formatting hotkeys
++
++When the cursor is in a `.cpd` file, these hotkeys wrap the selection in HTML or Markdown markup. Whether HTML or Markdown is emitted depends on the `commentFormat` setting (`auto` / `html` / `markdown`).
+ 
+ | Keybinding | Effect |
+ |------------|--------|
+-| **Ctrl+B** | `**bold**` or `<b>bold</b>` |
+-| **Ctrl+I** | `*italic*` or `<i>italic</i>` |
+-| **Ctrl+U** | `<u>underline</u>` |
+-| **Ctrl+=** | `<sub>x</sub>` |
+-| **Ctrl+Shift+=** | `<sup>x</sup>` |
+-| **Ctrl+1** – **Ctrl+6** | Headings 1–6 |
+-| **Ctrl+L** | `<p>…</p>` |
+-| **Ctrl+R** | `<br>` |
++| **Ctrl+B** | Bold |
++| **Ctrl+I** | Italic |
++| **Ctrl+U** | Underline |
++| **Ctrl+=** | Subscript |
++| **Ctrl+Shift+=** | Superscript |
++| **Ctrl+1** … **Ctrl+6** | Headings 1–6 |
++| **Ctrl+L** | Paragraph |
++| **Ctrl+R** | Line break |
+ | **Ctrl+Shift+L** | Bulleted list |
+ | **Ctrl+Shift+N** | Numbered list |
+ | **Ctrl+Q** | Toggle `'` comment prefix |
++| **Ctrl+Shift+Q** | Uncomment |
++| **Ctrl+Shift+V** | Paste as comment (each line prefixed with `'`) |
+ 
+-(`Cmd` instead of `Ctrl` on macOS.)
++On macOS use **Cmd** instead of **Ctrl**. Turn the whole set off with the `enableFormattingHotkeys` setting if it conflicts with your other bindings.
+ 
+-## Preview panels
++## Navigating symbols
+ 
+-Three webview previews, each opening in a new editor column:
++The extension provides IDE-grade navigation across variables, functions, macros, and custom units — including across `#include` files:
+ 
+-| Panel | Command | Endpoint |
+-|-------|---------|----------|
+-| **HTML Preview** | `previewHtml` | `/api/calcpad/convert` |
+-| **Unwrapped Preview** | `previewUnwrapped` | `/api/calcpad/convert-unwrapped` |
++| Action | Trigger |
++|--------|---------|
++| **Go to Definition** | **Ctrl+Click** or **F12** — jumps to the first assignment |
++| **Find All References** | **Shift+Alt+F12**, or right-click → *Find All References* |
++| **Rename Symbol** | **F2** — renames occurrences in the current document only (not across `#include` files) |
++| **Hover** | Point at a symbol for its signature, type, source file, and docs |
+ 
+-Both panels:
++Hovering over a built-in function shows its signature, description, return type, per-parameter documentation, and a runnable example.
+ 
+-- Re-render automatically on document change when the `autoRun` setting is on (default)
+-- Apply the theme from `calcpad.previewTheme` (`light` / `dark` / `system`)
+-- Use `calcpad.darkBackground` (default `#1e1e1e`) for dark-mode backgrounds
+-- Embed local images as base64 (needed for PDF/print fidelity)
++## Path completion for includes and data files
+ 
+-### Manual run
++When you type a path after `#include`, `#read`, `#write`, or `#append`, the extension completes filenames from the workspace and from your configured library path:
+ 
+-`calcpad.refreshDocument` (**CalcPad: Run Preview**) re-lints the active document, refreshes semantic tokens, re-renders any open preview panels, and re-populates the Export tab's plot list. Triggers:
++- `#include`: `.cpd`, `.txt`
++- `#read` / `#write` / `#append`: `.cpd`, `.txt`, `.csv`, `.tsv`, `.xlsx`, `.xlsm`, `.xls`
++- Both `/` and `\` separators work, and it drills into subdirectories.
++- Environment variables expand: `%VAR%` on Windows, `$VAR` on macOS/Linux.
+ 
+-- Keybinding **Ctrl+Alt+X** (`when: editorLangId == 'calcpad' || editorLangId == 'plaintext'`)
+-- Editor right-click context menu (group `calcpad@0`, ordered above the print/inspect items)
+-- View title bar button on the `calcpadVueUI` view
+-- Command Palette: *CalcPad: Run Preview*
++Point the library path (in the Settings tab) at a folder of reusable `.cpd` / `.txt` files and they show up in completion alongside workspace files — an easy way for a team to share a common library without copying it into every project.
+ 
+-When `autoRun` is off, the debounced `onDidChangeTextDocument` skips `schedulePreviewUpdate` — the preview only re-renders on manual run or when the preview panel is (re)opened.
++## The CalcPad panel
+ 
+-## Export and print commands
++Click the **CalcPad** icon in the activity bar (left edge) to open the panel. It has **Files** and **Calcpad** views, and the Calcpad view is organized into tabs (Insert, TOC, Settings, Variables, PDF, Formatting, Export, Errors). The view title bar has **CalcPad: Run Preview** (re-renders the active file and refreshes plots) and **Stop Server** buttons.
+ 
+-| Command | Description |
+-|---------|-------------|
+-| `exportToPdf` | Full-fidelity PDF export with save dialog and 60-second timeout |
+-| `printToPdf` | Print-style PDF generated from the live webview |
+-| `saveSourceHtml` | Renders the active document via `/api/calcpad/convert` and saves the HTML through a native save dialog. Available from the **Save HTML…** button on the sidebar's **Export** tab and from the Command Palette as *CalcPad: Save Source HTML…* |
+-| `saveDocx` | Renders the active document, then converts to Word `.docx` via `/api/calcpad/docx` (Calcpad.OpenXml). Available from the **Save Word…** button on the sidebar's **Export** tab and from the Command Palette as *CalcPad: Save as Word Document…* |
+-| `viewWebviewSource` | Opens the rendered HTML in a scratch editor for debugging |
+-| `insertImage` | File picker to insert an `<img>` tag with relative path |
++The panel is the same across every Calcpad front end — see **[The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md)** for a full walkthrough of each tab.
+ 
+-### Plot export
++## Live preview
+ 
+-Every rendered preview also pushes its HTML through `setCachedHtml` on the sidebar's Vue UI provider, which extracts image data from `<img>` tags produced by Calcpad plotters and caches them so the Export tab's **Plots** section shows a thumbnail list. Two message types back it:
++Two preview panels are available, each opening in its own editor column:
+ 
+-- `savePlot` — saves plot `#index` via a native save dialog. The extension picks the file extension from the cached blob (PNG for raster, SVG for vector).
+-- `savePlotsZip` — bundles all cached plots into a single ZIP via the shared `buildZip` helper.
++| Panel | How to open |
++|-------|-------------|
++| **HTML Preview** | Preview button in the editor toolbar, or *CalcPad Preview* in the Command Palette |
++| **Unwrapped Preview** | Eye button in the editor toolbar, or *CalcPad Preview Unwrapped* |
+ 
+-The Vue-side cache is invalidated on `calcpad.refreshDocument` and on every `updatePreviewContent`, so the plot list mirrors the current document state without a separate API round-trip.
++The **Unwrapped** preview shows the fully expanded source (macros and includes resolved) — useful for debugging what the engine actually computes.
+ 
+-## Calcpad sidebar
++Both panels:
+ 
+-A dedicated activity-bar view (`calcpadVueUI`) displays the document's:
++- Re-render automatically as you type when **Auto-Run Preview** is on (default).
++- Follow the `previewTheme` setting (`light` / `dark` / `system`), using `darkBackground` for the dark background color.
++- Embed local images so PDF/print output matches the preview.
+ 
+-- Macros (with parameters and defaults)
+-- User-defined functions (with return type and signature)
+-- Variables (with inferred type)
+-- Custom units
++Right-click a preview → **View Webview Source HTML** to inspect the rendered markup.
+ 
+-Includes **Refresh Document** and **Stop Server** buttons in the view title bar.
++### Running on demand (Auto-Run off)
+ 
+-## Server lifecycle management
++When you turn **Settings → Auto-Run Preview** off, typing no longer re-renders the preview. Trigger the run yourself via any of:
+ 
+-The extension bundles a local Calcpad server and manages its lifecycle automatically:
++- **Ctrl+Alt+X** (works whenever a `.cpd` or plaintext editor has focus)
++- Right-click in the editor → **CalcPad: Run Preview**
++- The **CalcPad: Run Preview** button in the CalcPad sidebar's view title bar
++- The *CalcPad: Run Preview* command in the Command Palette
+ 
+-- **Modes** — `calcpad.server.mode` = `auto` (default) | `local` | `remote`
+-- **URL** — `calcpad.server.url` (default `http://localhost:9420`)
+-- **dotnet path** — `calcpad.server.dotnetPath` (default `dotnet`)
+-- **Auto-start** — Local server launches in the background on activation
+-- **Auto-restart** — Up to 3 crash retries before requiring manual refresh
+-- **Health fallback** — If local start fails, the extension falls back to the configured remote URL
+-- **Clean shutdown** — Server process is terminated when the window closes
+-- **Manual control** — `calcpad.stopServer` command
++Running also re-lints the document, refreshes syntax highlighting, and rebuilds the Export tab's plot list.
+ 
+-## Output channels
++## Errors and diagnostics
+ 
+-Four independent VS Code output channels:
++Calcpad errors surface in VS Code's **Problems** panel (**Ctrl+Shift+M**) as standard diagnostics with Error / Warning / Information severities, each with a `CPD-XXXX` code. Click one to jump to the offending line. Control how much is shown with the linter minimum-severity setting. See **[Linter and Diagnostics](new-linter.md)** for what each code means.
+ 
+-| Channel | Purpose |
+-|---------|---------|
+-| **CalcPad Extension** | Extension lifecycle, command execution, errors |
+-| **Calcpad Output HTML** | Rendered HTML diagnostics |
+-| **Calcpad Webview Console** | `console.log` intercepted from preview webviews |
+-| **CalcPad Server Debug** | stdout/stderr from the spawned server process |
++For errors that occur inside hidden (`#hide`) regions — which don't appear in the preview — use the **Errors** tab in the sidebar to see the full list with source-line links.
+ 
+-## Calculation & plot settings
++## Exporting
+ 
+-All Calcpad runtime settings are surfaced under `calcpad.settings`:
++All exports run through the same engine as the preview, so what you see is what you get.
+ 
+-- **Math** — `decimals` (0–15), `degrees` (0 radians / 1 degrees / 2 gradians), `isComplex`, `substitute`, `formatEquations`, `zeroSmallMatrixElements`, `maxOutputCount`, `formatString`
+-- **Plot** — `isAdaptive`, `screenScaleFactor`, `imagePath`, `imageUri`, `vectorGraphics`, `colorScale`, `smoothScale`, `shadows`, `lightDirection`
++| Output | How | Notes |
++|--------|-----|-------|
++| **PDF** | **Export CalcPad to PDF** button in the editor toolbar, or *Export CalcPad to PDF* | Full-fidelity export with a native save dialog. Requires a Chromium browser — see [PDF Export](new-pdf-export.md). |
++| **PDF (print style)** | Right-click editor → *Print CalcPad Preview to PDF* | Generated from the live preview. |
++| **HTML** | **Save HTML…** on the sidebar's **Export** tab, or *CalcPad: Save Source HTML…* | Renders and saves standalone HTML via a native dialog. |
++| **Word (.docx)** | **Save Word…** on the sidebar's **Export** tab, or *CalcPad: Save as Word Document…* | Renders, then converts to a Word document. |
+ 
+-These are forwarded to the server in every conversion request.
++Use the **PDF** tab in the panel to set the document title, timestamp format, page size, and header/footer before exporting. The **Export** tab also has a **Plots** section — a thumbnail list of every plot the document emits, each with an individual **Save…** button and a **Download all (ZIP)** button. See [The CalcPad Panel & Settings → Export](new-calcpad-panel-and-settings.md#export).
+ 
+-## Library path for shared files
++## Settings
+ 
+-`calcpad.libraryPath` points at a directory of reusable `.cpd`/`.txt` files. Files under that directory show up alongside workspace files in `#include` / `#read` path completion, letting teams share a common library without copying into each project.
++All Calcpad settings — math, plot, units, preview and color themes, editor features, linter severity, library path, and named configurations — live in the **Settings** tab of the CalcPad panel, **not** in VS Code's normal settings editor. Editing them there keeps them in sync with the extension and the server.
++
++See **[The CalcPad Panel & Settings → Settings](new-calcpad-panel-and-settings.md#settings)** for the full list.
++
++## The bundled engine
++
++The extension runs a local Calcpad engine to do all conversion and linting. You don't normally need to think about it:
++
++- It **starts automatically** in the background when the extension activates.
++- It **auto-restarts** on a crash (up to 3 retries) before asking you to refresh manually.
++- It **shuts down cleanly** when the window closes.
++
++If something goes wrong, use **Stop CalcPad Server** and then **Refresh Document** to restart it. The server mode (`auto` / `local` / `remote`), URL (default `http://localhost:9420`), and `dotnet` path are configurable if you need a custom setup.
++
++### Output channels for troubleshooting
++
++Four VS Code output channels help diagnose problems (open the Output panel and pick from the dropdown):
++
++| Channel | Shows |
++|---------|-------|
++| **CalcPad Extension** | Extension lifecycle, commands, errors |
++| **Calcpad Output HTML** | Rendered HTML diagnostics |
++| **Calcpad Webview Console** | Console messages from preview panels |
++| **CalcPad Server Debug** | Output from the engine process |
+ 
+-## Paste as comment
++## Troubleshooting
+ 
+-`pasteAsComment` pastes clipboard content with each line prefixed by `'`, useful when copying text from docs or emails into a Calcpad document.
++| Symptom | Fix |
++|---------|-----|
++| Preview never renders / "server not ready" | Confirm `dotnet --info` works. Then **Stop CalcPad Server** → **Refresh Document**. Check the **CalcPad Server Debug** output channel. |
++| PDF export fails | Install a Chromium browser (Chrome/Edge/Chromium). See [PDF Export](new-pdf-export.md). |
++| Greek letters / symbols render as boxes | Run **CalcPad: Install JuliaMono Font** and reload. |
++| Symbols not found across files | Confirm the `#include` path resolves; set the library path if the file lives in a shared folder. |
++| Formatting hotkeys conflict with other bindings | Disable `enableFormattingHotkeys` in the Settings tab. |
+ 
+-## Operator replacer and auto-indenter
++## See also
+ 
+-Typing standard ASCII operators triggers automatic replacement with Unicode equivalents (`<=` → `≤`, `>=` → `≥`, `!=` → `≠`). The auto-indenter handles `#if`/`#else`/`#end if`, `#for`/`#end for`, and `#def`/`#end def` block indentation.
+\ No newline at end of file
++- [The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md) — the shared sidebar and all settings
++- [Using the Desktop App](new-desktop-app.md)
++- [PDF Export](new-pdf-export.md) · [Includes and Remote Files](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [Table of Contents](new-table-of-contents.md)
++- [Writing Math](writing-math.md) · [Quick Reference](quick-reference.md)
+diff --git a/docs/new-web-deployment.md b/docs/new-web-deployment.md
+index 2111984..9f05e6d 100644
+--- a/docs/new-web-deployment.md
++++ b/docs/new-web-deployment.md
+@@ -1,10 +1,10 @@
+-# Calcpad.Web Local Mode
++# Running the Calcpad Server
+ 
+-> **Localhost-only build.** This branch (`calcpad-web`) only supports running the server bound to a loopback address. The startup loopback guard in [Calcpad.Web/backend/Program.cs](../Calcpad.Web/backend/Program.cs) throws `InvalidOperationException` if the resolved bind URL is anything other than `localhost`, `127.0.0.0/8`, or `::1`. Multi-user / hosted / Docker deployment, auth, file storage, and per-user caching live on the `calcpad-experimental` branch.
++> Calcpad.Web only. The standalone WPF desktop application for Windows is separate and unaffected.
+ 
+-> Calcpad.Web only. The WPF desktop application is unaffected.
++The desktop app and the VS Code extension start the Calcpad calculation server for you, so most people never run it by hand. But you can also run it directly — for example, to point several tools at one shared instance, or to script conversions and calls against its API. This page covers running the server and the API it exposes.
+ 
+-The web backend ([Calcpad.Web/backend](../Calcpad.Web/backend)) is an ASP.NET Core Web API that drives the web editor, the VS Code extension, and the Tauri desktop wrapper. It replaces the former `Calcpad.Server` project with clearer separation of concerns and an explicit endpoint catalog — in this branch, scoped to a single local user.
++> **Localhost only.** This build runs the server bound to your own machine (`localhost`, `127.0.0.1`, or `::1`) only. If you point it at any other address, it refuses to start. There is no multi-user hosting, authentication, or shared file storage in this build.
+ 
+ ## Running
+ 
+@@ -13,39 +13,43 @@ cd Calcpad.Web/backend
+ dotnet run
+ ```
+ 
+-Defaults to `http://localhost:9420`. Override the port with `CALCPAD_PORT`, or override the full bind URL via `--urls` — as long as it still resolves to a loopback address. Any non-loopback host is rejected at startup.
++By default the server listens on `http://localhost:9420`. To change the port, set `CALCPAD_PORT`, or pass a full bind URL with `--urls` — as long as it still points at a loopback address.
+ 
+-## Endpoint catalog
++## API endpoints
+ 
+ | Endpoint | Method | Purpose |
+ |----------|--------|---------|
+-| `/api/calcpad/convert` | POST | HTML conversion with theme + settings |
+-| `/api/calcpad/convert-unwrapped` | POST | Raw code HTML for error navigation |
+-| `/api/calcpad/sample` | GET | Retrieve a sample document |
+-| `/api/calcpad/debug-crash` | GET | Append a client-side crash event to the server log |
++| `/api/calcpad/convert` | POST | Convert a document to an HTML report (with theme + settings) |
++| `/api/calcpad/convert-unwrapped` | POST | HTML of the raw, fully expanded source (used for error navigation) |
++| `/api/calcpad/sample` | GET | Fetch a sample document |
+ | `/api/calcpad/pdf` | POST | Generate a PDF |
+ | `/api/calcpad/pdf/health` | GET | PDF service health check |
+-| `/api/calcpad/docx` | POST | Generate a Word `.docx` — runs the calcpad → HTML pipeline (`forPrint: true`) and feeds it through `Calcpad.OpenXml.OpenXmlWriter` |
+-| `/api/calcpad/highlight` | POST | Tokenize full document for syntax highlighting |
++| `/api/calcpad/docx` | POST | Generate a Word `.docx` document |
++| `/api/calcpad/highlight` | POST | Tokenize a full document for syntax highlighting |
+ | `/api/calcpad/highlight-line` | POST | Tokenize a single line (incremental) |
+-| `/api/calcpad/lint` | POST | Semantic diagnostics with CPD codes |
+-| `/api/calcpad/definitions` | POST | Macros, functions, variables, units |
+-| `/api/calcpad/find-references` | POST | Full symbol occurrence index |
++| `/api/calcpad/lint` | POST | Run the linter and return diagnostics |
++| `/api/calcpad/definitions` | POST | List macros, functions, variables, and units |
++| `/api/calcpad/find-references` | POST | Every occurrence of each symbol |
+ | `/api/calcpad/prettify` | POST | Pretty-print Calcpad source |
+-| `/api/calcpad/snippets` | GET | Snippets by category |
++| `/api/calcpad/snippets` | GET | Snippets, optionally filtered by category |
++| `/api/calcpad/debug-crash` | GET | Record a client-side crash in the server log |
+ 
+-The full API schema lives at [Calcpad.Web/backend/API_SCHEMA.md](../Calcpad.Web/backend/API_SCHEMA.md).
++The full request/response schema lives at [Calcpad.Web/backend/API_SCHEMA.md](../Calcpad.Web/backend/API_SCHEMA.md); the common shapes are summarized below.
+ 
+-## Common request fields (`CalcpadRequest`)
++## Common request fields
+ 
+-- `content` — Calcpad source code
+-- `settings` — math/plot/units configuration
++Most POST endpoints accept a request with these fields:
++
++- `content` — the Calcpad source code
++- `settings` — math / plot / unit configuration
+ - `theme` — `"light"` or `"dark"`
+-- `apiTimeoutMs` — remote fetch timeout (default `10000`)
+-- `sourceFilePath` — client-side file path; the server uses it to resolve relative `#include` against the parent file's directory
+-- `forPrint` — when `true`, NoPrint regions are stripped before conversion (used by PDF flows)
++- `apiTimeoutMs` — timeout for fetching remote `#include`/`#read` URLs (default `10000`)
++- `sourceFilePath` — the document's file path, used to resolve relative `#include` paths against the file's folder
++- `forPrint` — when `true`, `NoPrint` regions are stripped before conversion (used by PDF export)
++
++## Response shapes
+ 
+-## Definitions response shape
++### Definitions
+ 
+ Returns four parallel arrays:
+ 
+@@ -56,21 +60,40 @@ Returns four parallel arrays:
+ 
+ `typeId` values: 0 Unknown, 1 Value, 2 Vector, 3 Matrix, 5 Various, 6 Function, 7 InlineMacro, 8 MultilineMacro, 9 CustomUnit.
+ 
+-## Find-references response
++### Find-references
+ 
+-Three dictionaries (`variables`, `functions`, `macros`), each mapping symbol name to an array of:
++Three dictionaries (`variables`, `functions`, `macros`), each mapping a symbol name to an array of:
+ 
+ ```typescript
+ { line, column, length, source, sourceFile?, isAssignment }
+ ```
+ 
+-`isAssignment: true` indicates a definition or reassignment.
++`isAssignment: true` marks a definition or reassignment.
+ 
+-## Highlight response
++### Highlight
+ 
+-Returns an array of `{ line, column, length, type, typeId, text? }`. Passing `includeText: false` (default) omits the `text` field to reduce payload.
++An array of `{ line, column, length, type, typeId, text? }`. The `text` field is omitted by default; pass `includeText: true` to include it.
+ 
+-## Snippets response
++### Lint
++
++```typescript
++{
++  errorCount: number,
++  warningCount: number,
++  diagnostics: Array<{
++    line: number, column: number, endColumn: number,
++    code: string,        // "CPD-XXXX"
++    message: string,
++    severity: "error" | "warning" | "information",
++    severityId: 0 | 1 | 2,
++    source: "Calcpad Linter"
++  }>
++}
++```
++
++See [Linter and Diagnostics](new-linter.md) for what each code means.
++
++### Snippets
+ 
+ ```typescript
+ {
+@@ -86,24 +109,13 @@ Returns an array of `{ line, column, length, type, typeId, text? }`. Passing `in
+ }
+ ```
+ 
+-Optional query string `?category=Functions/Trigonometric` filters results.
+-
+-## Remote URL fetching
+-
+-Remote `#include` and `#read` URLs (`http://`, `https://`) are fetched by [`Router.FetchUrlAsync`](../Calcpad.Web/backend/Services/Router.cs) — a single static helper with a 10-second default timeout (overridable per request via `apiTimeoutMs`). Non-HTTP/HTTPS URLs are rejected.
+-
+-There is no API routing layer, no JWT/auth headers, no domain allowlist, and no server-side remote-content cache on this branch. The hosted version on `calcpad-experimental` keeps the `<service:endpoint>` routing, per-request `ClientFileCache`, disk-cache offload, and `/refresh-cache` endpoint that local mode no longer needs.
+-
+-## Content resolution pipeline
+-
+-A three-stage pipeline in `Calcpad.Highlighter` processes files uniformly for the linter, definitions endpoint, and highlight endpoint. Each stage emits an artifact plus a source map pointing back to the previous stage.
++Filter with a query string, e.g. `?category=Functions/Trigonometric`.
+ 
+-- **Stage 1 — Line continuation.** Explicit (` _`) and implicit (unbalanced delimiters at end-of-line) merging. Produces a `LineContinuationMap` and per-segment column tracking for accurate error positions.
+-- **Stage 2 — Include resolution & macro collection.** Recursive `#include` substitution, then macro definition tokenization. Computes macro definitions, duplicates, parameter order (for keyword-arg validation), bodies, and which parameters are referenced inside quoted/comment content.
+-- **Stage 3 — Macro expansion & type tracking.** Removes macro definitions, expands every call. Builds variable/function/macro indices, tracks reassignments and outer-scope (`←`) assignments, runs type inference.
++## Remote `#include` / `#read`
+ 
+-`SourceMapper.MapLineBack()` chains the three source maps plus the include map and macro-expansion map to resolve any Stage 3 line/column back to the original file, original line, and source kind (`local` vs `include`).
++The server can fetch `#include` and `#read` content from `http://` and `https://` URLs, with a 10-second default timeout you can override per request via `apiTimeoutMs`. Only HTTP and HTTPS addresses are accepted. See [Includes and Remote Files](new-includes.md).
+ 
+-## Crash logging
++## See also
+ 
+-The backend writes unexpected exits and orphaned-server scenarios to disk via `FileLogger` and the server-manager. These surface in the `CalcPad Server Debug` output channel and on disk so the VS Code extension can present them to the user. The frontend reports its own crashes to the server via `GET /api/calcpad/debug-crash`.
++- [Includes and Remote Files](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [PDF Export](new-pdf-export.md)
++- [Using the Desktop App](new-desktop-app.md) · [Using the VS Code Extension](new-vscode-extension.md)
+diff --git a/docs/using-the-desktop-app.md b/docs/using-the-desktop-app.md
+deleted file mode 100644
+index bc4f571..0000000
+--- a/docs/using-the-desktop-app.md
++++ /dev/null
+@@ -1,177 +0,0 @@
+-# Using the Desktop App
+-
+-> Part of Calcpad.Web. This is the cross-platform Calcpad desktop application — separate from the standalone WPF Calcpad for Windows.
+-
+-The **Calcpad Desktop App** is a native application that wraps the same web editor used in the browser, packaged with a built-in calculation server. You get the full Monaco-based editor — multi-tab editing, syntax highlighting, autocomplete, live preview, and the CalcPad sidebar — plus native file dialogs, a native menu bar, and drag-and-drop, with no browser or separate server to manage.
+-
+-This page is a task-oriented guide. For the internal architecture, see [Calcpad Desktop App (reference)](new-desktop-app.md). For the Calcpad language itself, start with [Writing Math](writing-math.md) and the [Quick Reference](quick-reference.md).
+-
+-## Installing
+-
+-The app ships as a per-platform installer:
+-
+-| Platform | Installer |
+-|----------|-----------|
+-| Windows | `.exe` Portable .ZIP Build (no install) |
+-| Linux | `.AppImage` (run directly, no install)
+-
+-The .NET calculation server and its fonts/templates are bundled inside the app — you do **not** need .NET installed separately.
+-
+-For PDF export you need a **Chromium-based browser** (Chrome, Edge, or Chromium) installed on the system. On Linux the app will tell you which package to install if none is found — see [PDF Export](new-pdf-export.md).
+-
+-## Your first document
+-
+-1. Launch the app. It opens with an empty **Untitled-1** tab.
+-2. Type a calculation, for example:
+-
+-   ```calcpad
+-   "Cantilever tip deflection
+-   P = 5kN
+-   L = 3m
+-   E = 200GPa
+-   I = 8.5e-5m^4
+-   δ = P·L^3/(3·E·I)
+-   ```
+-
+-3. The **preview pane** renders your report live as you type. Toggle it from **View → Toggle Preview**.
+-4. Save with **Ctrl+S** (or **File → Save**). A native save dialog lets you choose the location.
+-
+-## Working with tabs
+-
+-The app uses VS Code-style tabs so you can keep several `.cpd` documents open at once.
+-
+-| Action | Shortcut |
+-|--------|----------|
+-| New tab | **Ctrl+T** or **Ctrl+N**, or the **`+`** button on the tab strip |
+-| Open a file | **File → Open…**, or drag a file onto the window |
+-| Close tab | **Ctrl+W**, the **✕** on the tab, or middle-click the tab |
+-| Next / previous tab | **Ctrl+Tab** / **Ctrl+Shift+Tab** |
+-| Jump to tab 1–8 | **Ctrl+1** … **Ctrl+8** |
+-| Jump to last tab | **Ctrl+9** |
+-
+-Tab behavior matches VS Code:
+-
+-- **Cursor and scroll position are remembered** per tab and restored when you switch back.
+-- **Unsaved changes** are marked with a dot on the tab; undoing back to the last saved state clears it.
+-- **Opening an already-open file** activates its existing tab instead of duplicating it.
+-- **Opening a file from an empty Untitled tab** replaces it in place rather than stacking a new tab.
+-- **Closing a tab with unsaved changes** prompts Save / Don't Save / Cancel. Quitting the app walks through every unsaved tab; cancel any prompt to abort the quit.
+-- Hover, definitions, references, the linter, the preview, and the TOC are all scoped to the active tab, so symbols and errors never bleed between unrelated documents.
+-
+-## Opening files
+-
+-There are several ways to open documents:
+-
+-- **File → Open…** — native file picker.
+-- **Drag and drop** — drop one or more files onto the editor; each opens in its own tab. Dropping plain text (e.g. from a browser) opens it as a new untitled tab.
+-- **Files tab** in the sidebar — open a folder and browse its tree.
+-- **Recent files** — tracked automatically and available from the File menu.
+-
+-## The editor
+-
+-The editor is the same Monaco-based editor described in the [VS Code extension guide](using-the-vscode-extension.md#the-editor), with the same behavior:
+-
+-- **Syntax highlighting** for numbers, units, operators, variables, functions, macros, keywords, commands, and embedded HTML/Markdown in comments.
+-- **Autocomplete** that prioritizes your own symbols over built-ins, with snippet placeholders for function arguments.
+-- **Quick-type symbols** — `~a` + space → `α`, `~p` + space → `π`, etc.
+-- **Operator replacement** — `<=` → `≤`, `>=` → `≥`, `!=` → `≠`.
+-- **Auto-indentation** for `#if` / `#for` / `#def` blocks.
+-- **Go to Definition**, **Find All References**, **Rename**, and **hover** for symbols across `#include` files.
+-
+-Two key behaviors worth knowing:
+-
+-- **Enter always inserts a newline** — it never accepts a suggestion. Press **Tab** to accept a completion.
+-- **Tab accepts suggestions** and triggers completion on a partial word.
+-
+-## The CalcPad sidebar
+-
+-Toggle the sidebar with **View → Toggle Sidebar**. It has a **Files** view and a **Calcpad** view; the Calcpad view is split into tabs (Insert, TOC, Settings, Variables, PDF, Formatting, Export, Errors).
+-
+-The sidebar is the same across every Calcpad front end — see **[The CalcPad Panel & Settings](calcpad-panel-and-settings.md)** for a full walkthrough of each tab, including Prettify options and the Export buttons.
+-
+-## Live preview
+-
+-The preview pane renders your report live and re-renders as you type. From **View** you can:
+-
+-- **Toggle Preview** — show/hide the pane.
+-- **Preview Mode: Wrapped** — the normal report view.
+-- **Preview Mode: Unwrapped** — the fully expanded source, with macros and includes resolved. Useful for debugging what the engine computes.
+-
+-### Manual run (Auto-Run off)
+-
+-By default the preview re-renders continuously as you type. If you turn **Settings → Auto-Run Preview** off, the preview only re-renders when:
+-
+-- The preview pane is first opened.
+-- You click **▶ Run** on the editor toolbar.
+-- You press **Ctrl+Alt+X**.
+-- You right-click in the editor → **Run Preview**.
+-- You use **Server → Refresh** in the native menu (same shortcut).
+-
+-A manual run also re-lints the document, refreshes definitions/TOC, and re-populates the Export tab's plot list — so long-running documents can be edited freely and only re-computed on demand.
+-
+-## Splitting the editor
+-
+-The **Split ⬓** button in the editor toolbar (also **View → Split Editor**) opens a second editor group stacked below the first. Each group has its own tabs, tab strip, preview iframe, and Problems markers. Click **Unsplit** (same button) to close the bottom group. The active group is the one that most recently had focus — hover, definitions, references, and preview sync target the active group.
+-
+-## Errors
+-
+-### Linter
+-Calcpad Web uses a linter to catch calculation errors before they are converted to HTML.These get highlighted in red, yellow, or blue at the problematic location based on the severity of the issue. These linting errors appear in the **Problems** panel and link to the offending line. 
+-
+-### Preview Errors
+-Errors that occur in the calculation engine (including inside hidden code) are listed in the **Errors** tab of the sidebar, each with a link to its source line.
+-
+-## Exporting
+-
+-All exports use the app's built-in server, so the output matches the preview exactly.
+-
+-| Output | How | Notes |
+-|--------|-----|-------|
+-| **PDF** | **File → Export PDF…** | Full-fidelity export via a native save dialog. Requires a Chromium browser — see [PDF Export](new-pdf-export.md). |
+-| **HTML** | **Save HTML…** on the sidebar's **Export** tab | Native save dialog writes standalone `.html`. |
+-| **Word (.docx)** | **Save Word…** on the sidebar's **Export** tab | Native save dialog writes `.docx` (converted via Calcpad.OpenXml). |
+-
+-Set the document title, timestamp format, page size, and header/footer in the sidebar's **PDF** tab before exporting. The **Save HTML…** and **Save Word…** buttons live on the **Export** tab, along with a **Plots** section that lists every plot the document produces so you can save each one individually or as a ZIP archive — see [The CalcPad Panel & Settings → Export](calcpad-panel-and-settings.md#export).
+-
+-## The native menu
+-
+-The menu bar drives the whole app:
+-
+-- **File** — New Tab · Open… · Save · Save As… · Close Tab · Export PDF… · Quit
+-- **Edit** — Undo · Redo · Cut · Copy · Paste · Select All · Find · Replace
+-- **View** — Toggle Sidebar · Toggle Preview · Split Editor · Preview Mode: Wrapped / Unwrapped
+-- **Server** — Refresh (Ctrl+Alt+X) · Show Server Log · Stop Server · Restart Server
+-- **Help** — Documentation (opens the docs site in your default browser)
+-
+-## Settings and configurations
+-
+-All calculation, plot, unit, theme, editor, and linter settings live in the **Settings** tab of the sidebar. The desktop app also supports **named configurations** — save different sets of settings (e.g. one for metric with 3 decimals, one for imperial with degrees) and switch the active configuration from the Settings tab; configurations persist between sessions.
+-
+-See **[The CalcPad Panel & Settings → Settings](calcpad-panel-and-settings.md#settings)** for the full list, and **[→ Formatting](calcpad-panel-and-settings.md#formatting-prettify)** for the Prettify options.
+-
+-## The built-in server
+-
+-The app runs a .NET calculation server bundled inside it. It starts automatically when the app launches and shuts down when the app closes — you never launch or configure it yourself.
+-
+-If calculations stop working, use the **Server** menu:
+-
+-- **Refresh** *(Ctrl+Alt+X)* — re-run the active document (re-lint, re-render previews, refresh plots and definitions).
+-- **Show Server Log** — open the server's log file to diagnose problems.
+-- **Stop Server** / **Restart Server** — cycle the server process.
+-
+-## Troubleshooting
+-
+-| Symptom | Fix |
+-|---------|-----|
+-| Preview blank or not updating | **Server → Refresh**, then **Server → Restart Server** if needed. Check **Server → Show Server Log**. |
+-| PDF export fails | Install a Chromium browser. On Linux the app names the package to install — see [PDF Export](new-pdf-export.md). |
+-| Unsaved work after a crash | The app writes backup copies of unsaved files; reopen them from the Files tab. |
+-| Symbols not found across files | Confirm the `#include` path resolves relative to the current document. |
+-
+-## See also
+-
+-- [The CalcPad Panel & Settings](calcpad-panel-and-settings.md) — the shared sidebar and all settings
+-- [Calcpad Desktop App (architecture reference)](new-desktop-app.md)
+-- [Using the VS Code Extension](using-the-vscode-extension.md)
+-- [PDF Export](new-pdf-export.md) · [Includes](new-includes.md) · [Table of Contents](new-table-of-contents.md)
+-- [Writing Math](writing-math.md) · [Quick Reference](quick-reference.md)
+diff --git a/docs/using-the-vscode-extension.md b/docs/using-the-vscode-extension.md
+deleted file mode 100644
+index 07be1a5..0000000
+--- a/docs/using-the-vscode-extension.md
++++ /dev/null
+@@ -1,219 +0,0 @@
+-# Using the VS Code Extension
+-
+-> Part of Calcpad.Web. Everything in this guide applies to the VS Code extension only — the standalone WPF desktop application is not affected.
+-
+-The **VS Code CalcPad** extension turns Visual Studio Code into a full Calcpad authoring environment. You write `.cpd` files with syntax highlighting, autocomplete, and inline error checking, then render them to a live HTML report and export to PDF, Word, or HTML — all driven by the same calculation engine as the rest of Calcpad.
+-
+-This page is a task-oriented guide. For a feature-by-feature reference, see [VS Code Extension (reference)](new-vscode-extension.md). For the Calcpad language itself, start with [Writing Math](writing-math.md) and the [Quick Reference](quick-reference.md).
+-
+-## Requirements
+-
+-- **Visual Studio Code** 1.82 or newer.
+-- **.NET runtime** on your PATH. The extension bundles a local Calcpad server that it launches automatically; it needs `dotnet` to run it. Verify with `dotnet --info` in a terminal.
+-- A **Chromium-based browser** (Chrome, Edge, Chromium) is required for PDF export. See [PDF Export](new-pdf-export.md) for details.
+-
+-## Installing the extension
+-
+-The extension is distributed as a `.vsix` package (it is not yet on the Marketplace).
+-
+-1. Obtain the `vscode-calcpad-<version>.vsix` file, or build it yourself from `Calcpad.Web/frontend/vscode-calcpad` with `npm run package:vsix`.
+-2. In VS Code, open the **Extensions** view (**Ctrl+Shift+X**).
+-3. Click the **⋯** menu at the top of the view → **Install from VSIX…** and select the file.
+-4. Reload the window if prompted.
+-
+-Alternatively, from a terminal: `code --install-extension vscode-calcpad-<version>.vsix`.
+-
+-## Your first document
+-
+-1. Create a new file and save it with a **`.cpd`** extension (for example `beam.cpd`). VS Code will detect the `calcpad` language automatically. The `.cpdz` binary format is also recognized.
+-2. Type a calculation, for example:
+-
+-   ```calcpad
+-   "Cantilever tip deflection
+-   P = 5kN
+-   L = 3m
+-   E = 200GPa
+-   I = 8.5e-5m^4
+-   δ = P·L^3/(3·E·I)
+-   ```
+-
+-3. Click the **CalcPad Preview** button in the editor's top-right toolbar, or run **CalcPad Preview** from the Command Palette (**Ctrl+Shift+P**).
+-
+-The preview opens in a side column and re-renders every time you edit. The bundled server starts automatically the first time you render — the first render may take a moment while it spins up.
+-
+-## The editor
+-
+-### Syntax highlighting
+-
+-`.cpd` files get semantic highlighting driven by the server: numbers, units, operators, variables, functions, macros, keywords, commands, file paths, and embedded HTML/Markdown/CSS/JS/SVG in comments are each colored distinctly. Highlighting updates per line as you type. Colors are set by the extension for both dark and light themes.
+-
+-The extension also sets a few editor defaults for `.cpd` files so the language behaves predictably:
+-
+-- The monospace font is **JuliaMono** (falls back to Cascadia Code / Consolas). Run **CalcPad: Install JuliaMono Font** from the Command Palette to install it if the glyphs look wrong.
+-- **Enter always inserts a newline** — it never accepts a suggestion. Press **Tab** to accept a completion instead.
+-- Bracket matching is always on; bracket-pair colorization is off (Calcpad colors brackets itself).
+-
+-### Autocomplete
+-
+-As you type, the completion list offers:
+-
+-- **Your own symbols first** — variables, functions, macros, and custom units defined in the current document (and its `#include` files) are prioritized above built-ins.
+-- **Built-in functions** with snippet placeholders — accept one and press **Tab** to jump between arguments.
+-- **Setting keys** (`decimals`, `degrees`, `complex`, `units`, `colorScale`, …) where a setting is expected.
+-- **Metadata keys** inside an HTML-comment block placed directly above a definition.
+-
+-### Quick-type symbols
+-
+-Type `~` followed by a key and press **space** to insert a Greek letter or math symbol. For example `~a` + space → `α`, `~p` + space → `π`, `~S` + space → `Σ`. The full set is provided by the server and shown in the **Insert** tab's Symbol Palette. Toggle this behavior with the `quickTyping` setting in the CalcPad **Settings** tab.
+-
+-### Operator replacement
+-
+-Typing ASCII operators auto-converts them to their Unicode equivalents: `<=` → `≤`, `>=` → `≥`, `!=` → `≠`. Multiplication and other operators follow Calcpad conventions as you type.
+-
+-### Auto-indentation
+-
+-Block keywords indent automatically: `#if` / `#else` / `#end if`, `#for` / `#end for`, and `#def` / `#end def`.
+-
+-### Formatting hotkeys
+-
+-When the cursor is in a `.cpd` file, these hotkeys wrap the selection in HTML or Markdown markup. Whether HTML or Markdown is emitted depends on the `commentFormat` setting (`auto` / `html` / `markdown`).
+-
+-| Keybinding | Effect |
+-|------------|--------|
+-| **Ctrl+B** | Bold |
+-| **Ctrl+I** | Italic |
+-| **Ctrl+U** | Underline |
+-| **Ctrl+=** | Subscript |
+-| **Ctrl+Shift+=** | Superscript |
+-| **Ctrl+1** … **Ctrl+6** | Headings 1–6 |
+-| **Ctrl+L** | Paragraph |
+-| **Ctrl+R** | Line break |
+-| **Ctrl+Shift+L** | Bulleted list |
+-| **Ctrl+Shift+N** | Numbered list |
+-| **Ctrl+Q** | Toggle `'` comment prefix |
+-| **Ctrl+Shift+Q** | Uncomment |
+-| **Ctrl+Shift+V** | Paste as comment (each line prefixed with `'`) |
+-
+-On macOS use **Cmd** instead of **Ctrl**. Turn the whole set off with the `enableFormattingHotkeys` setting if it conflicts with your other bindings.
+-
+-## Navigating symbols
+-
+-The extension provides IDE-grade navigation across variables, functions, macros, and custom units — including across `#include` files:
+-
+-| Action | Trigger |
+-|--------|---------|
+-| **Go to Definition** | **Ctrl+Click** or **F12** — jumps to the first assignment |
+-| **Find All References** | **Shift+Alt+F12**, or right-click → *Find All References* |
+-| **Rename Symbol** | **F2** — renames local occurrences only (not across `#include` files) |
+-| **Hover** | Point at a symbol for its signature, type, source file, and docs |
+-
+-Hovering over a built-in function shows its signature, description, return type, per-parameter documentation, and a runnable example.
+-
+-## The CalcPad panel
+-
+-Click the **CalcPad** icon in the activity bar (left edge) to open the panel. It has **Files** and **Calcpad** views, and the Calcpad view is organized into tabs (Insert, TOC, Settings, Variables, PDF, Formatting, Export, Errors). The view title bar has **CalcPad: Run Preview** (re-renders the active file and refreshes plots) and **Stop Server** buttons.
+-
+-The panel is the same across every Calcpad front end — see **[The CalcPad Panel & Settings](calcpad-panel-and-settings.md)** for a full walkthrough of each tab.
+-
+-## Live preview
+-
+-Two preview panels are available, each opening in its own editor column:
+-
+-| Panel | How to open |
+-|-------|-------------|
+-| **HTML Preview** | Preview button in the editor toolbar, or *CalcPad Preview* in the Command Palette |
+-| **Unwrapped Preview** | Eye button in the editor toolbar, or *CalcPad Preview Unwrapped* |
+-
+-The **Unwrapped** preview shows the fully expanded source (macros and includes resolved) — useful for debugging what the engine actually computes.
+-
+-Both panels:
+-
+-- Re-render automatically as you type when **Auto-Run Preview** is on (default).
+-- Follow the `previewTheme` setting (`light` / `dark` / `system`), using `darkBackground` for the dark background color.
+-- Embed local images as base64 so PDF/print output matches the preview.
+-
+-Right-click a preview → **View Webview Source HTML** to inspect the rendered markup (also available as *CalcPad: View Webview Source HTML*).
+-
+-### Manual run (Auto-Run off)
+-
+-When you turn **Settings → Auto-Run Preview** off, typing no longer re-renders the preview. You trigger the run yourself via any of:
+-
+-- **Ctrl+Alt+X** (works whenever a `.cpd` or plaintext editor has focus)
+-- Right-click in the editor → **CalcPad: Run Preview**
+-- The **CalcPad: Run Preview** button in the CalcPad sidebar's view title bar
+-- The *CalcPad: Run Preview* command in the Command Palette
+-
+-Running also re-lints the document, refreshes semantic tokens, and refreshes the Export tab's plot list.
+-
+-## Errors and diagnostics
+-
+-Calcpad errors surface in VS Code's **Problems** panel (**Ctrl+Shift+M**) as standard diagnostics with Error / Warning / Information severities. Click one to jump to the offending line. The minimum severity shown is controlled by the linter minimum-severity setting.
+-
+-For errors that occur inside hidden (`#hide`) regions — which don't appear in the preview — use the **Errors** tab in the sidebar to see the full list with source-line links.
+-
+-## Exporting
+-
+-All exports run through the same backend conversion pipeline as the preview, so what you see is what you get.
+-
+-| Output | How | Notes |
+-|--------|-----|-------|
+-| **PDF** | **Export CalcPad to PDF** button in the editor toolbar, or *Export CalcPad to PDF* | Full-fidelity export with a native save dialog. Requires a Chromium browser — see [PDF Export](new-pdf-export.md). |
+-| **PDF (print style)** | Right-click editor → *Print CalcPad Preview to PDF* | Generated from the live webview. |
+-| **HTML** | **Save HTML…** on the sidebar's **Export** tab, or *CalcPad: Save Source HTML…* | Renders and saves standalone HTML via a native dialog. |
+-| **Word (.docx)** | **Save Word…** on the sidebar's **Export** tab, or *CalcPad: Save as Word Document…* | Renders, then converts to Word via Calcpad.OpenXml. |
+-
+-Use the **PDF** tab in the panel to set the document title, timestamp format, page size, and header/footer before exporting. The **Save HTML…** and **Save Word…** buttons live on the panel's **Export** tab, along with the **Plots** section — a thumbnail list of every plot the document emits, each with an individual **Save…** button and a **Download all (ZIP)** button. See [The CalcPad Panel & Settings → Export](calcpad-panel-and-settings.md#export).
+-
+-## Settings
+-
+-All Calcpad settings — math, plot, units, preview and color themes, editor features, linter severity, library path, and named configurations — live in the **Settings** tab of the CalcPad panel, **not** in VS Code's normal settings editor. Editing them there keeps them in sync with the extension and the server.
+-
+-See **[The CalcPad Panel & Settings → Settings](calcpad-panel-and-settings.md#settings)** for the full list.
+-
+-## Path completion for includes and data files
+-
+-When you type a path after `#include`, `#read`, `#write`, or `#append`, the extension completes filenames from the workspace and from your configured library path:
+-
+-- `#include`: `.cpd`, `.txt`
+-- `#read` / `#write` / `#append`: `.cpd`, `.txt`, `.csv`, `.tsv`, `.xlsx`, `.xlsm`, `.xls`
+-- Both `/` and `\` separators work, and it drills into subdirectories.
+-- Environment variables expand: `%VAR%` on Windows, `$VAR` on POSIX.
+-
+-## The bundled server
+-
+-The extension runs a local Calcpad server to do all conversion and linting. You don't normally need to think about it:
+-
+-- It **starts automatically** in the background when the extension activates.
+-- It **auto-restarts** on a crash (up to 3 retries) before asking you to refresh manually.
+-- It **shuts down cleanly** when the window closes.
+-
+-If something goes wrong, use **Stop CalcPad Server** and then **Refresh Document** to restart it. The server mode (`auto` / `local` / `remote`), URL (default `http://localhost:9420`), and `dotnet` path are configurable if you need a custom setup.
+-
+-### Output channels for troubleshooting
+-
+-Four VS Code output channels help diagnose problems (open the Output panel and pick from the dropdown):
+-
+-| Channel | Shows |
+-|---------|-------|
+-| **CalcPad Extension** | Extension lifecycle, commands, errors |
+-| **Calcpad Output HTML** | Rendered HTML diagnostics |
+-| **Calcpad Webview Console** | `console.log` from preview webviews |
+-| **CalcPad Server Debug** | stdout/stderr from the server process |
+-
+-## Troubleshooting
+-
+-| Symptom | Fix |
+-|---------|-----|
+-| Preview never renders / "server not ready" | Confirm `dotnet --info` works. Then **Stop CalcPad Server** → **Refresh Document**. Check the **CalcPad Server Debug** output channel. |
+-| PDF export fails | Install a Chromium browser (Chrome/Edge/Chromium). See [PDF Export](new-pdf-export.md). |
+-| Greek letters / symbols render as boxes | Run **CalcPad: Install JuliaMono Font** and reload. |
+-| Symbols not found across files | Confirm the `#include` path resolves; set the library path if the file lives in a shared folder. |
+-| Formatting hotkeys conflict with other bindings | Disable `enableFormattingHotkeys` in the Settings tab. |
+-
+-## See also
+-
+-- [The CalcPad Panel & Settings](calcpad-panel-and-settings.md) — the shared sidebar and all settings
+-- [VS Code Extension (feature reference)](new-vscode-extension.md)
+-- [Using the Desktop App](using-the-desktop-app.md)
+-- [PDF Export](new-pdf-export.md) · [Includes](new-includes.md) · [Linter](new-linter.md) · [Table of Contents](new-table-of-contents.md)
+-- [Writing Math](writing-math.md) · [Quick Reference](quick-reference.md)
+diff --git a/mkdocs.yml b/mkdocs.yml
+index efd8c41..b8673be 100644
+--- a/mkdocs.yml
++++ b/mkdocs.yml
+@@ -57,12 +57,14 @@ nav:
+     - Matrices: matrices.md
+     - High Performance Functions: high-performance-vectors-and-matrices.md
+   - New Apps and Features (beta):
+-    - Using the VS Code Extension: using-the-vscode-extension.md
+-    - Using the Desktop App: using-the-desktop-app.md
+-    - The CalcPad Panel & Settings: calcpad-panel-and-settings.md
+-    - VS Code Extension (reference): new-vscode-extension.md
+-    - Desktop App (reference): new-desktop-app.md
++    - VS Code Extension: new-vscode-extension.md
++    - Desktop App: new-desktop-app.md
++    - The CalcPad Panel & Settings: new-calcpad-panel-and-settings.md
+     - PDF Export: new-pdf-export.md
++    - Includes and Remote Files: new-includes.md
++    - Linter and Diagnostics: new-linter.md
++    - Table of Contents: new-table-of-contents.md
++    - Running the Server: new-web-deployment.md
+   - Quick Reference:
+     - quick-reference.md
+ 

@@ -9,6 +9,7 @@ export interface MetadataCommentData {
     desc?: string;
     paramTypes?: string[];
     paramDesc?: string[];
+    returnType?: string;
     settings?: Record<string, string | number | boolean>;
     LintIgnore?: string[];
     EndLintIgnore?: string[];
@@ -30,7 +31,16 @@ export interface MetadataCommentBlock {
     valid: boolean;
     /** Which properties actually apply to this line; set by the host. */
     context?: MetadataLineContext;
+    /**
+     * True when no comment exists yet and this block is a synthetic template for
+     * the definition under the cursor. Applying it inserts a new line rather than
+     * replacing {@link line}.
+     */
+    isNew?: boolean;
 }
+
+/** Kind of definition a metadata comment documents, or null when none follows. */
+export type MetadataDefKind = 'variable' | 'function' | 'macro' | null;
 
 /**
  * Describes which metadata properties are meaningful for a comment line, based
@@ -43,6 +53,13 @@ export interface MetadataLineContext {
      * no definition follows the comment.
      */
     paramCount: number | null;
+    /**
+     * Kind of definition the comment documents. Drives which fields the panel
+     * offers: variables get no parameter fields, functions and macros each get
+     * their own parameter-type vocabulary, and null lines only get the generic
+     * (settings, lint) fields.
+     */
+    defKind: MetadataDefKind;
     /** True when a definition (any kind) follows the comment. */
     hasDefinition: boolean;
     /** True when an unclosed LintIgnore region is open at this line. */
@@ -227,45 +244,63 @@ export function serializeMetadataComment(data: MetadataCommentData, indent = '',
     return `${indent}'<!--${JSON.stringify(clean)}-->${trailingQuote}`;
 }
 
-/**
- * Classify a definition line for metadata purposes. Returns the parameter count
- * for a function (`f(x;y)=`) or macro (`#def m$(a$;b$)`) definition, 0 for a
- * plain variable/custom-unit definition (`name = …`), or null when the line
- * isn't a recognizable definition.
- */
-export function parseDefinitionParamCount(text: string): number | null {
-    const trimmed = text.trimStart();
-
-    const macro = trimmed.match(/^#def\s+[A-Za-z_]\w*\$\s*(?:\(([^)]*)\))?/);
-    if (macro) return countParams(macro[1]);
-
-    const func = trimmed.match(/^[A-Za-z_]\w*\s*\(([^)]*)\)\s*=/);
-    if (func) return countParams(func[1]);
-
-    if (/^[A-Za-z_][\w.]*\s*=/.test(trimmed)) return 0;
-
-    return null;
+/** A recognized definition line and how many parameters it declares. */
+export interface MetadataDefinition {
+    kind: Exclude<MetadataDefKind, null>;
+    paramCount: number;
 }
 
-function countParams(inner: string | undefined): number {
-    if (!inner || inner.trim() === '') return 0;
-    return inner.split(';').filter(p => p.trim() !== '').length;
+/**
+ * Resolves the definition declared on a 0-based document line, or null when the
+ * line isn't a definition. Backed by real highlighter results (see
+ * {@link buildDefinitionResolver}) so identifier rules — Unicode names, custom
+ * units, command-block functions — match the engine exactly.
+ */
+export type DefinitionResolver = (lineIndex: number) => MetadataDefinition | null;
+
+/**
+ * Build a {@link DefinitionResolver} from the highlighter's definitions response.
+ * Only local definitions are indexed (included files live on other lines). Custom
+ * units are reported as variables, matching how the metadata panel treats them.
+ */
+export function buildDefinitionResolver(definitions: {
+    functions: { lineNumber: number; parameters?: string[]; source?: string }[];
+    macros: { lineNumber: number; parameters?: string[]; source?: string }[];
+    variables: { lineNumber: number; source?: string }[];
+    customUnits: { lineNumber: number; source?: string }[];
+}): DefinitionResolver {
+    const byLine = new Map<number, MetadataDefinition>();
+    const isLocal = (source?: string) => source === undefined || source === 'local';
+    for (const v of definitions.variables)
+        if (isLocal(v.source)) byLine.set(v.lineNumber, { kind: 'variable', paramCount: 0 });
+    for (const u of definitions.customUnits)
+        if (isLocal(u.source)) byLine.set(u.lineNumber, { kind: 'variable', paramCount: 0 });
+    for (const f of definitions.functions)
+        if (isLocal(f.source)) byLine.set(f.lineNumber, { kind: 'function', paramCount: f.parameters?.length ?? 0 });
+    for (const m of definitions.macros)
+        if (isLocal(m.source)) byLine.set(m.lineNumber, { kind: 'macro', paramCount: m.parameters?.length ?? 0 });
+    return (lineIndex: number) => byLine.get(lineIndex) ?? null;
 }
 
 /**
  * Analyze which metadata properties apply to a comment on the given line by
  * inspecting the document around it: the definition it documents (the next
  * non-blank, non-comment line) and whether a LintIgnore region opened earlier
- * is still open here.
+ * is still open here. The definition kind/param-count come from real highlighter
+ * results via {@link resolveDefinition}, not from parsing the line text.
  */
-export function analyzeMetadataLine(lines: string[], commentLine: number): MetadataLineContext {
-    let paramCount: number | null = null;
+export function analyzeMetadataLine(
+    lines: string[],
+    commentLine: number,
+    resolveDefinition: DefinitionResolver,
+): MetadataLineContext {
+    let definition: MetadataDefinition | null = null;
     for (let i = commentLine + 1; i < lines.length; i++) {
         const t = lines[i].trim();
         if (t === '') continue;
         // Skip stacked comment/metadata lines above the definition.
         if (t.startsWith("'") || t.startsWith('"')) continue;
-        paramCount = parseDefinitionParamCount(lines[i]);
+        definition = resolveDefinition(i);
         break;
     }
 
@@ -277,5 +312,55 @@ export function analyzeMetadataLine(lines: string[], commentLine: number): Metad
         if (block.data.LintIgnore !== undefined) insideOpenLintRegion = true;
     }
 
-    return { paramCount, hasDefinition: paramCount !== null, insideOpenLintRegion };
+    return {
+        paramCount: definition?.paramCount ?? null,
+        defKind: definition?.kind ?? null,
+        hasDefinition: definition !== null,
+        insideOpenLintRegion,
+    };
+}
+
+/**
+ * Resolve the metadata comment the panel should edit for the cursor line.
+ * Returns the existing comment when the cursor sits on it or on a definition it
+ * documents. When the cursor is on a definition with no comment yet, returns a
+ * synthetic {@link MetadataCommentBlock} (isNew) describing the comment that
+ * Apply would create above that definition, so the panel can surface the
+ * relevant fields immediately. Returns null when the cursor is on neither a
+ * metadata comment nor a definition.
+ */
+export function computeMetadataBlock(
+    lines: string[],
+    cursorLine: number,
+    resolveDefinition: DefinitionResolver,
+): MetadataCommentBlock | null {
+    const existing = findMetadataCommentBlock(lines, cursorLine);
+    if (existing) {
+        existing.context = analyzeMetadataLine(lines, cursorLine, resolveDefinition);
+        return existing;
+    }
+
+    if (cursorLine < 0 || cursorLine >= lines.length) return null;
+    if (!resolveDefinition(cursorLine)) return null;
+
+    // A metadata comment directly above the definition takes precedence.
+    if (cursorLine > 0) {
+        const above = findMetadataCommentBlock(lines, cursorLine - 1);
+        if (above) {
+            above.context = analyzeMetadataLine(lines, cursorLine - 1, resolveDefinition);
+            return above;
+        }
+    }
+
+    const indent = lines[cursorLine].match(/^[ \t]*/)?.[0] ?? '';
+    return {
+        line: cursorLine,
+        indent,
+        trailingQuote: '',
+        rawJson: '',
+        data: {},
+        valid: true,
+        isNew: true,
+        context: analyzeMetadataLine(lines, cursorLine - 1, resolveDefinition),
+    };
 }

@@ -16,6 +16,7 @@ import { openPath } from '@tauri-apps/plugin-opener';
 import { Store } from '@tauri-apps/plugin-store';
 import { platform } from '@tauri-apps/plugin-os';
 import { BaseMessageBridge, type ExportRequest } from 'calcpad-frontend/services/message-bridge/base';
+import { getActiveDocumentKey } from '../editor/bridge';
 import {
     getDefaultSettings,
     getDefaultExtras,
@@ -337,6 +338,10 @@ export class TauriMessageBridge extends BaseMessageBridge {
 
     protected getVariablesOrigin(): string {
         return 'desktop-editor';
+    }
+
+    protected getActiveDefinitions() {
+        return this.definitionsService.getCachedDefinitions(getActiveDocumentKey());
     }
 
     protected async buildSettingsResponseExtras(): Promise<Record<string, unknown>> {

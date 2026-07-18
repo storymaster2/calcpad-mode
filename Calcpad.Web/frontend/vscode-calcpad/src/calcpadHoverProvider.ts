@@ -169,6 +169,10 @@ export class CalcpadHoverProvider implements vscode.HoverProvider {
             md.appendMarkdown(`Source: \`${unit.sourceFile}\`\n\n`);
         }
 
+        if (unit.description) {
+            md.appendMarkdown(unit.description + '\n\n');
+        }
+
         return md;
     }
 

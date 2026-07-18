@@ -61,7 +61,7 @@ nav:
     - Desktop App: new-desktop-app.md
     - The CalcPad Panel & Settings: new-calcpad-panel-and-settings.md
     - PDF Export: new-pdf-export.md
-    - Includes and Remote Files: new-includes.md
+    - Includes and File Reads: new-includes.md
     - Linter and Diagnostics: new-linter.md
     - Table of Contents: new-table-of-contents.md
     - Running the Server: new-web-deployment.md

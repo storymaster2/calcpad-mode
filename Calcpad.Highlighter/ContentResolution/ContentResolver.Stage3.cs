@@ -210,7 +210,8 @@ namespace Calcpad.Highlighter.ContentResolution
             // Register custom units first (they can be used in expressions)
             foreach (var unit in customUnits)
             {
-                typeTracker.RegisterCustomUnit(unit.Name, unit.Definition, unit.LineNumber, 0, unit.Source);
+                var unitInfo = typeTracker.RegisterCustomUnit(unit.Name, unit.Definition, unit.LineNumber, 0, unit.Source);
+                unitInfo.Description = unit.Description;
             }
 
             // Register functions
@@ -238,6 +239,11 @@ namespace Calcpad.Highlighter.ContentResolution
                 info.Description = func.Description;
                 info.ParamTypes = func.ParamTypes;
                 info.ParamDescriptions = func.ParamDescriptions;
+
+                // A declared return type in the metadata comment overrides inference.
+                var declaredReturn = DefinitionMetadata.ParseFunctionReturnType(func.ReturnType);
+                if (declaredReturn.HasValue)
+                    info.ReturnType = declaredReturn.Value;
             }
 
             // Register macros

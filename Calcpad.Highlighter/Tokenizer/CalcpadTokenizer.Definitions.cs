@@ -79,7 +79,14 @@ namespace Calcpad.Highlighter.Tokenizer
             // While capturing expression, no lint-specific processing needed
             // (the expression is extracted from line text at finalization)
             if (_lintCapturingExpression)
+            {
+                // A comment delimiter (' or ") ends the current code region. Finalize the
+                // pending definition now so a subsequent definition after the comment closes
+                // (e.g. A(x) = ...' text 'A_1(x) = ...) can be captured as its own definition.
+                if (type >= TokenType.Comment && type <= TokenType.Svg)
+                    EmitPendingDefinitionLint();
                 return;
+            }
 
             switch (type)
             {
@@ -181,69 +188,7 @@ namespace Calcpad.Highlighter.Tokenizer
         /// </summary>
         private void FinalizeLineLint()
         {
-            bool producedDefinition = false;
-
-            // Finalize expression capture
-            if (_lintCapturingExpression && _lintDefName != null)
-            {
-                var expression = ExtractExpressionFromLine(_lintDefLineText.Span, _lintExpressionStartColumn);
-                var sourceInfo = GetSourceInfo(_lintDefNameLine);
-
-                if (_lintDefIsCustomUnit)
-                {
-                    _result.CustomUnitDefinitions.Add(new CustomUnitDefinition
-                    {
-                        Name = _lintDefName,
-                        Definition = expression,
-                        LineNumber = _lintDefNameLine,
-                        Source = sourceInfo.Source,
-                        SourceFile = sourceInfo.SourceFile
-                    });
-                    producedDefinition = true;
-                }
-                else if (_lintDefIsFunction)
-                {
-                    var funcParams = _lintDefFunctionParams ?? new List<string>();
-                    var funcDef = new FunctionDefinition
-                    {
-                        Name = _lintDefName,
-                        Params = funcParams,
-                        LineNumber = _lintDefNameLine,
-                        Source = sourceInfo.Source,
-                        SourceFile = sourceInfo.SourceFile,
-                        Expression = expression,
-                        IsConst = _lintDefIsConst,
-                        Description = _lintPendingMetadata?.Description,
-                        ParamTypes = _lintPendingMetadata?.ParamTypes,
-                        ParamDescriptions = _lintPendingMetadata?.ParamDescriptions
-                    };
-
-                    // Detect command block pattern in expression
-                    var commandBlock = DetectCommandBlock(expression, funcDef);
-                    if (commandBlock != null)
-                    {
-                        funcDef.CommandBlock = commandBlock;
-                        _result.CommandBlockFunctions[_lintDefName] = commandBlock;
-                    }
-
-                    _result.FunctionDefinitions.Add(funcDef);
-                    producedDefinition = true;
-                }
-                else
-                {
-                    _result.VariableDefinitions.Add(new VariableDefinition
-                    {
-                        Name = _lintDefName,
-                        Definition = expression,
-                        LineNumber = _lintDefNameLine,
-                        Source = sourceInfo.Source,
-                        SourceFile = sourceInfo.SourceFile,
-                        IsConst = _lintDefIsConst,
-                        Description = _lintPendingMetadata?.Description
-                    });
-                    producedDefinition = true;
-                }
-            }
+            bool producedDefinition = EmitPendingDefinitionLint();
 
             // Finalize #read variable (no = on the line, so not captured by expression)
             if (_lintPendingReadVariableName != null)
@@ -284,6 +229,79 @@ namespace Calcpad.Highlighter.Tokenizer
             }
 
             // Reset all lint line state
+            _lintPendingIsConst = false;
+            _lintExpectingReadVariable = false;
+            _lintPendingReadVariableName = null;
+        }
+
+        /// <summary>
+        /// Emits the currently captured definition (if any) to the result and clears the
+        /// capture state so a subsequent definition on the same line can be captured.
+        /// Called at comment boundaries (' or ") and at end of line. Returns true if a
+        /// definition was emitted.
+        /// </summary>
+        private bool EmitPendingDefinitionLint()
+        {
+            if (!_lintCapturingExpression || _lintDefName == null)
+                return false;
+
+            var expression = ExtractExpressionFromLine(_lintDefLineText.Span, _lintExpressionStartColumn);
+            var sourceInfo = GetSourceInfo(_lintDefNameLine);
+
+            if (_lintDefIsCustomUnit)
+            {
+                _result.CustomUnitDefinitions.Add(new CustomUnitDefinition
+                {
+                    Name = _lintDefName,
+                    Definition = expression,
+                    LineNumber = _lintDefNameLine,
+                    Source = sourceInfo.Source,
+                    SourceFile = sourceInfo.SourceFile,
+                    Description = _lintPendingMetadata?.Description
+                });
+            }
+            else if (_lintDefIsFunction)
+            {
+                var funcParams = _lintDefFunctionParams ?? new List<string>();
+                var funcDef = new FunctionDefinition
+                {
+                    Name = _lintDefName,
+                    Params = funcParams,
+                    LineNumber = _lintDefNameLine,
+                    Source = sourceInfo.Source,
+                    SourceFile = sourceInfo.SourceFile,
+                    Expression = expression,
+                    IsConst = _lintDefIsConst,
+                    Description = _lintPendingMetadata?.Description,
+                    ParamTypes = _lintPendingMetadata?.ParamTypes,
+                    ParamDescriptions = _lintPendingMetadata?.ParamDescriptions,
+                    ReturnType = _lintPendingMetadata?.ReturnType
+                };
+
+                // Detect command block pattern in expression
+                var commandBlock = DetectCommandBlock(expression, funcDef);
+                if (commandBlock != null)
+                {
+                    funcDef.CommandBlock = commandBlock;
+                    _result.CommandBlockFunctions[_lintDefName] = commandBlock;
+                }
+
+                _result.FunctionDefinitions.Add(funcDef);
+            }
+            else
+            {
+                _result.VariableDefinitions.Add(new VariableDefinition
+                {
+                    Name = _lintDefName,
+                    Definition = expression,
+                    LineNumber = _lintDefNameLine,
+                    Source = sourceInfo.Source,
+                    SourceFile = sourceInfo.SourceFile,
+                    IsConst = _lintDefIsConst,
+                    Description = _lintPendingMetadata?.Description
+                });
+            }
+
             _lintCapturingExpression = false;
             _lintDefName = null;
             _lintDefNameLine = -1;
@@ -291,9 +309,7 @@ namespace Calcpad.Highlighter.Tokenizer
             _lintDefIsCustomUnit = false;
             _lintDefFunctionParams = null;
             _lintDefIsConst = false;
-            _lintPendingIsConst = false;
-            _lintExpectingReadVariable = false;
-            _lintPendingReadVariableName = null;
+            return true;
         }
 
         /// <summary>

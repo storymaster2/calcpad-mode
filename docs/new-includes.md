@@ -1,8 +1,8 @@
-# Includes and Remote Files
+# Includes and File Reads
 
 > Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
 
-`#include` and `#read` let you pull in other files, and both can follow chains of files and load content straight from a web URL.
+`#include` and `#read` let you pull in other files, and both can follow chains of files.
 
 ## Reusing code with `#include`
 
@@ -19,18 +19,6 @@ An included file can include others in turn, and those can include more — the 
 - **Circular includes are safe.** If a file ends up including itself (directly or through another file), the repeat is skipped instead of looping forever. Filenames are matched case-insensitively.
 - **There's a depth limit.** Include chains can go up to 20 levels deep; beyond that, the include is skipped and a comment is left in its place noting the file that couldn't be included.
 
-## Loading from a URL
-
-Both `#include` and `#read` accept an `http://` or `https://` address, so you can pull shared calculations or data straight from the web:
-
-```text
-#include "https://example.com/shared-calcs.cpd"
-```
-
-- Only `http://` and `https://` addresses are accepted.
-- Requests time out after 10 seconds by default.
-- If the server returns an error, Calcpad reports the status code so you can tell what went wrong.
-
 ## `#include` vs `#read`
 
 Both bring in outside content, but they do different jobs:
@@ -40,7 +28,6 @@ Both bring in outside content, but they do different jobs:
 | What it brings in | Calcpad source code | Data (CSV, TSV, Excel, JSON) |
 | When it happens | At parse time — the source is inlined | At run time — the data is loaded into a variable |
 | Result | The included code becomes part of your document | You get a matrix or vector variable to compute with |
-| Works with URLs | Yes | Yes |
 
 ## Errors point to the right place
 

@@ -237,8 +237,11 @@ const tabs = computed<Tab[]>(() => {
     { id: 'export', label: 'Export' },
     { id: 'errors', label: 'Errors' }
   ]
-  // The metadata comment editor is driven by VS Code cursor tracking.
-  if (props.versionConfig.isVSCode) base.push({ id: 'metadata', label: 'Metadata' })
+  // The metadata comment editor is driven by editor cursor tracking, available
+  // in the VS Code webview and the desktop app (both host a real editor).
+  if (props.versionConfig.isVSCode || props.versionConfig.isDesktop) {
+    base.push({ id: 'metadata', label: 'Metadata' })
+  }
   return base
 })
 
@@ -514,6 +517,7 @@ const handleApplyMetadata = (data: MetadataCommentData) => {
     line: metadataBlock.value.line,
     indent: metadataBlock.value.indent,
     trailingQuote: metadataBlock.value.trailingQuote,
+    isNew: metadataBlock.value.isNew,
     data
   })
 }

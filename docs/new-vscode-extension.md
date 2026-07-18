@@ -212,5 +212,5 @@ Four VS Code output channels help diagnose problems (open the Output panel and p
 
 - [The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md) — the shared sidebar and all settings
 - [Using the Desktop App](new-desktop-app.md)
-- [PDF Export](new-pdf-export.md) · [Includes and Remote Files](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [Table of Contents](new-table-of-contents.md)
+- [PDF Export](new-pdf-export.md) · [Includes and File Reads](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [Table of Contents](new-table-of-contents.md)
 - [Writing Math](writing-math.md) · [Quick Reference](quick-reference.md)

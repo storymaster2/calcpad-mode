@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { parseHeadings, DEFAULT_PDF_SETTINGS, extractPlotsFromHtml, buildZip, serializeMetadataComment, findMetadataCommentBlock, analyzeMetadataLine } from 'calcpad-frontend';
-import type { CalcpadError, ExtractedPlot, MetadataCommentBlock, MetadataCommentData } from 'calcpad-frontend';
+import { parseHeadings, DEFAULT_PDF_SETTINGS, extractPlotsFromHtml, buildZip, serializeMetadataComment, findMetadataCommentBlock, analyzeMetadataLine, computeMetadataBlock, buildDefinitionResolver } from 'calcpad-frontend';
+import type { CalcpadError, ExtractedPlot, MetadataCommentBlock, MetadataCommentData, DefinitionResolver, DefinitionsResponse } from 'calcpad-frontend';
 import { CalcpadSettingsManager } from './calcpadSettings';
 import { CalcpadInsertManager } from './calcpadInsertManager';
 
@@ -21,6 +21,8 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
     public getSourceEditor?: () => vscode.TextEditor | undefined;
     public onPreviewThemeChanged?: () => void | Promise<void>;
     public onSettingsChanged?: () => void | Promise<void>;
+    /** Real highlighter definitions for a document URI, used to resolve metadata context. */
+    public getDefinitions?: (documentUri: string) => DefinitionsResponse | undefined;
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
@@ -508,9 +510,13 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         }
         const lines = editor.document.getText().split(/\r?\n/);
         const line = editor.selection.active.line;
-        const block = findMetadataCommentBlock(lines, line);
-        if (block) block.context = analyzeMetadataLine(lines, line);
-        return block;
+        return computeMetadataBlock(lines, line, this._definitionResolver(editor.document.uri.toString()));
+    }
+
+    /** Definition resolver over a document's real highlighter results. */
+    private _definitionResolver(documentUri: string): DefinitionResolver {
+        const defs = this.getDefinitions?.(documentUri);
+        return buildDefinitionResolver(defs ?? { functions: [], macros: [], variables: [], customUnits: [] });
     }
 
     /** Ask the panel to switch to a given tab id. */
@@ -528,16 +534,27 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         indent?: string;
         trailingQuote?: string;
         data: MetadataCommentData;
+        isNew?: boolean;
     }): Promise<void> {
         const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
         if (!editor || typeof data.line !== 'number') return;
         if (data.line < 0 || data.line >= editor.document.lineCount) return;
 
         const newText = serializeMetadataComment(data.data, data.indent ?? '', data.trailingQuote ?? '');
-        const lineRange = editor.document.lineAt(data.line).range;
         await editor.edit(editBuilder => {
-            editBuilder.replace(lineRange, newText);
+            if (data.isNew) {
+                editBuilder.insert(new vscode.Position(data.line, 0), newText + '\n');
+            } else {
+                editBuilder.replace(editor.document.lineAt(data.line).range, newText);
+            }
         });
+
+        // Re-emit context for the persisted comment so a repeated Apply edits it
+        // in place instead of inserting a duplicate.
+        const lines = editor.document.getText().split(/\r?\n/);
+        const block = findMetadataCommentBlock(lines, data.line);
+        if (block) block.context = analyzeMetadataLine(lines, data.line, this._definitionResolver(editor.document.uri.toString()));
+        this.updateMetadataContext(block);
     }
 
     public dispose() {

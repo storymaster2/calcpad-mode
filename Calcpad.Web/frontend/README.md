@@ -115,7 +115,7 @@ All frontends import `calcpad-frontend` as a local dependency and communicate wi
 ### Language
 
 - **Inline Macros** (`#def`) with parameter substitution
-- **Recursive Includes** with cycle detection, remote URLs, and API route support
+- **Recursive Includes** with cycle detection
 - **Table of Contents** generated from heading comments
 
 ### Editing Aids

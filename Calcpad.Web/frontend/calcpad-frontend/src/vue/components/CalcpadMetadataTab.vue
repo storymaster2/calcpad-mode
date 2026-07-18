@@ -4,9 +4,11 @@
       <h3 class="section-title">Metadata Comment</h3>
 
       <p v-if="!block" class="section-desc">
-        Place the cursor inside a metadata comment
-        (<code>'&lt;!--{ … }--&gt;</code>) above a definition, or right-click a
-        line and choose <em>Edit Metadata Properties</em>.
+        Place the cursor on a definition — a variable, function, macro, or custom
+        unit — to edit its metadata comment
+        (<code>'&lt;!--{ … }--&gt;</code>), or inside an existing comment to edit
+        settings and lint-ignore markers. The fields shown adapt to what the
+        cursor sits on; <em>Apply</em> creates the comment if none exists yet.
       </p>
 
       <template v-else>
@@ -15,7 +17,7 @@
           values below.
         </p>
 
-        <div class="field">
+        <div v-if="showDesc" class="field">
           <label>Description</label>
           <textarea
             v-model="model.desc"
@@ -29,10 +31,10 @@
           <div v-for="(_, i) in model.paramTypes" :key="'pt' + i" class="list-row">
             <select v-model="model.paramTypes[i]">
               <option value="">(none)</option>
-              <optgroup label="Function">
+              <optgroup v-if="showFunctionTypes" label="Function">
                 <option v-for="t in functionTypes" :key="t" :value="t">{{ t }}</option>
               </optgroup>
-              <optgroup label="Macro (TokenType)">
+              <optgroup v-if="showMacroTypes" label="Macro (TokenType)">
                 <option v-for="t in macroTypes" :key="t" :value="t">{{ t }}</option>
               </optgroup>
             </select>
@@ -50,7 +52,15 @@
           <button class="add-button" @click="model.paramDesc.push('')">+ Add description</button>
         </div>
 
-        <div class="field">
+        <div v-if="showReturnType" class="field">
+          <label>Return type</label>
+          <select v-model="model.returnType">
+            <option value="">(none)</option>
+            <option v-for="t in functionTypes" :key="t" :value="t">{{ t }}</option>
+          </select>
+        </div>
+
+        <div v-if="showSettings" class="field">
           <label>Settings overrides</label>
           <div v-for="(row, i) in model.settings" :key="'s' + i" class="list-row">
             <select v-model="row.key" @change="onSettingKeyChange(row)">
@@ -74,7 +84,7 @@
           <button class="add-button" @click="model.settings.push({ key: '', value: '' })">+ Add setting</button>
         </div>
 
-        <div class="field">
+        <div v-if="showLint" class="field">
           <label>Lint ignore</label>
 
           <div class="sub-row">
@@ -120,6 +130,19 @@
           </template>
         </div>
 
+        <div v-if="addableFields.length" class="field add-field">
+          <label>Add field</label>
+          <div class="sub-row">
+            <select
+              class="add-field-select"
+              @change="addField(($event.target as HTMLSelectElement).value); ($event.target as HTMLSelectElement).value = ''"
+            >
+              <option value="">(select a field to add…)</option>
+              <option v-for="f in addableFields" :key="f.id" :value="f.id">{{ f.label }}</option>
+            </select>
+          </div>
+        </div>
+
         <div class="actions">
           <button class="primary-button" @click="onApply">Apply</button>
           <button class="secondary-button" @click="populate">Reset</button>
@@ -137,7 +160,7 @@ import {
   METADATA_SETTINGS_KEYS,
   LINT_CODES,
 } from '../../text/metadata-comment'
-import type { MetadataCommentBlock, MetadataCommentData } from '../../text/metadata-comment'
+import type { MetadataCommentBlock, MetadataCommentData, MetadataDefKind } from '../../text/metadata-comment'
 
 interface Props {
   block?: MetadataCommentBlock | null
@@ -155,7 +178,7 @@ const lintCodes = LINT_CODES
 
 type LintMode = 'off' | 'all' | 'specific'
 
-const KNOWN_KEYS = new Set(['desc', 'paramTypes', 'paramDesc', 'settings', 'LintIgnore', 'EndLintIgnore'])
+const KNOWN_KEYS = new Set(['desc', 'paramTypes', 'paramDesc', 'returnType', 'settings', 'LintIgnore', 'EndLintIgnore'])
 
 interface SettingRow { key: string; value: string }
 
@@ -163,6 +186,7 @@ const model = reactive({
   desc: '',
   paramTypes: [] as string[],
   paramDesc: [] as string[],
+  returnType: '',
   settings: [] as SettingRow[],
   startLintMode: 'off' as LintMode,
   startLintCodes: [] as string[],
@@ -171,19 +195,92 @@ const model = reactive({
   extra: {} as Record<string, unknown>,
 })
 
+// Fields the user opted into via "Add field" even though the cursor context
+// wouldn't offer them (e.g. a description on a generic line). Reset per block.
+const added = reactive(new Set<string>())
+
 // When the host provides no context (non-VS Code), show every field.
 const noContext = computed(() => !props.block?.context)
 
+const defKind = computed<MetadataDefKind>(() => props.block?.context?.defKind ?? null)
+
+// Description documents a definition, so it's offered on any definition line
+// (variable, function, or macro) but hidden on generic lines unless added.
+const showDesc = computed(() =>
+  noContext.value
+  || defKind.value !== null
+  || model.desc.trim() !== ''
+  || added.has('desc'))
+
+// Parameter fields only apply to functions and macros.
 const showParams = computed(() =>
   noContext.value
-  || (props.block?.context?.paramCount ?? 0) > 0
+  || defKind.value === 'function'
+  || defKind.value === 'macro'
   || model.paramTypes.length > 0
-  || model.paramDesc.length > 0)
+  || model.paramDesc.length > 0
+  || added.has('params'))
+
+// A function takes value/vector/matrix/any; a macro takes TokenType names. When
+// the kind is unknown (no context, or user-added on a variable) offer both.
+const showFunctionTypes = computed(() => defKind.value !== 'macro')
+const showMacroTypes = computed(() => defKind.value !== 'function')
+
+// A return type only applies to custom functions.
+const showReturnType = computed(() =>
+  noContext.value
+  || defKind.value === 'function'
+  || model.returnType !== ''
+  || added.has('returnType'))
 
 // The End-region control only makes sense inside an open LintIgnore region, or
 // when this comment already carries an EndLintIgnore to stay editable.
 const showEndLint = computed(() =>
   noContext.value || !!props.block?.context?.insideOpenLintRegion || model.endLintMode !== 'off')
+
+// Settings and lint-ignore aren't tied to a definition, so they're hidden on
+// definition lines (where the panel documents the variable/function/macro) and
+// only offered on generic lines — or explicitly, via "Add field".
+const isDefinition = computed(() => defKind.value !== null)
+
+const showSettings = computed(() =>
+  noContext.value
+  || !isDefinition.value
+  || model.settings.length > 0
+  || added.has('settings'))
+
+const showLint = computed(() =>
+  noContext.value
+  || !isDefinition.value
+  || model.startLintMode !== 'off'
+  || model.endLintMode !== 'off'
+  || !!props.block?.context?.insideOpenLintRegion
+  || added.has('lint'))
+
+// On a definition line the panel already shows exactly the fields that apply, so
+// "Add field" is only offered for the null case (a comment not attached to a
+// variable/function/macro), where the definition-oriented fields are hidden.
+const addableFields = computed(() => {
+  const out: { id: string; label: string }[] = []
+  if (isDefinition.value) return out
+  if (!showDesc.value) out.push({ id: 'desc', label: 'Description' })
+  if (!showParams.value) out.push({ id: 'params', label: 'Parameter types & descriptions' })
+  if (!showReturnType.value) out.push({ id: 'returnType', label: 'Return type' })
+  if (!showSettings.value) out.push({ id: 'settings', label: 'Settings overrides' })
+  if (!showLint.value) out.push({ id: 'lint', label: 'Lint ignore' })
+  return out
+})
+
+function addField(id: string) {
+  added.add(id)
+  if (id === 'params') {
+    if (model.paramTypes.length === 0) model.paramTypes.push('')
+    if (model.paramDesc.length === 0) model.paramDesc.push('')
+  }
+  if (id === 'settings' && model.settings.length === 0) {
+    model.settings.push({ key: '', value: '' })
+  }
+}
 
 function settingType(key: string): MetadataSettingKind {
   return METADATA_SETTINGS_KEYS.find(s => s.key === key)?.type ?? 'string'
@@ -200,10 +297,12 @@ function onSettingKeyChange(row: SettingRow) {
 }
 
 function populate() {
+  added.clear()
   const data = props.block?.data ?? {}
   model.desc = typeof data.desc === 'string' ? data.desc : ''
   model.paramTypes = Array.isArray(data.paramTypes) ? data.paramTypes.map(String) : []
   model.paramDesc = Array.isArray(data.paramDesc) ? data.paramDesc.map(String) : []
+  model.returnType = typeof data.returnType === 'string' ? data.returnType : ''
   model.settings = data.settings && typeof data.settings === 'object'
     ? Object.entries(data.settings).map(([key, value]) => ({ key, value: String(value) }))
     : []
@@ -257,6 +356,8 @@ function onApply() {
   const descs = model.paramDesc.filter(d => d.trim() !== '')
   if (descs.length) data.paramDesc = descs
 
+  if (model.returnType) data.returnType = model.returnType
+
   const settings: Record<string, string | number | boolean> = {}
   for (const row of model.settings) {
     if (row.key) settings[row.key] = coerceSetting(row.key, row.value)
@@ -272,7 +373,25 @@ function onApply() {
   emit('apply', data)
 }
 
-watch(() => props.block, populate, { immediate: true })
+// Identity of the target the form is bound to. Cursor jitter within the same
+// definition re-pushes an equal block; re-populating then would discard the
+// user's unsaved edits, so only repopulate when the target actually changes.
+function blockSignature(b: MetadataCommentBlock | null | undefined): string {
+  if (!b) return ''
+  return [b.line, b.isNew ? 1 : 0, b.rawJson, b.context?.defKind ?? '', b.context?.paramCount ?? ''].join('|')
+}
+
+let lastSignature = ''
+watch(
+  () => props.block,
+  (block) => {
+    const sig = blockSignature(block)
+    if (sig === lastSignature) return
+    lastSignature = sig
+    populate()
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>
