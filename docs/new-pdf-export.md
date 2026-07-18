@@ -34,71 +34,6 @@ On Linux, if no browser is found the app shows you the exact package to install 
 - **Scale** — a zoom factor from 0.1 to 2.0 for shrinking or enlarging the content.
 - **Background** — colors and background images are printed by default.
 
-## Headers and footers
-
-Turn headers and/or footers on in the PDF tab and fill in the fields you want:
-
-**Header** — document title (bold, top-left), a subtitle beneath it, custom center text, and a timestamp (top-right). A thin separator line sits below it.
-
-**Footer** — author and company (left), custom center text, and page numbers with the project name (right). A thin separator line sits above it.
-
-The timestamp uses a standard .NET date/time format string (defaults to a short date-and-time format).
-
-## Letterhead background
-
-Point the **background PDF** option at a PDF file and it's drawn behind every page, stretched to fit — perfect for company letterhead or a title-block template.
-
-## Excluding sections from the PDF (NoPrint)
-
-Wrap sections you want visible on screen but omitted from the PDF in `NoPrintStart` / `NoPrintEnd` markers:
-> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
-
-Calcpad.Web can export your report to a print-ready PDF that matches the on-screen preview, with configurable page size, margins, and optional headers, footers, and a letterhead background.
-
-Set the options below in the sidebar's **PDF** tab, then export:
-
-- **Desktop app** — **File → Export PDF…**
-- **VS Code** — *CalcPad: Export to PDF*
-- **Web editor** — the PDF button on the sidebar's **PDF** tab
-
-## Browser requirement
-
-PDF export renders the report using a **Chromium-based browser** (Google Chrome, Microsoft Edge, or Chromium). The app looks for one already installed on your system; if it can't find one, it downloads a minimal headless build automatically the first time you export.
-
-On Linux, if no browser is found the app shows you the exact package to install for your distribution:
-
-| Distribution | Install command |
-|--------------|-----------------|
-| Arch / CachyOS / Manjaro / EndeavourOS / Garuda | `yay -S ungoogled-chromium-bin` (or `sudo pacman -S chromium`) |
-| Debian / Ubuntu / Mint | `sudo apt install chromium` |
-| Fedora / RHEL / Rocky / Alma | `sudo dnf install chromium` |
-| openSUSE | `sudo zypper install chromium` |
-| Alpine | `sudo apk add chromium` |
-| macOS | `brew install --cask google-chrome` |
-| Windows | install Microsoft Edge or Google Chrome |
-
-## Page setup
-
-- **Paper size** — Letter, Legal, Tabloid, Ledger, or A0–A6. Default is A4.
-- **Orientation** — portrait (default) or landscape.
-- **Margins** — set each edge independently, using values like `2cm`, `1.5cm`, or `0.5in`.
-- **Scale** — a zoom factor from 0.1 to 2.0 for shrinking or enlarging the content.
-- **Background** — colors and background images are printed by default.
-
-## Headers and footers
-
-Turn headers and/or footers on in the PDF tab and fill in the fields you want:
-
-**Header** — document title (bold, top-left), a subtitle beneath it, custom center text, and a timestamp (top-right). A thin separator line sits below it.
-
-**Footer** — author and company (left), custom center text, and page numbers with the project name (right). A thin separator line sits above it.
-
-The timestamp uses a standard .NET date/time format string (defaults to a short date-and-time format).
-
-## Letterhead background
-
-Point the **background PDF** option at a PDF file and it's drawn behind every page, stretched to fit — perfect for company letterhead or a title-block template.
-
 ## Excluding sections from the PDF (NoPrint)
 
 Wrap sections you want visible on screen but omitted from the PDF in `NoPrintStart` / `NoPrintEnd` markers:
@@ -107,20 +42,19 @@ Wrap sections you want visible on screen but omitted from the PDF in `NoPrintSta
 '<!--{"NoPrintStart": true}-->
 'These lines are visible in the preview but stripped from the PDF.
 debug_x = 5
-debug_y = x + 1
+debug_y = debug_x + 1
 '<!--{"NoPrintEnd": true}-->
+'This prints!'
 ```
 
-Good to know:
 Good to know:
 
 - The marker lines themselves are removed too.
 - Regions can be nested; the outermost pair wins.
 - A `NoPrintStart` without a matching `NoPrintEnd` strips everything through the end of the file.
 - Property names are matched case-insensitively, and the marker's value doesn't matter — only that the property is present.
-
-These markers are one kind of [metadata comment](new-metadata-comments.md); the **Metadata** panel tab can insert them for you.
 - These sections stay visible in the live preview; they're only removed from PDF (and other print) output.
+- These markers are one kind of [metadata comment](new-metadata-comments.md); the **Metadata** panel tab can insert them for you.
 
 This uses the same comment-marker syntax as [`LintIgnore`](new-linter.md#suppressing-diagnostics-lint-ignore) and per-file settings.
 

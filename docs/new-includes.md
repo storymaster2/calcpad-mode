@@ -1,5 +1,4 @@
 # Includes and File Reads
-# Includes and File Reads
 
 `#include` and `#read` let you pull in other files, and both can follow chains of files.
 
@@ -20,9 +19,6 @@ An included file can include others in turn, and those can include more — the 
 
 ## `#include` vs `#read`
 
-Both bring in outside content, but they do different jobs:
-
-| | `#include` | `#read` |
 Both bring in outside content, but they do different jobs:
 
 | | `#include` | `#read` |

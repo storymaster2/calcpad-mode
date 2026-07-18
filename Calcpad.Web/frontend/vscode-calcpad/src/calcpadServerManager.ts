@@ -148,7 +148,7 @@ export class CalcpadServerManager extends BaseServerManager implements vscode.Di
 
     /**
      * Ensure the chunky managed NuGet DLLs (DocumentFormat.OpenXml, PuppeteerSharp,
-     * EF Core, PDFsharp …) that we strip from the VSIX before packaging
+     * PDFsharp …) that we strip from the VSIX before packaging
      * are present in bin/. Same pattern as ensureNativeLibs — download once,
      * cache permanently in bin/, never re-fetch.
      */
