@@ -56,7 +56,7 @@ nav:
     - Vectors: vectors.md
     - Matrices: matrices.md
     - High Performance Functions: high-performance-vectors-and-matrices.md
-  - Editors & Apps:
+  - New Apps and Features (beta):
     - Using the VS Code Extension: using-the-vscode-extension.md
     - Using the Desktop App: using-the-desktop-app.md
     - The CalcPad Panel & Settings: calcpad-panel-and-settings.md

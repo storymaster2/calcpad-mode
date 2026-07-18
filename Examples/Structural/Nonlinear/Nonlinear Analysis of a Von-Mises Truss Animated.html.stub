@@ -1,4 +1,6 @@
 <div class="calcpad-output">
+ <script src="https://code.jquery.com/jquery-3.6.3.min.js">
+ </script>
  <!-- Shallow Von-Mises truss with circular pipe section, animated load-displacement curve passing through a limit point, solved by fixed-point iteration, Newton-Raphson, the secant method and the built-in `Root` solver. -->
  <p>(solved by four different numerical methods)</p>
  <h4>Input data</h4>
