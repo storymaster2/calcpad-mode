@@ -1,4 +1,6 @@
 <div class="calcpad-output">
+ <script src="https://code.jquery.com/jquery-3.6.3.min.js">
+ </script>
  <!-- Serviceability checks for a T-beam: same stress, crack-width and deflection verifications as the rectangular variant, with the cracked-section second moment of area derived for both flange-in-compression and web-in-compression cases. -->
  <small>
   According to
@@ -11,7 +13,7 @@
    <span class="eq">
     <var>type</var>
     =
-    <u class="input-5">0</u>
+    <u class="input-8">0</u>
    </span>
   </p>
   <img alt="deflection-beam-uniform.png" class="side flip flip_0" src="Images/structures/rc/design/deflection-beam-uniform.png" style="width:150pt;"/>
@@ -21,7 +23,7 @@
    <span class="eq">
     <var>L</var>
     =
-    <u class="input-40">5.75</u>
+    <u class="input-43">5.75</u>
    </span>
    m
   </p>
@@ -31,7 +33,7 @@
     <var>w</var>
     <sub>max</sub>
     =
-    <u class="input-42">0.4</u>
+    <u class="input-45">0.4</u>
    </span>
   </p>
   <p>X0 or XC1</p>
@@ -48,7 +50,7 @@
     <var>M</var>
     <sub>k</sub>
     =
-    <u class="input-57">200</u>
+    <u class="input-60">200</u>
    </span>
    kNm
   </p>
@@ -64,7 +66,7 @@
     <var>M</var>
     <sub>qp</sub>
     =
-    <u class="input-58">157</u>
+    <u class="input-61">157</u>
    </span>
    kNm
   </p>
@@ -77,13 +79,13 @@
    <span class="eq">
     <var>b</var>
     =
-    <u class="input-62">250</u>
+    <u class="input-65">250</u>
    </span>
    mm,
    <span class="eq">
     <var>h</var>
     =
-    <u class="input-62">550</u>
+    <u class="input-65">550</u>
    </span>
    mm
   </p>
@@ -93,14 +95,14 @@
     <var>b</var>
     <sub>f</sub>
     =
-    <u class="input-63">2400</u>
+    <u class="input-66">2400</u>
    </span>
    mm,
    <span class="eq">
     <var>h</var>
     <sub>f</sub>
     =
-    <u class="input-63">140</u>
+    <u class="input-66">140</u>
    </span>
    mm
   </p>
@@ -109,7 +111,7 @@
    <span class="eq">
     <var>c</var>
     =
-    <u class="input-64">30</u>
+    <u class="input-67">30</u>
    </span>
    mm (to bars surface)
   </p>
@@ -122,14 +124,14 @@
     <var>n</var>
     <sub>1</sub>
     =
-    <u class="input-66">4</u>
+    <u class="input-69">4</u>
    </span>
    with diameter -
    <span class="eq">
     <var>Φ</var>
     <sub>1</sub>
     =
-    <u class="input-66">20</u>
+    <u class="input-69">20</u>
    </span>
    mm
   </p>
@@ -170,7 +172,7 @@
     <var>d</var>
     <sub>1</sub>
     =
-    <u class="input-70">45</u>
+    <u class="input-73">45</u>
    </span>
    mm
   </p>
@@ -192,7 +194,7 @@
    <span class="eq">
     <var>s</var>
     =
-    <u class="input-74">50</u>
+    <u class="input-77">50</u>
    </span>
    mm
   </p>
@@ -205,14 +207,14 @@
     <var>n</var>
     <sub>2</sub>
     =
-    <u class="input-76">2</u>
+    <u class="input-79">2</u>
    </span>
    with diameter -
    <span class="eq">
     <var>Φ</var>
     <sub>2</sub>
     =
-    <u class="input-76">8</u>
+    <u class="input-79">8</u>
    </span>
    mm
   </p>
@@ -253,7 +255,7 @@
     <var>d</var>
     <sub>2</sub>
     =
-    <u class="input-80">45</u>
+    <u class="input-83">45</u>
    </span>
    mm
   </p>
@@ -270,7 +272,7 @@
     <var>f</var>
     <sub>ck</sub>
     =
-    <u class="input-84">25</u>
+    <u class="input-87">25</u>
    </span>
    MPa
   </p>
@@ -354,7 +356,7 @@
     <var>f</var>
     <sub>yk</sub>
     =
-    <u class="input-91">500</u>
+    <u class="input-94">500</u>
    </span>
    MPa
   </p>
@@ -403,7 +405,7 @@
     <span class="eq">
      <var>RH</var>
      =
-     <u class="input-101">60</u>
+     <u class="input-104">60</u>
     </span>
     %
    </p>

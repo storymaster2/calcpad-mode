@@ -1,4 +1,6 @@
 <div class="calcpad-output">
+ <script src="https://code.jquery.com/jquery-3.6.3.min.js">
+ </script>
  <!-- Damped [double pendulum](https://en.wikipedia.org/wiki/Double_pendulum): two coupled rotational ODEs in $θ_1$ and $θ_2$ integrated with RK4.
 <p>The chaotic trajectory of the lower bob is animated in SVG and traced as a phase plot. -->
  <table width="120%">
