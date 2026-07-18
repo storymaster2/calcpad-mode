@@ -16,28 +16,31 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sin(§)",
+                IsElementWise = true,
                 Description = "Sine",
                 Documentation = "Computes the sine of an angle. The angle is interpreted using the current `#deg` / `#rad` / `#gra` setting; pass an angle with explicit units (`deg`, `rad`, `gra`) to override.",
                 Example = "sin(30*deg)",
                 Category = "Functions/Trigonometric",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar in [-1, 1]",
+                ReturnTypeDescription = "Scalar from -1 to 1",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Angle" }]
             },
             new SnippetItem
             {
                 Insert = "cos(§)",
+                IsElementWise = true,
                 Description = "Cosine",
                 Documentation = "Computes the cosine of an angle. The angle is interpreted using the current `#deg` / `#rad` / `#gra` setting; pass an angle with explicit units to override.",
                 Example = "cos(60*deg)",
                 Category = "Functions/Trigonometric",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar in [-1, 1]",
+                ReturnTypeDescription = "Scalar from -1 to 1",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Angle" }]
             },
             new SnippetItem
             {
                 Insert = "tan(§)",
+                IsElementWise = true,
                 Description = "Tangent",
                 Documentation = "Computes the tangent (sin/cos) of an angle. Undefined at odd multiples of π/2 (90°, 270°, ...).",
                 Example = "tan(45*deg)",
@@ -49,6 +52,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "csc(§)",
+                IsElementWise = true,
                 Description = "Cosecant",
                 Documentation = "Computes the cosecant (1/sin) of an angle. Undefined at integer multiples of π (0°, 180°, ...).",
                 Category = "Functions/Trigonometric",
@@ -59,6 +63,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sec(§)",
+                IsElementWise = true,
                 Description = "Secant",
                 Documentation = "Computes the secant (1/cos) of an angle. Undefined at odd multiples of π/2 (90°, 270°, ...).",
                 Category = "Functions/Trigonometric",
@@ -69,6 +74,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "cot(§)",
+                IsElementWise = true,
                 Description = "Cotangent",
                 Documentation = "Computes the cotangent (cos/sin) of an angle. Undefined at integer multiples of π (0°, 180°, ...).",
                 Category = "Functions/Trigonometric",
@@ -85,26 +91,29 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "asin(§)",
+                IsElementWise = true,
                 Description = "Inverse sine (arc sine)",
                 Documentation = "Returns the angle whose sine is `x`. Result is in the range [-π/2, π/2] (or [-90°, 90°]). Errors if |x| > 1.",
                 Category = "Functions/Inverse Trigonometric",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Angle in the current angle unit",
-                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value in [-1, 1]" }]
+                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value from -1 to 1" }]
             },
             new SnippetItem
             {
                 Insert = "acos(§)",
+                IsElementWise = true,
                 Description = "Inverse cosine (arc cosine)",
                 Documentation = "Returns the angle whose cosine is `x`. Result is in the range [0, π] (or [0°, 180°]). Errors if |x| > 1.",
                 Category = "Functions/Inverse Trigonometric",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Angle in the current angle unit",
-                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value in [-1, 1]" }]
+                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value from -1 to 1" }]
             },
             new SnippetItem
             {
                 Insert = "atan(§)",
+                IsElementWise = true,
                 Description = "Inverse tangent (arc tangent)",
                 Documentation = "Returns the angle whose tangent is `x`. Result is in the range (-π/2, π/2). For full-quadrant resolution from `(x, y)` coordinates, use `atan2`.",
                 Category = "Functions/Inverse Trigonometric",
@@ -115,6 +124,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "atan2(§; §)",
+                IsElementWise = true,
                 Description = "Two-argument arc tangent",
                 Documentation = "Returns the angle of the vector `(x, y)` measured from the positive x-axis, with the correct quadrant. Result is in (-π, π] (or (-180°, 180°]).",
                 Example = "atan2(1; 1)  ' returns 45°",
@@ -130,6 +140,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "acsc(§)",
+                IsElementWise = true,
                 Description = "Inverse cosecant",
                 Documentation = "Returns the angle whose cosecant is `x`. Defined for |x| ≥ 1.",
                 Category = "Functions/Inverse Trigonometric",
@@ -140,6 +151,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "asec(§)",
+                IsElementWise = true,
                 Description = "Inverse secant",
                 Documentation = "Returns the angle whose secant is `x`. Defined for |x| ≥ 1.",
                 Category = "Functions/Inverse Trigonometric",
@@ -150,6 +162,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "acot(§)",
+                IsElementWise = true,
                 Description = "Inverse cotangent",
                 Documentation = "Returns the angle whose cotangent is `x`.",
                 Category = "Functions/Inverse Trigonometric",
@@ -164,6 +177,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sinh(§)",
+                IsElementWise = true,
                 Description = "Hyperbolic sine",
                 Documentation = "Computes (e^x − e^-x) / 2. Argument is dimensionless.",
                 Category = "Functions/Hyperbolic",
@@ -174,6 +188,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "cosh(§)",
+                IsElementWise = true,
                 Description = "Hyperbolic cosine",
                 Documentation = "Computes (e^x + e^-x) / 2. Argument is dimensionless. Result is always ≥ 1.",
                 Category = "Functions/Hyperbolic",
@@ -184,16 +199,18 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "tanh(§)",
+                IsElementWise = true,
                 Description = "Hyperbolic tangent",
                 Documentation = "Computes sinh(x) / cosh(x). Result is in (-1, 1) and approaches ±1 for large |x|.",
                 Category = "Functions/Hyperbolic",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar in (-1, 1)",
+                ReturnTypeDescription = "Scalar  > -1 and < 1",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value" }]
             },
             new SnippetItem
             {
                 Insert = "csch(§)",
+                IsElementWise = true,
                 Description = "Hyperbolic cosecant",
                 Documentation = "Computes 1 / sinh(x). Undefined at x = 0.",
                 Category = "Functions/Hyperbolic",
@@ -204,16 +221,18 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sech(§)",
+                IsElementWise = true,
                 Description = "Hyperbolic secant",
-                Documentation = "Computes 1 / cosh(x). Result is in (0, 1].",
+                Documentation = "Computes 1 / cosh(x). Result is > 0 and ≤ 1.",
                 Category = "Functions/Hyperbolic",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar in (0, 1]",
+                ReturnTypeDescription = "Scalar > 0 and ≤ 1",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value" }]
             },
             new SnippetItem
             {
                 Insert = "coth(§)",
+                IsElementWise = true,
                 Description = "Hyperbolic cotangent",
                 Documentation = "Computes cosh(x) / sinh(x). Undefined at x = 0.",
                 Category = "Functions/Hyperbolic",
@@ -228,6 +247,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "asinh(§)",
+                IsElementWise = true,
                 Description = "Inverse hyperbolic sine",
                 Documentation = "Returns the value whose hyperbolic sine is `x`. Equivalent to `ln(x + sqrt(x² + 1))`. Defined for all real `x`.",
                 Category = "Functions/Inverse Hyperbolic",
@@ -238,6 +258,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "acosh(§)",
+                IsElementWise = true,
                 Description = "Inverse hyperbolic cosine",
                 Documentation = "Returns the non-negative value whose hyperbolic cosine is `x`. Equivalent to `ln(x + sqrt(x² − 1))`. Errors if `x < 1`.",
                 Category = "Functions/Inverse Hyperbolic",
@@ -248,16 +269,18 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "atanh(§)",
+                IsElementWise = true,
                 Description = "Inverse hyperbolic tangent",
                 Documentation = "Returns the value whose hyperbolic tangent is `x`. Equivalent to `0.5 · ln((1 + x) / (1 − x))`. Errors if `|x| ≥ 1`.",
                 Category = "Functions/Inverse Hyperbolic",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Scalar",
-                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value in (-1, 1)" }]
+                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value > -1 and < 1" }]
             },
             new SnippetItem
             {
                 Insert = "acsch(§)",
+                IsElementWise = true,
                 Description = "Inverse hyperbolic cosecant",
                 Documentation = "Returns the value whose hyperbolic cosecant is `x`. Equivalent to `asinh(1/x)`. Undefined at `x = 0`.",
                 Category = "Functions/Inverse Hyperbolic",
@@ -268,16 +291,18 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "asech(§)",
+                IsElementWise = true,
                 Description = "Inverse hyperbolic secant",
                 Documentation = "Returns the value whose hyperbolic secant is `x`. Equivalent to `acosh(1/x)`. Defined for `x ∈ (0, 1]`.",
                 Category = "Functions/Inverse Hyperbolic",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Scalar ≥ 0",
-                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value in (0, 1]" }]
+                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value > 0 and ≤ 1" }]
             },
             new SnippetItem
             {
                 Insert = "acoth(§)",
+                IsElementWise = true,
                 Description = "Inverse hyperbolic cotangent",
                 Documentation = "Returns the value whose hyperbolic cotangent is `x`. Equivalent to `atanh(1/x)`. Defined for `|x| > 1`.",
                 Category = "Functions/Inverse Hyperbolic",
@@ -292,6 +317,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "log(§)",
+                IsElementWise = true,
                 Description = "Decimal (base-10) logarithm",
                 Documentation = "Computes log₁₀(x). Errors when `x ≤ 0` (real mode). For complex mode, the principal branch is used.",
                 Category = "Functions/Logarithmic, Exponential and Roots",
@@ -302,6 +328,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "ln(§)",
+                IsElementWise = true,
                 Description = "Natural logarithm",
                 Documentation = "Computes the natural logarithm (base e) of `x`. Errors when `x ≤ 0` (real mode).",
                 Category = "Functions/Logarithmic, Exponential and Roots",
@@ -312,6 +339,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "log_2(§)",
+                IsElementWise = true,
                 Description = "Binary (base-2) logarithm",
                 Documentation = "Computes log₂(x). Errors when `x ≤ 0` (real mode).",
                 Category = "Functions/Logarithmic, Exponential and Roots",
@@ -322,6 +350,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "exp(§)",
+                IsElementWise = true,
                 Description = "Exponential function (e^x)",
                 Documentation = "Computes Euler's number `e` raised to the power `x`. Inverse of `ln`.",
                 Category = "Functions/Logarithmic, Exponential and Roots",
@@ -332,6 +361,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sqr(§)",
+                IsElementWise = true,
                 Description = "Square root",
                 Documentation = "Returns the principal square root of `x`. Identical to `sqrt`. Errors for negative `x` in real mode.",
                 Label = "sqr(x)",
@@ -343,6 +373,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sqrt(§)",
+                IsElementWise = true,
                 Description = "Square root",
                 Documentation = "Returns the principal square root of `x`. Identical to `sqr`. Errors for negative `x` in real mode.",
                 Label = "sqrt(x)",
@@ -354,6 +385,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "cbrt(§)",
+                IsElementWise = true,
                 Description = "Cubic root",
                 Documentation = "Returns the real cube root of `x`. Defined for all real `x`, including negatives.",
                 Category = "Functions/Logarithmic, Exponential and Roots",
@@ -364,6 +396,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "root(§; §)",
+                IsElementWise = true,
                 Description = "N-th root",
                 Documentation = "Returns the principal n-th root of `x`, equivalent to `x^(1/n)`. Use a positive integer for `n`.",
                 Example = "root(8; 3)  ' returns 2",
@@ -383,6 +416,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "round(§)",
+                IsElementWise = true,
                 Description = "Round to the nearest integer",
                 Documentation = "Rounds `x` to the nearest integer using banker's rounding (ties go to even). Preserves units.",
                 Example = "round(2.5)  ' returns 2",
@@ -394,6 +428,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "floor(§)",
+                IsElementWise = true,
                 Description = "Round down (towards -∞)",
                 Documentation = "Returns the largest integer not exceeding `x`. Preserves units. For negative numbers, rounds away from zero.",
                 Example = "floor(-1.2)  ' returns -2",
@@ -405,6 +440,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "ceiling(§)",
+                IsElementWise = true,
                 Description = "Round up (towards +∞)",
                 Documentation = "Returns the smallest integer not less than `x`. Preserves units.",
                 Example = "ceiling(1.2)  ' returns 2",
@@ -416,6 +452,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "trunc(§)",
+                IsElementWise = true,
                 Description = "Truncate towards zero",
                 Documentation = "Discards the fractional part of `x`, leaving only the integer portion. Preserves units. Same as `floor` for positive `x`, `ceiling` for negative `x`.",
                 Category = "Functions/Rounding",
@@ -430,6 +467,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "mod(§; §)",
+                IsElementWise = true,
                 Description = "Remainder of integer division",
                 Documentation = "Computes `x mod y`, i.e., the remainder after dividing `x` by `y`. Sign of the result follows `x`.",
                 Example = "mod(10; 3)  ' returns 1",
@@ -479,6 +517,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "re(§)",
+                IsElementWise = true,
                 Description = "Real part of a complex number",
                 Documentation = "Returns the real part of `z`. For a real input, returns `z` unchanged.",
                 Category = "Functions/Complex",
@@ -489,6 +528,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "im(§)",
+                IsElementWise = true,
                 Description = "Imaginary part of a complex number",
                 Documentation = "Returns the imaginary part of `z` as a real scalar. For a real input, returns 0.",
                 Category = "Functions/Complex",
@@ -510,6 +550,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "phase(§)",
+                IsElementWise = true,
                 Description = "Phase angle of a complex number",
                 Documentation = "Returns the argument (phase angle) of `z`, equivalent to `atan2(im(z); re(z))`. Result is in the current angle unit.",
                 Category = "Functions/Complex",
@@ -520,6 +561,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "conj(§)",
+                IsElementWise = true,
                 Description = "Complex conjugate",
                 Documentation = "Returns the complex conjugate of `z`, i.e., flips the sign of the imaginary part. For real input, returns `z` unchanged.",
                 Category = "Functions/Complex",
@@ -994,22 +1036,23 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sign(§)",
+                IsElementWise = true,
                 Description = "Sign of a number (-1, 0, or 1)",
                 Documentation = "Returns -1 for negative `x`, 0 for `x = 0`, and 1 for positive `x`. Strips units.",
                 Category = "Functions/Other",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar in {-1, 0, 1}",
+                ReturnTypeDescription = "Scalar with values -1, 0, or 1",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value" }]
             },
             new SnippetItem
             {
                 Insert = "random(§)",
                 Description = "Random number between 0 and x",
-                Documentation = "Returns a uniformly distributed random scalar in `[0, x)`. With no argument, returns a value in `[0, 1)`. Re-evaluating the document re-rolls the value.",
-                Example = "random(100)  ' random integer-ish value in [0, 100)",
+                Documentation = "Returns a uniformly distributed random scalar from 0 to x. With no argument, returns a value from 0 to 1. Re-evaluating the document re-rolls the value.",
+                Example = "random(100)  ' random integer-ish value from 0 to 100",
                 Category = "Functions/Other",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar in [0, x)",
+                ReturnTypeDescription = "Scalar from 0 to x",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Upper bound", IsOptional = true }]
             },
             new SnippetItem

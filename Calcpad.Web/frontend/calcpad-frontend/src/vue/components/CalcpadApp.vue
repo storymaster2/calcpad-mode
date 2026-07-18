@@ -76,6 +76,7 @@
         :initial-available-configs="availableConfigs"
         :initial-editor-font-family="editorFontFamily"
         :initial-available-fonts="availableFonts"
+        :app-version="appVersion"
         @update-settings="handleUpdateSettings"
         @update-preview-theme="handleUpdatePreviewTheme"
         @update-color-theme="handleUpdateColorTheme"
@@ -167,9 +168,11 @@ import { DEFAULT_PDF_SETTINGS } from '../types'
 // Props
 interface Props {
   versionConfig?: VersionConfig
+  appVersion?: string
 }
 const props = withDefaults(defineProps<Props>(), {
   versionConfig: () => ({ ...DEFAULT_VERSION_CONFIG }),
+  appVersion: '',
 })
 
 // Views: string-identified so future views can be added by extending this list.

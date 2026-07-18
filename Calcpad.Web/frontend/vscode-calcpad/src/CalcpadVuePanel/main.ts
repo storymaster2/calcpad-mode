@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import CalcpadApp from '@calcpad-vue/components/CalcpadApp.vue'
 import '@calcpad-vue/styles/base.css'
 import { initMessaging, postMessage } from '@calcpad-vue/services/messaging'
+import pkg from '../../package.json'
 
 // Initialize VS Code API before messaging service
 const vscode = (window as any).acquireVsCodeApi()
@@ -18,6 +19,7 @@ const app = createApp(CalcpadApp, {
     isDesktop: false,
     isWebOrDesktop: false,
   },
+  appVersion: pkg.version,
 })
 app.mount('#app')
 

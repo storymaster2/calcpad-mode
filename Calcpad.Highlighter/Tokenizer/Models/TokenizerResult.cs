@@ -17,8 +17,8 @@ namespace Calcpad.Highlighter.Tokenizer.Models
         /// <summary>Variables defined in the source (name -> line number)</summary>
         public Dictionary<string, int> DefinedVariables { get; } = new();
 
-        /// <summary>Functions defined in the source (name -> line number)</summary>
-        public Dictionary<string, int> DefinedFunctions { get; } = new(System.StringComparer.OrdinalIgnoreCase);
+        /// <summary>Functions defined in the source (name -> line number). Case-sensitive to match Core.</summary>
+        public Dictionary<string, int> DefinedFunctions { get; } = new(System.StringComparer.Ordinal);
 
         /// <summary>Subsequent = assignments to already-defined variables/functions (name, line, column)</summary>
         public List<(string Name, int Line, int Column)> VariableReassignments { get; } = new();
@@ -47,7 +47,7 @@ namespace Calcpad.Highlighter.Tokenizer.Models
         /// Functions that use command blocks - $Inline, $Block, $While (only populated in Lint mode).
         /// Key is function name, value is the command block info.
         /// </summary>
-        public Dictionary<string, CommandBlockInfo> CommandBlockFunctions { get; } = new(System.StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, CommandBlockInfo> CommandBlockFunctions { get; } = new(System.StringComparer.Ordinal);
 
         // --- Macro mode only: macro definition metadata ---
 

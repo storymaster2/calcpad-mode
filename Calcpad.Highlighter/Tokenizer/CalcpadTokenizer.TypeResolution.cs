@@ -11,7 +11,7 @@ namespace Calcpad.Highlighter.Tokenizer
         // ── Definition tracking state ──────────────────────────────
 
         private readonly HashSet<string> _definedVariables = new(StringComparer.Ordinal);
-        private readonly HashSet<string> _definedFunctions = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _definedFunctions = new(StringComparer.Ordinal);
         private readonly HashSet<string> _definedMacros = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _definedUnits = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _localVariables = new(StringComparer.Ordinal);

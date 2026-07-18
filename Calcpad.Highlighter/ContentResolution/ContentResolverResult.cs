@@ -309,7 +309,7 @@ namespace Calcpad.Highlighter.ContentResolution
         /// Functions that use command blocks ($Inline, $Block, $While).
         /// Key is function name, value is the command block info.
         /// </summary>
-        public Dictionary<string, CommandBlockInfo> CommandBlockFunctions { get; set; } = new(System.StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, CommandBlockInfo> CommandBlockFunctions { get; set; } = new(System.StringComparer.Ordinal);
 
         /// <summary>
         /// Subsequent = assignments to already-defined variables/functions (name, line, column)
@@ -347,7 +347,7 @@ namespace Calcpad.Highlighter.ContentResolution
         /// Positions are mapped to original source lines with include file info.
         /// Used for go-to-definition and find-all-occurrences features.
         /// </summary>
-        public Dictionary<string, List<SymbolLocation>> FunctionIndex { get; set; } = new(System.StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, List<SymbolLocation>> FunctionIndex { get; set; } = new(System.StringComparer.Ordinal);
 
         /// <summary>
         /// Index of all macro occurrences (definitions and call sites) grouped by name.

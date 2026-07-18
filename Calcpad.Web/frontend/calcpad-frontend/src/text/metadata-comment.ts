@@ -13,6 +13,8 @@ export interface MetadataCommentData {
     settings?: Record<string, string | number | boolean>;
     LintIgnore?: string[];
     EndLintIgnore?: string[];
+    NoPrintStart?: boolean;
+    NoPrintEnd?: boolean;
     [key: string]: unknown;
 }
 
@@ -64,6 +66,8 @@ export interface MetadataLineContext {
     hasDefinition: boolean;
     /** True when an unclosed LintIgnore region is open at this line. */
     insideOpenLintRegion: boolean;
+    /** True when an unclosed NoPrint region is open at this line. */
+    insideOpenNoPrintRegion: boolean;
 }
 
 /** Valid `paramTypes` values for custom functions (f(x;y) = ...). */
@@ -305,11 +309,14 @@ export function analyzeMetadataLine(
     }
 
     let insideOpenLintRegion = false;
+    let insideOpenNoPrintRegion = false;
     for (let i = 0; i < commentLine; i++) {
         const block = findMetadataCommentBlock(lines, i);
         if (!block?.valid || !block.data) continue;
         if (block.data.EndLintIgnore !== undefined) insideOpenLintRegion = false;
         if (block.data.LintIgnore !== undefined) insideOpenLintRegion = true;
+        if (block.data.NoPrintEnd !== undefined) insideOpenNoPrintRegion = false;
+        if (block.data.NoPrintStart !== undefined) insideOpenNoPrintRegion = true;
     }
 
     return {
@@ -317,6 +324,7 @@ export function analyzeMetadataLine(
         defKind: definition?.kind ?? null,
         hasDefinition: definition !== null,
         insideOpenLintRegion,
+        insideOpenNoPrintRegion,
     };
 }
 
@@ -341,18 +349,36 @@ export function computeMetadataBlock(
     }
 
     if (cursorLine < 0 || cursorLine >= lines.length) return null;
-    if (!resolveDefinition(cursorLine)) return null;
-
-    // A metadata comment directly above the definition takes precedence.
-    if (cursorLine > 0) {
-        const above = findMetadataCommentBlock(lines, cursorLine - 1);
-        if (above) {
-            above.context = analyzeMetadataLine(lines, cursorLine - 1, resolveDefinition);
-            return above;
-        }
-    }
 
     const indent = lines[cursorLine].match(/^[ \t]*/)?.[0] ?? '';
+
+    if (resolveDefinition(cursorLine)) {
+        // A metadata comment directly above the definition takes precedence.
+        if (cursorLine > 0) {
+            const above = findMetadataCommentBlock(lines, cursorLine - 1);
+            if (above) {
+                above.context = analyzeMetadataLine(lines, cursorLine - 1, resolveDefinition);
+                return above;
+            }
+        }
+        return {
+            line: cursorLine,
+            indent,
+            trailingQuote: '',
+            rawJson: '',
+            data: {},
+            valid: true,
+            isNew: true,
+            context: analyzeMetadataLine(lines, cursorLine - 1, resolveDefinition),
+        };
+    }
+
+    // Null case: the cursor is on neither a definition nor a comment. Offer the
+    // region markers (settings, lint, no-print) that apply to a bare line, and on
+    // Apply insert a new comment on the line above the cursor. defKind is forced
+    // null so the definition-oriented fields stay hidden; only the region state
+    // (open lint/no-print regions) from the surrounding document is kept.
+    const region = analyzeMetadataLine(lines, cursorLine, resolveDefinition);
     return {
         line: cursorLine,
         indent,
@@ -361,6 +387,6 @@ export function computeMetadataBlock(
         data: {},
         valid: true,
         isNew: true,
-        context: analyzeMetadataLine(lines, cursorLine - 1, resolveDefinition),
+        context: { ...region, paramCount: null, defKind: null, hasDefinition: false },
     };
 }

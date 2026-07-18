@@ -202,7 +202,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                         continue;
                     }
 
-                    if (FunctionSignature.IsTypeCompatible(expectedType, actualTypes[i]))
+                    if (sig.IsArgumentCompatible(expectedType, actualTypes[i]))
                     {
                         matchScore++;
                     }
@@ -235,7 +235,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 if (expectedType == ParameterType.Any || expectedType == ParameterType.Various)
                     continue;
 
-                if (!FunctionSignature.IsTypeCompatible(expectedType, actualTypes[i]))
+                if (!bestMatch.IsArgumentCompatible(expectedType, actualTypes[i]))
                 {
                     var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
                     var expectedName = FunctionSignature.GetTypeName(expectedType);

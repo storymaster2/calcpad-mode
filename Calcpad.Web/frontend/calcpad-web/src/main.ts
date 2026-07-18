@@ -1,6 +1,7 @@
 import * as monaco from 'monaco-editor';
 import { createApp, nextTick } from 'vue';
 import App from './App.vue';
+import pkg from '../package.json';
 import CalcpadAppVue from 'calcpad-frontend/vue/components/CalcpadApp.vue';
 import { initMessaging } from 'calcpad-frontend/vue/services/messaging';
 import { MessageBridge } from './services/message-bridge';
@@ -971,7 +972,7 @@ async function bootstrap(): Promise<void> {
         isDesktop: isTauri,
         isWebOrDesktop: true,
     };
-    const sidebarApp = createApp(CalcpadAppVue, { versionConfig });
+    const sidebarApp = createApp(CalcpadAppVue, { versionConfig, appVersion: pkg.version });
     const sidebarInstance = sidebarApp.mount('#vue-sidebar') as {
         switchTab?: (id: string) => void;
         switchView?: (id: string) => void;
@@ -1387,6 +1388,8 @@ async function bootstrap(): Promise<void> {
                 appInstance.appendOutput('error', `Copy failed: ${err instanceof Error ? err.message : String(err)}`);
             }
         };
+
+        appInstance.onCopyTextRequest = (text: string) => { void writeClipboardText(text); };
 
         appInstance.onTabCopyFullPathRequest = (groupId: string, id: string) => {
             const g = groups.get(groupId);

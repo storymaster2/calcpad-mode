@@ -498,6 +498,11 @@
           Reset to Default
         </button>
       </div>
+
+      <h3 v-if="appVersion">About</h3>
+      <div v-if="appVersion" class="setting-group">
+        <span class="app-version">CalcpadCE Web v{{ appVersion }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -527,6 +532,7 @@ interface Props {
   initialAvailableConfigs?: string[]
   initialEditorFontFamily?: string
   initialAvailableFonts?: string[]
+  appVersion?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -574,7 +580,8 @@ const props = withDefaults(defineProps<Props>(), {
   initialActiveConfig: 'default',
   initialAvailableConfigs: () => ['default'],
   initialEditorFontFamily: 'JuliaMono',
-  initialAvailableFonts: () => []
+  initialAvailableFonts: () => [],
+  appVersion: ''
 })
 
 // Emits
@@ -1003,5 +1010,10 @@ watch(
 
 .diagnostics-button:hover {
   background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.app-version {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
 }
 </style>
