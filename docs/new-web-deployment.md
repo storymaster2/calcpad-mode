@@ -1,10 +1,10 @@
-# Calcpad.Web Local Mode
+# Running the Calcpad Server
 
-> **Localhost-only build.** This branch (`calcpad-web`) only supports running the server bound to a loopback address. The startup loopback guard in [Calcpad.Web/backend/Program.cs](../Calcpad.Web/backend/Program.cs) throws `InvalidOperationException` if the resolved bind URL is anything other than `localhost`, `127.0.0.0/8`, or `::1`. Multi-user / hosted / Docker deployment, auth, file storage, and per-user caching live on the `calcpad-experimental` branch.
+> Calcpad.Web only. The standalone WPF desktop application for Windows is separate and unaffected.
 
-> Calcpad.Web only. The WPF desktop application is unaffected.
+The desktop app and the VS Code extension start the Calcpad calculation server for you, so most people never run it by hand. But you can also run it directly — for example, to point several tools at one shared instance, or to script conversions and calls against its API. This page covers running the server and the API it exposes.
 
-The web backend ([Calcpad.Web/backend](../Calcpad.Web/backend)) is an ASP.NET Core Web API that drives the web editor, the VS Code extension, and the Tauri desktop wrapper. It replaces the former `Calcpad.Server` project with clearer separation of concerns and an explicit endpoint catalog — in this branch, scoped to a single local user.
+> **Localhost only.** This build runs the server bound to your own machine (`localhost`, `127.0.0.1`, or `::1`) only. If you point it at any other address, it refuses to start. There is no multi-user hosting, authentication, or shared file storage in this build.
 
 ## Running
 
@@ -13,39 +13,43 @@ cd Calcpad.Web/backend
 dotnet run
 ```
 
-Defaults to `http://localhost:9420`. Override the port with `CALCPAD_PORT`, or override the full bind URL via `--urls` — as long as it still resolves to a loopback address. Any non-loopback host is rejected at startup.
+By default the server listens on `http://localhost:9420`. To change the port, set `CALCPAD_PORT`, or pass a full bind URL with `--urls` — as long as it still points at a loopback address.
 
-## Endpoint catalog
+## API endpoints
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/api/calcpad/convert` | POST | HTML conversion with theme + settings |
-| `/api/calcpad/convert-unwrapped` | POST | Raw code HTML for error navigation |
-| `/api/calcpad/sample` | GET | Retrieve a sample document |
-| `/api/calcpad/debug-crash` | GET | Append a client-side crash event to the server log |
+| `/api/calcpad/convert` | POST | Convert a document to an HTML report (with theme + settings) |
+| `/api/calcpad/convert-unwrapped` | POST | HTML of the raw, fully expanded source (used for error navigation) |
+| `/api/calcpad/sample` | GET | Fetch a sample document |
 | `/api/calcpad/pdf` | POST | Generate a PDF |
 | `/api/calcpad/pdf/health` | GET | PDF service health check |
-| `/api/calcpad/docx` | POST | Generate a Word `.docx` — runs the calcpad → HTML pipeline (`forPrint: true`) and feeds it through `Calcpad.OpenXml.OpenXmlWriter` |
-| `/api/calcpad/highlight` | POST | Tokenize full document for syntax highlighting |
+| `/api/calcpad/docx` | POST | Generate a Word `.docx` document |
+| `/api/calcpad/highlight` | POST | Tokenize a full document for syntax highlighting |
 | `/api/calcpad/highlight-line` | POST | Tokenize a single line (incremental) |
-| `/api/calcpad/lint` | POST | Semantic diagnostics with CPD codes |
-| `/api/calcpad/definitions` | POST | Macros, functions, variables, units |
-| `/api/calcpad/find-references` | POST | Full symbol occurrence index |
+| `/api/calcpad/lint` | POST | Run the linter and return diagnostics |
+| `/api/calcpad/definitions` | POST | List macros, functions, variables, and units |
+| `/api/calcpad/find-references` | POST | Every occurrence of each symbol |
 | `/api/calcpad/prettify` | POST | Pretty-print Calcpad source |
-| `/api/calcpad/snippets` | GET | Snippets by category |
+| `/api/calcpad/snippets` | GET | Snippets, optionally filtered by category |
+| `/api/calcpad/debug-crash` | GET | Record a client-side crash in the server log |
 
-The full API schema lives at [Calcpad.Web/backend/API_SCHEMA.md](../Calcpad.Web/backend/API_SCHEMA.md).
+The full request/response schema lives at [Calcpad.Web/backend/API_SCHEMA.md](../Calcpad.Web/backend/API_SCHEMA.md); the common shapes are summarized below.
 
-## Common request fields (`CalcpadRequest`)
+## Common request fields
 
-- `content` — Calcpad source code
-- `settings` — math/plot/units configuration
+Most POST endpoints accept a request with these fields:
+
+- `content` — the Calcpad source code
+- `settings` — math / plot / unit configuration
 - `theme` — `"light"` or `"dark"`
-- `apiTimeoutMs` — remote fetch timeout (default `10000`)
-- `sourceFilePath` — client-side file path; the server uses it to resolve relative `#include` against the parent file's directory
-- `forPrint` — when `true`, NoPrint regions are stripped before conversion (used by PDF flows)
+- `apiTimeoutMs` — timeout for fetching remote `#include`/`#read` URLs (default `10000`)
+- `sourceFilePath` — the document's file path, used to resolve relative `#include` paths against the file's folder
+- `forPrint` — when `true`, `NoPrint` regions are stripped before conversion (used by PDF export)
 
-## Definitions response shape
+## Response shapes
+
+### Definitions
 
 Returns four parallel arrays:
 
@@ -56,21 +60,40 @@ Returns four parallel arrays:
 
 `typeId` values: 0 Unknown, 1 Value, 2 Vector, 3 Matrix, 5 Various, 6 Function, 7 InlineMacro, 8 MultilineMacro, 9 CustomUnit.
 
-## Find-references response
+### Find-references
 
-Three dictionaries (`variables`, `functions`, `macros`), each mapping symbol name to an array of:
+Three dictionaries (`variables`, `functions`, `macros`), each mapping a symbol name to an array of:
 
 ```typescript
 { line, column, length, source, sourceFile?, isAssignment }
 ```
 
-`isAssignment: true` indicates a definition or reassignment.
+`isAssignment: true` marks a definition or reassignment.
 
-## Highlight response
+### Highlight
 
-Returns an array of `{ line, column, length, type, typeId, text? }`. Passing `includeText: false` (default) omits the `text` field to reduce payload.
+An array of `{ line, column, length, type, typeId, text? }`. The `text` field is omitted by default; pass `includeText: true` to include it.
 
-## Snippets response
+### Lint
+
+```typescript
+{
+  errorCount: number,
+  warningCount: number,
+  diagnostics: Array<{
+    line: number, column: number, endColumn: number,
+    code: string,        // "CPD-XXXX"
+    message: string,
+    severity: "error" | "warning" | "information",
+    severityId: 0 | 1 | 2,
+    source: "Calcpad Linter"
+  }>
+}
+```
+
+See [Linter and Diagnostics](new-linter.md) for what each code means.
+
+### Snippets
 
 ```typescript
 {
@@ -86,24 +109,13 @@ Returns an array of `{ line, column, length, type, typeId, text? }`. Passing `in
 }
 ```
 
-Optional query string `?category=Functions/Trigonometric` filters results.
+Filter with a query string, e.g. `?category=Functions/Trigonometric`.
 
-## Remote URL fetching
+## Remote `#include` / `#read`
 
-Remote `#include` and `#read` URLs (`http://`, `https://`) are fetched by [`Router.FetchUrlAsync`](../Calcpad.Web/backend/Services/Router.cs) — a single static helper with a 10-second default timeout (overridable per request via `apiTimeoutMs`). Non-HTTP/HTTPS URLs are rejected.
+The server can fetch `#include` and `#read` content from `http://` and `https://` URLs, with a 10-second default timeout you can override per request via `apiTimeoutMs`. Only HTTP and HTTPS addresses are accepted. See [Includes and Remote Files](new-includes.md).
 
-There is no API routing layer, no JWT/auth headers, no domain allowlist, and no server-side remote-content cache on this branch. The hosted version on `calcpad-experimental` keeps the `<service:endpoint>` routing, per-request `ClientFileCache`, disk-cache offload, and `/refresh-cache` endpoint that local mode no longer needs.
+## See also
 
-## Content resolution pipeline
-
-A three-stage pipeline in `Calcpad.Highlighter` processes files uniformly for the linter, definitions endpoint, and highlight endpoint. Each stage emits an artifact plus a source map pointing back to the previous stage.
-
-- **Stage 1 — Line continuation.** Explicit (` _`) and implicit (unbalanced delimiters at end-of-line) merging. Produces a `LineContinuationMap` and per-segment column tracking for accurate error positions.
-- **Stage 2 — Include resolution & macro collection.** Recursive `#include` substitution, then macro definition tokenization. Computes macro definitions, duplicates, parameter order (for keyword-arg validation), bodies, and which parameters are referenced inside quoted/comment content.
-- **Stage 3 — Macro expansion & type tracking.** Removes macro definitions, expands every call. Builds variable/function/macro indices, tracks reassignments and outer-scope (`←`) assignments, runs type inference.
-
-`SourceMapper.MapLineBack()` chains the three source maps plus the include map and macro-expansion map to resolve any Stage 3 line/column back to the original file, original line, and source kind (`local` vs `include`).
-
-## Crash logging
-
-The backend writes unexpected exits and orphaned-server scenarios to disk via `FileLogger` and the server-manager. These surface in the `CalcPad Server Debug` output channel and on disk so the VS Code extension can present them to the user. The frontend reports its own crashes to the server via `GET /api/calcpad/debug-crash`.
+- [Includes and Remote Files](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [PDF Export](new-pdf-export.md)
+- [Using the Desktop App](new-desktop-app.md) · [Using the VS Code Extension](new-vscode-extension.md)

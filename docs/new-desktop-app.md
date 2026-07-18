@@ -1,108 +1,174 @@
 # Calcpad Desktop App
 
-> Calcpad.Web only. The WPF desktop application is unaffected.
+> Calcpad.Web only. The standalone WPF desktop application for Windows is separate and unaffected.
 
-The Calcpad desktop app (`Calcpad.Web/frontend/calcpad-desktop`) is a [Tauri](https://tauri.app/)-packaged build of the same web editor that runs in the browser, bundled with the .NET server as a sidecar binary. It exists to give users a native filesystem + native menu / save-dialog experience without giving up the Monaco editor stack.
+The **Calcpad Desktop App** is a native application for Windows, macOS, and Linux that wraps the same editor you get in the browser and bundles the calculation engine inside it. You get the full editor — multi-tab editing, syntax highlighting, autocomplete, live preview, and the CalcPad sidebar — plus native file dialogs, a native menu bar, and drag-and-drop, with no browser to open and no server to set up.
 
-## Multi-tab editing
+For the Calcpad language itself, start with **[Writing Math](writing-math.md)** and the **[Quick Reference](quick-reference.md)**.
 
-VS Code-style tabs let you keep several `.cpd` documents open at once.
+## Installing
+
+The app ships as a per-platform download:
+
+| Platform | Format |
+|----------|--------|
+| Windows | `.msi` or `.exe` installer, or a portable `.zip` build (no install) |
+| macOS | `.dmg` (requires macOS 11 or later) |
+| Linux | `.deb` package or `.AppImage` (run directly, no install) |
+
+The calculation engine and its fonts and templates are bundled inside the app — you do **not** need .NET installed separately. On Linux, the `.AppImage` includes what it needs to run; the `.deb` package expects WebKitGTK to already be present on the system.
+
+For PDF export you need a **Chromium-based browser** (Chrome, Edge, or Chromium) installed on the system. On Linux the app will tell you which package to install if none is found — see [PDF Export](new-pdf-export.md).
+
+## Your first document
+
+1. Launch the app. It opens with an empty **Untitled-1** tab.
+2. Type a calculation, for example:
+
+   ```calcpad
+   "Cantilever tip deflection
+   P = 5kN
+   L = 3m
+   E = 200GPa
+   I = 8.5e-5m^4
+   δ = P·L^3/(3·E·I)
+   ```
+
+3. The **preview pane** renders your report live as you type. Toggle it from **View → Toggle Preview**.
+4. Save with **Ctrl+S** (or **File → Save**). A native save dialog lets you choose the location.
+
+## Working with tabs
+
+The app uses tabs so you can keep several `.cpd` documents open at once.
 
 | Action | Shortcut |
 |--------|----------|
 | New tab | **Ctrl+T** or **Ctrl+N**, or the **`+`** button on the tab strip |
+| Open a file | **File → Open…**, or drag a file onto the window |
 | Close tab | **Ctrl+W**, the **✕** on the tab, or middle-click the tab |
-| Cycle tabs | **Ctrl+Tab** (next), **Ctrl+Shift+Tab** (previous) |
-| Jump to Nth tab | **Ctrl+1** … **Ctrl+8** |
+| Next / previous tab | **Ctrl+Tab** / **Ctrl+Shift+Tab** |
+| Jump to tab 1–8 | **Ctrl+1** … **Ctrl+8** |
 | Jump to last tab | **Ctrl+9** |
 
-Behaviour matches VS Code:
+How tabs behave:
 
-- **One editor, many models** — the single Monaco editor swaps its underlying model on tab activation; cursor and scroll position are saved in view state and restored on switch-back.
-- **Per-tab dirty tracking** — based on `model.getAlternativeVersionId()`, so undoing back to the saved version clears the dirty dot.
-- **Open-existing focus** — opening a file that's already in a tab activates that tab instead of duplicating it.
-- **Untitled scratch reuse** — opening a file from an empty `Untitled-N` tab replaces it in place rather than stacking another tab.
-- **Per-tab close prompt** — closing a dirty tab opens a Save / Don't Save / Cancel dialog. Window close walks every dirty tab in turn; cancel any prompt to abort the exit.
-- **Per-tab providers** — hover, definitions, find-references, and the linter cache are scoped per tab, so symbols don't bleed between unrelated documents.
+- **Cursor and scroll position are remembered** per tab and restored when you switch back.
+- **Unsaved changes** are marked with a dot on the tab; undoing back to the last saved state clears it.
+- **Opening an already-open file** activates its existing tab instead of duplicating it.
+- **Opening a file from an empty Untitled tab** replaces it in place rather than stacking a new tab.
+- **Closing a tab with unsaved changes** prompts Save / Don't Save / Cancel. Quitting the app walks through every unsaved tab; cancel any prompt to abort the quit.
+- Hover, definitions, references, the linter, the preview, and the TOC are all scoped to the active tab, so symbols and errors never bleed between unrelated documents.
 
-The Problems panel re-emits the active tab's markers on every switch, so it never shows stale data from another tab. The preview pane and TOC sidebar also repaint against the new active model.
+## Opening files
 
-## Editor key behaviour
+There are several ways to open documents:
 
-Two Monaco options are flipped to match the most common keyboard expectations and to stop the suggest widget from intercepting newlines:
+- **File → Open…** — native file picker.
+- **Drag and drop** — drop one or more files onto the editor; each opens in its own tab. Dropping plain text (e.g. from a browser) opens it as a new untitled tab.
+- **Files tab** in the sidebar — open a folder and browse its tree.
+- **Recent files** — tracked automatically and available from the File menu.
 
-- **Enter is always a newline.** `acceptSuggestionOnEnter: 'off'` and `acceptSuggestionOnCommitCharacter: false` together guarantee that pressing Enter never accepts a suggestion — it always inserts a line break.
-- **Tab accepts suggestions.** `tabCompletion: 'on'` makes Tab the accept key when the suggest widget is open, and triggers completion when typing a partial word.
+## The editor
 
-## Export tab
+- **Syntax highlighting** for numbers, units, operators, variables, functions, macros, keywords, commands, and embedded HTML/Markdown in comments.
+- **Autocomplete** that prioritizes your own symbols over built-ins, with snippet placeholders for function arguments.
+- **Quick-type symbols** — `~a` + space → `α`, `~p` + space → `π`, etc.
+- **Operator replacement** — `<=` → `≤`, `>=` → `≥`, `!=` → `≠`.
+- **Auto-indentation** for `#if` / `#for` / `#def` blocks.
+- **Go to Definition**, **Find All References**, **Rename**, and **hover** for symbols, including across `#include` files.
 
-The sidebar's **Export** tab combines document and plot exports:
+Two key behaviors worth knowing:
 
-| Button | Behaviour (desktop) | Behaviour (web) |
-|--------|---------------------|------------------|
-| **Save HTML…** | Native save dialog → writes `.html` via Tauri's `plugin-fs` | Browser blob download (`calcpad-output.html`) |
-| **Save Word…** | Native save dialog → writes `.docx` via Tauri's `plugin-fs` | Browser blob download (`calcpad-output.docx`) |
-| **Refresh** (Plots section) | Re-runs the document and repopulates the plot list | Same |
-| **Save…** (per plot) | Native save dialog → writes the raw PNG/SVG bytes | Browser blob download |
-| **Download all (ZIP)** | Native save dialog → writes a single ZIP built by the shared `buildZip` helper | Browser blob download |
+- **Enter always inserts a newline** — it never accepts a suggestion. Press **Tab** to accept a completion.
+- **Tab accepts suggestions** and triggers completion on a partial word.
 
-Both HTML/Word actions go through the same backend pipeline:
+These are the same editor features as the [VS Code extension](new-vscode-extension.md), so anything you learn in one carries over to the other.
 
-1. `POST /api/calcpad/convert` (HTML) or `POST /api/calcpad/docx` (Word)
-2. The DOCX endpoint runs the calcpad → HTML pipeline with `forPrint: true`, then feeds the HTML through `Calcpad.OpenXml.OpenXmlWriter` and returns the `.docx` bytes
-3. Frontend writes the result via the platform's save mechanism
+## The CalcPad sidebar
 
-Plots are extracted from the rendered HTML by `extractPlotsFromHtml` (see `calcpad-frontend/src/services/plot-extract.ts`) — the shared base bridge caches the extracted `ExtractedPlot[]` after each `getPlots` message, so per-plot saves and the ZIP export both reuse the same in-memory copy without an extra API round-trip. This replaces the WPF app's *plot output directory* setting; on Calcpad.Web, plot files are only written on explicit user action.
+Toggle the sidebar with **View → Toggle Sidebar**. It has a **Files** view and a **Calcpad** view; the Calcpad view is split into tabs (Insert, TOC, Settings, Variables, PDF, Formatting, Export, Errors).
 
-The same buttons fire on the VS Code sidebar's Export tab, where the HTML / Word buttons execute the `vscode-calcpad.saveSourceHtml` and `vscode-calcpad.saveDocx` commands (also available from the Command Palette), and the plot list is fed by `setCachedHtml` on the Vue UI provider.
+The sidebar is the same across every Calcpad front end — see **[The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md)** for a full walkthrough of each tab, including Prettify options and the Export buttons.
 
-## Embedded server lifecycle
+## Live preview
 
-The `.NET` server runs as a Tauri sidecar spawned by the Rust shell at app start (see `spawn_sidecar` in [src-tauri/src/lib.rs](../Calcpad.Web/frontend/calcpad-desktop/src-tauri/src/lib.rs)). The apphost is a framework-independent `Calcpad.Server` published for the host RID and renamed to Tauri's target-triple sidecar format (`calcpad-server-<target-triple>[.exe]`), staged into `src-tauri/binaries/` by `stage-sidecar.sh` / `stage-sidecar.ps1` before dev, and picked up by `tauri.conf.json`'s `bundle.externalBin` at build time.
+The preview pane renders your report live and re-renders as you type. From **View** you can:
 
-- **Startup args** — the shell passes `--no-exit-on-stdin-close`, `--parent-pid`, and `--port-file <temp>` so the server writes its bound port to a temp file and exits cleanly when the parent Tauri process dies. Rust polls the port file for readiness (faster than parsing Kestrel's stdout, which ASP.NET Core's ConsoleLogger can buffer for hundreds of ms).
-- **CWD** — set to the apphost's directory so .NET's dependency resolver finds the sibling DLLs regardless of where Tauri was launched from.
-- **Server URL** — the frontend reads the bound port from the port file. Default port is `9420` when unbound.
-- **Stderr / logs** — captured into `<serverDir>/logs/server-stderr.log`; the `Server → Show Server Log` menu item opens this file.
+- **Toggle Preview** — show/hide the pane.
+- **Preview Mode: Wrapped** — the normal report view.
+- **Preview Mode: Unwrapped** — the fully expanded source, with macros and includes resolved. Useful for debugging what the engine computes.
 
-See [PDF export](new-pdf-export.md) for how the desktop detects a missing Chromium browser and the recommended Chromium packages per distribution.
+### Running on demand (Auto-Run off)
 
-## Native menu
+By default the preview re-renders continuously as you type. If you turn **Settings → Auto-Run Preview** off — useful for long-running documents — the preview only re-renders when you:
 
-Built in Rust via Tauri's `MenuBuilder` (see `build_menu` in [src-tauri/src/lib.rs](../Calcpad.Web/frontend/calcpad-desktop/src-tauri/src/lib.rs)). Menu-item ids are dispatched to the frontend as Tauri events; the corresponding TypeScript listeners live in the Tauri bridge. Menu surface:
+- Click **▶ Run** on the editor toolbar.
+- Press **Ctrl+Alt+X**.
+- Right-click in the editor → **Run Preview**.
+- Use **Server → Refresh** in the native menu (same shortcut).
+
+A manual run also re-lints the document, refreshes definitions and the table of contents, and rebuilds the Export tab's plot list.
+
+## Splitting the editor
+
+The **Split ⬓** button in the editor toolbar (also **View → Split Editor**) opens a second editor group stacked below the first. Each group has its own tabs, tab strip, preview, and Problems markers. Click **Unsplit** (same button) to close the bottom group; any unsaved tabs in it are walked through the save prompt first. The active group — the one you most recently clicked into — drives the sidebar (Problems, TOC, Variables).
+
+## Errors
+
+**Linter** — Calcpad checks your document as you write and flags problems before they're converted to HTML. Issues are marked in red, yellow, or blue at the spot with the problem, based on severity, and appear in the **Problems** panel with a link to the offending line. See **[Linter and Diagnostics](new-linter.md)** for the full list of codes.
+
+**Preview errors** — errors from the calculation engine (including inside hidden code) are listed in the **Errors** tab of the sidebar, each with a link to its source line.
+
+## Exporting
+
+Every export uses the app's built-in engine, so the output matches the preview exactly.
+
+| Output | How | Notes |
+|--------|-----|-------|
+| **PDF** | **File → Export PDF…** | Full-fidelity export via a native save dialog. Requires a Chromium browser — see [PDF Export](new-pdf-export.md). |
+| **HTML** | **Save HTML…** on the sidebar's **Export** tab | Native save dialog writes a standalone `.html` report. |
+| **Word (.docx)** | **Save Word…** on the sidebar's **Export** tab | Native save dialog writes a `.docx` document. |
+
+Set the document title, timestamp format, page size, and header/footer in the sidebar's **PDF** tab before exporting. The **Export** tab also has a **Plots** section that lists every plot the document produces, so you can save each one individually or all at once as a ZIP — see [The CalcPad Panel & Settings → Export](new-calcpad-panel-and-settings.md#export).
+
+## The native menu
+
+The menu bar drives the whole app:
 
 - **File** — New Tab · Open… · Save · Save As… · Close Tab · Export PDF… · Quit
 - **Edit** — Undo · Redo · Cut · Copy · Paste · Select All · Find · Replace
 - **View** — Toggle Sidebar · Toggle Preview · Split Editor · Preview Mode: Wrapped / Unwrapped
-- **Server** — Refresh (`Ctrl+Alt+X`) · Show Server Log · Stop Server · Restart Server
-- **Help** — Documentation (opens the docs site via `plugin-opener`)
+- **Server** — Refresh (**Ctrl+Alt+X**) · Show Server Log · Stop Server · Restart Server
+- **Help** — Documentation (opens the docs site in your default browser)
 
-`Refresh` runs the frontend's `runRefresh()`: re-lint every group, refresh definitions/TOC, redraw previews, and post `getPlots` so the Export tab's cache is repopulated. Recent files are tracked by the frontend via Tauri's `plugin-store`.
+## Settings and configurations
 
-## Manual run and auto-run
+All calculation, plot, unit, theme, editor, and linter settings live in the **Settings** tab of the sidebar. The desktop app also supports **named configurations** — save different sets of settings (e.g. one for metric with 3 decimals, one for imperial with degrees) and switch the active configuration from the Settings tab; configurations persist between sessions.
 
-The `autoRun` extra setting (Settings tab → **Auto-Run Preview**, default on) gates the debounced content-change handler in `wireGroupCommon` — when off, `refreshPreviewFor` is not scheduled on `onDidChangeModelContent`. The preview still refreshes on preview open, tab switch, and manual run. Manual triggers:
+See **[The CalcPad Panel & Settings → Settings](new-calcpad-panel-and-settings.md#settings)** for the full list, and **[→ Formatting](new-calcpad-panel-and-settings.md#formatting-prettify)** for the Prettify options.
 
-- **▶ Run** button on the editor toolbar (`onRunRequest` callback → `runRefresh()`).
-- **Ctrl+Alt+X** — bound in `wireGroupCommon` via `editor.addAction` (also shows in Monaco's right-click context menu under `navigation` group) and at the window level in `wireGroupTauri` so it fires with focus outside the editor.
-- **Server → Refresh** — the same menu accelerator, routed through the shared `menu-click` handler.
+## The built-in engine
 
-## Split editor
+The app runs the calculation engine inside it. It starts automatically when the app launches and shuts down when you close it — you never launch or configure it yourself.
 
-The editor toolbar's **Split ⬓** button (also **View → Split Editor**) calls the `onSplitRequest` callback wired from `main.ts` → `splitEditor()`, which appends a second `EditorGroup` (its own tabs, Monaco instance, preview iframe, and diagnostic cache) stacked below the first. Each group is wired independently by `wireGroupCommon` / `wireGroupTauri`; the *active group* (last focused) drives the sidebar (Problems, TOC, Variables). Unsplitting closes the bottom group, walking any dirty tabs through the save prompt first. The split state is not persisted between sessions.
+If calculations stop responding, use the **Server** menu:
 
-## Drag-and-drop
+- **Refresh** (**Ctrl+Alt+X**) — re-run the active document.
+- **Show Server Log** — open the engine's log file to diagnose a problem.
+- **Stop Server** / **Restart Server** — cycle the engine.
 
-Dropping one or more files on the editor opens each in its own tab. Native filesystem drops use the OS path; non-OS drops (e.g. text from a browser) open as untitled tabs with the dropped contents.
+## Troubleshooting
 
-## Packaging
+| Symptom | Fix |
+|---------|-----|
+| Preview blank or not updating | **Server → Refresh**, then **Server → Restart Server** if needed. Check **Server → Show Server Log**. |
+| PDF export fails | Install a Chromium browser. On Linux the app names the package to install — see [PDF Export](new-pdf-export.md). |
+| Unsaved work after a crash | The app writes backup copies of unsaved files; reopen them from the Files tab. |
+| Symbols not found across files | Confirm the `#include` path resolves relative to the current document. |
 
-Tauri's own bundler produces per-platform installers via `tauri build`. Configured targets (see [tauri.conf.json](../Calcpad.Web/frontend/calcpad-desktop/src-tauri/tauri.conf.json) `bundle.targets`):
+## See also
 
-| Platform | Formats | Notes |
-|----------|---------|-------|
-| Windows | `msi`, `nsis` | `nsis` uses `installMode: perMachine`. WiX language `en-US`. |
-| macOS   | `app`, `dmg` | `minimumSystemVersion: 11.0`. |
-| Linux   | `deb`, `appimage` | The AppImage bundles the WebKitGTK dependency implicitly; the `.deb` package's `depends` list is left empty (WebKitGTK is expected on the host). |
-
-The Calcpad.Server sidecar and its fonts / template resources are staged into `src-tauri/binaries/` and included via `bundle.resources`. Cross-compilation for Windows from Linux is wired up through the `Desktop: Bundle Windows (cross)` VS Code task (calls `build-desktop.sh --rid=win-x64 --target=x86_64-pc-windows-msvc`).
+- [The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md) — the shared sidebar and all settings
+- [Using the VS Code Extension](new-vscode-extension.md)
+- [PDF Export](new-pdf-export.md) · [Includes and Remote Files](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [Table of Contents](new-table-of-contents.md)
+- [Writing Math](writing-math.md) · [Quick Reference](quick-reference.md)

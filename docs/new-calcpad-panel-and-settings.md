@@ -1,6 +1,6 @@
 # The CalcPad Panel & Settings
 
-> Part of Calcpad.Web. The panel described here is the same in the [VS Code extension](using-the-vscode-extension.md), the [desktop app](using-the-desktop-app.md), and the web editor — it is built from one shared set of components (`calcpad-frontend`). Where a host behaves differently, it is called out below.
+> Part of Calcpad.Web. The panel described here is the same in the [VS Code extension](new-vscode-extension.md), the [desktop app](new-desktop-app.md), and the web editor — it is built from one shared set of components (`calcpad-frontend`). Where a host behaves differently, it is called out below.
 
 The **CalcPad panel** is the tabbed sidebar that sits beside the editor. It shows what your document defines, lets you insert symbols and snippets, controls the calculation and plot settings, and drives export. Because every Calcpad front end embeds the same panel, the tabs and settings are identical everywhere; only how you open it differs:
 
@@ -178,6 +178,6 @@ Configurations persist between sessions in the VS Code extension and the desktop
 
 ## See also
 
-- [Using the VS Code Extension](using-the-vscode-extension.md)
-- [Using the Desktop App](using-the-desktop-app.md)
+- [Using the VS Code Extension](new-vscode-extension.md)
+- [Using the Desktop App](new-desktop-app.md)
 - [PDF Export](new-pdf-export.md) · [Linter](new-linter.md) · [Table of Contents](new-table-of-contents.md)
