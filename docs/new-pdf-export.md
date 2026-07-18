@@ -1,131 +1,56 @@
 # PDF Export
 
-> Calcpad.Web only (web editor and VS Code extension). Not available in the WPF desktop application.
+> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
 
-The PDF pipeline uses **PuppeteerSharp** (headless Chromium) for HTML rendering, plus **PDFsharp** for post-processing headers, footers, and background overlays.
+Calcpad.Web can export your report to a print-ready PDF that matches the on-screen preview, with configurable page size, margins, and optional headers, footers, and a letterhead background.
 
-## Rendering pipeline
+Set the options below in the sidebar's **PDF** tab, then export:
 
-1. Launch headless browser (singleton, locked with a semaphore)
-2. Create page and set HTML content (`WaitUntil: Networkidle0`)
-3. Inject print-specific CSS to force color-accurate output and fit datagrid tables
-4. Transform DOM via JavaScript (convert inputs to underlined text, etc.)
-5. Generate PDF bytes with Puppeteer
-6. Post-process with PDFsharp (headers, footers, background) if enabled
+- **Desktop app** — **File → Export PDF…**
+- **VS Code** — *CalcPad: Export to PDF*
+- **Web editor** — the PDF button on the sidebar's **PDF** tab
 
-## Supported paper formats
+## Browser requirement
 
-Letter, Legal, Tabloid, Ledger, **A0, A1, A2, A3, A4, A5, A6**. Default: A4. Unrecognized values fall back to A4.
+PDF export renders the report using a **Chromium-based browser** (Google Chrome, Microsoft Edge, or Chromium). The app looks for one already installed on your system; if it can't find one, it downloads a minimal headless build automatically the first time you export.
 
-## Margins and orientation
+On Linux, if no browser is found the app shows you the exact package to install for your distribution:
 
-- Margins accept CSS unit strings: `"2cm"`, `"1.5cm"`, `"0.5in"`
-- `orientation: "portrait"` (default) or `"landscape"`
-- Independent per-edge margin control: `marginTop`, `marginRight`, `marginBottom`, `marginLeft`
+| Distribution | Install command |
+|--------------|-----------------|
+| Arch / CachyOS / Manjaro / EndeavourOS / Garuda | `yay -S ungoogled-chromium-bin` (or `sudo pacman -S chromium`) |
+| Debian / Ubuntu / Mint | `sudo apt install chromium` |
+| Fedora / RHEL / Rocky / Alma | `sudo dnf install chromium` |
+| openSUSE | `sudo zypper install chromium` |
+| Alpine | `sudo apk add chromium` |
+| macOS | `brew install --cask google-chrome` |
+| Windows | install Microsoft Edge or Google Chrome |
 
-## Headers (when `enableHeader: true`)
+## Page setup
 
-Laid out by PDFsharp:
+- **Paper size** — Letter, Legal, Tabloid, Ledger, or A0–A6. Default is A4.
+- **Orientation** — portrait (default) or landscape.
+- **Margins** — set each edge independently, using values like `2cm`, `1.5cm`, or `0.5in`.
+- **Scale** — a zoom factor from 0.1 to 2.0 for shrinking or enlarging the content.
+- **Background** — colors and background images are printed by default.
 
-- Document **title** (top-left, bold 12pt)
-- Document **subtitle** (below title, gray)
-- **Center text** from `headerCenter`
-- **Timestamp** (top-right, 8pt, light gray) formatted per `dateTimeFormat` (defaults to `"g"`)
-- 1px gray separator line below the header
+## Headers and footers
 
-## Footers (when `enableFooter: true`)
+Turn headers and/or footers on in the PDF tab and fill in the fields you want:
 
-- **Left** — author and company
-- **Center** — custom `footerCenter` text
-- **Right** — page numbers (`Page N of Total`) and project field
-- 1px gray separator line above the footer
+**Header** — document title (bold, top-left), a subtitle beneath it, custom center text, and a timestamp (top-right). A thin separator line sits below it.
 
-## Background PDF overlay
+**Footer** — author and company (left), custom center text, and page numbers with the project name (right). A thin separator line sits above it.
 
-```text
-options.backgroundPdf = "C:/templates/letterhead.pdf";
-```
+The timestamp uses a standard .NET date/time format string (defaults to a short date-and-time format).
 
-PDFsharp loads the background and draws it **behind** each page, stretching to fit page dimensions.
+## Letterhead background
 
-## Image base64 embedding
+Point the **background PDF** option at a PDF file and it's drawn behind every page, stretched to fit — perfect for company letterhead or a title-block template.
 
-The VS Code extension scans generated HTML for `<img src="…">` and, for each local file path (not `http://`, `https://`, or `data:`), embeds the file as a base64 data URI before sending to `/api/calcpad/pdf`. Supported MIME types: `png`, `jpg`/`jpeg`, `gif`, `webp`, `svg`. Required because headless Chromium cannot read from the client's disk.
+## Excluding sections from the PDF (NoPrint)
 
-## Browser detection order
-
-1. Explicit `browserPath` (request field, env var, or `appsettings.json`)
-2. **Microsoft Edge** (Windows: Program Files, Program Files (x86), LocalAppData)
-3. **Google Chrome** (same three locations)
-4. **Linux** — `chromium`, `chromium-browser`, `ungoogled-chromium`, `google-chrome`, `google-chrome-stable`, `/snap/bin/chromium`
-5. **macOS** — Chrome, Edge, Chromium in `/Applications`
-6. **Fallback** — auto-download `ChromeHeadlessShell` via `BrowserFetcher` into `{AppContext.BaseDirectory}/chromium`
-
-## Desktop browser-missing warning (Calcpad-Desktop)
-
-Under Tauri the server runs as a sidecar binary and writes stderr to `<serverDir>/logs/server-stderr.log`. Before issuing a PDF request, the desktop UI scans that log; if PuppeteerSharp logged a launch failure on a previous attempt ("Could not find browser revision" / "Failed to launch the browser"), the user gets a native message box with **per-distribution install instructions** instead of waiting for a 10-second timeout:
-
-- **Arch / CachyOS / Manjaro / EndeavourOS / Garuda** — `yay -S ungoogled-chromium-bin` (or `sudo pacman -S chromium`)
-- **Debian / Ubuntu / Mint** — `sudo apt install chromium`
-- **Fedora / RHEL / Rocky / Alma** — `sudo dnf install chromium`
-- **openSUSE** — `sudo zypper install chromium`
-- **Alpine** — `sudo apk add chromium`
-- **macOS** — `brew install --cask google-chrome`
-- **Windows** — install Microsoft Edge or Google Chrome
-
-Distribution detection reads `ID` and `ID_LIKE` from `/etc/os-release`. The Arch packaging (`packaging/arch/PKGBUILD`) lists `ungoogled-chromium-bin` as the preferred `optdepend`.
-
-## Server stderr log
-
-The desktop launcher tees the .NET server's stderr into `extensions/server/logs/server-stderr.log` (truncated per launch, preserved on the original stderr stream too). The desktop app's **Server → Show Server Log** menu item — and any failed PDF request — pipes the most recent 200 lines into the **Output** panel under the **Server** channel, mirroring how the VS Code extension's spawned-process stderr surfaces in its Output channel.
-
-## Complete `PdfOptions` reference
-
-| Field | Type | Default | Purpose |
-|-------|------|---------|---------|
-| `format` | string | `"A4"` | Paper format |
-| `orientation` | string | `"portrait"` | `portrait` or `landscape` |
-| `printBackground` | bool | `true` | Render background colors/images |
-| `scale` | float | `1.0` | Zoom factor (0.1 – 2.0) |
-| `marginTop` | string | `"2cm"` | Top margin |
-| `marginRight` | string | `"1.5cm"` | Right margin |
-| `marginBottom` | string | `"2cm"` | Bottom margin |
-| `marginLeft` | string | `"1.5cm"` | Left margin |
-| `enableHeader` | bool | `false` | Render header |
-| `enableFooter` | bool | `false` | Render footer |
-| `documentTitle` | string? | `null` | Title (header, bold) |
-| `documentSubtitle` | string? | `null` | Subtitle (header, gray) |
-| `author` | string? | `null` | Author (footer left) |
-| `company` | string? | `null` | Company (footer left) |
-| `project` | string? | `null` | Project (footer right) |
-| `headerCenter` | string? | `null` | Custom center header text |
-| `footerCenter` | string? | `null` | Custom center footer text |
-| `dateTimeFormat` | string? | `null` | .NET format string (null → `"g"`) |
-| `backgroundPdf` | string? | `null` | Path to background PDF |
-
-## VS Code export flow
-
-Command `vscode-calcpad.exportToPdf`:
-
-1. Read `calcpad.pdf.*` settings
-2. Build a `ClientFileCache` from the document's `#include`/`#read` references
-3. `POST /api/calcpad/convert` → HTML
-4. Embed local images as base64
-5. `POST /api/calcpad/pdf` with 60-second timeout
-6. Show save dialog and write the PDF
-7. Offer to open the saved file
-
-## Health check
-
-`GET /api/calcpad/pdf/health` returns:
-
-```json
-{ "status": "ok", "service": "calcpad-pdf", "version": "2.0.0" }
-```
-
-## NoPrint regions
-
-Mark sections of a Calcpad source file to be excluded from PDF output (while remaining visible in the on-screen preview) using paired HTML-comment markers:
+Wrap sections you want visible on screen but omitted from the PDF in `NoPrintStart` / `NoPrintEnd` markers:
 
 ```text
 '<!--{"NoPrintStart": true}-->
@@ -135,18 +60,39 @@ debug_y = x + 1
 '<!--{"NoPrintEnd": true}-->
 ```
 
-The markers reuse the existing JSON-payload comment syntax already used by `LintIgnore`/`EndLintIgnore` and per-file `settings`.
+Good to know:
 
-**Behavior:**
+- The marker lines themselves are removed too.
+- Regions can be nested; the outermost pair wins.
+- A `NoPrintStart` without a matching `NoPrintEnd` strips everything through the end of the file.
+- Property names are matched case-insensitively, and the marker's value doesn't matter — only that the property is present.
+- These sections stay visible in the live preview; they're only removed from PDF (and other print) output.
 
-- Marker lines themselves are also removed
-- Pairing is stack-based; nested regions collapse to the outermost on close
-- An unmatched `NoPrintStart` strips through end-of-file
-- Property-name matching is case-insensitive
-- The JSON value of each marker is unused; only the property's presence matters
+This uses the same comment-marker syntax as [`LintIgnore`](new-linter.md#suppressing-diagnostics-lint-ignore) and per-file settings.
 
-**Wiring:**
+## Options reference
 
-- The `forPrint` parameter on `CalcpadService.ConvertAsync(...)`, when `true`, runs the stripper on the source *before* macro and expression parsing, so stripped sections never enter the rendered HTML
-- The `ForPrint` property on `CalcpadRequest` is threaded through `/api/calcpad/convert` and `/api/calcpad/convert-unwrapped`
-- The PDF flows in the VS Code extension and `calcpad-web` send `forPrint: true` when converting source for PDF output. On-screen preview converts default to `forPrint: false`, so NoPrint regions remain visible in the live preview
+Every option you can set for a PDF export:
+
+| Option | Default | Purpose |
+|--------|---------|---------|
+| `format` | `Letter` | Paper size |
+| `marginTop` | `2cm` | Top margin |
+| `marginRight` | `1.5cm` | Right margin |
+| `marginBottom` | `2cm` | Bottom margin |
+| `marginLeft` | `1.5cm` | Left margin |
+| `documentTitle` | — | Title (header, bold) |
+| `dateTimeFormat` | — | .NET date/time format string for the timestamp |
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| Export fails or times out | Install a Chromium browser (see the table above). In the desktop app, **Server → Show Server Log** shows the underlying error. |
+| Images missing in the PDF | Use paths the app can read; local images are embedded automatically before export. |
+| A debug section appears in the PDF | Wrap it in `NoPrintStart` / `NoPrintEnd` markers. |
+
+## See also
+
+- [Using the Desktop App](new-desktop-app.md) · [Using the VS Code Extension](new-vscode-extension.md)
+- [The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md)

@@ -1,57 +1,39 @@
-# Recursive Includes
+# Includes and File Reads
 
-> Calcpad.Web only (web editor and VS Code extension). Not available in the WPF desktop application. This branch (`calcpad-web`) is localhost-only — the hosted/multi-user variant of remote routing lives on `calcpad-experimental`.
+`#include` and `#read` let you pull in other files, and both can follow chains of files.
 
-`#include` and `#read` support recursive resolution and direct HTTP/HTTPS URLs.
+## Reusing code with `#include`
 
-## Recursive `#include` resolution
-
-Included files can themselves include other files. The resolver passes a shared `visited` set through the recursion:
+`#include` inlines another Calcpad file's source into your document at parse time, so you can keep shared constants, functions, and macros in one place and reuse them everywhere:
 
 ```text
 ' top.cpd
-#include 'shared/constants.cpd'
-#include 'shared/helpers.cpd'
+#include shared/constants.cpd
+#include shared/helpers.cpd
 ```
 
-### Depth limit
+An included file can include others in turn, and those can include more — the chain is followed automatically.
 
-Recursion depth is capped at **20 levels**. When exceeded, the include is replaced with:
-
-```text
-' Error: Include file not provided: <filename>
-```
-
-### Circular reference detection
-
-A case-insensitive set tracks every filename already expanded on the current path. A second attempt to include the same file is skipped — preventing infinite loops on self-referential or mutually-referential files.
-
-## Remote URL support (HTTP/HTTPS)
-
-Include content directly from the web:
-
-```text
-#include "https://example.com/shared-calcs.cpd"
-```
-
-- Only `http://` and `https://` are recognized — any other scheme is rejected
-- Default timeout: **10 seconds** (configurable per request via `apiTimeoutMs`)
-- User-Agent: `Calcpad/1.0`
-- Non-2xx responses throw an error with status code and reason phrase
-- Implemented by the single static helper [`Router.FetchUrlAsync`](../Calcpad.Web/backend/Services/Router.cs)
-
-There is no `<service:endpoint>` routing layer, no JWT/auth headers, no domain allowlist, and no server-side remote-content cache on this branch.
-
-## Source mapping and error attribution
-
-Every expanded line tracks its origin through three maps so diagnostics trace errors back to the original file and line number, even after several layers of include and macro expansion.
+- **Circular includes are safe.** If a file ends up including itself (directly or through another file), the repeat is skipped instead of looping forever. Filenames are matched case-insensitively.
+- **There's a depth limit.** Include chains can go up to 20 levels deep; beyond that, the include is skipped and a comment is left in its place noting the file that couldn't be included.
 
 ## `#include` vs `#read`
 
-| Aspect | `#include` | `#read` |
+Both bring in outside content, but they do different jobs:
+
+| | `#include` | `#read` |
 |--------|-----------|---------|
-| When processed | Parse time (substituted) | Runtime (evaluated) |
-| Content | Calcpad source code | CSV, TSV, Excel, JSON data |
-| Scope filtering | `#local` blocks stripped | n/a |
-| Output | Nested source inlined | Directive preserved; produces a matrix/vector variable |
-| Remote URL support | Yes | Yes |
+| What it brings in | Calcpad source code | Data (CSV, TSV, Excel, JSON) |
+| When it happens | At parse time — the source is inlined | At run time — the data is loaded into a variable |
+| Result | The included code becomes part of your document | You get a matrix or vector variable to compute with |
+
+## Errors point to the right place
+
+> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
+
+Even after several layers of includes and macro expansion, error messages and diagnostics point back to the original file and line number — so a problem in a shared file is reported where it actually lives, not at the `#include` line.
+
+## See also
+
+- [Working with Files](working-with-files.md) · [Programming](programming.md)
+- [Using the VS Code Extension](new-vscode-extension.md) — path completion for `#include` and `#read`

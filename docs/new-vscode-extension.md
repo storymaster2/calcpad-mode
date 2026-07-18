@@ -1,196 +1,216 @@
 # VS Code Extension
 
-> Part of Calcpad.Web. The features in all `new-*.md` documents apply to Calcpad.Web only — the WPF desktop application is not affected.
+> Calcpad.Web only. The standalone WPF desktop application for Windows is separate and unaffected.
 
-The Calcpad VS Code extension delivers IDE-grade language support for `.cpd` files: full symbol navigation, semantic syntax highlighting, autocomplete, hover documentation, three live preview panels, formatting hotkeys, and an embedded local server that runs the same conversion pipeline as the web backend.
+The **Calcpad VS Code extension** turns Visual Studio Code into a full Calcpad authoring environment. You write `.cpd` files with syntax highlighting, autocomplete, and inline error checking, then render them to a live HTML report and export to PDF, Word, or HTML — all driven by the same calculation engine as the rest of Calcpad.
 
-## Language server features
+For the Calcpad language itself, start with **[Writing Math](writing-math.md)** and the **[Quick Reference](quick-reference.md)**.
 
-### Go to definition
+## Requirements
 
-- Trigger: **Ctrl+Click** or **F12**
-- Covers variables, functions, macros, and custom units
-- Works across `#include` files
-- Jumps to the first assignment; reassignments are not targeted
+- **Visual Studio Code** 1.82 or newer.
+- **.NET runtime** on your PATH. The extension bundles a local Calcpad server that it launches automatically; it needs `dotnet` to run it. Verify with `dotnet --info` in a terminal.
+- A **Chromium-based browser** (Chrome, Edge, Chromium) for PDF export. See [PDF Export](new-pdf-export.md).
 
-### Find all references
+## Installing the extension
 
-- Trigger: **Shift+Alt+F12** or right-click → *Find All References*
-- Covers the same symbol types as Go to Definition
-- Each location includes exact column and length for precise selection
+The extension is distributed as a `.vsix` package (it is not yet on the Marketplace).
 
-### Rename symbol
+1. Obtain the `vscode-calcpad-<version>.vsix` file, or build it yourself from `Calcpad.Web/frontend/vscode-calcpad` with `npm run package:vsix`.
+2. In VS Code, open the **Extensions** view (**Ctrl+Shift+X**).
+3. Click the **⋯** menu at the top of the view → **Install from VSIX…** and select the file.
+4. Reload the window if prompted.
 
-- Trigger: **F2**
-- Renames only locally-defined occurrences
-- Does not rename across `#include` files — attempting to rename an imported symbol returns an error
+Alternatively, from a terminal: `code --install-extension vscode-calcpad-<version>.vsix`.
 
-### Path completion for `#include`, `#read`, `#write`, `#append`
+## Your first document
 
-- `#include`: `.cpd`, `.txt`
-- `#read` / `#write` / `#append`: `.cpd`, `.txt`, `.csv`, `.tsv`, `.xlsx`, `.xlsm`, `.xls`
-- Supports `/` and `\` path separators and drills into subdirectories
-- Expands `%VAR%` (Windows) and `$VAR` (POSIX) environment variables
-- Honors the `calcpad.libraryPath` setting — library files appear alongside workspace paths
-- Strips `@sheet`, `type=`, `sep=` options before resolving the path
+1. Create a new file and save it with a **`.cpd`** extension (for example `beam.cpd`). VS Code detects the `calcpad` language automatically. The `.cpdz` binary format is also recognized.
+2. Type a calculation, for example:
 
-### Quick-type symbol insertion
+   ```calcpad
+   "Cantilever tip deflection
+   P = 5kN
+   L = 3m
+   E = 200GPa
+   I = 8.5e-5m^4
+   δ = P·L^3/(3·E·I)
+   ```
 
-Type `~` followed by a key and press **space** to replace with a symbol:
+3. Click the **CalcPad Preview** button in the editor's top-right toolbar, or run **CalcPad Preview** from the Command Palette (**Ctrl+Shift+P**).
 
-```text
-~a   → α         ~A   → Α
-~b   → β         ~p   → π
-~g   → γ         ~s   → σ
-~t   → θ         ~S   → Σ
-```
+The preview opens in a side column and re-renders every time you edit. The bundled server starts automatically the first time you render — the first render may take a moment while it spins up.
 
-Controlled by the `calcpad.enableQuickTyping` setting (default `true`).
+## The editor
 
-### Hover provider
+### Syntax highlighting
 
-Rich hover tooltips for macros, functions, variables, and custom units. Content shown:
+`.cpd` files get semantic highlighting: numbers, units, operators, variables, functions, macros, keywords, commands, file paths, and embedded HTML/Markdown/CSS/JS/SVG in comments are each colored distinctly. Highlighting updates per line as you type, for both dark and light themes.
 
-- **Macros** — signature, source file, description, parameter types & defaults
-- **Functions** — signature, source file, description, return type, per-parameter docs
-- **Variables** — assignment expression, inferred type, source file
-- **Custom units** — definition expression, source file
-- **Built-in functions** — signature, description, return type, per-parameter docs, and a runnable example
+The extension also sets a few editor defaults for `.cpd` files so the language behaves predictably:
 
-### Semantic tokens
+- The monospace font is **JuliaMono** (falls back to Cascadia Code / Consolas). Run **CalcPad: Install JuliaMono Font** from the Command Palette to install it if the glyphs look wrong.
+- **Enter always inserts a newline** — it never accepts a suggestion. Press **Tab** to accept a completion instead.
+- Bracket matching is always on; bracket-pair colorization is off (Calcpad colors brackets itself).
 
-Server-backed semantic highlighting with 31 token types: Const, Units, Operator, Variable, Function, Keyword, Command, Bracket, Comment, Tag, Input, Include, Macro, HtmlComment, Format, LocalVariable, FilePath, DataExchangeKeyword, and more. Supports incremental per-line updates.
+### Autocomplete
 
-### Completion provider
+As you type, the completion list offers:
 
-- User-defined symbols prioritized above built-ins
-- Metadata JSON completion inside HTML comment blocks above definitions
-- Function/macro invocation snippets with `${N:param}` placeholders
-- Settings key completion (`decimals`, `degrees`, `complex`, `units`, `colorScale`, …)
+- **Your own symbols first** — variables, functions, macros, and custom units defined in the current document (and its `#include` files) are prioritized above built-ins.
+- **Built-in functions** with snippet placeholders — accept one and press **Tab** to jump between arguments.
+- **Setting keys** (`decimals`, `degrees`, `complex`, `units`, `colorScale`, …) where a setting is expected.
+- **Metadata keys** inside an HTML-comment block placed directly above a definition.
 
-### Diagnostics integration
+### Quick-type symbols
 
-CPD error codes surface as standard VS Code diagnostics. Severities are Error / Warning / Information. The minimum severity is filtered via `calcpad.linter.minimumSeverity` (default `information`).
+Type `~` followed by a key and press **space** to insert a Greek letter or math symbol. For example `~a` + space → `α`, `~p` + space → `π`, `~S` + space → `Σ`. The full set is shown in the **Insert** tab's Symbol Palette. Toggle this with the `quickTyping` setting in the CalcPad **Settings** tab.
 
-## Formatting hotkeys
+### Operator replacement and auto-indent
 
-Content-aware formatting picks HTML or Markdown syntax based on `calcpad.commentFormat` (`auto` | `html` | `markdown`). Toggle the whole feature with `calcpad.enableFormattingHotkeys`.
+Typing ASCII operators auto-converts them to Unicode: `<=` → `≤`, `>=` → `≥`, `!=` → `≠`. Block keywords indent automatically: `#if` / `#else` / `#end if`, `#for` / `#end for`, and `#def` / `#end def`.
+
+### Formatting hotkeys
+
+When the cursor is in a `.cpd` file, these hotkeys wrap the selection in HTML or Markdown markup. Whether HTML or Markdown is emitted depends on the `commentFormat` setting (`auto` / `html` / `markdown`).
 
 | Keybinding | Effect |
 |------------|--------|
-| **Ctrl+B** | `**bold**` or `<b>bold</b>` |
-| **Ctrl+I** | `*italic*` or `<i>italic</i>` |
-| **Ctrl+U** | `<u>underline</u>` |
-| **Ctrl+=** | `<sub>x</sub>` |
-| **Ctrl+Shift+=** | `<sup>x</sup>` |
-| **Ctrl+1** – **Ctrl+6** | Headings 1–6 |
-| **Ctrl+L** | `<p>…</p>` |
-| **Ctrl+R** | `<br>` |
+| **Ctrl+B** | Bold |
+| **Ctrl+I** | Italic |
+| **Ctrl+U** | Underline |
+| **Ctrl+=** | Subscript |
+| **Ctrl+Shift+=** | Superscript |
+| **Ctrl+1** … **Ctrl+6** | Headings 1–6 |
+| **Ctrl+L** | Paragraph |
+| **Ctrl+R** | Line break |
 | **Ctrl+Shift+L** | Bulleted list |
 | **Ctrl+Shift+N** | Numbered list |
 | **Ctrl+Q** | Toggle `'` comment prefix |
+| **Ctrl+Shift+Q** | Uncomment |
+| **Ctrl+Shift+V** | Paste as comment (each line prefixed with `'`) |
 
-(`Cmd` instead of `Ctrl` on macOS.)
+On macOS use **Cmd** instead of **Ctrl**. Turn the whole set off with the `enableFormattingHotkeys` setting if it conflicts with your other bindings.
 
-## Preview panels
+## Navigating symbols
 
-Three webview previews, each opening in a new editor column:
+The extension provides IDE-grade navigation across variables, functions, macros, and custom units — including across `#include` files:
 
-| Panel | Command | Endpoint |
-|-------|---------|----------|
-| **HTML Preview** | `previewHtml` | `/api/calcpad/convert` |
-| **Unwrapped Preview** | `previewUnwrapped` | `/api/calcpad/convert-unwrapped` |
+| Action | Trigger |
+|--------|---------|
+| **Go to Definition** | **Ctrl+Click** or **F12** — jumps to the first assignment |
+| **Find All References** | **Shift+Alt+F12**, or right-click → *Find All References* |
+| **Rename Symbol** | **F2** — renames occurrences in the current document only (not across `#include` files) |
+| **Hover** | Point at a symbol for its signature, type, source file, and docs |
+
+Hovering over a built-in function shows its signature, description, return type, per-parameter documentation, and a runnable example.
+
+## Path completion for includes and data files
+
+When you type a path after `#include`, `#read`, `#write`, or `#append`, the extension completes filenames from the workspace and from your configured library path:
+
+- `#include`: `.cpd`, `.txt`
+- `#read` / `#write` / `#append`: `.cpd`, `.txt`, `.csv`, `.tsv`, `.xlsx`, `.xlsm`, `.xls`
+- Both `/` and `\` separators work, and it drills into subdirectories.
+- Environment variables expand: `%VAR%` on Windows, `$VAR` on macOS/Linux.
+
+Point the library path (in the Settings tab) at a folder of reusable `.cpd` / `.txt` files and they show up in completion alongside workspace files — an easy way for a team to share a common library without copying it into every project.
+
+## The CalcPad panel
+
+Click the **CalcPad** icon in the activity bar (left edge) to open the panel. It has **Files** and **Calcpad** views, and the Calcpad view is organized into tabs (Insert, TOC, Settings, Variables, PDF, Formatting, Export, Errors). The view title bar has **CalcPad: Run Preview** (re-renders the active file and refreshes plots) and **Stop Server** buttons.
+
+The panel is the same across every Calcpad front end — see **[The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md)** for a full walkthrough of each tab.
+
+## Live preview
+
+Two preview panels are available, each opening in its own editor column:
+
+| Panel | How to open |
+|-------|-------------|
+| **HTML Preview** | Preview button in the editor toolbar, or *CalcPad Preview* in the Command Palette |
+| **Unwrapped Preview** | Eye button in the editor toolbar, or *CalcPad Preview Unwrapped* |
+
+The **Unwrapped** preview shows the fully expanded source (macros and includes resolved) — useful for debugging what the engine actually computes.
 
 Both panels:
 
-- Re-render automatically on document change when the `autoRun` setting is on (default)
-- Apply the theme from `calcpad.previewTheme` (`light` / `dark` / `system`)
-- Use `calcpad.darkBackground` (default `#1e1e1e`) for dark-mode backgrounds
-- Embed local images as base64 (needed for PDF/print fidelity)
+- Re-render automatically as you type when **Auto-Run Preview** is on (default).
+- Follow the `previewTheme` setting (`light` / `dark` / `system`), using `darkBackground` for the dark background color.
+- Embed local images so PDF/print output matches the preview.
 
-### Manual run
+Right-click a preview → **View Webview Source HTML** to inspect the rendered markup.
 
-`calcpad.refreshDocument` (**CalcPad: Run Preview**) re-lints the active document, refreshes semantic tokens, re-renders any open preview panels, and re-populates the Export tab's plot list. Triggers:
+### Running on demand (Auto-Run off)
 
-- Keybinding **Ctrl+Alt+X** (`when: editorLangId == 'calcpad' || editorLangId == 'plaintext'`)
-- Editor right-click context menu (group `calcpad@0`, ordered above the print/inspect items)
-- View title bar button on the `calcpadVueUI` view
-- Command Palette: *CalcPad: Run Preview*
+When you turn **Settings → Auto-Run Preview** off, typing no longer re-renders the preview. Trigger the run yourself via any of:
 
-When `autoRun` is off, the debounced `onDidChangeTextDocument` skips `schedulePreviewUpdate` — the preview only re-renders on manual run or when the preview panel is (re)opened.
+- **Ctrl+Alt+X** (works whenever a `.cpd` or plaintext editor has focus)
+- Right-click in the editor → **CalcPad: Run Preview**
+- The **CalcPad: Run Preview** button in the CalcPad sidebar's view title bar
+- The *CalcPad: Run Preview* command in the Command Palette
 
-## Export and print commands
+Running also re-lints the document, refreshes syntax highlighting, and rebuilds the Export tab's plot list.
 
-| Command | Description |
-|---------|-------------|
-| `exportToPdf` | Full-fidelity PDF export with save dialog and 60-second timeout |
-| `printToPdf` | Print-style PDF generated from the live webview |
-| `saveSourceHtml` | Renders the active document via `/api/calcpad/convert` and saves the HTML through a native save dialog. Available from the **Save HTML…** button on the sidebar's **Export** tab and from the Command Palette as *CalcPad: Save Source HTML…* |
-| `saveDocx` | Renders the active document, then converts to Word `.docx` via `/api/calcpad/docx` (Calcpad.OpenXml). Available from the **Save Word…** button on the sidebar's **Export** tab and from the Command Palette as *CalcPad: Save as Word Document…* |
-| `viewWebviewSource` | Opens the rendered HTML in a scratch editor for debugging |
-| `insertImage` | File picker to insert an `<img>` tag with relative path |
+## Errors and diagnostics
 
-### Plot export
+Calcpad errors surface in VS Code's **Problems** panel (**Ctrl+Shift+M**) as standard diagnostics with Error / Warning / Information severities, each with a `CPD-XXXX` code. Click one to jump to the offending line. Control how much is shown with the linter minimum-severity setting. See **[Linter and Diagnostics](new-linter.md)** for what each code means.
 
-Every rendered preview also pushes its HTML through `setCachedHtml` on the sidebar's Vue UI provider, which extracts image data from `<img>` tags produced by Calcpad plotters and caches them so the Export tab's **Plots** section shows a thumbnail list. Two message types back it:
+For errors that occur inside hidden (`#hide`) regions — which don't appear in the preview — use the **Errors** tab in the sidebar to see the full list with source-line links.
 
-- `savePlot` — saves plot `#index` via a native save dialog. The extension picks the file extension from the cached blob (PNG for raster, SVG for vector).
-- `savePlotsZip` — bundles all cached plots into a single ZIP via the shared `buildZip` helper.
+## Exporting
 
-The Vue-side cache is invalidated on `calcpad.refreshDocument` and on every `updatePreviewContent`, so the plot list mirrors the current document state without a separate API round-trip.
+All exports run through the same engine as the preview, so what you see is what you get.
 
-## Calcpad sidebar
+| Output | How | Notes |
+|--------|-----|-------|
+| **PDF** | **Export CalcPad to PDF** button in the editor toolbar, or *Export CalcPad to PDF* | Full-fidelity export with a native save dialog. Requires a Chromium browser — see [PDF Export](new-pdf-export.md). |
+| **PDF (print style)** | Right-click editor → *Print CalcPad Preview to PDF* | Generated from the live preview. |
+| **HTML** | **Save HTML…** on the sidebar's **Export** tab, or *CalcPad: Save Source HTML…* | Renders and saves standalone HTML via a native dialog. |
+| **Word (.docx)** | **Save Word…** on the sidebar's **Export** tab, or *CalcPad: Save as Word Document…* | Renders, then converts to a Word document. |
 
-A dedicated activity-bar view (`calcpadVueUI`) displays the document's:
+Use the **PDF** tab in the panel to set the document title, timestamp format, page size, and header/footer before exporting. The **Export** tab also has a **Plots** section — a thumbnail list of every plot the document emits, each with an individual **Save…** button and a **Download all (ZIP)** button. See [The CalcPad Panel & Settings → Export](new-calcpad-panel-and-settings.md#export).
 
-- Macros (with parameters and defaults)
-- User-defined functions (with return type and signature)
-- Variables (with inferred type)
-- Custom units
+## Settings
 
-Includes **Refresh Document** and **Stop Server** buttons in the view title bar.
+All Calcpad settings — math, plot, units, preview and color themes, editor features, linter severity, library path, and named configurations — live in the **Settings** tab of the CalcPad panel, **not** in VS Code's normal settings editor. Editing them there keeps them in sync with the extension and the server.
 
-## Server lifecycle management
+See **[The CalcPad Panel & Settings → Settings](new-calcpad-panel-and-settings.md#settings)** for the full list.
 
-The extension bundles a local Calcpad server and manages its lifecycle automatically:
+## The bundled engine
 
-- **Modes** — `calcpad.server.mode` = `auto` (default) | `local` | `remote`
-- **URL** — `calcpad.server.url` (default `http://localhost:9420`)
-- **dotnet path** — `calcpad.server.dotnetPath` (default `dotnet`)
-- **Auto-start** — Local server launches in the background on activation
-- **Auto-restart** — Up to 3 crash retries before requiring manual refresh
-- **Health fallback** — If local start fails, the extension falls back to the configured remote URL
-- **Clean shutdown** — Server process is terminated when the window closes
-- **Manual control** — `calcpad.stopServer` command
+The extension runs a local Calcpad engine to do all conversion and linting. You don't normally need to think about it:
 
-## Output channels
+- It **starts automatically** in the background when the extension activates.
+- It **auto-restarts** on a crash (up to 3 retries) before asking you to refresh manually.
+- It **shuts down cleanly** when the window closes.
 
-Four independent VS Code output channels:
+If something goes wrong, use **Stop CalcPad Server** and then **Refresh Document** to restart it. The server mode (`auto` / `local` / `remote`), URL (default `http://localhost:9420`), and `dotnet` path are configurable if you need a custom setup.
 
-| Channel | Purpose |
-|---------|---------|
-| **CalcPad Extension** | Extension lifecycle, command execution, errors |
+### Output channels for troubleshooting
+
+Four VS Code output channels help diagnose problems (open the Output panel and pick from the dropdown):
+
+| Channel | Shows |
+|---------|-------|
+| **CalcPad Extension** | Extension lifecycle, commands, errors |
 | **Calcpad Output HTML** | Rendered HTML diagnostics |
-| **Calcpad Webview Console** | `console.log` intercepted from preview webviews |
-| **CalcPad Server Debug** | stdout/stderr from the spawned server process |
+| **Calcpad Webview Console** | Console messages from preview panels |
+| **CalcPad Server Debug** | Output from the engine process |
 
-## Calculation & plot settings
+## Troubleshooting
 
-All Calcpad runtime settings are surfaced under `calcpad.settings`:
+| Symptom | Fix |
+|---------|-----|
+| Preview never renders / "server not ready" | Confirm `dotnet --info` works. Then **Stop CalcPad Server** → **Refresh Document**. Check the **CalcPad Server Debug** output channel. |
+| PDF export fails | Install a Chromium browser (Chrome/Edge/Chromium). See [PDF Export](new-pdf-export.md). |
+| Greek letters / symbols render as boxes | Run **CalcPad: Install JuliaMono Font** and reload. |
+| Symbols not found across files | Confirm the `#include` path resolves; set the library path if the file lives in a shared folder. |
+| Formatting hotkeys conflict with other bindings | Disable `enableFormattingHotkeys` in the Settings tab. |
 
-- **Math** — `decimals` (0–15), `degrees` (0 radians / 1 degrees / 2 gradians), `isComplex`, `substitute`, `formatEquations`, `zeroSmallMatrixElements`, `maxOutputCount`, `formatString`
-- **Plot** — `isAdaptive`, `screenScaleFactor`, `imagePath`, `imageUri`, `vectorGraphics`, `colorScale`, `smoothScale`, `shadows`, `lightDirection`
+## See also
 
-These are forwarded to the server in every conversion request.
-
-## Library path for shared files
-
-`calcpad.libraryPath` points at a directory of reusable `.cpd`/`.txt` files. Files under that directory show up alongside workspace files in `#include` / `#read` path completion, letting teams share a common library without copying into each project.
-
-## Paste as comment
-
-`pasteAsComment` pastes clipboard content with each line prefixed by `'`, useful when copying text from docs or emails into a Calcpad document.
-
-## Operator replacer and auto-indenter
-
-Typing standard ASCII operators triggers automatic replacement with Unicode equivalents (`<=` → `≤`, `>=` → `≥`, `!=` → `≠`). The auto-indenter handles `#if`/`#else`/`#end if`, `#for`/`#end for`, and `#def`/`#end def` block indentation.
+- [The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md) — the shared sidebar and all settings
+- [Using the Desktop App](new-desktop-app.md)
+- [PDF Export](new-pdf-export.md) · [Includes and File Reads](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [Table of Contents](new-table-of-contents.md)
+- [Writing Math](writing-math.md) · [Quick Reference](quick-reference.md)
