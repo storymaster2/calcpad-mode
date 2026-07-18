@@ -62,6 +62,9 @@ namespace Calcpad.Highlighter.ContentResolution
 
         /// <summary>User-provided descriptions per parameter.</summary>
         public List<string> ParamDescriptions { get; set; }
+
+        /// <summary>User-declared return type from a metadata comment (value/vector/matrix/any).</summary>
+        public string ReturnType { get; set; }
     }
 
     /// <summary>
@@ -116,6 +119,9 @@ namespace Calcpad.Highlighter.ContentResolution
         public int LineNumber { get; set; }
         public string Source { get; set; }
         public string SourceFile { get; set; }
+
+        /// <summary>User-provided description from a metadata comment on the preceding line.</summary>
+        public string Description { get; set; }
     }
 
     public class DuplicateMacro

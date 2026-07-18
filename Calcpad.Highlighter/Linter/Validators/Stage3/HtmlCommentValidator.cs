@@ -56,6 +56,17 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             {
                 var root = doc.RootElement;
 
+                // returnType applies only to custom functions (value/vector/matrix/any).
+                if (root.TryGetProperty("returnType", out var returnProp) && returnProp.ValueKind == JsonValueKind.String)
+                {
+                    var value = returnProp.GetString();
+                    if (!string.IsNullOrEmpty(value) && !DefinitionMetadata.ValidFunctionParamTypes.Contains(value))
+                    {
+                        result.AddWarning(lineIndex, token.Column, token.Column + token.Length, "CPD-3416",
+                            "'" + value + "' is not a valid returnType. Expected value, vector, matrix, or any");
+                    }
+                }
+
                 if (!root.TryGetProperty("paramTypes", out var typesProp) || typesProp.ValueKind != JsonValueKind.Array)
                     return;
 
@@ -65,14 +76,10 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     ? DefinitionMetadata.ValidMacroParamTypes
                     : DefinitionMetadata.ValidFunctionParamTypes;
 
-                int arrayIdx = 0;
                 foreach (var item in typesProp.EnumerateArray())
                 {
                     if (item.ValueKind != JsonValueKind.String)
-                    {
-                        arrayIdx++;
                         continue;
-                    }
 
                     var value = item.GetString();
                     if (!string.IsNullOrEmpty(value) && !validTypes.Contains(value))
@@ -81,7 +88,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                         result.AddWarning(lineIndex, token.Column, token.Column + token.Length, "CPD-3416",
                             "'" + value + "' is not valid. Expected " + validList);
                     }
-                    arrayIdx++;
                 }
             }
         }

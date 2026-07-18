@@ -122,7 +122,6 @@ Lint Calcpad source code and return diagnostics.
 ```typescript
 interface LintRequest {
   content: string;
-  apiTimeoutMs?: number;
   sourceFilePath?: string;
 }
 ```
@@ -198,7 +197,6 @@ Get detailed definitions (macros, functions, variables, custom units) from Calcp
 ```typescript
 interface DefinitionsRequest {
   content: string;
-  apiTimeoutMs?: number;
   sourceFilePath?: string;
 }
 ```
@@ -320,7 +318,6 @@ interface CalcpadRequest {
   settings?: Settings;
   forceUnwrappedCode?: boolean;
   theme?: string;               // "light" or "dark"
-  apiTimeoutMs?: number;
   sourceFilePath?: string;      // Used to resolve relative #include against the parent file's directory
 }
 ```
@@ -411,7 +408,6 @@ interface SnippetParameterDto {
 
 1. **Line and column numbers are zero-based.**
 2. **Source file path** — Pass `sourceFilePath` so the server can resolve relative `#include` against the parent file's directory.
-3. **Remote `#include`** — `#include https://…` and `#include http://…` are fetched server-side with a 10-second default timeout (overridable via `apiTimeoutMs`). Non-HTTP/HTTPS URLs are rejected. There is no API routing layer, no auth, no domain allowlist, and no server-side remote-content cache on this branch.
-4. **Token positions** — Use `column` and `length` for syntax highlighting spans.
-5. **Error ranges** — Use `column` and `endColumn` for lint underlines.
-6. **Incremental updates** — Use `/highlight-line` for real-time highlighting and `/lint` for full validation.
+3. **Token positions** — Use `column` and `length` for syntax highlighting spans.
+4. **Error ranges** — Use `column` and `endColumn` for lint underlines.
+5. **Incremental updates** — Use `/highlight-line` for real-time highlighting and `/lint` for full validation.

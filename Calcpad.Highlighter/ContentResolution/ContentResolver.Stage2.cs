@@ -281,21 +281,13 @@ namespace Calcpad.Highlighter.ContentResolution
         }
 
         /// <summary>
-        /// Tests whether a trimmed line span is a #local directive.
-        /// Matches Core's Validator.IsKeyword(line, "#local").
+        /// Tests whether a trimmed line span is a #local or #global directive.
+        /// Matches Core's Validator.IsKeyword(line, ...).
         /// </summary>
-        private static bool IsLocalDirective(ReadOnlySpan<char> trimmedSpan)
+        private static bool IsLocalOrGlobalDirective(ReadOnlySpan<char> trimmedSpan)
         {
-            return trimmedSpan.StartsWith("#local", StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Tests whether a trimmed line span is a #global directive.
-        /// Matches Core's Validator.IsKeyword(line, "#global").
-        /// </summary>
-        private static bool IsGlobalDirective(ReadOnlySpan<char> trimmedSpan)
-        {
-            return trimmedSpan.StartsWith("#global", StringComparison.OrdinalIgnoreCase);
+            return trimmedSpan.StartsWith("#local", StringComparison.OrdinalIgnoreCase) ||
+                   trimmedSpan.StartsWith("#global", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -363,26 +355,20 @@ namespace Calcpad.Highlighter.ContentResolution
 
             // Process each line, filtering #local sections and recursing for nested #include.
             // Matches Core's CalcpadReader.Include: #local sections are excluded from includes.
-            var isLocal = false;
+            var directives = new DirectiveState();
 
             for (int j = 0; j < includedStage1.Lines.Count; j++)
             {
                 var line = includedStage1.Lines[j];
                 var trimmedSpan = line.AsSpan().Trim();
 
-                if (IsLocalDirective(trimmedSpan))
+                if (IsLocalOrGlobalDirective(trimmedSpan))
                 {
-                    isLocal = true;
+                    directives.Apply(trimmedSpan);
                     continue;
                 }
 
-                if (IsGlobalDirective(trimmedSpan))
-                {
-                    isLocal = false;
-                    continue;
-                }
-
-                if (isLocal)
+                if (directives.Scope == ScopeMode.Local)
                     continue;
 
                 if (IsIncludeDirective(trimmedSpan))

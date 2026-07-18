@@ -40,10 +40,6 @@ Documented in [API_SCHEMA.md](API_SCHEMA.md). Summary:
 - `POST /api/calcpad/prettify` — pretty-print Calcpad source
 - `GET  /api/calcpad/debug-crash` — write a crash event from the client to the disk log
 
-## Remote `#include` fetching
-
-`#include https://…` and `#include http://…` are resolved by [`Router.FetchUrlAsync`](Services/Router.cs) — a single static HTTP fetch helper with a 10-second default timeout. Non-HTTP/HTTPS URLs are rejected. There is no API routing layer, no auth headers, and no domain allowlist on this branch.
-
 ## Configuration
 
 `appsettings.json` carries logging configuration and the bind URL. There are no JWT, Auth, Storage, or S3 sections on this branch.

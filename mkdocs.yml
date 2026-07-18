@@ -57,12 +57,14 @@ nav:
     - Matrices: matrices.md
     - High Performance Functions: high-performance-vectors-and-matrices.md
   - New Apps and Features (beta):
-    - Using the VS Code Extension: using-the-vscode-extension.md
-    - Using the Desktop App: using-the-desktop-app.md
-    - The CalcPad Panel & Settings: calcpad-panel-and-settings.md
-    - VS Code Extension (reference): new-vscode-extension.md
-    - Desktop App (reference): new-desktop-app.md
+    - VS Code Extension: new-vscode-extension.md
+    - Desktop App: new-desktop-app.md
+    - The CalcPad Panel & Settings: new-calcpad-panel-and-settings.md
     - PDF Export: new-pdf-export.md
+    - Includes and File Reads: new-includes.md
+    - Linter and Diagnostics: new-linter.md
+    - Table of Contents: new-table-of-contents.md
+    - Running the Server: new-web-deployment.md
   - Quick Reference:
     - quick-reference.md
 

@@ -221,10 +221,17 @@ export class BaseServerManager {
             }
         }
 
-        // `detached: true` starts the child in its own process group / session,
-        // so it survives when this VS Code window exits. We still pipe stdio
-        // while we're alive to capture startup logs; once the owner exits,
+        // On POSIX, `detached: true` starts the child in its own process group /
+        // session so it survives when this VS Code window exits. We still pipe
+        // stdio while we're alive to capture startup logs; once the owner exits,
         // Node's unref() lets the parent event loop close without waiting.
+        //
+        // On Windows we deliberately do NOT detach (see spawnOpts below): DETACHED_PROCESS
+        // leaves the server with no console, which forces every console-subsystem
+        // browser helper it spawns during PDF generation (crashpad_handler.exe, spawned
+        // even by system Edge/Chrome) to allocate its own visible console window. Windows
+        // keeps orphaned children alive after the parent exits anyway, so survival is
+        // preserved without detaching.
         //
         // DOTNET_DbgEnableMiniDump tells the runtime to write a minidump on
         // unrecoverable crashes (StackOverflow, FailFast) — failure modes that
@@ -265,9 +272,15 @@ export class BaseServerManager {
         if (path.isAbsolute(this.dotnetPath)) {
             childEnv.DOTNET_ROOT = path.dirname(this.dotnetPath);
         }
+        // windowsHide adds CREATE_NO_WINDOW (libuv only applies it when no stdio is
+        // inherited — ours are all 'pipe'), giving the server a hidden console that its
+        // browser grandchildren inherit instead of each opening their own CMD window.
+        // It's a no-op off Windows. detached must stay off on Windows because
+        // DETACHED_PROCESS causes CREATE_NO_WINDOW to be ignored (see comment above).
         const spawnOpts = {
             stdio: ['pipe', 'pipe', 'pipe'] as ['pipe', 'pipe', 'pipe'],
-            detached: true,
+            detached: process.platform !== 'win32',
+            windowsHide: true,
             env: childEnv,
             cwd: path.join(this.basePath, 'bin'),
         };

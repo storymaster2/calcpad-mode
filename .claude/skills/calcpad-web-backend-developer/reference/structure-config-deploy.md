@@ -2,44 +2,35 @@
 
 ## Project Structure
 
+> **Note:** This is the localhost-only branch. Hosted-mode work (auth, JWT, EF Core / SQLite, multi-user) lives on `calcpad-experimental` and is intentionally absent here.
+
 ```
 Calcpad.Web/backend/
 ├── Controllers/
-│   ├── CalcpadController.cs        # Main API controller (convert, lint, highlight, definitions, snippets, PDF)
-│   ├── AuthController.cs           # Authentication endpoints (register, login)
-│   └── UserController.cs           # User management
+│   └── CalcpadController.cs        # API controller (convert, lint, highlight, definitions, snippets, PDF)
 ├── Services/
-│   ├── CalcpadApiService.cs        # Shared app builder configuration (DI, CORS, Auth, middleware)
+│   ├── CalcpadApiService.cs        # Shared app builder configuration (DI, CORS, middleware)
 │   ├── CalcpadService.cs           # Core conversion/calculation logic (HTML generation, caching)
 │   ├── PdfGeneratorService.cs      # PDF generation (PuppeteerSharp browser pool + PDFsharp)
-│   ├── AuthService.cs              # JWT token generation, user auth
-│   ├── IncludeResolver.cs          # Resolves #include directive file paths
-│   └── Router.cs                   # API route configuration
+│   ├── FileSettingsExtractor.cs    # Extracts settings from source files
+│   ├── NoPrintRegionStripper.cs    # Strips #noprint regions from output
+│   └── BundledFonts.cs             # Inlines bundled fonts for PDF rendering
 ├── Models/
-│   ├── Auth/
-│   │   ├── User.cs                 # User entity
-│   │   ├── UserRole.cs             # Role enum
-│   │   └── AuthDtos.cs             # LoginRequest, RegisterRequest, AuthResponse
 │   └── Pdf/
 │       └── PdfOptions.cs           # PDF format, orientation, margins, headers/footers
-├── Data/
-│   └── CalcpadAuthDbContext.cs     # EF Core SQLite context (data/users.db)
 ├── Program.cs                      # Console entry point, graceful shutdown
 ├── FileLogger.cs                   # File-based crash/error logging
 ├── template.html                   # HTML output template for rendered calculations
-├── appsettings.json                # JWT, database path, logging config
+├── appsettings.json                # Browser path, logging config
 ├── Calcpad.Server.csproj           # .NET 10 project (v7.6.1)
 ├── Calcpad.Server.sln
-├── Dockerfile
-├── docker-compose.yml
-├── scripts/
-│   ├── restart-dev-server.sh       # Start/restart dev server
-│   ├── build-linux.sh              # Linux build script
-│   ├── build-linux-console.sh      # Linux console build
-│   ├── build-slim-bundle.sh        # Slim bundle build (Linux)
-│   ├── build-slim-bundle.ps1       # Slim bundle build (Windows)
-│   └── deploy-slim-bundle.ps1      # Deploy slim bundle
-└── testing/                        # Test .cpd files
+└── scripts/
+    ├── restart-dev-server.sh       # Start/restart dev server
+    ├── build-linux.sh              # Linux build script
+    ├── build-linux-console.sh      # Linux console build
+    ├── build-slim-bundle.sh        # Slim bundle build (Linux)
+    ├── build-slim-bundle.ps1       # Slim bundle build (Windows)
+    └── deploy-slim-bundle.ps1      # Deploy slim bundle
 ```
 
 ## Environment Variables
@@ -49,7 +40,7 @@ Calcpad.Web/backend/
 | `CALCPAD_PORT` | `9420` | Server listening port |
 | `CALCPAD_HOST` | `0.0.0.0` | Server bind address |
 | `CALCPAD_ENABLE_HTTPS` | (unset) | Enable HTTPS |
-| `Auth:Enabled` | `false` | Enable JWT authentication |
+| `CALCPAD_DETACHED` | (unset) | Run detached (no console prompts) |
 
 ## External Dependencies
 
@@ -57,11 +48,9 @@ Calcpad.Web/backend/
 |---------|---------|---------|
 | Microsoft.AspNetCore.OpenApi | 10.0.0 | OpenAPI spec generation |
 | Swashbuckle.AspNetCore | 10.0.1 | Swagger UI |
+| Microsoft.OpenApi | 2.9.0 | Patched OpenAPI (GHSA-v5pm-xwqc-g5wc) |
 | PuppeteerSharp | 21.1.1 | HTML-to-PDF rendering (Chromium) |
 | PDFsharp | 6.2.0 | PDF post-processing |
-| BCrypt.Net-Next | 4.0.3 | Password hashing |
-| Microsoft.AspNetCore.Authentication.JwtBearer | 10.0.0 | JWT auth |
-| Microsoft.EntityFrameworkCore.Sqlite | 10.0.0 | SQLite ORM |
 
 ## Testing
 
@@ -106,7 +95,6 @@ Navigate to `http://localhost:9420/swagger` when the server is running.
 
 ## Deployment
 
-- **Docker:** `Dockerfile` + `docker-compose.yml` for containerized deployment
 - **Self-contained:** Single-file publish via `build-slim-bundle.sh` / `.ps1`
 - **Console:** Standalone executable with graceful Ctrl+C shutdown
 - **DLL:** Can be referenced directly by frontend projects (e.g., VS Code extension server manager)
