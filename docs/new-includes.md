@@ -1,6 +1,5 @@
 # Includes and File Reads
-
-> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
+# Includes and File Reads
 
 `#include` and `#read` let you pull in other files, and both can follow chains of files.
 
@@ -10,8 +9,8 @@
 
 ```text
 ' top.cpd
-#include 'shared/constants.cpd'
-#include 'shared/helpers.cpd'
+#include shared/constants.cpd
+#include shared/helpers.cpd
 ```
 
 An included file can include others in turn, and those can include more — the chain is followed automatically.
@@ -24,12 +23,17 @@ An included file can include others in turn, and those can include more — the 
 Both bring in outside content, but they do different jobs:
 
 | | `#include` | `#read` |
+Both bring in outside content, but they do different jobs:
+
+| | `#include` | `#read` |
 |--------|-----------|---------|
 | What it brings in | Calcpad source code | Data (CSV, TSV, Excel, JSON) |
 | When it happens | At parse time — the source is inlined | At run time — the data is loaded into a variable |
 | Result | The included code becomes part of your document | You get a matrix or vector variable to compute with |
 
 ## Errors point to the right place
+
+> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
 
 Even after several layers of includes and macro expansion, error messages and diagnostics point back to the original file and line number — so a problem in a shared file is reported where it actually lives, not at the `#include` line.
 
