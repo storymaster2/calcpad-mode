@@ -19,7 +19,7 @@
     
     
       
-        <title>Calcpad.Web Local Mode - CalcpadCE Documentation</title>
+        <title>Running the Calcpad Server - CalcpadCE Documentation</title>
       
     
     
@@ -71,7 +71,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#calcpadweb-local-mode" class="md-skip">
+        <a href="#running-the-calcpad-server" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Calcpad.Web Local Mode
+              Running the Calcpad Server
             
           </span>
         </div>
@@ -2622,10 +2622,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#endpoint-catalog" class="md-nav__link">
+  <a href="#api-endpoints" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Endpoint catalog
+        API endpoints
       
     </span>
   </a>
@@ -2633,10 +2633,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-request-fields-calcpadrequest" class="md-nav__link">
+  <a href="#common-request-fields" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common request fields (CalcpadRequest)
+        Common request fields
       
     </span>
   </a>
@@ -2644,76 +2644,82 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#definitions-response-shape" class="md-nav__link">
+  <a href="#response-shapes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Definitions response shape
+        Response shapes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Response shapes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definitions
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#find-references-response" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#find-references" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Find-references response
+        Find-references
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#highlight-response" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#highlight" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Highlight response
+        Highlight
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#snippets-response" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#lint" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Snippets response
+        Lint
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#remote-url-fetching" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#snippets" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Remote URL fetching
+        Snippets
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#content-resolution-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Content resolution pipeline
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#crash-logging" class="md-nav__link">
+  <a href="#see-also" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Crash logging
+        See also
       
     </span>
   </a>
@@ -2737,18 +2743,20 @@
 
 
 
-<h1 id="calcpadweb-local-mode">Calcpad.Web Local Mode<a class="headerlink" href="#calcpadweb-local-mode" title="Permanent link">&para;</a></h1>
+<h1 id="running-the-calcpad-server">Running the Calcpad Server<a class="headerlink" href="#running-the-calcpad-server" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><strong>Localhost-only build.</strong> This branch (<code>calcpad-web</code>) only supports running the server bound to a loopback address. The startup loopback guard in <a href="../Calcpad.Web/backend/Program.cs">Calcpad.Web/backend/Program.cs</a> throws <code>InvalidOperationException</code> if the resolved bind URL is anything other than <code>localhost</code>, <code>127.0.0.0/8</code>, or <code>::1</code>. Multi-user / hosted / Docker deployment, auth, file storage, and per-user caching live on the <code>calcpad-experimental</code> branch.</p>
-<p>Calcpad.Web only. The WPF desktop application is unaffected.</p>
+<p>Calcpad.Web only. The standalone WPF desktop application for Windows is separate and unaffected.</p>
 </blockquote>
-<p>The web backend (<a href="../Calcpad.Web/backend">Calcpad.Web/backend</a>) is an ASP.NET Core Web API that drives the web editor, the VS Code extension, and the Tauri desktop wrapper. It replaces the former <code>Calcpad.Server</code> project with clearer separation of concerns and an explicit endpoint catalog — in this branch, scoped to a single local user.</p>
+<p>The desktop app and the VS Code extension start the Calcpad calculation server for you, so most people never run it by hand. But you can also run it directly — for example, to point several tools at one shared instance, or to script conversions and calls against its API. This page covers running the server and the API it exposes.</p>
+<blockquote>
+<p><strong>Localhost only.</strong> This build runs the server bound to your own machine (<code>localhost</code>, <code>127.0.0.1</code>, or <code>::1</code>) only. If you point it at any other address, it refuses to start. There is no multi-user hosting, authentication, or shared file storage in this build.</p>
+</blockquote>
 <h2 id="running">Running<a class="headerlink" href="#running" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>Calcpad.Web/backend
 dotnet<span class="w"> </span>run
 </code></pre></div>
-<p>Defaults to <code>http://localhost:9420</code>. Override the port with <code>CALCPAD_PORT</code>, or override the full bind URL via <code>--urls</code> — as long as it still resolves to a loopback address. Any non-loopback host is rejected at startup.</p>
-<h2 id="endpoint-catalog">Endpoint catalog<a class="headerlink" href="#endpoint-catalog" title="Permanent link">&para;</a></h2>
+<p>By default the server listens on <code>http://localhost:9420</code>. To change the port, set <code>CALCPAD_PORT</code>, or pass a full bind URL with <code>--urls</code> — as long as it still points at a loopback address.</p>
+<h2 id="api-endpoints">API endpoints<a class="headerlink" href="#api-endpoints" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -2761,22 +2769,17 @@ dotnet<span class="w"> </span>run
 <tr>
 <td><code>/api/calcpad/convert</code></td>
 <td>POST</td>
-<td>HTML conversion with theme + settings</td>
+<td>Convert a document to an HTML report (with theme + settings)</td>
 </tr>
 <tr>
 <td><code>/api/calcpad/convert-unwrapped</code></td>
 <td>POST</td>
-<td>Raw code HTML for error navigation</td>
+<td>HTML of the raw, fully expanded source (used for error navigation)</td>
 </tr>
 <tr>
 <td><code>/api/calcpad/sample</code></td>
 <td>GET</td>
-<td>Retrieve a sample document</td>
-</tr>
-<tr>
-<td><code>/api/calcpad/debug-crash</code></td>
-<td>GET</td>
-<td>Append a client-side crash event to the server log</td>
+<td>Fetch a sample document</td>
 </tr>
 <tr>
 <td><code>/api/calcpad/pdf</code></td>
@@ -2791,12 +2794,12 @@ dotnet<span class="w"> </span>run
 <tr>
 <td><code>/api/calcpad/docx</code></td>
 <td>POST</td>
-<td>Generate a Word <code>.docx</code> — runs the calcpad → HTML pipeline (<code>forPrint: true</code>) and feeds it through <code>Calcpad.OpenXml.OpenXmlWriter</code></td>
+<td>Generate a Word <code>.docx</code> document</td>
 </tr>
 <tr>
 <td><code>/api/calcpad/highlight</code></td>
 <td>POST</td>
-<td>Tokenize full document for syntax highlighting</td>
+<td>Tokenize a full document for syntax highlighting</td>
 </tr>
 <tr>
 <td><code>/api/calcpad/highlight-line</code></td>
@@ -2806,17 +2809,17 @@ dotnet<span class="w"> </span>run
 <tr>
 <td><code>/api/calcpad/lint</code></td>
 <td>POST</td>
-<td>Semantic diagnostics with CPD codes</td>
+<td>Run the linter and return diagnostics</td>
 </tr>
 <tr>
 <td><code>/api/calcpad/definitions</code></td>
 <td>POST</td>
-<td>Macros, functions, variables, units</td>
+<td>List macros, functions, variables, and units</td>
 </tr>
 <tr>
 <td><code>/api/calcpad/find-references</code></td>
 <td>POST</td>
-<td>Full symbol occurrence index</td>
+<td>Every occurrence of each symbol</td>
 </tr>
 <tr>
 <td><code>/api/calcpad/prettify</code></td>
@@ -2826,21 +2829,27 @@ dotnet<span class="w"> </span>run
 <tr>
 <td><code>/api/calcpad/snippets</code></td>
 <td>GET</td>
-<td>Snippets by category</td>
+<td>Snippets, optionally filtered by category</td>
+</tr>
+<tr>
+<td><code>/api/calcpad/debug-crash</code></td>
+<td>GET</td>
+<td>Record a client-side crash in the server log</td>
 </tr>
 </tbody>
 </table>
-<p>The full API schema lives at <a href="../Calcpad.Web/backend/API_SCHEMA.md">Calcpad.Web/backend/API_SCHEMA.md</a>.</p>
-<h2 id="common-request-fields-calcpadrequest">Common request fields (<code>CalcpadRequest</code>)<a class="headerlink" href="#common-request-fields-calcpadrequest" title="Permanent link">&para;</a></h2>
+<p>The full request/response schema lives at <a href="../Calcpad.Web/backend/API_SCHEMA.md">Calcpad.Web/backend/API_SCHEMA.md</a>; the common shapes are summarized below.</p>
+<h2 id="common-request-fields">Common request fields<a class="headerlink" href="#common-request-fields" title="Permanent link">&para;</a></h2>
+<p>Most POST endpoints accept a request with these fields:</p>
 <ul>
-<li><code>content</code> — Calcpad source code</li>
-<li><code>settings</code> — math/plot/units configuration</li>
+<li><code>content</code> — the Calcpad source code</li>
+<li><code>settings</code> — math / plot / unit configuration</li>
 <li><code>theme</code> — <code>"light"</code> or <code>"dark"</code></li>
-<li><code>apiTimeoutMs</code> — remote fetch timeout (default <code>10000</code>)</li>
-<li><code>sourceFilePath</code> — client-side file path; the server uses it to resolve relative <code>#include</code> against the parent file's directory</li>
-<li><code>forPrint</code> — when <code>true</code>, NoPrint regions are stripped before conversion (used by PDF flows)</li>
+<li><code>sourceFilePath</code> — the document's file path, used to resolve relative <code>#include</code> paths against the file's folder</li>
+<li><code>forPrint</code> — when <code>true</code>, <code>NoPrint</code> regions are stripped before conversion (used by PDF export)</li>
 </ul>
-<h2 id="definitions-response-shape">Definitions response shape<a class="headerlink" href="#definitions-response-shape" title="Permanent link">&para;</a></h2>
+<h2 id="response-shapes">Response shapes<a class="headerlink" href="#response-shapes" title="Permanent link">&para;</a></h2>
+<h3 id="definitions">Definitions<a class="headerlink" href="#definitions" title="Permanent link">&para;</a></h3>
 <p>Returns four parallel arrays:</p>
 <ul>
 <li><code>macros[]</code> — name, parameters, isMultiline, content, source, description, paramTypes, paramDescriptions, defaults</li>
@@ -2849,14 +2858,29 @@ dotnet<span class="w"> </span>run
 <li><code>customUnits[]</code> — name, expression</li>
 </ul>
 <p><code>typeId</code> values: 0 Unknown, 1 Value, 2 Vector, 3 Matrix, 5 Various, 6 Function, 7 InlineMacro, 8 MultilineMacro, 9 CustomUnit.</p>
-<h2 id="find-references-response">Find-references response<a class="headerlink" href="#find-references-response" title="Permanent link">&para;</a></h2>
-<p>Three dictionaries (<code>variables</code>, <code>functions</code>, <code>macros</code>), each mapping symbol name to an array of:</p>
+<h3 id="find-references">Find-references<a class="headerlink" href="#find-references" title="Permanent link">&para;</a></h3>
+<p>Three dictionaries (<code>variables</code>, <code>functions</code>, <code>macros</code>), each mapping a symbol name to an array of:</p>
 <div class="language-typescript highlight"><pre><span></span><code><span class="p">{</span><span class="w"> </span><span class="nx">line</span><span class="p">,</span><span class="w"> </span><span class="nx">column</span><span class="p">,</span><span class="w"> </span><span class="nx">length</span><span class="p">,</span><span class="w"> </span><span class="nx">source</span><span class="p">,</span><span class="w"> </span><span class="nx">sourceFile</span><span class="o">?</span><span class="p">,</span><span class="w"> </span><span class="nx">isAssignment</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
-<p><code>isAssignment: true</code> indicates a definition or reassignment.</p>
-<h2 id="highlight-response">Highlight response<a class="headerlink" href="#highlight-response" title="Permanent link">&para;</a></h2>
-<p>Returns an array of <code>{ line, column, length, type, typeId, text? }</code>. Passing <code>includeText: false</code> (default) omits the <code>text</code> field to reduce payload.</p>
-<h2 id="snippets-response">Snippets response<a class="headerlink" href="#snippets-response" title="Permanent link">&para;</a></h2>
+<p><code>isAssignment: true</code> marks a definition or reassignment.</p>
+<h3 id="highlight">Highlight<a class="headerlink" href="#highlight" title="Permanent link">&para;</a></h3>
+<p>An array of <code>{ line, column, length, type, typeId, text? }</code>. The <code>text</code> field is omitted by default; pass <code>includeText: true</code> to include it.</p>
+<h3 id="lint">Lint<a class="headerlink" href="#lint" title="Permanent link">&para;</a></h3>
+<div class="language-typescript highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nx">errorCount</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">warningCount</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">diagnostics</span><span class="o">:</span><span class="w"> </span><span class="kt">Array</span><span class="o">&lt;</span><span class="p">{</span>
+<span class="w">    </span><span class="nx">line</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">,</span><span class="w"> </span><span class="nx">column</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">,</span><span class="w"> </span><span class="nx">endColumn</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">code</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w">        </span><span class="c1">// &quot;CPD-XXXX&quot;</span>
+<span class="w">    </span><span class="nx">message</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">severity</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;error&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;warning&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;information&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">severityId</span><span class="o">:</span><span class="w"> </span><span class="kt">0</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mf">2</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">source</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Calcpad Linter&quot;</span>
+<span class="w">  </span><span class="p">}</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>See <a href="new-linter.html">Linter and Diagnostics</a> for what each code means.</p>
+<h3 id="snippets">Snippets<a class="headerlink" href="#snippets" title="Permanent link">&para;</a></h3>
 <div class="language-typescript highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nx">count</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">,</span>
 <span class="w">  </span><span class="nx">snippets</span><span class="o">:</span><span class="w"> </span><span class="kt">Array</span><span class="o">&lt;</span><span class="p">{</span>
@@ -2869,20 +2893,12 @@ dotnet<span class="w"> </span>run
 <span class="w">  </span><span class="p">}</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Optional query string <code>?category=Functions/Trigonometric</code> filters results.</p>
-<h2 id="remote-url-fetching">Remote URL fetching<a class="headerlink" href="#remote-url-fetching" title="Permanent link">&para;</a></h2>
-<p>Remote <code>#include</code> and <code>#read</code> URLs (<code>http://</code>, <code>https://</code>) are fetched by <a href="../Calcpad.Web/backend/Services/Router.cs"><code>Router.FetchUrlAsync</code></a> — a single static helper with a 10-second default timeout (overridable per request via <code>apiTimeoutMs</code>). Non-HTTP/HTTPS URLs are rejected.</p>
-<p>There is no API routing layer, no JWT/auth headers, no domain allowlist, and no server-side remote-content cache on this branch. The hosted version on <code>calcpad-experimental</code> keeps the <code>&lt;service:endpoint&gt;</code> routing, per-request <code>ClientFileCache</code>, disk-cache offload, and <code>/refresh-cache</code> endpoint that local mode no longer needs.</p>
-<h2 id="content-resolution-pipeline">Content resolution pipeline<a class="headerlink" href="#content-resolution-pipeline" title="Permanent link">&para;</a></h2>
-<p>A three-stage pipeline in <code>Calcpad.Highlighter</code> processes files uniformly for the linter, definitions endpoint, and highlight endpoint. Each stage emits an artifact plus a source map pointing back to the previous stage.</p>
+<p>Filter with a query string, e.g. <code>?category=Functions/Trigonometric</code>.</p>
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Stage 1 — Line continuation.</strong> Explicit (<code>_</code>) and implicit (unbalanced delimiters at end-of-line) merging. Produces a <code>LineContinuationMap</code> and per-segment column tracking for accurate error positions.</li>
-<li><strong>Stage 2 — Include resolution &amp; macro collection.</strong> Recursive <code>#include</code> substitution, then macro definition tokenization. Computes macro definitions, duplicates, parameter order (for keyword-arg validation), bodies, and which parameters are referenced inside quoted/comment content.</li>
-<li><strong>Stage 3 — Macro expansion &amp; type tracking.</strong> Removes macro definitions, expands every call. Builds variable/function/macro indices, tracks reassignments and outer-scope (<code>←</code>) assignments, runs type inference.</li>
+<li><a href="new-includes.html">Includes and File Reads</a> · <a href="new-linter.html">Linter and Diagnostics</a> · <a href="new-pdf-export.html">PDF Export</a></li>
+<li><a href="new-desktop-app.html">Using the Desktop App</a> · <a href="new-vscode-extension.html">Using the VS Code Extension</a></li>
 </ul>
-<p><code>SourceMapper.MapLineBack()</code> chains the three source maps plus the include map and macro-expansion map to resolve any Stage 3 line/column back to the original file, original line, and source kind (<code>local</code> vs <code>include</code>).</p>
-<h2 id="crash-logging">Crash logging<a class="headerlink" href="#crash-logging" title="Permanent link">&para;</a></h2>
-<p>The backend writes unexpected exits and orphaned-server scenarios to disk via <code>FileLogger</code> and the server-manager. These surface in the <code>CalcPad Server Debug</code> output channel and on disk so the VS Code extension can present them to the user. The frontend reports its own crashes to the server via <code>GET /api/calcpad/debug-crash</code>.</p>
 
 
 

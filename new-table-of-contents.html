@@ -2611,10 +2611,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#heading-comment-syntax" class="md-nav__link">
+  <a href="#writing-headings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Heading comment syntax
+        Writing headings
       
     </span>
   </a>
@@ -2622,21 +2622,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#automatic-id-generation" class="md-nav__link">
+  <a href="#building-the-list" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Automatic ID generation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#nested-list-rendering" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Nested list rendering
+        Building the list
       
     </span>
   </a>
@@ -2648,6 +2637,17 @@
     <span class="md-ellipsis">
       
         Example
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See also
       
     </span>
   </a>
@@ -2673,11 +2673,11 @@
 
 <h1 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>Available in <strong>Calcpad.Web</strong> (web editor and VS Code extension). The features in all <code>new-*.md</code> documents apply to Calcpad.Web only — not to the WPF desktop application.</p>
+<p>Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.</p>
 </blockquote>
-<p>Calcpad.Web documents can generate a navigable table of contents from the document headings, with automatic ID assignment and nested rendering.</p>
-<h2 id="heading-comment-syntax">Heading comment syntax<a class="headerlink" href="#heading-comment-syntax" title="Permanent link">&para;</a></h2>
-<p>Markdown-style heading comments use a leading <code>'</code> plus one to six <code>#</code> characters:</p>
+<p>Calcpad.Web can build a navigable table of contents from your document's headings, with links that jump straight to each section.</p>
+<h2 id="writing-headings">Writing headings<a class="headerlink" href="#writing-headings" title="Permanent link">&para;</a></h2>
+<p>Write a heading as a comment line that starts with <code>'</code> followed by one to six <code>#</code> characters — just like Markdown:</p>
 <div class="language-text highlight"><pre><span></span><code>&#39;# Section 1
 &#39;Some content
 &#39;## Subsection 1.1
@@ -2685,27 +2685,24 @@
 &#39;### Deeper subsection
 &#39;# Section 2
 </code></pre></div>
-<p>These render as <code>&lt;h1&gt;</code>–<code>&lt;h6&gt;</code> HTML headings in the output.</p>
-<h2 id="automatic-id-generation">Automatic ID generation<a class="headerlink" href="#automatic-id-generation" title="Permanent link">&para;</a></h2>
-<p><code>toc.js</code> walks all <code>&lt;h1&gt;</code>–<code>&lt;h6&gt;</code> elements on page load. For each heading without an <code>id</code>:</p>
-<ol>
-<li>Snake-cases the heading text (lowercase, spaces → underscores)</li>
-<li>Detects collisions and appends <code>_&lt;n&gt;</code> when necessary</li>
-<li>Assigns the generated ID to the element</li>
-</ol>
-<h2 id="nested-list-rendering">Nested list rendering<a class="headerlink" href="#nested-list-rendering" title="Permanent link">&para;</a></h2>
-<p>Call <code>makeList({ target, parent })</code> from a <code>&lt;script&gt;</code> block to build a nested <code>&lt;ul&gt;</code> tree matching the heading levels:</p>
+<p>These become <code>&lt;h1&gt;</code>–<code>&lt;h6&gt;</code> headings in your report. Every heading automatically gets a unique link target, so you can link to any section — the table of contents uses these targets to jump around the document.</p>
+<h2 id="building-the-list">Building the list<a class="headerlink" href="#building-the-list" title="Permanent link">&para;</a></h2>
+<p>Add a small script block to your document to generate the nested list. Point it at the container where the list should appear:</p>
 <div class="language-js highlight"><pre><span></span><code><span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">&#39;load&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nx">makeList</span><span class="p">({</span><span class="w"> </span><span class="nx">target</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;#toc&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">parent</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;article&#39;</span><span class="w"> </span><span class="p">});</span>
 <span class="p">});</span>
 </code></pre></div>
 <ul>
-<li>Deeper heading levels become nested <code>&lt;ul&gt;</code> elements</li>
-<li>Same or shallower levels pop the stack to the correct parent</li>
-<li>Each entry becomes <code>&lt;li&gt;&lt;a href="#heading_id"&gt;Heading Text&lt;/a&gt;&lt;/li&gt;</code></li>
+<li><code>target</code> — the element the list is placed into (here, an element with <code>id="toc"</code>)</li>
+<li><code>parent</code> — the region whose headings are collected (here, the report's <code>article</code>)</li>
 </ul>
+<p>Deeper headings become nested sub-lists, and each entry is a link that scrolls to its section.</p>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
-<p><a href="../Calcpad.Cli/Examples/Demos/toc.cpd">Calcpad.Cli/Examples/Demos/toc.cpd</a> demonstrates the full pattern including <code>#md on</code>, custom CSS, and the JS invocation.</p>
+<p>The demo file <a href="../Calcpad.Cli/Examples/Demos/toc.cpd">Calcpad.Cli/Examples/Demos/toc.cpd</a> shows the whole pattern, including turning on Markdown comments with <code>#md on</code>, a bit of custom CSS, and the script block above.</p>
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="reporting.html">Reporting</a> · <a href="writing-math.html">Writing Math</a></li>
+</ul>
 
 
 
