@@ -76,6 +76,7 @@
         :initial-available-configs="availableConfigs"
         :initial-editor-font-family="editorFontFamily"
         :initial-available-fonts="availableFonts"
+        :app-version="appVersion"
         @update-settings="handleUpdateSettings"
         @update-preview-theme="handleUpdatePreviewTheme"
         @update-color-theme="handleUpdateColorTheme"
@@ -135,13 +136,18 @@
         :errors="convertErrors"
         @go-to-line="handleGoToLine"
       />
+      <CalcpadMetadataTab
+        v-else-if="activeTab === 'metadata'"
+        :block="metadataBlock"
+        @apply="handleApplyMetadata"
+      />
     </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import CalcpadInsertTab from './CalcpadInsertTab.vue'
 import CalcpadTocTab from './CalcpadTocTab.vue'
 import CalcpadSettingsTab from './CalcpadSettingsTab.vue'
@@ -151,7 +157,9 @@ import CalcpadFormattingTab from './CalcpadFormattingTab.vue'
 import CalcpadExportTab from './CalcpadExportTab.vue'
 import CalcpadFilesTab from './CalcpadFilesTab.vue'
 import CalcpadErrorsTab from './CalcpadErrorsTab.vue'
+import CalcpadMetadataTab from './CalcpadMetadataTab.vue'
 import { postMessage } from '../services/messaging'
+import type { MetadataCommentBlock, MetadataCommentData } from '../../text/metadata-comment'
 import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading, ThemeInfo, FileNode, VersionConfig } from '../types'
 import { DEFAULT_VERSION_CONFIG } from '../types'
 import type { CalcpadError } from '../../types/api'
@@ -160,9 +168,11 @@ import { DEFAULT_PDF_SETTINGS } from '../types'
 // Props
 interface Props {
   versionConfig?: VersionConfig
+  appVersion?: string
 }
 const props = withDefaults(defineProps<Props>(), {
   versionConfig: () => ({ ...DEFAULT_VERSION_CONFIG }),
+  appVersion: '',
 })
 
 // Views: string-identified so future views can be added by extending this list.
@@ -217,16 +227,26 @@ const prettifyIndentStyle = ref<'tab' | 'space'>('tab')
 const prettifyIndentSize = ref(4)
 const prettifyTrimTrailing = ref(true)
 
-const tabs: Tab[] = [
-  { id: 'insert', label: 'Insert' },
-  { id: 'toc', label: 'TOC' },
-  { id: 'settings', label: 'Settings' },
-  { id: 'variables', label: 'Variables' },
-  { id: 'pdf', label: 'PDF' },
-  { id: 'formatting', label: 'Formatting' },
-  { id: 'export', label: 'Export' },
-  { id: 'errors', label: 'Errors' }
-]
+const metadataBlock = ref<MetadataCommentBlock | null>(null)
+
+const tabs = computed<Tab[]>(() => {
+  const base: Tab[] = [
+    { id: 'insert', label: 'Insert' },
+    { id: 'toc', label: 'TOC' },
+    { id: 'settings', label: 'Settings' },
+    { id: 'variables', label: 'Variables' },
+    { id: 'pdf', label: 'PDF' },
+    { id: 'formatting', label: 'Formatting' },
+    { id: 'export', label: 'Export' },
+    { id: 'errors', label: 'Errors' }
+  ]
+  // The metadata comment editor is driven by editor cursor tracking, available
+  // in the VS Code webview and the desktop app (both host a real editor).
+  if (props.versionConfig.isVSCode || props.versionConfig.isDesktop) {
+    base.push({ id: 'metadata', label: 'Metadata' })
+  }
+  return base
+})
 
 const convertErrors = ref<CalcpadError[]>([])
 
@@ -301,6 +321,11 @@ const switchTab = (tabId: string) => {
   // Request prettify settings when switching to Formatting tab
   if (tabId === 'formatting') {
     postMessage({ type: 'getPrettifySettings' })
+  }
+
+  // Refresh the metadata comment at the cursor when opening the Metadata tab
+  if (tabId === 'metadata') {
+    postMessage({ type: 'getMetadataContext' })
   }
 
   // Fetch the current document's plots the first time the Export tab is opened.
@@ -488,6 +513,18 @@ const handleUpdatePrettifyTrim = (enabled: boolean) => {
   postMessage({ type: 'updatePrettifyTrim', value: enabled })
 }
 
+const handleApplyMetadata = (data: MetadataCommentData) => {
+  if (!metadataBlock.value) return
+  postMessage({
+    type: 'updateMetadata',
+    line: metadataBlock.value.line,
+    indent: metadataBlock.value.indent,
+    trailingQuote: metadataBlock.value.trailingQuote,
+    isNew: metadataBlock.value.isNew,
+    data
+  })
+}
+
 // Message handler
 const handleMessage = (event: MessageEvent) => {
   const message = event.data
@@ -561,6 +598,12 @@ const handleMessage = (event: MessageEvent) => {
     case 'plotsResponse':
       plots.value = Array.isArray(message.plots) ? message.plots : []
       plotsLoading.value = false
+      break
+    case 'metadataContext':
+      metadataBlock.value = message.block ?? null
+      break
+    case 'focusTab':
+      if (typeof message.tab === 'string') switchTab(message.tab)
       break
   }
 }

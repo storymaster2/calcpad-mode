@@ -52,6 +52,22 @@ namespace Calcpad.Highlighter.Linter.Models
         }
 
         /// <summary>
+        /// Checks whether an actual argument type is compatible with the expected parameter
+        /// type for this signature. Element-wise functions (sin, sqrt, floor, ...) also accept
+        /// vectors and matrices wherever a scalar or integer is expected, since Core applies
+        /// them element-wise and returns a vector/matrix of the same shape.
+        /// </summary>
+        public bool IsArgumentCompatible(ParameterType expected, CalcpadType actual)
+        {
+            if (IsElementWise &&
+                (actual == CalcpadType.Vector || actual == CalcpadType.Matrix) &&
+                (expected == ParameterType.Scalar || expected == ParameterType.Integer || expected == ParameterType.Any))
+                return true;
+
+            return IsTypeCompatible(expected, actual);
+        }
+
+        /// <summary>
         /// Checks if the given CalcpadType is compatible with the expected ParameterType.
         /// </summary>
         public static bool IsTypeCompatible(ParameterType expected, CalcpadType actual)

@@ -1,10 +1,12 @@
 import * as monaco from 'monaco-editor';
 import { createApp, nextTick } from 'vue';
 import App from './App.vue';
+import pkg from '../package.json';
 import CalcpadAppVue from 'calcpad-frontend/vue/components/CalcpadApp.vue';
 import { initMessaging } from 'calcpad-frontend/vue/services/messaging';
 import { MessageBridge } from './services/message-bridge';
 import { buildApiSettings } from 'calcpad-frontend/types/settings';
+import { findMetadataCommentBlock, serializeMetadataComment, buildDefinitionResolver } from 'calcpad-frontend';
 import { registerCalcpadLanguage, registerCalcpadTheme, remeasureEditorFontsWhenReady, resolveEditorFontFamily } from './editor/setup';
 import { setAppTheme, coerceAppTheme } from './editor/app-theme';
 import { registerSemanticTokensProvider } from './editor/semantic-tokens';
@@ -53,14 +55,17 @@ function getServerUrl(): string {
 
 /** Idle-state preview HTML — same content the VS Code extension shows when
  *  the editor buffer is empty. Quick reference for formatting hotkeys. */
-function getEmptyPreviewHtml(): string {
+function getEmptyPreviewHtml(theme: 'light' | 'dark'): string {
+    const c = theme === 'light'
+        ? { fg: '#6e6e6e', bg: '#ffffff', link: '#0066cc' }
+        : { fg: '#858585', bg: '#1e1e1e', link: '#4FC1FF' };
     return `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>CalcPad Preview</title>
     <style>
-        body { color: #858585; background: var(--vscode-editor-background, #1e1e1e); padding: 20px; font-family: var(--vscode-font-family, system-ui, sans-serif); }
+        body { color: ${c.fg}; background: ${c.bg}; padding: 20px; font-family: var(--vscode-font-family, system-ui, sans-serif); }
         h3 { text-align: center; }
         p { text-align: center; }
         table { margin: 1em auto; border-collapse: collapse; text-align: left; font-size: 0.9em; }
@@ -68,7 +73,7 @@ function getEmptyPreviewHtml(): string {
         th { text-align: right; font-weight: normal; opacity: 0.7; }
         td { font-family: var(--vscode-editor-font-family, monospace); }
         h4 { text-align: center; margin-top: 1.5em; margin-bottom: 0.3em; }
-        a { color: #4FC1FF; }
+        a { color: ${c.link}; }
     </style>
 </head>
 <body>
@@ -326,6 +331,8 @@ async function bootstrap(): Promise<void> {
     // by the wrapped->unwrapped two-step in the 'navigateToLine' handler.
     const pendingPreviewScrollLine = new Map<string, number>();
 
+    const PREVIEW_LOADING_DELAY_MS = 400;
+
     async function refreshPreviewFor(group: EditorGroup): Promise<void> {
         if (!appInstance.isPreviewVisible()) return;
 
@@ -336,15 +343,27 @@ async function bootstrap(): Promise<void> {
         const theme = resolvePreviewTheme();
 
         if (!content.trim()) {
-            appInstance.setPreviewHtml(group.id, getEmptyPreviewHtml());
+            appInstance.setPreviewHtml(group.id, getEmptyPreviewHtml(theme));
             return;
         }
 
         const fileContext = getFileContext ? await getFileContext(content) : {};
 
-        const result = mode === 'unwrapped'
-            ? await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath, theme)
-            : await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath, theme);
+        // Show the "Calculating…" overlay only if the round-trip runs long, so
+        // fast renders never flash it (mirrors Calcpad.Wpf's delayed spinner).
+        const loadingTimer = window.setTimeout(
+            () => appInstance.setPreviewLoading(group.id, true),
+            PREVIEW_LOADING_DELAY_MS,
+        );
+        let result;
+        try {
+            result = mode === 'unwrapped'
+                ? await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath, theme)
+                : await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath, theme);
+        } finally {
+            window.clearTimeout(loadingTimer);
+            appInstance.setPreviewLoading(group.id, false);
+        }
 
         // Consume any pending two-step scroll target for this group: only the
         // unwrapped view it was set for should honor it, and only once.
@@ -460,6 +479,67 @@ async function bootstrap(): Promise<void> {
             run: () => { void runRefresh(); },
         });
 
+        // Edit-metadata context action: open the Metadata tab for the comment at
+        // the cursor, moving onto (or seeding) one when needed. Mirrors the VS
+        // Code `editMetadataProperties` command.
+        ed.addAction({
+            id: 'calcpad.editMetadata',
+            label: 'Edit Metadata Properties',
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.6,
+            run: (edEditor) => {
+                const model = edEditor.getModel();
+                const pos = edEditor.getPosition();
+                if (!model || !pos) return;
+                const curLine = pos.lineNumber;
+                const curText = model.getLineContent(curLine);
+
+                const focusMetadata = () => {
+                    sidebarInstance.switchView?.('calcpad');
+                    // switchTab('metadata') posts getMetadataContext, which the
+                    // bridge resolves against the (now-updated) cursor line.
+                    sidebarInstance.switchTab?.('metadata');
+                };
+
+                // Already on a metadata comment — just open the editor for it.
+                if (findMetadataCommentBlock([curText], 0)) {
+                    focusMetadata();
+                    return;
+                }
+
+                // A metadata comment already sits directly above — move onto it.
+                if (curLine > 1 && findMetadataCommentBlock([model.getLineContent(curLine - 1)], 0)) {
+                    const above = curLine - 1;
+                    edEditor.setPosition({ lineNumber: above, column: model.getLineMaxColumn(above) });
+                    focusMetadata();
+                    return;
+                }
+
+                // On a definition, the panel shows a virtual block from real
+                // highlighter results (correct params) and Apply creates the
+                // comment — no seeding, so definition line numbers stay valid.
+                const resolve = buildDefinitionResolver(
+                    editorBridge.definitions.getCachedDefinitions(docKeyFor(group))
+                    ?? { functions: [], macros: [], variables: [], customUnits: [] });
+                if (resolve(curLine - 1)) {
+                    focusMetadata();
+                    return;
+                }
+
+                // Otherwise seed an empty comment so settings/lint markers can be
+                // added on a non-definition line.
+                const indent = curText.match(/^[ \t]*/)?.[0] ?? '';
+                const newLineText = serializeMetadataComment({}, indent, '');
+                edEditor.executeEdits('calcpad-metadata-seed', [{
+                    range: new monaco.Range(curLine, 1, curLine, 1),
+                    text: newLineText + '\n',
+                }]);
+                // The inserted comment now occupies the original line index.
+                edEditor.setPosition({ lineNumber: curLine, column: model.getLineMaxColumn(curLine) });
+                focusMetadata();
+            },
+        });
+
         // Content changes: refresh this group's definitions cache + preview,
         // and (only when this is the active group) the sidebar TOC.
         let definitionsTimer: ReturnType<typeof setTimeout> | null = null;
@@ -480,10 +560,19 @@ async function bootstrap(): Promise<void> {
             }),
         );
 
-        // Cursor moves: preview sync (only when this group is active/visible).
+        // Cursor moves: preview sync (only when this group is active/visible),
+        // plus a debounced metadata-context refresh so the Metadata tab tracks
+        // the comment under the cursor (mirrors the VS Code selection handler).
         let cursorSyncTimer: ReturnType<typeof setTimeout> | null = null;
+        let metadataContextTimer: ReturnType<typeof setTimeout> | null = null;
         group.disposables.push(
             ed.onDidChangeCursorPosition(() => {
+                if (group === activeGroup) {
+                    if (metadataContextTimer) clearTimeout(metadataContextTimer);
+                    metadataContextTimer = setTimeout(() => {
+                        activeBridge.handleMessage({ type: 'getMetadataContext' });
+                    }, 150);
+                }
                 if (editorBridge.getExtraSetting('previewCursorSync') !== 'true') return;
                 if (!appInstance.isPreviewVisible()) return;
                 if (cursorSyncTimer) clearTimeout(cursorSyncTimer);
@@ -883,7 +972,7 @@ async function bootstrap(): Promise<void> {
         isDesktop: isTauri,
         isWebOrDesktop: true,
     };
-    const sidebarApp = createApp(CalcpadAppVue, { versionConfig });
+    const sidebarApp = createApp(CalcpadAppVue, { versionConfig, appVersion: pkg.version });
     const sidebarInstance = sidebarApp.mount('#vue-sidebar') as {
         switchTab?: (id: string) => void;
         switchView?: (id: string) => void;
@@ -1299,6 +1388,8 @@ async function bootstrap(): Promise<void> {
                 appInstance.appendOutput('error', `Copy failed: ${err instanceof Error ? err.message : String(err)}`);
             }
         };
+
+        appInstance.onCopyTextRequest = (text: string) => { void writeClipboardText(text); };
 
         appInstance.onTabCopyFullPathRequest = (groupId: string, id: string) => {
             const g = groups.get(groupId);

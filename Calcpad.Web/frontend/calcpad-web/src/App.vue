@@ -22,7 +22,7 @@
       :aria-expanded="sidebarVisible"
     ></div>
     <div class="editor-pane">
-      <div class="editor-toolbar">
+      <div class="editor-toolbar" @contextmenu.prevent>
         <span class="spacer"></span>
         <button
           class="toolbar-btn"
@@ -131,6 +131,64 @@
         </template>
       </div>
 
+      <!-- Problems context menu. Replaces the broken default WebView menu
+           (back/forward/stop/reload) with clipboard actions. -->
+      <div
+        v-if="problemsContextMenu"
+        class="tab-context-menu"
+        :style="{ left: problemsContextMenu.x + 'px', top: problemsContextMenu.y + 'px' }"
+        @mousedown.stop
+        @click.stop
+      >
+        <button
+          v-if="problemsContextMenu.problem"
+          class="tab-context-item"
+          @click="onCopyProblem"
+        >Copy</button>
+        <button
+          class="tab-context-item"
+          :disabled="problems.length === 0"
+          @click="onCopyAllProblems"
+        >Copy All</button>
+      </div>
+
+      <!-- Output context menu — same copy mechanism as the Problems panel. -->
+      <div
+        v-if="outputContextMenu"
+        class="tab-context-menu"
+        :style="{ left: outputContextMenu.x + 'px', top: outputContextMenu.y + 'px' }"
+        @mousedown.stop
+        @click.stop
+      >
+        <button
+          v-if="outputContextMenu.line"
+          class="tab-context-item"
+          @click="onCopyOutputLine"
+        >Copy</button>
+        <button
+          class="tab-context-item"
+          :disabled="filteredOutputLines.length === 0"
+          @click="onCopyAllOutput"
+        >Copy All</button>
+      </div>
+
+      <!-- Preview context menu. Layered over the iframe in place of the broken
+           native WebView menu (see injectLineLinks). -->
+      <div
+        v-if="previewContextMenu"
+        class="tab-context-menu"
+        :style="{ left: previewContextMenu.x + 'px', top: previewContextMenu.y + 'px' }"
+        @mousedown.stop
+        @click.stop
+      >
+        <button
+          class="tab-context-item"
+          :disabled="!previewContextMenu.selection"
+          @click="onCopyPreviewSelection"
+        >Copy</button>
+        <button class="tab-context-item" @click="onFindInPreview">Find… (Ctrl+F)</button>
+      </div>
+
       <!-- Bottom panel (Problems / Output) — reflects the ACTIVE group. -->
       <div v-if="bottomPanelOpen" class="bottom-panel">
         <div class="bottom-panel-header">
@@ -169,12 +227,18 @@
           <button class="toolbar-btn" @click="bottomPanelOpen = false">✕</button>
         </div>
         <!-- Problems tab -->
-        <div v-show="activeBottomTab === 'problems'" class="problems-list" ref="problemsList">
+        <div
+          v-show="activeBottomTab === 'problems'"
+          class="problems-list"
+          ref="problemsList"
+          @contextmenu.prevent="onProblemsContextMenu($event, null)"
+        >
           <div
             v-for="(problem, i) in problems"
             :key="i"
             class="problem-row"
             @click="gotoProblem(problem)"
+            @contextmenu.prevent.stop="onProblemsContextMenu($event, problem)"
           >
             <span class="problem-icon" :class="problem.severityClass">{{ problem.icon }}</span>
             <span class="problem-message">{{ problem.message }}</span>
@@ -184,8 +248,19 @@
           <div v-if="problems.length === 0" class="problems-empty">No problems detected.</div>
         </div>
         <!-- Output tab -->
-        <div v-show="activeBottomTab === 'output'" class="output-list" ref="outputList">
-          <div v-for="(line, i) in filteredOutputLines" :key="i" class="output-row" :class="line.level">
+        <div
+          v-show="activeBottomTab === 'output'"
+          class="output-list"
+          ref="outputList"
+          @contextmenu.prevent="onOutputContextMenu($event, null)"
+        >
+          <div
+            v-for="(line, i) in filteredOutputLines"
+            :key="i"
+            class="output-row"
+            :class="line.level"
+            @contextmenu.prevent.stop="onOutputContextMenu($event, line)"
+          >
             <span class="output-timestamp">{{ line.time }}</span>
             <span class="output-level">{{ line.label }}</span>
             <span class="output-message">{{ line.message }}</span>
@@ -194,7 +269,7 @@
         </div>
       </div>
       <!-- Status bar -->
-      <div class="status-bar">
+      <div class="status-bar" @contextmenu.prevent>
         <span class="status-problems" @click="openBottomTab('problems')">
           <svg class="status-icon lintError" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
@@ -219,7 +294,7 @@
     </div>
 
     <div v-if="previewVisible" class="preview-pane">
-      <div class="preview-toolbar">
+      <div class="preview-toolbar" @contextmenu.prevent>
         <span>Preview</span>
         <div class="preview-mode-group">
           <button
@@ -241,6 +316,28 @@
       <!-- One preview iframe per editor group, stacked to mirror the editor
            split. allow-scripts is required so the injected console-interception
            script (and any user #HTML script) actually runs in the iframe. -->
+      <!-- Find-in-preview widget (VS Code style). Opened via Ctrl+F while the
+           preview is focused, or the preview context menu. -->
+      <div v-if="previewFind" class="preview-find" @contextmenu.prevent>
+        <input
+          ref="previewFindInput"
+          class="preview-find-input"
+          type="text"
+          placeholder="Find in preview"
+          v-model="previewFind.query"
+          @input="applyPreviewSearch"
+          @keydown.enter.exact.prevent="previewFindStep(1)"
+          @keydown.shift.enter.prevent="previewFindStep(-1)"
+          @keydown.esc.prevent="closePreviewFind"
+        />
+        <span class="preview-find-count">
+          {{ previewFind.total > 0 ? `${previewFind.current + 1}/${previewFind.total}` : (previewFind.query ? '0/0' : '') }}
+        </span>
+        <button class="preview-find-btn" :disabled="previewFind.total === 0" title="Previous match (Shift+Enter)" @click="previewFindStep(-1)">↑</button>
+        <button class="preview-find-btn" :disabled="previewFind.total === 0" title="Next match (Enter)" @click="previewFindStep(1)">↓</button>
+        <button class="preview-find-btn" title="Close (Esc)" @click="closePreviewFind">✕</button>
+      </div>
+
       <div class="preview-frames">
         <template v-for="(group, gi) in groups" :key="'pv-' + group.id">
           <iframe
@@ -259,6 +356,10 @@
             aria-orientation="horizontal"
           ></div>
         </template>
+        <div v-if="previewLoading" class="preview-loading-overlay">
+          <div class="preview-spinner"></div>
+          <span>Calculating…</span>
+        </div>
       </div>
     </div>
 
@@ -467,6 +568,10 @@ const onTabOpenContainingFolderRequest = ref<((groupId: string, id: string) => v
 const onTabCopyFullPathRequest = ref<((groupId: string, id: string) => void) | null>(null)
 const onTabCopyRelativePathRequest = ref<((groupId: string, id: string) => void) | null>(null)
 
+// Generic clipboard write. Set by the host (main.ts) to route through Tauri's
+// native clipboard on desktop; falls back to the Web Clipboard API otherwise.
+const onCopyTextRequest = ref<((text: string) => void) | null>(null)
+
 interface TabContextMenuState {
   x: number
   y: number
@@ -550,10 +655,250 @@ function onContextCopyRelativePath(): void {
   closeTabContextMenu()
 }
 
+interface ProblemsContextMenuState {
+  x: number
+  y: number
+  problem: ProblemItem | null
+}
+const problemsContextMenu = ref<ProblemsContextMenuState | null>(null)
+
+function onProblemsContextMenu(e: MouseEvent, problem: ProblemItem | null): void {
+  problemsContextMenu.value = { x: e.clientX, y: e.clientY, problem }
+}
+
+function closeProblemsContextMenu(): void {
+  problemsContextMenu.value = null
+}
+
+const SEVERITY_LABELS: Record<number, string> = { 8: 'Error', 4: 'Warning', 2: 'Info' }
+
+function formatProblem(p: ProblemItem): string {
+  const label = SEVERITY_LABELS[p.severity] ?? 'Info'
+  const code = p.code ? ` (${p.code})` : ''
+  return `[Ln ${p.startLineNumber}, Col ${p.startColumn}] ${label}: ${p.message}${code}`
+}
+
+function copyText(text: string): void {
+  if (!text) return
+  if (onCopyTextRequest.value) onCopyTextRequest.value(text)
+  else void navigator.clipboard?.writeText(text)
+}
+
+function onCopyProblem(): void {
+  const p = problemsContextMenu.value?.problem
+  if (p) copyText(formatProblem(p))
+  closeProblemsContextMenu()
+}
+
+function onCopyAllProblems(): void {
+  copyText(problems.value.map(formatProblem).join('\n'))
+  closeProblemsContextMenu()
+}
+
+interface OutputContextMenuState {
+  x: number
+  y: number
+  line: OutputLine | null
+}
+const outputContextMenu = ref<OutputContextMenuState | null>(null)
+
+function onOutputContextMenu(e: MouseEvent, line: OutputLine | null): void {
+  outputContextMenu.value = { x: e.clientX, y: e.clientY, line }
+}
+
+function closeOutputContextMenu(): void {
+  outputContextMenu.value = null
+}
+
+function formatOutputLine(l: OutputLine): string {
+  return `${l.time} ${l.label} ${l.message}`
+}
+
+function onCopyOutputLine(): void {
+  const l = outputContextMenu.value?.line
+  if (l) copyText(formatOutputLine(l))
+  closeOutputContextMenu()
+}
+
+function onCopyAllOutput(): void {
+  copyText(filteredOutputLines.value.map(formatOutputLine).join('\n'))
+  closeOutputContextMenu()
+}
+
+// ---- Preview context menu + find-in-preview ----
+interface PreviewContextMenuState {
+  x: number
+  y: number
+  groupId: string
+  selection: string
+}
+const previewContextMenu = ref<PreviewContextMenuState | null>(null)
+
+function closePreviewContextMenu(): void {
+  previewContextMenu.value = null
+}
+
+function onCopyPreviewSelection(): void {
+  const m = previewContextMenu.value
+  if (m?.selection) copyText(m.selection)
+  closePreviewContextMenu()
+}
+
+function onFindInPreview(): void {
+  const groupId = previewContextMenu.value?.groupId
+  closePreviewContextMenu()
+  openPreviewFind(groupId ?? activeGroupId.value)
+}
+
+interface PreviewFindState {
+  groupId: string
+  query: string
+  total: number
+  current: number
+}
+const previewFind = ref<PreviewFindState | null>(null)
+const previewFindInput = ref<HTMLInputElement | null>(null)
+
+function openPreviewFind(groupId: string): void {
+  const existing = previewFind.value
+  previewFind.value = {
+    groupId,
+    query: existing?.groupId === groupId ? existing.query : '',
+    total: 0,
+    current: 0,
+  }
+  void nextTick(() => {
+    previewFindInput.value?.focus()
+    previewFindInput.value?.select()
+    applyPreviewSearch()
+  })
+}
+
+function closePreviewFind(): void {
+  const f = previewFind.value
+  if (f) clearPreviewMarks(f.groupId)
+  previewFind.value = null
+}
+
+function previewDoc(groupId: string): Document | null {
+  return previewEls.get(groupId)?.contentDocument ?? null
+}
+
+function clearPreviewMarks(groupId: string): void {
+  const doc = previewDoc(groupId)
+  if (!doc) return
+  doc.querySelectorAll('mark.cpd-find').forEach(m => {
+    const parent = m.parentNode
+    if (!parent) return
+    parent.replaceChild(doc.createTextNode(m.textContent ?? ''), m)
+    parent.normalize()
+  })
+}
+
+function applyPreviewSearch(): void {
+  const f = previewFind.value
+  if (!f) return
+  clearPreviewMarks(f.groupId)
+  const doc = previewDoc(f.groupId)
+  const query = f.query
+  if (!doc || !query) {
+    f.total = 0
+    f.current = 0
+    return
+  }
+  const needle = query.toLowerCase()
+  const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const p = node.parentElement
+      if (!node.nodeValue || !p) return NodeFilter.FILTER_REJECT
+      const tag = p.tagName
+      if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT
+      return node.nodeValue.toLowerCase().includes(needle)
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT
+    },
+  })
+  const targets: Text[] = []
+  let n = walker.nextNode()
+  while (n) {
+    targets.push(n as Text)
+    n = walker.nextNode()
+  }
+  let count = 0
+  for (const node of targets) {
+    const text = node.nodeValue ?? ''
+    const hay = text.toLowerCase()
+    const frag = doc.createDocumentFragment()
+    let last = 0
+    let idx = hay.indexOf(needle)
+    while (idx !== -1) {
+      if (idx > last) frag.appendChild(doc.createTextNode(text.slice(last, idx)))
+      const mark = doc.createElement('mark')
+      mark.className = 'cpd-find'
+      mark.textContent = text.slice(idx, idx + query.length)
+      frag.appendChild(mark)
+      count++
+      last = idx + query.length
+      idx = hay.indexOf(needle, last)
+    }
+    if (last < text.length) frag.appendChild(doc.createTextNode(text.slice(last)))
+    node.parentNode?.replaceChild(frag, node)
+  }
+  f.total = count
+  f.current = 0
+  highlightCurrentMatch()
+}
+
+function highlightCurrentMatch(): void {
+  const f = previewFind.value
+  const doc = f && previewDoc(f.groupId)
+  if (!f || !doc) return
+  const marks = doc.querySelectorAll('mark.cpd-find')
+  marks.forEach(m => m.classList.remove('cpd-find-current'))
+  const target = marks[f.current] as HTMLElement | undefined
+  if (target) {
+    target.classList.add('cpd-find-current')
+    target.scrollIntoView({ block: 'center' })
+  }
+}
+
+function previewFindStep(dir: number): void {
+  const f = previewFind.value
+  if (!f || f.total === 0) return
+  f.current = (f.current + dir + f.total) % f.total
+  highlightCurrentMatch()
+}
+
 function onDocumentInteractionForTabMenu(e: MouseEvent | KeyboardEvent): void {
-  if (!tabContextMenu.value) return
   if (e instanceof KeyboardEvent && e.key !== 'Escape') return
   closeTabContextMenu()
+  closeProblemsContextMenu()
+  closeOutputContextMenu()
+  closePreviewContextMenu()
+}
+
+function onPreviewWindowMessage(e: MessageEvent): void {
+  const data = e.data
+  if (!data || typeof data.type !== 'string') return
+  if (data.type === 'previewContextMenuDismiss') {
+    closePreviewContextMenu()
+    return
+  }
+  if (data.type === 'previewContextMenu') {
+    const iframe = previewEls.get(data.groupId)
+    if (!iframe) return
+    const rect = iframe.getBoundingClientRect()
+    previewContextMenu.value = {
+      x: rect.left + (Number(data.x) || 0),
+      y: rect.top + (Number(data.y) || 0),
+      groupId: data.groupId,
+      selection: typeof data.selection === 'string' ? data.selection : '',
+    }
+    return
+  }
+  if (data.type === 'previewFindOpen') {
+    openPreviewFind(data.groupId ?? activeGroupId.value)
+  }
 }
 
 function gotoProblem(problem: ProblemItem): void {
@@ -563,6 +908,9 @@ function gotoProblem(problem: ProblemItem): void {
 const serverConnected = ref(false)
 const sidebarVisible = ref(true)
 const previewVisible = ref(false)
+// Groups with an in-flight preview render; drives the "Calculating…" overlay.
+const previewLoadingGroups = ref(new Set<string>())
+const previewLoading = computed(() => previewLoadingGroups.value.size > 0)
 const bottomPanelOpen = ref(false)
 const activeBottomTab = ref<'problems' | 'output'>('problems')
 
@@ -734,6 +1082,11 @@ function getPreviewMode(): PreviewMode {
   return previewMode.value
 }
 
+function setPreviewLoading(groupId: string, loading: boolean): void {
+  if (loading) previewLoadingGroups.value.add(groupId)
+  else previewLoadingGroups.value.delete(groupId)
+}
+
 function setPreviewHtml(groupId: string, html: string, scrollToLine?: number): void {
   const frame = previewEls.get(groupId)
   if (!frame) return
@@ -775,6 +1128,9 @@ function injectScrollbarStyles(html: string): string {
     '.line { position: relative; }',
     // Brief flash when the preview is focused to the editor's cursor line.
     '.cpd-line-focus { background-color: rgba(120,170,255,0.28) !important; transition: background-color 0.3s ease !important; }',
+    // Find-in-preview highlights, driven from the parent (App.vue find widget).
+    'mark.cpd-find { background: rgba(234,179,8,0.45); color: inherit; border-radius: 2px; }',
+    'mark.cpd-find.cpd-find-current { background: rgba(249,115,22,0.95); color: #000; }',
     '.lineLink { left: -3em !important; top: 0 !important; bottom: 0 !important; width: 3em !important; height: auto !important; font-size: 16pt !important; padding-right: 4pt !important; box-sizing: border-box !important; display: flex !important; align-items: center !important; justify-content: flex-end !important; opacity: 0 !important; transition: opacity 0.15s !important; }',
     '.lineLink:hover { opacity: 1 !important; }',
     '</' + 'style>',
@@ -798,6 +1154,21 @@ function injectLineLinks(html: string, scrollToLine: number | undefined, groupId
     "  var post = function(line, lineType) {",
     "    try { window.parent.postMessage({ type: 'navigateToLine', line: line, lineType: lineType, groupId: GROUP_ID }, '*'); } catch (e) {}",
     "  };",
+    // Replace WebKitGTK's broken native menu with the parent's custom menu.
+    // pointerdown posts a dismiss first, then contextmenu reopens, so a
+    // right-click nets an open menu and any other click dismisses it.
+    "  var postMenu = function(type, e) {",
+    "    var sel = ''; try { sel = String(window.getSelection() || ''); } catch (_e) {}",
+    "    try { window.parent.postMessage({ type: type, x: e ? e.clientX : 0, y: e ? e.clientY : 0, selection: sel, groupId: GROUP_ID }, '*'); } catch (_e2) {}",
+    "  };",
+    "  document.addEventListener('contextmenu', function(e) { e.preventDefault(); postMenu('previewContextMenu', e); });",
+    "  document.addEventListener('pointerdown', function() { postMenu('previewContextMenuDismiss', null); });",
+    "  document.addEventListener('keydown', function(e) {",
+    "    if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {",
+    "      e.preventDefault();",
+    "      try { window.parent.postMessage({ type: 'previewFindOpen', groupId: GROUP_ID }, '*'); } catch (_e) {}",
+    "    }",
+    "  });",
     "  var isCodeView = !!document.querySelector('.line-num');",
     "  document.querySelectorAll('a[data-text]').forEach(function(link) {",
     "    link.addEventListener('click', function(e) {",
@@ -955,11 +1326,13 @@ onMounted(async () => {
 
   document.addEventListener('mousedown', onDocumentInteractionForTabMenu)
   document.addEventListener('keydown', onDocumentInteractionForTabMenu)
+  window.addEventListener('message', onPreviewWindowMessage)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', onDocumentInteractionForTabMenu)
   document.removeEventListener('keydown', onDocumentInteractionForTabMenu)
+  window.removeEventListener('message', onPreviewWindowMessage)
 })
 
 // ---- In-app confirm dialog ----
@@ -1057,6 +1430,7 @@ defineExpose({
   togglePreview,
   isPreviewVisible,
   setPreviewHtml,
+  setPreviewLoading,
   scrollPreviewToSourceLine,
   setProblems,
   onGotoProblem,
@@ -1080,5 +1454,6 @@ defineExpose({
   onTabOpenContainingFolderRequest,
   onTabCopyFullPathRequest,
   onTabCopyRelativePathRequest,
+  onCopyTextRequest,
 })
 </script>

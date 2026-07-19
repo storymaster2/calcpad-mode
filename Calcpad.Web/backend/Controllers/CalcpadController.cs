@@ -416,7 +416,8 @@ namespace Calcpad.Server.Controllers
                         Expression = u.Definition,
                         LineNumber = u.LineNumber,
                         Source = u.Source ?? "local",
-                        SourceFile = u.SourceFile
+                        SourceFile = u.SourceFile,
+                        Description = u.Description
                     }).ToList()
                 };
 
@@ -940,6 +941,9 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>Source file path if from include, null otherwise</summary>
         public string? SourceFile { get; set; }
+
+        /// <summary>User-provided description from a metadata comment</summary>
+        public string? Description { get; set; }
     }
 
     public class SymbolAtPositionRequest

@@ -119,6 +119,7 @@ function buildCustomUnitMarkdown(unit: CustomUnitDefinition): string {
     if (unit.source !== 'local' && unit.sourceFile) {
         out.push('Source: `' + unit.sourceFile + '`');
     }
+    if (unit.description) out.push(unit.description);
     return out.join('\n\n');
 }
 

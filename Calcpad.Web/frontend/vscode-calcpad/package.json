@@ -229,6 +229,11 @@
         "icon": "$(add)"
       },
       {
+        "command": "vscode-calcpad.editMetadataProperties",
+        "title": "CalcPad: Add / Edit Metadata Properties",
+        "category": "Calcpad"
+      },
+      {
         "command": "vscode-calcpad.exportToPdf",
         "title": "Export CalcPad to PDF",
         "icon": "$(file-pdf)"
@@ -426,6 +431,11 @@
           "command": "vscode-calcpad.focusPreviewToLine",
           "when": "resourceLangId == calcpad || resourceLangId == plaintext",
           "group": "calcpad@3"
+        },
+        {
+          "command": "vscode-calcpad.editMetadataProperties",
+          "when": "resourceLangId == calcpad || resourceLangId == plaintext",
+          "group": "calcpad@4"
         }
       ]
     },
@@ -441,6 +451,12 @@
         "key": "ctrl+`",
         "mac": "cmd+`",
         "when": "editorTextFocus && editorLangId == 'calcpad'"
+      },
+      {
+        "command": "vscode-calcpad.editMetadataProperties",
+        "key": "ctrl+alt+q",
+        "mac": "cmd+alt+q",
+        "when": "editorTextFocus && (editorLangId == 'calcpad' || editorLangId == 'plaintext')"
       },
       {
         "command": "vscode-calcpad.formatBold",

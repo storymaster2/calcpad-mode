@@ -69,7 +69,7 @@ export function buildBuiltinDocMarkdown(item: InsertItem): string {
     }
 
     if (item.isElementWise) {
-        out.push('*Operates element-wise on vectors and matrices.*');
+        out.push('*Accepts a scalar, vector, or matrix — applied element-wise, returning the same shape.*');
     }
 
     if (item.example) {

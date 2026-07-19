@@ -3,6 +3,7 @@ import { getDefaultSettings } from 'calcpad-frontend/types/settings';
 import type { CalcpadSettings } from 'calcpad-frontend/types/settings';
 import { mimeFromExtension, bytesToBase64 } from 'calcpad-frontend';
 import { setAppTheme, coerceAppTheme } from '../editor/app-theme';
+import { getActiveDocumentKey } from '../editor/bridge';
 
 const SETTINGS_KEY = 'calcpad-settings';
 
@@ -108,6 +109,10 @@ export class MessageBridge extends BaseMessageBridge {
 
     protected getVariablesOrigin(): string {
         return 'web-editor';
+    }
+
+    protected getActiveDefinitions() {
+        return this.definitionsService.getCachedDefinitions(getActiveDocumentKey());
     }
 
     protected async generatePdfBytes(

@@ -134,7 +134,7 @@ namespace Calcpad.Highlighter.ContentResolution
             foreach (var name in tokenizerResult.DefinedVariables.Keys) variables.Add(name);
 
             var functionsWithParams = tokenizerResult.FunctionDefinitions;
-            var functions = new Dictionary<string, FunctionInfo>(StringComparer.OrdinalIgnoreCase);
+            var functions = new Dictionary<string, FunctionInfo>(StringComparer.Ordinal);
             foreach (var f in functionsWithParams)
             {
                 functions[f.Name] = new FunctionInfo
@@ -173,6 +173,27 @@ namespace Calcpad.Highlighter.ContentResolution
                 stage2.MacroDefinitions, macroExpansions, stage2.Lines,
                 sourceMap, filteredIncludeMap, stage2.SourceMap, stage1.SourceMap,
                 stage2.IncludeMap, stage1.LineContinuationSegments);
+
+            // The definition lists carry Stage3 line numbers (post macro-expansion /
+            // include filtering). Consumers that key by original editor lines — the
+            // definitions API and the metadata panel — need original lines, so remap
+            // them here, after the Stage3-internal indexes (which rely on Stage3 lines)
+            // have been built.
+            int MapDefLineToOriginal(int stage3Line)
+            {
+                if (filteredIncludeMap.TryGetValue(stage3Line, out var info) &&
+                    info.Source == "include" && info.OriginalLine >= 0)
+                    return info.OriginalLine;
+                var stage2Line = sourceMap.TryGetValue(stage3Line, out var s2) ? s2 : stage3Line;
+                var stage1Line = stage2.SourceMap.TryGetValue(stage2Line, out var s1) ? s1 : stage2Line;
+                var (originalLine, _) = MapColumnThroughContinuation(
+                    stage1Line, 0, stage1.LineContinuationSegments, stage1.SourceMap);
+                return originalLine;
+            }
+
+            foreach (var f in functionsWithParams) f.LineNumber = MapDefLineToOriginal(f.LineNumber);
+            foreach (var v in variablesWithDefs) v.LineNumber = MapDefLineToOriginal(v.LineNumber);
+            foreach (var u in customUnits) u.LineNumber = MapDefLineToOriginal(u.LineNumber);
 
             return new Stage3Result
             {
@@ -481,7 +502,7 @@ namespace Calcpad.Highlighter.ContentResolution
             Dictionary<int, int> stage1ToOriginalMap,
             Dictionary<int, List<LineContinuationSegment>> lineContinuationSegments)
         {
-            var index = new Dictionary<string, List<SymbolLocation>>(StringComparer.OrdinalIgnoreCase);
+            var index = new Dictionary<string, List<SymbolLocation>>(StringComparer.Ordinal);
 
             if (userDefinedFunctions.Count == 0)
                 return index;

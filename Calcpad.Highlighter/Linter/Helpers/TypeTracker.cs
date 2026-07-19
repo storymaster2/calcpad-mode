@@ -16,7 +16,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
     public class TypeTracker
     {
         private readonly Dictionary<string, VariableInfo> _variables = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, VariableInfo> _functions = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, VariableInfo> _functions = new(StringComparer.Ordinal);
         private readonly Dictionary<string, VariableInfo> _macros = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, VariableInfo> _customUnits = new(StringComparer.OrdinalIgnoreCase);
         private Dictionary<int, List<Token>> _tokensByLine;

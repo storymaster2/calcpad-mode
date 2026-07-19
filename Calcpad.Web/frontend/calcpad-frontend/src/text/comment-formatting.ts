@@ -53,14 +53,41 @@ export function lineHasCommentPrefix(lineText: string): boolean {
 }
 
 /**
- * 1-based column at which a missing comment quote should be inserted —
- * right after the line's indentation — or null if the line already has one.
- * HTML/markdown formatting hotkeys need every touched line wrapped in a
- * comment for the tags to be recognized as HTML rather than literal text.
+ * True if the character at the given 0-based column already sits inside a
+ * text/comment region, mirroring the Calcpad tokenizer's rules: a ' switches
+ * the rest of the line to a plain-text comment, and "..." wraps an inline
+ * text string within code. Anything inside those regions is emitted as text
+ * (HTML tags render), so a formatting hotkey there needs no comment quote.
  */
-export function getCommentPrefixInsertColumn(lineText: string): number | null {
+export function isColumnInTextContext(lineText: string, column: number): boolean {
+    let inQuote = false;
+    const end = Math.min(column, lineText.length);
+    for (let i = 0; i < end; i++) {
+        const ch = lineText[i];
+        if (inQuote) {
+            if (ch === '"') inQuote = false;
+        } else if (ch === "'") {
+            return true;
+        } else if (ch === '"') {
+            inQuote = true;
+        }
+    }
+    return inQuote;
+}
+
+/**
+ * 1-based column at which a missing comment quote should be inserted —
+ * right after the line's indentation — or null if none is needed.
+ * HTML/markdown formatting hotkeys need the tags to sit inside a comment to
+ * render as HTML rather than literal text. No quote is needed when the line
+ * already opens a comment, or when the selection (`selectionColumn`, 0-based)
+ * already lands inside a text region mid-line — inserting one there would
+ * wrongly comment out the code preceding it.
+ */
+export function getCommentPrefixInsertColumn(lineText: string, selectionColumn?: number): number | null {
     const indentLen = getIndentLength(lineText);
     if (lineText.slice(indentLen).startsWith("'")) return null;
+    if (selectionColumn !== undefined && isColumnInTextContext(lineText, selectionColumn)) return null;
     return indentLen + 1;
 }
 

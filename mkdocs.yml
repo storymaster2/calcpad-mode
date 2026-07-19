@@ -65,6 +65,7 @@ nav:
     - Linter and Diagnostics: new-linter.md
     - Table of Contents: new-table-of-contents.md
     - Running the Server: new-web-deployment.md
+    - Metadata Comments: new-metadata-comments.md
   - Quick Reference:
     - quick-reference.md
 
