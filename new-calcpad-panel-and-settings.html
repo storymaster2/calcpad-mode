@@ -1291,6 +1291,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#toc" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1646,6 +1657,34 @@
     
   
     Running the Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="new-metadata-comments.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Comments
   
 
     
@@ -3035,6 +3074,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#toc" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3313,6 +3363,10 @@
 <td>Everything defined in the document — macros, variables, functions, and custom units — with types and signatures. Click an entry to insert it; each is searchable.</td>
 </tr>
 <tr>
+<td><strong>Metadata</strong></td>
+<td>Form-based editor for the <a href="new-metadata-comments.html">metadata comment</a> at the cursor — descriptions, parameter/return types, per-file settings, lint-ignore, and no-print markers. Shown in hosts that track the editor cursor (currently VS Code).</td>
+</tr>
+<tr>
 <td><strong>PDF</strong></td>
 <td>Header/footer, page size, and layout options applied when you export to PDF.</td>
 </tr>
@@ -3341,6 +3395,8 @@
 <li><strong>Custom Units</strong> — with their definition</li>
 </ul>
 <p>Entries are scoped to the active document (and its <code>#include</code> files). Click any entry to insert its name at the cursor.</p>
+<h3 id="metadata">Metadata<a class="headerlink" href="#metadata" title="Permanent link">&para;</a></h3>
+<p>A form-based editor for the <a href="new-metadata-comments.html">metadata comment</a> on the line at the cursor — no hand-editing of JSON required. Put the cursor on a definition (or an existing metadata comment) and the tab shows exactly the fields that apply: a description for any definition, parameter/return types for functions and macros, and per-file settings, lint-ignore, and no-print markers on generic lines. <strong>Apply</strong> writes the comment (creating one above the definition if none exists); <strong>Reset</strong> re-reads the current one. See <a href="new-metadata-comments.html">Metadata Comments</a> for the full format. This tab appears in hosts that can track the editor cursor (currently the VS Code extension).</p>
 <h3 id="toc">TOC<a class="headerlink" href="#toc" title="Permanent link">&para;</a></h3>
 <p>A live outline of the headings in your document. Selecting a heading scrolls the editor to that line. It rebuilds as you edit.</p>
 <h3 id="formatting-prettify">Formatting (Prettify)<a class="headerlink" href="#formatting-prettify" title="Permanent link">&para;</a></h3>
