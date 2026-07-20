@@ -1,23 +1,28 @@
 # Metadata Comments
 
-> Part of Calcpad.Web. The **Metadata** tab described here currently appears in the [VS Code extension](new-vscode-extension.md). The comments it writes are understood everywhere — the [linter](new-linter.md), the preview, and [PDF export](new-pdf-export.md) — no matter which editor created them.
+Sometimes you want to tell CalcpadCE something about your document without that note showing up in the printed report — what a function's inputs mean, that a section is a work-in-progress the linter should leave alone, or that a block of scratch work shouldn't appear in the PDF.
 
-Sometimes you want to tell Calcpad something about your document without that note showing up in the printed report — what a function's inputs mean, that a section is a work-in-progress the linter should leave alone, or that a block of scratch work shouldn't appear in the PDF.
-
-A **metadata comment** does exactly that. It looks like an ordinary comment, so it never clutters your output, but Calcpad reads the extra information inside it. You don't have to write these by hand: the **Metadata** tab in the CalcPad panel fills them in for you.
+A **metadata comment** does exactly that.
+It looks like an ordinary comment, so it never clutters your output, but CalcpadCE reads the extra information inside it.
+You don't have to write these by hand: the **Metadata** tab in the CalcpadCE panel fills them in for you.
 
 ## The Metadata tab
 
-Open the [CalcPad panel](new-calcpad-panel-and-settings.md) and switch to the **Metadata** tab. Then click a line in your document, and the tab shows a small form for that line:
+Open the [CalcpadCE panel](new-calcpad-panel.md) and switch to the **Metadata** tab.
+Then click a line in your document, and the tab shows a small form for that line:
 
-- **On a definition** (a variable, function, macro, or custom unit) you can add a **description**, and for functions and macros, a **type and description for each parameter** and the **return type**. The parameter rows are filled in to match the definition automatically.
+- **On a definition** (a variable, function, macro, or custom unit) you can add a **description**, and for functions and macros, a **type and description for each parameter** and the **return type**.
+The parameter rows are filled in to match the definition automatically.
 - **On any other line** you get the document-wide options: **settings overrides**, **lint-ignore** regions, and **no-print** regions.
 
-Fill in what you want and click **Apply**. If the line doesn't have a metadata comment yet, one is created for you; if it does, it's updated in place. **Reset** throws away your edits and reloads what's currently there. Only the fields that make sense for the line are shown — use **Add field** if you want one that's hidden.
+Fill in what you want and click **Apply**.
+If the line doesn't have a metadata comment yet, one is created for you; if it does, it's updated in place.
+**Reset** throws away your edits and reloads what's currently there.
+Only the fields that make sense for the line are shown — use **Add field** if you want one that's hidden.
 
 ## What they look like
 
-A metadata comment is a normal Calcpad comment (it starts with `'` or `"`) with an HTML comment storing a JSON string `<!--{ … }-->`:
+A metadata comment is a normal CalcpadCE comment (it starts with `'` or `"`) with an HTML comment storing a JSON string `<!--{ … }-->`:
 
 ```text
 '<!--{"desc": "Cross-sectional area"}-->
@@ -30,7 +35,7 @@ A few things to know:
 
 - Notes about a definition go on the line **directly above** it.
 - The whole comment has to stay on **one line** unless you use _ line separators.
-- If the text inside gets garbled, Calcpad just ignores it and the linter points it out.
+- If the text inside gets garbled, CalcpadCE just ignores it and the linter points it out.
 - Toggling line wrapping with **Alt+Z** can make these easier to read fully or take up less space.
 
 ## Documenting a definition
@@ -40,7 +45,7 @@ Put this on the line above a variable, function, macro, or custom unit:
 | Field | What it's for |
 |-------|---------------|
 | **Description** | A sentence explaining what the definition is. |
-| **Parameter types** | The kind of value each input expects. Functions take `value`, `vector`, `matrix`, or `any`; macros use Calcpad's token names. |
+| **Parameter types** | The kind of value each input expects. Functions take `value`, `vector`, `matrix`, or `any`; macros use CalcpadCE's token names. |
 | **Parameter descriptions** | A short note for each input, in order. |
 | **Return type** | What a function gives back: `value`, `vector`, `matrix`, or `any`. |
 
@@ -53,13 +58,15 @@ Filling in parameter and return types also helps the [linter](new-linter.md) cat
 
 ## Per-file settings
 
-You can pin settings — decimals, angle units, and so on — to a document so it always renders the same way, no matter how the app is configured. Put a `settings` comment near the top of the file:
+You can pin settings — decimals, angle units, and so on — to a document so it always renders the same way, no matter how the app is configured.
+Put a `settings` comment near the top of the file:
 
 ```text
 '<!--{"settings": {"decimals": 2, "degrees": 1, "units": "cm"}}-->
 ```
 
-If more than one appears, the first one wins, so keep it at the top. The settings you can set here are the same ones on the [Settings tab](new-calcpad-panel-and-settings.md#settings):
+If more than one appears, the first one wins, so keep it at the top.
+The settings you can set here are the same ones on the [Settings tab](new-calcpad-panel.md#settings):
 
 | Setting | Values |
 |---------|--------|
@@ -77,11 +84,13 @@ If more than one appears, the first one wins, so keep it at the top. The setting
 | `shadows` | `true` / `false` — shadows on 3-D surfaces |
 | `adaptivePlot` | `true` / `false` — adaptive plot sampling |
 
-`colorScale` can be `None`, `Gray`, `Rainbow`, `Terrain`, `VioletToYellow`, `GreenToYellow`, `Blues`, `BlueToYellow`, `BlueToRed`, or `PurpleToYellow`. Anything the app doesn't recognize is ignored.
+`colorScale` can be `None`, `Gray`, `Rainbow`, `Terrain`, `VioletToYellow`, `GreenToYellow`, `Blues`, `BlueToYellow`, `BlueToRed`, or `PurpleToYellow`.
+Anything the app doesn't recognize is ignored.
 
 ## Quieting the linter
 
-If the [linter](new-linter.md) flags something that isn't actually a problem, you can silence it for a stretch of the document. Wrap those lines between a `LintIgnore` and an `EndLintIgnore` marker, listing the warning codes to hide (or leave the list empty to hide/unhide everything):
+If the [linter](new-linter.md) flags something that isn't actually a problem, you can silence it for a stretch of the document.
+Wrap those lines between a `LintIgnore` and an `EndLintIgnore` marker, listing the warning codes to hide (or leave the list empty to hide/unhide everything):
 
 ```text
 '<!--{"LintIgnore": ["CPD-3301"]}-->
@@ -89,7 +98,8 @@ prototype_var = 5
 '<!--{"EndLintIgnore": []}-->
 ```
 
-The **Metadata** tab has a picker for the codes, so you don't have to memorize them. See [Suppressing diagnostics](new-linter.md) for the details.
+The **Metadata** tab has a picker for the codes, so you don't have to memorize them.
+See [Suppressing diagnostics](new-linter.md) for the details.
 
 ## Leaving sections out of the PDF
 
@@ -101,11 +111,12 @@ debug_x = 5
 '<!--{"NoPrintEnd": true}-->
 ```
 
-The section still shows in the preview but is dropped from the PDF. See [Excluding sections from the PDF](new-pdf-export.md) for more detail.
+The section still shows in the preview but is dropped from the PDF.
+See [Excluding sections from the PDF](new-pdf-export.md) for more detail.
 
 ## See also
 
-- [The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md)
+- [The CalcpadCE Panel & Settings](new-calcpad-panel.md)
 - [Linter and Diagnostics](new-linter.md) — the lint-ignore markers
 - [PDF Export](new-pdf-export.md) — the no-print markers
 - [Using the VS Code Extension](new-vscode-extension.md)

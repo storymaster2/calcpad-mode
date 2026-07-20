@@ -4,7 +4,7 @@
 
 ## Reusing code with `#include`
 
-`#include` inlines another Calcpad file's source into your document at parse time, so you can keep shared constants, functions, and macros in one place and reuse them everywhere:
+`#include` inlines another CalcpadCE file's source into your document at parse time, so you can keep shared constants, functions, and macros in one place and reuse them everywhere:
 
 ```text
 ' top.cpd
@@ -14,7 +14,8 @@
 
 An included file can include others in turn, and those can include more — the chain is followed automatically.
 
-- **Circular includes are safe.** If a file ends up including itself (directly or through another file), the repeat is skipped instead of looping forever. Filenames are matched case-insensitively.
+- **Circular includes are safe.** If a file ends up including itself (directly or through another file), the repeat is skipped instead of looping forever.
+Filenames are matched case-insensitively.
 - **There's a depth limit.** Include chains can go up to 20 levels deep; beyond that, the include is skipped and a comment is left in its place noting the file that couldn't be included.
 
 ## `#include` vs `#read`
@@ -23,7 +24,7 @@ Both bring in outside content, but they do different jobs:
 
 | | `#include` | `#read` |
 |--------|-----------|---------|
-| What it brings in | Calcpad source code | Data (CSV, TSV, Excel, JSON) |
+| What it brings in | CalcpadCE source code | Data (CSV, TSV, Excel, JSON) |
 | When it happens | At parse time — the source is inlined | At run time — the data is loaded into a variable |
 | Result | The included code becomes part of your document | You get a matrix or vector variable to compute with |
 

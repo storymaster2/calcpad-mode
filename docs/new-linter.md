@@ -2,7 +2,8 @@
 
 > Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
 
-Calcpad.Web checks your document as you write and flags problems before you ever run it. Each diagnostic has a short, stable code (like `CPD-3301`) so you can look up exactly what it means.
+Calcpad.Web checks your document as you write and flags problems before you ever run it.
+Each diagnostic has a short, stable code (like `CPD-3301`) so you can look up exactly what it means.
 
 Diagnostics appear:
 
@@ -11,7 +12,8 @@ Diagnostics appear:
 
 ## Diagnostic codes
 
-Every diagnostic has a `CPD-` code. The tables below group them by the kind of problem.
+Every diagnostic has a `CPD-` code.
+The tables below group them by the kind of problem.
 
 ### Includes
 
@@ -57,7 +59,7 @@ Every diagnostic has a `CPD-` code. The tables below group them by the kind of p
 | CPD-3203 | Error | Invalid function name |
 | CPD-3204 | Error | Function name conflicts with a built-in function |
 | CPD-3205 | Error | Variable name conflicts with a keyword |
-| CPD-3207 | Error | Variable name conflicts with a built-in constant |
+| CPD-3207 | Warning | Variable name conflicts with a built-in constant |
 | CPD-3208 | Error | Function must have at least one parameter |
 | CPD-3215 | Error | Required parameter after an optional one (function) |
 
@@ -77,6 +79,7 @@ Every diagnostic has a `CPD-` code. The tables below group them by the kind of p
 | CPD-3310 | Error | Undefined unit |
 | CPD-3311 | Error | Empty parameter in a function call |
 | CPD-3312 | Information | Unused variable |
+| CPD-3314 | Information | Redefinition of an existing function |
 
 ### Semantics
 
