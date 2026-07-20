@@ -3259,12 +3259,12 @@ circle.Series7 {fill:BlueViolet;}
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1991-1-3, § 5.3.6&lt;/small&gt;</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
 <span class="c1">&#39;&lt;img class=&quot;side&quot; style=&quot;width:210pt;&quot; src=&quot;../../Images/structures/loads/snow-drift.png&quot; alt=&quot;snow-drift.png&quot;&gt;</span>
-<span class="c1">&#39;Characteristic snow load on the ground -&#39;</span><span class="nv">s_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
-<span class="c1">&#39;Higher roof width -&#39;</span><span class="nv">b_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Sliding surface width -&#39;</span><span class="nv">b_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Lower roof width -&#39;</span><span class="nv">b_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;height difference -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Pitch angle of the higher roof -&#39;</span><span class="nv">α</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;&lt;sup&gt;o&lt;/sup&gt;</span>
+<span class="c1">&#39;Characteristic snow load on the ground -&#39;</span><span class="nv">s_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1.5</span><span class="p">}</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
+<span class="c1">&#39;Higher roof width -&#39;</span><span class="nv">b_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">18</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Sliding surface width -&#39;</span><span class="nv">b_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">9</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Lower roof width -&#39;</span><span class="nv">b_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">36</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;height difference -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6.2</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Pitch angle of the higher roof -&#39;</span><span class="nv">α</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">3</span><span class="p">}</span><span class="c1">&#39;&lt;sup&gt;o&lt;/sup&gt;</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Shape coefficient for the higher roof</span>
 <span class="k">#if</span><span class="w"> </span><span class="nv">α</span><span class="w"> </span><span class="o">≤</span><span class="w"> </span><span class="m">15</span>
@@ -3298,7 +3298,7 @@ circle.Series7 {fill:BlueViolet;}
 <span class="w">    </span><span class="nv">μ_12</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nv">μ_1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">μ_2</span><span class="p">)</span><span class="o">*</span><span class="nv">b_2</span><span class="o">/</span><span class="nv">l_s</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">μ_2</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;1.5  18  9   36  6.2 3</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -3344,8 +3344,8 @@ circle.Series7 {fill:BlueViolet;}
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;small&gt;According to &lt;strong&gt;Eurocode&lt;/strong&gt;: EN 1991-1-3&lt;/small&gt;</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:180mm&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:200pt;&quot; src=&quot;../../Images/structures/loads/snow.png&quot; alt=&quot;snow.png&quot;&gt;&lt;br /&gt;&lt;br /&gt;</span>
-<span class="c1">&#39;Characteristic snow load on the ground -&#39;</span><span class="nv">s_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
-<span class="c1">&#39;Roof pitch angle -&#39;</span><span class="nv">α</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;&lt;sup&gt;o&lt;/sup&gt;</span>
+<span class="c1">&#39;Characteristic snow load on the ground -&#39;</span><span class="nv">s_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
+<span class="c1">&#39;Roof pitch angle -&#39;</span><span class="nv">α</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;&lt;sup&gt;o&lt;/sup&gt;</span>
 <span class="k">#post</span>
 <span class="k">#if</span><span class="w"> </span><span class="nv">α</span><span class="w"> </span><span class="o">≤</span><span class="w"> </span><span class="m">30</span>
 <span class="w">    </span><span class="c1">&#39;Snow shape coefficient -&#39;</span><span class="nv">μ_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span><span class="c1">&#39;(α &amp;le; 30 &lt;sup&gt;o&lt;/sup&gt;)</span>
@@ -3355,14 +3355,14 @@ circle.Series7 {fill:BlueViolet;}
 <span class="w">    </span><span class="c1">&#39;Snow shape coefficient -&#39;</span><span class="nv">μ_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="c1">&#39;(α &amp;gt; 60 &lt;sup&gt;o&lt;/sup&gt;)</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;Exposure factor -&#39;</span><span class="nv">C_e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
-<span class="c1">&#39;Thermal factor -&#39;</span><span class="nv">C_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="c1">&#39;Exposure factor -&#39;</span><span class="nv">C_e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span>
+<span class="c1">&#39;Thermal factor -&#39;</span><span class="nv">C_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span>
 <span class="k">#post</span>
 <span class="c1">&#39;&lt;p class=&quot;ref&quot;&gt;[EN 1991-1-3, Clause 5.2 (3)a]&lt;/p&gt;</span>
 <span class="c1">&#39;Snow load on roof</span>
 <span class="nv">s</span><span class="w"> </span><span class="o">=</span><span class="nv">μ_1</span><span class="o">*</span><span class="nv">C_e</span><span class="o">*</span><span class="nv">C_t</span><span class="o">*</span><span class="nv">s_k</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;1    0   1   1</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>

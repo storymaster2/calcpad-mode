@@ -3640,8 +3640,8 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Tee Section</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;tee.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/tee.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
-<span class="nv">b_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">20</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;%u</span>
+<span class="nv">b_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">5</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="o">*</span><span class="nv">t_w</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="nv">A_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nv">b_f</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">t_w</span><span class="p">)</span><span class="o">*</span><span class="nv">t_f</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
@@ -3662,7 +3662,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20  2   10  5</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -3707,9 +3707,9 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Double Tee Section</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:150mm&quot;&gt;&lt;img style=&quot;height:165pt;&quot; alt=&quot;double-tee.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/double-tee.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
-<span class="nv">b_f1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
-<span class="nv">b_f2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">20</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
+<span class="nv">b_f1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;%u</span>
+<span class="nv">b_f2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">15</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">3</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="o">*</span><span class="nv">t_w</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="nv">A_f1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nv">b_f1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">t_w</span><span class="p">)</span><span class="o">*</span><span class="nv">t_f1</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
@@ -3732,7 +3732,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20  1   10  2   15  3</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -3904,8 +3904,8 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Angle Section</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;angle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/angle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
-<span class="nv">b_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">20</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;%u</span>
+<span class="nv">b_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">5</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="o">*</span><span class="nv">t_w</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="nv">A_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nv">b_f</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">t_w</span><span class="p">)</span><span class="o">*</span><span class="nv">t_f</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
@@ -3937,7 +3937,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_1</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_2</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20  2   10  5</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -3993,8 +3993,8 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Zed Section</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;zed.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/zed.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
-<span class="nv">b_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">20</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;%u</span>
+<span class="nv">b_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">5</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="o">*</span><span class="nv">t_w</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="nv">A_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nv">b_f</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">t_w</span><span class="p">)</span><span class="o">*</span><span class="nv">t_f</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
@@ -4018,7 +4018,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20   2   10  5</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4066,8 +4066,8 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Channel Section</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;channel.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/channel.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
-<span class="nv">b_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">20</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
+<span class="nv">b_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="o">*</span><span class="nv">t_w</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="nv">A_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nv">b_f</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">t_w</span><span class="p">)</span><span class="o">*</span><span class="nv">t_f</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
@@ -4088,7 +4088,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20  1   10  2</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4133,7 +4133,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Circle</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;circle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/circle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Diameter</span>
-<span class="nv">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">π</span><span class="o">*</span><span class="nv">d</span><span class="o">^</span><span class="m">2</span><span class="o">/</span><span class="m">4</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="c1">&#39;Centroid</span>
@@ -4150,7 +4150,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Torsional constant</span>
 <span class="nv">I_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">π</span><span class="o">*</span><span class="nv">d</span><span class="o">^</span><span class="m">4</span><span class="o">/</span><span class="m">32</span><span class="c1">&#39;%u&lt;sup&gt;4&lt;/sup&gt;</span>
 <span class="c1">&#39;Torsional section modulus</span>
-<span class="nv">W_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="nv">I_t</span><span class="o">/</span><span class="nv">d</span><span class="c1">&#39;%u&lt;sup&gt;3&lt;/sup&gt;1</span>
+<span class="nv">W_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="nv">I_t</span><span class="o">/</span><span class="nv">d</span><span class="c1">&#39;%u&lt;sup&gt;3&lt;/sup&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -4189,8 +4189,8 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Circular Sector</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:150mm&quot;&gt;&lt;img style=&quot;height:120pt;&quot; alt=&quot;sector.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/sector.png&quot;&gt;&lt;/div&gt;</span>
-<span class="c1">&#39;Radius -&#39;</span><span class="nv">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
-<span class="c1">&#39;Angle -&#39;</span><span class="nv">α</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;&amp;deg;</span>
+<span class="c1">&#39;Radius -&#39;</span><span class="nv">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
+<span class="c1">&#39;Angle -&#39;</span><span class="nv">α</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">90</span><span class="p">}</span><span class="c1">&#39;&amp;deg;</span>
 <span class="nv">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">π</span><span class="o">/</span><span class="m">180</span>
 <span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="m">2</span><span class="o">*</span><span class="nv">r</span><span class="o">^</span><span class="m">2</span><span class="o">*</span><span class="p">(</span><span class="m">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">cos</span><span class="p">(</span><span class="nv">α</span><span class="p">)))</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
@@ -4208,7 +4208,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1   90</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4249,7 +4249,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Circular Pipe</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:150mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;circular-pipe.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/circular-pipe.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0.1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="nv">d_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">d</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="nv">t</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">π</span><span class="o">*</span><span class="p">(</span><span class="nv">d</span><span class="o">^</span><span class="m">2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">d_1</span><span class="o">^</span><span class="m">2</span><span class="p">)</span><span class="o">/</span><span class="m">4</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
@@ -4267,7 +4267,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="nv">W_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="nv">I_t</span><span class="o">/</span><span class="nv">d</span><span class="c1">&#39;%u&lt;sup&gt;3&lt;/sup&gt;</span>
 <span class="c1">&#39;Radii of gyration</span>
 <span class="c1">&#39;&lt;p&gt;&lt;i&gt;r&lt;/i&gt;&lt;sub&gt;z&lt;/sub&gt; =&#39;</span><span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u&lt;/p&gt;</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1    0.1</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4308,7 +4308,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Ellipse</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:112pt;&quot; alt=&quot;ellipse.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/ellipse.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">a</span><span class="o">=</span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">b</span><span class="o">=</span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">a</span><span class="o">=</span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">b</span><span class="o">=</span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">π</span><span class="o">*</span><span class="nv">a</span><span class="o">*</span><span class="nv">b</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="c1">&#39;Centroid</span>
@@ -4333,7 +4333,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u2   1</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4377,8 +4377,8 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:112pt;&quot; alt=&quot;elliptical-pipe.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/elliptical-pipe.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;(ellipse with elliptical hole)</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
-<span class="nv">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">20</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;%u</span>
+<span class="nv">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="nv">a_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">t</span><span class="c1">&#39;%u</span>
 <span class="nv">b_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">b</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">t</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
@@ -4408,7 +4408,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u20  10  2</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4455,7 +4455,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Equilateral Triangle</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;equilateral-triangle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/equilateral-triangle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Side length</span>
-<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Height</span>
 <span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="m">3</span><span class="p">)</span><span class="o">/</span><span class="m">2</span><span class="o">*</span><span class="nv">a</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
@@ -4477,7 +4477,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4522,7 +4522,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Half Circle</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:112pt;&quot; alt=&quot;half-circle.png&quot; class=&quot;side&quot;  src=&quot;../../Images/mechanics/sections/half-circle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Diameter</span>
-<span class="nv">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">π</span><span class="o">*</span><span class="nv">d</span><span class="o">^</span><span class="m">2</span><span class="o">/</span><span class="m">8</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="c1">&#39;Perimeter</span>
@@ -4538,7 +4538,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4577,7 +4577,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Regular Hexagon</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;hexagon.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/hexagon.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="m">3</span><span class="p">)</span><span class="o">*</span><span class="nv">a</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="o">*</span><span class="nv">a</span><span class="o">*</span><span class="nv">h</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
@@ -4592,7 +4592,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="nv">I_x</span><span class="o">=</span><span class="m">2</span><span class="o">*</span><span class="nv">I_y</span><span class="c1">&#39;%u&lt;sup&gt;4&lt;/sup&gt;</span>
 <span class="c1">&#39;Radii of gyration</span>
 <span class="c1">&#39;&lt;p&gt;&lt;i&gt;r&lt;/i&gt;&lt;sub&gt;z&lt;/sub&gt; =&#39;</span><span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u&lt;/p&gt;</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4629,7 +4629,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Quarter Circle</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:120pt;&quot; alt=&quot;quarter-circle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/quarter-circle.png&quot;&gt;&lt;/div&gt;</span>
-<span class="c1">&#39;Radius -&#39;</span><span class="nv">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="c1">&#39;Radius -&#39;</span><span class="nv">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">π</span><span class="o">*</span><span class="nv">r</span><span class="o">^</span><span class="m">2</span><span class="o">/</span><span class="m">4</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="c1">&#39;Centroid</span>
@@ -4650,7 +4650,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;&lt;p&gt;&lt;i&gt;r&lt;/i&gt;&lt;sub&gt;z&lt;/sub&gt; =&#39;</span><span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u&lt;/p&gt;</span>
 <span class="nv">r_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_1</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_2</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4693,7 +4693,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Rectangle</span>
 <span class="c1">&#39;&lt;div style = &quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;rectangle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/rectangle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="o">*</span><span class="nv">b</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="c1">&#39;Centroid</span>
@@ -4727,7 +4727,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Torsional section modulus</span>
 <span class="nv">W_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">b</span><span class="o">*</span><span class="nv">h</span><span class="o">^</span><span class="m">2</span><span class="o">*</span><span class="p">(</span><span class="m">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">0.630</span><span class="o">*</span><span class="nv">h</span><span class="o">/</span><span class="nv">b</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">0.250</span><span class="o">*</span><span class="p">(</span><span class="nv">h</span><span class="o">/</span><span class="nv">b</span><span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span><span class="o">/</span><span class="m">3</span><span class="c1">&#39;%u&lt;sup&gt;3&lt;/sup&gt;</span>
 <span class="k">#end if</span>
-<span class="k">#end if</span><span class="m">2</span><span class="w"> </span><span class="m">1</span>
+<span class="k">#end if</span>
 </code></pre></div>
 
 </figure>
@@ -4770,8 +4770,8 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Rectangular Tube</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:150mm&quot;&gt;&lt;img style=&quot;height:150pt;&quot; alt=&quot;rectangular-tube.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/rectangular-tube.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
-<span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">300</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">20</span><span class="p">}</span><span class="c1">&#39;%u</span>
+<span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">200</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">t_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">30</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="nv">b_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">b</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="nv">t_w</span><span class="c1">&#39;%u</span>
 <span class="nv">h_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="nv">t_f</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
@@ -4790,7 +4790,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u300 20  200 30</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4892,7 +4892,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Square Rhombus</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;rombus-square.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/rhombus.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Side length</span>
-<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Diagonal length</span>
 <span class="nv">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="m">2</span><span class="o">*</span><span class="nv">a</span><span class="o">^</span><span class="m">2</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
@@ -4907,7 +4907,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="nv">I_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="o">*</span><span class="nv">I_y</span><span class="c1">&#39;%u&lt;sup&gt;4&lt;/sup&gt;</span>
 <span class="c1">&#39;Radii of gyration</span>
 <span class="c1">&#39;&lt;p&gt;&lt;i&gt;r&lt;/i&gt;&lt;sub&gt;z&lt;/sub&gt; =&#39;</span><span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;&lt;/p&gt;</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -4945,7 +4945,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Right Triangle</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:120mm&quot;&gt;&lt;img style=&quot;height:127pt;&quot; alt=&quot;right-triangle.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/right-triangle.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Side lengths</span>
-<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="o">*</span><span class="nv">b</span><span class="o">/</span><span class="m">2</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="c1">&#39;Perimeter</span>
@@ -4969,7 +4969,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_1</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_2</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u2   1</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -5015,8 +5015,8 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <figcaption>Code:</figcaption>
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Circular Segment</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:150mm&quot;&gt;&lt;img style=&quot;height:120pt;&quot; alt=&quot;segment.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/segment.png&quot;&gt;&lt;/div&gt;</span>
-<span class="c1">&#39;Radius -&#39;</span><span class="nv">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
-<span class="c1">&#39;Angle -&#39;</span><span class="nv">α</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;&amp;deg;</span>
+<span class="c1">&#39;Radius -&#39;</span><span class="nv">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
+<span class="c1">&#39;Angle -&#39;</span><span class="nv">α</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">90</span><span class="p">}</span><span class="c1">&#39;&amp;deg;</span>
 <span class="nv">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">π</span><span class="o">/</span><span class="m">180</span>
 <span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="m">2</span><span class="o">*</span><span class="nv">r</span><span class="o">^</span><span class="m">2</span><span class="o">*</span><span class="p">(</span><span class="m">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">cos</span><span class="p">(</span><span class="nv">α</span><span class="p">)))</span><span class="c1">&#39;%u</span>
 <span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">r</span><span class="o">^</span><span class="m">2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">a</span><span class="o">^</span><span class="m">2</span><span class="o">/</span><span class="m">4</span><span class="p">)</span><span class="c1">&#39;%u</span>
@@ -5035,7 +5035,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1   90</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -5077,7 +5077,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Square</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:100mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;square.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/square.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Side length</span>
-<span class="nv">a</span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">a</span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">a</span><span class="o">^</span><span class="m">2</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="c1">&#39;Centroid</span>
@@ -5090,7 +5090,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="nv">I_x</span><span class="o">=</span><span class="m">2</span><span class="o">*</span><span class="nv">I_y</span><span class="c1">&#39;%u&lt;sup&gt;4&lt;/sup&gt;</span>
 <span class="c1">&#39;Radii of gyration</span>
 <span class="c1">&#39;&lt;p&gt;&lt;i&gt;r&lt;/i&gt;&lt;sub&gt;z&lt;/sub&gt; =&#39;</span><span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u&lt;/p&gt;</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u1</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqr</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>
@@ -5126,9 +5126,9 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <div class="highlight"><pre><span></span><code><span class="cs">&quot;Geometrical Properties of Trapezoid</span>
 <span class="c1">&#39;&lt;div style=&quot;max-width:130mm&quot;&gt;&lt;img style=&quot;height:135pt;&quot; alt=&quot;Trapezoid.png&quot; class=&quot;side&quot; src=&quot;../../Images/mechanics/sections/trapezoid.png&quot;&gt;&lt;/div&gt;</span>
 <span class="c1">&#39;Dimensions</span>
-<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u,&#39;</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;%u,&#39;</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Height</span>
-<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;%u</span>
+<span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;%u</span>
 <span class="c1">&#39;Area</span>
 <span class="nv">A</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="o">*</span><span class="p">(</span><span class="nv">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">b</span><span class="p">)</span><span class="o">/</span><span class="m">2</span><span class="c1">&#39;%u&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="c1">&#39;Centroid</span>
@@ -5144,7 +5144,7 @@ For irregular outlines the <a href="#polygon">arbitrary polygon</a> worksheet in
 <span class="c1">&#39;Radii of gyration</span>
 <span class="nv">r_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_y</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 <span class="nv">r_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_z</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
-<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u2   1   1</span>
+<span class="nv">r_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="nv">I_x</span><span class="o">/</span><span class="nv">A</span><span class="p">)</span><span class="c1">&#39;%u</span>
 </code></pre></div>
 
 </figure>

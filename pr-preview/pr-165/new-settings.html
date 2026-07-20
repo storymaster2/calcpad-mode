@@ -3190,11 +3190,8 @@ Editing settings here keeps them in sync with the host and the server — in VS 
 </table>
 <h2 id="units">Units<a class="headerlink" href="#units" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Default Input Length Unit</strong> — <code>m</code> / <code>cm</code> / <code>mm</code>.
-Used for <code>%u</code> placeholders in input forms.</li>
-<li><strong>Non-Metric Units</strong> — <strong>UK (Imperial)</strong> or <strong>US Customary</strong>.
-Selects the definition of bare unit names that differ between the two systems (<code>gal</code>, <code>ton</code>, <code>cwt</code>, <code>pt</code>, <code>qt</code>, <code>bbl</code>, <code>tonf</code>, <code>therm</code>, …).
-This lives on <code>Settings.IsUs</code> and is unified across the WPF app, the CLI, and the web/desktop/VS Code hosts.</li>
+<li><strong>Default Input Length Unit</strong> — <code>m</code> / <code>cm</code> / <code>mm</code>. Used for <code>%u</code> placeholders in input forms.</li>
+<li><strong>Non-Metric Units</strong> — <strong>UK (Imperial)</strong> or <strong>US Customary</strong>. Selects the definition of bare unit names that differ between the two systems (<code>gal</code>, <code>ton</code>, <code>cwt</code>, <code>pt</code>, <code>qt</code>, <code>bbl</code>, <code>tonf</code>, <code>therm</code>, …). This lives on <code>Settings.IsUs</code> and is unified across the WPF app, the CLI, and the web/desktop/VS Code hosts.</li>
 </ul>
 <h2 id="server">Server<a class="headerlink" href="#server" title="Permanent link">&para;</a></h2>
 <p><strong>Remote Server URL</strong> — the address used when the host is configured to talk to a remote CalcpadCE server rather than a local one.</p>
@@ -3210,8 +3207,7 @@ This lives on <code>Settings.IsUs</code> and is unified across the WPF app, the 
 Pick the Monaco editor's font family from:</p>
 <ul>
 <li><strong>JuliaMono</strong> (bundled default) or <strong>System Default</strong>.</li>
-<li>Any additional <code>.woff2</code>/<code>.woff</code>/<code>.ttf</code>/<code>.otf</code> files dropped into the desktop app's <em>fonts folder</em>.
-Use <strong>Open Fonts Folder</strong> to reveal it, drop your fonts in, then reopen the Font Family picker to pick them up.</li>
+<li>Any additional <code>.woff2</code>/<code>.woff</code>/<code>.ttf</code>/<code>.otf</code> files dropped into the desktop app's <em>fonts folder</em>. Use <strong>Open Fonts Folder</strong> to reveal it, drop your fonts in, then reopen the Font Family picker to pick them up.</li>
 </ul>
 <h2 id="editor-features">Editor features<a class="headerlink" href="#editor-features" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3219,8 +3215,7 @@ Use <strong>Open Fonts Folder</strong> to reveal it, drop your fonts in, then re
 <li><strong>Comment Format</strong> — Auto (detect <code>#md</code> on/off) / HTML / Markdown; controls what the formatting hotkeys emit.</li>
 <li><strong>Enable Formatting Hotkeys</strong> — the Ctrl+B / Ctrl+I / Ctrl+1–6 … bindings.</li>
 <li><strong>Sync Preview to Cursor Line</strong> — scroll the preview to follow the line the cursor is on.</li>
-<li><strong>Auto-Run Preview</strong> <em>(default on)</em> — when off, the preview only re-renders when the preview panel is first opened or a manual <strong>Run Preview</strong> is triggered (<strong>Ctrl+Alt+X</strong>, the ▶ Run button, the editor context menu, or the Server → Refresh menu in the desktop app).
-Turn this off for large documents where every keystroke re-render is too costly.</li>
+<li><strong>Auto-Run Preview</strong> <em>(default on)</em> — when off, the preview only re-renders when the preview panel is first opened or a manual <strong>Run Preview</strong> is triggered (<strong>Ctrl+Alt+X</strong>, the ▶ Run button, the editor context menu, or the Server → Refresh menu in the desktop app). Turn this off for large documents where every keystroke re-render is too costly.</li>
 </ul>
 <h2 id="library">Library<a class="headerlink" href="#library" title="Permanent link">&para;</a></h2>
 <p><strong>Library Path</strong> — a directory of shared <code>.cpd</code>/<code>.txt</code> files that appear in <code>#include</code> / <code>#read</code> path completion, so a team can share a common library.
@@ -3231,9 +3226,7 @@ The lowest severity surfaced as a diagnostic.</p>
 <h2 id="diagnostics">Diagnostics<a class="headerlink" href="#diagnostics" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Open Logs Folder</strong> — opens the folder holding server logs and the most recent crash dump.</li>
-<li><strong>Max Output Lines (per channel)</strong> <em>(web/desktop)</em> — 10–100000, default 1000.
-Number of lines retained in each Output panel channel before older lines are dropped.
-Lower values reduce memory use and keep the UI responsive when logs are noisy.</li>
+<li><strong>Max Output Lines (per channel)</strong> <em>(web/desktop)</em> — 10–100000, default 1000. Number of lines retained in each Output panel channel before older lines are dropped. Lower values reduce memory use and keep the UI responsive when logs are noisy.</li>
 </ul>
 <h2 id="named-configurations">Named configurations<a class="headerlink" href="#named-configurations" title="Permanent link">&para;</a></h2>
 <p>The <strong>Configuration</strong> section lets you keep more than one named set of settings — for example a metric configuration with 3 decimals and an imperial one in degrees — and switch between them:</p>

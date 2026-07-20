@@ -2945,8 +2945,8 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style = &quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:190pt;&quot; alt = simply-supported-beam-distributed-load-uniform.png&quot; class=&quot;side&quot; src = &quot;../../Images/mechanics/beams/simply-supported-beam-distributed-load-uniform.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Load -&#39;</span><span class="nv">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m</span>
+<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">5</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Load -&#39;</span><span class="nv">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;kN/m</span>
 <span class="k">#post</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Internal forces&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Bending -&#39;</span><span class="nv">M_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">q</span><span class="o">*</span><span class="nv">l</span><span class="o">^</span><span class="m">2</span><span class="o">/</span><span class="m">8</span><span class="c1">&#39;kN·m</span>
@@ -2956,7 +2956,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="nv">PlotWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">600</span>
 <span class="nv">PlotHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">150</span>
 <span class="k">#show</span>
-<span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;m</span>
 <span class="k">#pre</span>
 
 <span class="k">#post</span>
@@ -2969,7 +2969,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="nd">$Plot</span><span class="p">{</span><span class="nv">V</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">l</span><span class="p">}</span>
 <span class="nv">V</span><span class="p">(</span><span class="nv">x_1</span><span class="p">)</span><span class="c1">&#39;kN</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;5    10  1</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -3005,8 +3005,8 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style = &quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:190pt;&quot; alt = &quot;simply-supported-beam-distributed-load-linear.png&quot; class=&quot;side&quot; src = &quot;../../Images/mechanics/beams/simply-supported-beam-distributed-load-linear.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Load -&#39;</span><span class="nv">q_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m,&#39;</span><span class="nv">q_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m</span>
+<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">5</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Load -&#39;</span><span class="nv">q_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">5</span><span class="p">}</span><span class="c1">&#39;kN/m,&#39;</span><span class="nv">q_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">15</span><span class="p">}</span><span class="c1">&#39;kN/m</span>
 <span class="k">#post</span>
 <span class="nv">Δq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">q_2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">q_1</span><span class="c1">&#39;kN/m</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Internal forces&lt;/b&gt;&lt;/p&gt;</span>
@@ -3031,7 +3031,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="nv">PlotWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">600</span>
 <span class="nv">PlotHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">150</span>
 <span class="k">#show</span>
-<span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;m</span>
 <span class="k">#pre</span>
 
 
@@ -3046,7 +3046,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="nd">$Plot</span><span class="p">{</span><span class="nv">V</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">l</span><span class="p">}</span>
 <span class="nv">V</span><span class="p">(</span><span class="nv">x_1</span><span class="p">)</span><span class="c1">&#39;kN</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;5    5   15  1</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -3089,9 +3089,9 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style = &quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:190pt;&quot; alt = &quot;simply-supported-beam-distributed-load-partial.png&quot; class=&quot;side&quot; src = &quot;../../Images/mechanics/beams/simply-supported-beam-distributed-load-partial.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Load -&#39;</span><span class="nv">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m</span>
-<span class="c1">&#39;Distances -&#39;</span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m,&#39;</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">5</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Load -&#39;</span><span class="nv">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;kN/m</span>
+<span class="c1">&#39;Distances -&#39;</span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;m,&#39;</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;m</span>
 <span class="k">#post</span>
 <span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">l</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="nv">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">b</span><span class="p">)</span><span class="c1">&#39;m</span>
 <span class="k">#if</span><span class="w"> </span><span class="c1">&#39;&lt;!--&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0</span><span class="c1">&#39;--&gt;</span>
@@ -3109,7 +3109,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="w">    </span><span class="nv">PlotWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">600</span>
 <span class="w">    </span><span class="nv">PlotHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">150</span>
 <span class="w">    </span><span class="k">#show</span>
-<span class="w">    </span><span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
+<span class="w">    </span><span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1.5</span><span class="p">}</span><span class="c1">&#39;m</span>
 <span class="w">    </span><span class="k">#pre</span>
 
 <span class="w">    </span><span class="k">#post</span>
@@ -3123,7 +3123,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="w">    </span><span class="nv">V</span><span class="p">(</span><span class="nv">x_1</span><span class="p">)</span><span class="c1">&#39;kN</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;5    10  1   2   1.5</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -3165,9 +3165,9 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style = &quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:190pt;&quot; alt = &quot;simply-supported-beam-concentrated-force.png&quot; class=&quot;side&quot; src = &quot;../../Images/mechanics/beams/simply-supported-beam-concentrated-force.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Load -&#39;</span><span class="nv">F</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN</span>
-<span class="c1">&#39;Distance -&#39;</span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">5</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Load -&#39;</span><span class="nv">F</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;kN</span>
+<span class="c1">&#39;Distance -&#39;</span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;m</span>
 <span class="k">#post</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Internal forces&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Bending</span>
@@ -3180,7 +3180,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="nv">PlotWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">600</span>
 <span class="nv">PlotHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">150</span>
 <span class="k">#show</span>
-<span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;m</span>
 <span class="k">#pre</span>
 
 <span class="k">#post</span>
@@ -3193,7 +3193,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="nd">$Plot</span><span class="p">{</span><span class="nv">V</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">l</span><span class="p">}</span>
 <span class="nv">V</span><span class="p">(</span><span class="nv">x_1</span><span class="p">)</span><span class="c1">&#39;kN</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;5    10  2   1</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -3233,9 +3233,9 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style = &quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:190pt;&quot; alt = &quot;simply-supported-beam-forces.png&quot; class=&quot;side&quot; src = &quot;../../Images/mechanics/beams/simply-supported-beam-forces.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Load -&#39;</span><span class="nv">F</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN</span>
-<span class="c1">&#39;Number of forces -&#39;</span><span class="nv">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">5</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Load -&#39;</span><span class="nv">F</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;kN</span>
+<span class="c1">&#39;Number of forces -&#39;</span><span class="nv">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Number of spacings -&#39;</span><span class="nv">n_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Internal forces&lt;/b&gt;&lt;/p&gt;</span>
@@ -3250,7 +3250,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="nv">PlotWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">600</span>
 <span class="nv">PlotHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">150</span>
 <span class="k">#show</span>
-<span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;m</span>
 <span class="k">#pre</span>
 
 <span class="k">#post</span>
@@ -3266,7 +3266,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="nd">$Plot</span><span class="p">{</span><span class="nv">V</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">l</span><span class="p">}</span>
 <span class="nv">V</span><span class="p">(</span><span class="nv">x_1</span><span class="p">)</span><span class="c1">&#39;kN</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;5    10  2   1</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -3307,9 +3307,9 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <div class="highlight"><pre><span></span><code><span class="c1">&#39;&lt;div style = &quot;max-width:180mm;&quot;&gt;</span>
 <span class="c1">&#39;&lt;img style=&quot;width:190pt;&quot; alt = &quot;simply-supported-beam-concentrated-moment.png&quot; class=&quot;side&quot; src = &quot;../../Images/mechanics/beams/simply-supported-beam-concentrated-moment.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Input data&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Load -&#39;</span><span class="nv">M</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m</span>
-<span class="c1">&#39;Distance -&#39;</span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam length -&#39;</span><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">5</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Load -&#39;</span><span class="nv">M</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;kN·m</span>
+<span class="c1">&#39;Distance -&#39;</span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;m</span>
 <span class="k">#post</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Internal forces&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;Bending</span>
@@ -3322,7 +3322,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="nv">PlotWidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">600</span>
 <span class="nv">PlotHeight</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">150</span>
 <span class="k">#show</span>
-<span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Calculate internal forces at&#39;</span><span class="nv">x_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span><span class="c1">&#39;m</span>
 <span class="k">#pre</span>
 
 <span class="k">#post</span>
@@ -3335,7 +3335,7 @@ For distributed actions, the <a href="#uniformly-distributed-load">uniform load<
 <span class="nd">$Plot</span><span class="p">{</span><span class="nv">V</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span><span class="w"> </span><span class="p">@</span><span class="w"> </span><span class="nv">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">l</span><span class="p">}</span>
 <span class="nv">V</span><span class="p">(</span><span class="nv">x_1</span><span class="p">)</span><span class="c1">&#39;kN</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;5    10  2   1</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>

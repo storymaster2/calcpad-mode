@@ -2895,8 +2895,7 @@
 </code></pre></div>
 <p>An included file can include others in turn, and those can include more — the chain is followed automatically.</p>
 <ul>
-<li><strong>Circular includes are safe.</strong> If a file ends up including itself (directly or through another file), the repeat is skipped instead of looping forever.
-Filenames are matched case-insensitively.</li>
+<li><strong>Circular includes are safe.</strong> If a file ends up including itself (directly or through another file), the repeat is skipped instead of looping forever. Filenames are matched case-insensitively.</li>
 <li><strong>There's a depth limit.</strong> Include chains can go up to 20 levels deep; beyond that, the include is skipped and a comment is left in its place noting the file that couldn't be included.</li>
 </ul>
 <h2 id="include-vs-read"><code>#include</code> vs <code>#read</code><a class="headerlink" href="#include-vs-read" title="Permanent link">&para;</a></h2>

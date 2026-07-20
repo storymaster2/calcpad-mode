@@ -2879,20 +2879,20 @@ The geometry of the perimeter changes with the column position: the <a href="#in
 <span class="c1">&#39;&lt;img class=&quot;side&quot; style=&quot;width:225pt;&quot; src=&quot;../../Images/structures/rc/design/punching-corner-column.png&quot; alt=&quot;punching-corner-column.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Input data&lt;/h4&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Column&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Dimensions - &#39;</span><span class="nv">c_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, &#39;</span><span class="nv">c_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Dimensions - &#39;</span><span class="nv">c_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">600</span><span class="p">}</span><span class="c1">&#39;mm, &#39;</span><span class="nv">c_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">300</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Design loads&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Support reaction -&#39;</span><span class="nv">V_Ed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN</span>
+<span class="c1">&#39;Support reaction -&#39;</span><span class="nv">V_Ed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">125</span><span class="p">}</span><span class="c1">&#39;kN</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Slab&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Depth -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="c1">&#39;Longitudinal bars diameter -&#39;</span><span class="nv">d_bL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="c1">&#39;Links diameter -&#39;</span><span class="nv">d_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Depth -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">200</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">20</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Longitudinal bars diameter -&#39;</span><span class="nv">d_bL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Links diameter -&#39;</span><span class="nv">d_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Effective slab depth</span>
 <span class="nv">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">c</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">d_bL</span><span class="c1">&#39;mm</span>
 <span class="k">#show</span>
 <span class="c1">&#39;Longitudinal reinforcement area</span>
-<span class="nv">A_sx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm²/m, &#39;</span><span class="nv">A_sy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm²/m</span>
+<span class="nv">A_sx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1200</span><span class="p">}</span><span class="c1">&#39;mm²/m, &#39;</span><span class="nv">A_sy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">600</span><span class="p">}</span><span class="c1">&#39;mm²/m</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Reinforcement ratio</span>
 <span class="nv">ρ_lx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">A_sx</span><span class="o">/</span><span class="p">(</span><span class="m">1000</span><span class="o">*</span><span class="nv">d</span><span class="p">)</span>
@@ -2901,13 +2901,13 @@ The geometry of the perimeter changes with the column position: the <a href="#in
 <span class="k">#show</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Material properties&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; [EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="c1">&#39;Partial safety factor for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="c1">&#39;Partial safety factor for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="k">#show</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Partial safety factor for steel -&#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="c1">&#39;Design yield strength -&#39;</span><span class="nv">f_ywd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
@@ -3013,7 +3013,7 @@ The geometry of the perimeter changes with the column position: the <a href="#in
 <span class="w">    </span><span class="c1">&#39;&lt;img style=&quot;width:195pt;&quot; src=&quot;../../Images/structures/rc/design/punching-corner-column-reinf-section.png&quot; alt=&quot;punching-corner-column-reinf-section.png&quot;&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;600  300 125 200 20  10  6   1200    600 25  1   500</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -3139,20 +3139,20 @@ The geometry of the perimeter changes with the column position: the <a href="#in
 <span class="c1">&#39;&lt;img class=&quot;side&quot; style=&quot;width:225pt;&quot; src=&quot;../../Images/structures/rc/design/punching-edge-column.png&quot; alt=&quot;punching-edge-column.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Input data&lt;/h4&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Column&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Dimensions - &#39;</span><span class="nv">c_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, &#39;</span><span class="nv">c_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Dimensions - &#39;</span><span class="nv">c_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">600</span><span class="p">}</span><span class="c1">&#39;mm, &#39;</span><span class="nv">c_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">300</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Design loads&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Support reaction -&#39;</span><span class="nv">V_Ed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN</span>
+<span class="c1">&#39;Support reaction -&#39;</span><span class="nv">V_Ed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">200</span><span class="p">}</span><span class="c1">&#39;kN</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Slab&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Depth -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="c1">&#39;Longitudinal bars diameter -&#39;</span><span class="nv">d_bL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="c1">&#39;Links diameter -&#39;</span><span class="nv">d_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Depth -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">200</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">20</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Longitudinal bars diameter -&#39;</span><span class="nv">d_bL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Links diameter -&#39;</span><span class="nv">d_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Effective slab depth</span>
 <span class="nv">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">c</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">d_bL</span><span class="c1">&#39;mm</span>
 <span class="k">#show</span>
 <span class="c1">&#39;Longitudinal reinforcement area</span>
-<span class="nv">A_sx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm²/m, &#39;</span><span class="nv">A_sy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm²/m</span>
+<span class="nv">A_sx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1200</span><span class="p">}</span><span class="c1">&#39;mm²/m, &#39;</span><span class="nv">A_sy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">600</span><span class="p">}</span><span class="c1">&#39;mm²/m</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Reinforcement ratio</span>
 <span class="nv">ρ_lx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">A_sx</span><span class="o">/</span><span class="p">(</span><span class="m">1000</span><span class="o">*</span><span class="nv">d</span><span class="p">)</span>
@@ -3161,13 +3161,13 @@ The geometry of the perimeter changes with the column position: the <a href="#in
 <span class="k">#show</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Material properties&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; [EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="c1">&#39;Partial safety factor for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="c1">&#39;Partial safety factor for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="k">#show</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Partial safety factor for steel -&#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="c1">&#39;Design yield strength -&#39;</span><span class="nv">f_ywd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
@@ -3273,7 +3273,7 @@ The geometry of the perimeter changes with the column position: the <a href="#in
 <span class="w">    </span><span class="c1">&#39;&lt;img style=&quot;width:195pt;&quot; src=&quot;../../Images/structures/rc/design/punching-edge-column-reinf-section.png&quot; alt=&quot;punching-edge-column-reinf-section.png&quot;&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;600  300 200 200 20  10  6   1200    600 25  1   500</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -3399,22 +3399,22 @@ The geometry of the perimeter changes with the column position: the <a href="#in
 <span class="c1">&#39;&lt;img class=&quot;side&quot; style=&quot;width:260pt;&quot; src=&quot;../../Images/structures/rc/design/punching.png&quot; alt=&quot;punching.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Input data&lt;/h4&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Column&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Dimensions - &#39;</span><span class="nv">c_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, &#39;</span><span class="nv">c_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Dimensions - &#39;</span><span class="nv">c_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">600</span><span class="p">}</span><span class="c1">&#39;mm, &#39;</span><span class="nv">c_2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">300</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Design loads&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Support reaction -&#39;</span><span class="nv">V_Ed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN</span>
+<span class="c1">&#39;Support reaction -&#39;</span><span class="nv">V_Ed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;kN</span>
 <span class="c1">&#39;Bending moments</span>
-<span class="nv">M_x_Ed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kNm,&#39;</span><span class="nv">M_y_Ed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kNm</span>
+<span class="nv">M_x_Ed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kNm,&#39;</span><span class="nv">M_y_Ed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kNm</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Slab&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Depth -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="c1">&#39;Longitudinal bars diameter -&#39;</span><span class="nv">d_bL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="c1">&#39;Links diameter -&#39;</span><span class="nv">d_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Depth -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">200</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">20</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Longitudinal bars diameter -&#39;</span><span class="nv">d_bL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">10</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="c1">&#39;Links diameter -&#39;</span><span class="nv">d_w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Effective slab depth</span>
 <span class="nv">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">h</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">c</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">d_bL</span><span class="c1">&#39;mm</span>
 <span class="k">#show</span>
 <span class="c1">&#39;Longitudinal reinforcement area</span>
-<span class="nv">A_sx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm²/m, &#39;</span><span class="nv">A_sy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm²/m</span>
+<span class="nv">A_sx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1200</span><span class="p">}</span><span class="c1">&#39;mm²/m, &#39;</span><span class="nv">A_sy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1200</span><span class="p">}</span><span class="c1">&#39;mm²/m</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Reinforcement ratio</span>
 <span class="nv">ρ_lx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">A_sx</span><span class="o">/</span><span class="p">(</span><span class="m">1000</span><span class="o">*</span><span class="nv">d</span><span class="p">)</span>
@@ -3423,13 +3423,13 @@ The geometry of the perimeter changes with the column position: the <a href="#in
 <span class="k">#show</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Material properties&lt;/b&gt;&lt;/p&gt;</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; [EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="c1">&#39;Partial safety factor for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="c1">&#39;Partial safety factor for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">1</span><span class="p">}</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="k">#show</span>
 <span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Partial safety factor for steel -&#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="c1">&#39;Design yield strength -&#39;</span><span class="nv">f_ywd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
@@ -3588,7 +3588,7 @@ The geometry of the perimeter changes with the column position: the <a href="#in
 <span class="w">    </span><span class="c1">&#39;&lt;img style=&quot;width:260pt;&quot; src=&quot;../../Images/structures/rc/design/punching-reinf-section.png&quot; alt=&quot;punching-reinf-section.png&quot;&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;600  300 500 0   0   200 20  10  6   1200    1200    25  1   500</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
