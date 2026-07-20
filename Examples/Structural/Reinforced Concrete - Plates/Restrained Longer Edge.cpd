@@ -4,11 +4,11 @@
 '<img alt="ssfs-span-cl.png" class="side" style="height:170pt;" src="../../Images/structures/rc/spans/ssfs-span-cl.png">
 '<h4>Dimensions</h4>
 'Clear spans (<i>l</i><sub>x</sub> &lt; <i>l</i><sub>y</sub>)
-l_x_cl = ?'m,'l_y_cl = ?'m
-'Beam width along <i>x</i> -'b_y = ?'cm
-'Beam width along <i>y</i> -'b_x = ?'cm
-'Slab thickness -'h = ?'cm
-'Concrete cover -'c = ?'cm
+l_x_cl = ? {4}'m,'l_y_cl = ? {6}'m
+'Beam width along <i>x</i> -'b_y = ? {25}'cm
+'Beam width along <i>y</i> -'b_x = ? {25}'cm
+'Slab thickness -'h = ? {14}'cm
+'Concrete cover -'c = ? {2}'cm
 #post
 'Design span lengths
 l_x = l_x_cl + min(b_x/100;h/100)'m
@@ -23,16 +23,16 @@ l_y = l_y_cl + min(b_y/100;h/100)'m
 	'<table><tr><td>
 	'Parallel to <i>x</i> - <br />
 	'</td><td>
-	l_x2 = ?'m;
+	l_x2 = ? {0}'m;
 	'</td><td>
-	M_Ed_xt2_ = ?'kN·m/m
+	M_Ed_xt2_ = ? {0}'kN·m/m
 	'</td></tr></table>
 	'(in absence of contiguous span - <i>l</i> = 0)
 	'<h4>Loads</h4>
 	'Characteristic uniform loads
 	'Self weight -'g_sw = 0.25*h'kN/m²
-	'Permanent -'g_k = ?'kN/m²
-	'Variable -'q_k = ?'kN/m²
+	'Permanent -'g_k = ? {2.5}'kN/m²
+	'Variable -'q_k = ? {2}'kN/m²
 	'Partial safety factor -'γ_G = 1.35';'γ_Q = 1.5
 	#post
 	'Design uniform loads
@@ -61,8 +61,8 @@ l_y = l_y_cl + min(b_y/100;h/100)'m
 	#show
 	'<h4>Material properties</h4>
 	'<p><b>Concrete</b> &nbsp;&nbsp;[EN 1992-1-1, Table 3.1]</p>
-	'Characteristic compressive cylinder strength -'f_ck = ?'MPa
-	'Partial safety factors for concrete -'γ_c = 1.5','α_cc = ?
+	'Characteristic compressive cylinder strength -'f_ck = ? {25}'MPa
+	'Partial safety factors for concrete -'γ_c = 1.5','α_cc = ? {0.85}
 	#post
 	'Design compressive cylinder strength -'f_cd = α_cc*f_ck/γ_c'MPa
 	'Factor defining the effective height of the compression zone -'λ = 0.8
@@ -70,15 +70,15 @@ l_y = l_y_cl + min(b_y/100;h/100)'m
 	'Mean value of axial tensile strength -'f_ctm = 0.30*f_ck^(2/3)'MPa
 	#show
 	'<p><b>Steel</b></p>
-	'Characteristic yield strength -'f_yk = ?'MPa
+	'Characteristic yield strength -'f_yk = ? {500}'MPa
 	#post
 	'Partial safety factor for steel - 'γ_s = 1.15
 	'Design yield strength - 'f_yd = f_yk/γ_s'MPa
 	'Limit relative compressive zone depth -'ξ_lim = 0.45
 	#show
 	'<p><b>Bar diameters</b></p>
-	'- Bottom parallel to <i>x</i> -'d_bxb = ?'mm, parallel to <i>y</i> -'d_byb = ?'mm
-	'- Top parallel to <i>x</i> -'d_bxt = ?'mm
+	'- Bottom parallel to <i>x</i> -'d_bxb = ? {8}'mm, parallel to <i>y</i> -'d_byb = ? {8}'mm
+	'- Top parallel to <i>x</i> -'d_bxt = ? {6}'mm
 	#post
 	'<div class="fold">
 	'<h4>Static calculations</h4>
@@ -339,4 +339,4 @@ l_y = l_y_cl + min(b_y/100;h/100)'m
 	'</table>
 #end if
 #show
-'</div>4	6	25	25	14	2	0	0	2.5	2	25	0.85	500	8	8	6
+'</div>

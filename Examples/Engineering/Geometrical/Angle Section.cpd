@@ -2,8 +2,8 @@
 "Geometrical Properties of Angle Section
 '<div style="max-width:120mm"><img style="height:150pt;" alt="angle.png" class="side" src="../../Images/mechanics/sections/angle.png"></div>
 'Dimensions
-h = ?'%u,'t_w = ?'%u
-b_f = ?'%u,'t_f = ?'%u
+h = ? {20}'%u,'t_w = ? {2}'%u
+b_f = ? {10}'%u,'t_f = ? {5}'%u
 'Area
 A_w = h*t_w'%u<sup>2</sup>
 A_f = (b_f - t_w)*t_f'%u<sup>2</sup>
@@ -35,4 +35,4 @@ r_y = sqrt(I_y/A)'%u
 r_z = sqrt(I_z/A)'%u
 r_1 = sqrt(I_1/A)'%u
 r_2 = sqrt(I_2/A)'%u
-r_x = sqrt(I_x/A)'%u20	2	10	5
+r_x = sqrt(I_x/A)'%u

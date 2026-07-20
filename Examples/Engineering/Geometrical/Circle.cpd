@@ -2,7 +2,7 @@
 "Geometrical Properties of Circle
 '<div style="max-width:120mm"><img style="height:135pt;" alt="circle.png" class="side" src="../../Images/mechanics/sections/circle.png"></div>
 'Diameter
-d = ?'%u
+d = ? {1}'%u
 'Area
 A = π*d^2/4'%u<sup>2</sup>
 'Centroid
@@ -19,4 +19,4 @@ r_x = sqr(I_x/A)'%u
 'Torsional constant
 I_t = π*d^4/32'%u<sup>4</sup>
 'Torsional section modulus
-W_t = 2*I_t/d'%u<sup>3</sup>1
+W_t = 2*I_t/d'%u<sup>3</sup>

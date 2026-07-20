@@ -3,29 +3,29 @@
 '<div style="max-width:180mm;">
 '<img class="side" style="width:270pt;" src="../../Images/structures/rc/design/beam-shear.png" alt="beam-shear.png">
 '<h4>Cross section dimensions</h4>
-'Width -'b = ?'mm, Height'h = ?'mm
+'Width -'b = ? {300}'mm, Height'h = ? {800}'mm
 #post
 'Cross section area -'A_c = b*h'mm²
 #show
-'Tensile reinforcement area -'A_sl = ?'mm²
-'Effective depth -'d = h - ?'mm
+'Tensile reinforcement area -'A_sl = ? {1200}'mm²
+'Effective depth -'d = h - ? {50}'mm
 #post
 'Reinforcement ratio -'ρ_l = min(A_sl/(b*d); 0.02)
 #show
-'Shear links diameter -'d_w = ?'mm
-'Number of legs for one link -'n_w = ?
+'Shear links diameter -'d_w = ? {8}'mm
+'Number of legs for one link -'n_w = ? {2}
 '<p><b>Section design loads</b></p>
-'Shear force -'V_Ed = ?'kN&nbsp;&emsp;Axial force -'N_Ed = ?'kN
+'Shear force -'V_Ed = ? {600}'kN&nbsp;&emsp;Axial force -'N_Ed = ? {0}'kN
 '<h4>Material properties</h4>
 '<p class="ref">[EN 1992-1-1, Table 3.1]</p>
 '<p><b>Concrete</b></p>
-'Characteristic compressive cylinder strength -'f_ck = ?'MPa
-'Partial safety factor for concrete -'γ_c = 1.5','α_cc = ?
+'Characteristic compressive cylinder strength -'f_ck = ? {20}'MPa
+'Partial safety factor for concrete -'γ_c = 1.5','α_cc = ? {1}
 #post
 'Design compressive cylinder strength -'f_cd = α_cc*f_ck/γ_c'MPa
 #show
 '<p><b>Steel for shear reinforcement</b></p>
-'Characteristic yield strength -'f_yk = ?'MPa
+'Characteristic yield strength -'f_yk = ? {500}'MPa
 #post
 'Partial safety factor for steel -'γ_s = 1.15
 'Design yield strength -'f_ywd = f_yk/γ_s'MPa
@@ -117,4 +117,4 @@ V_Rd_c = max(V_Rd_c_min;V_Rd_c_)'kN
 	#end if
 #end if
 #show
-'</div>300	800	1200	50	8	2	600	0	20	1	500
+'</div>

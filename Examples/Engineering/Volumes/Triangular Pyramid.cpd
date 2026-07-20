@@ -1,9 +1,9 @@
 '<!-- Volume $V = \tfrac{1}{3} A_b\, h$ of a pyramid with a general triangular base. -->
 '<div style = "max-width:110mm"><img style="height:60pt;" class="side" alt="triangular-pyramid.png" src = "../../Images/math/volume/triangular-pyramid.png"></div>
 'Dimensions of base
-a = ?','b = ?','c = ?
+a = ? {5}','b = ? {4}','c = ? {3}
 'Height
-h = ?
+h = ? {2}
 '<!--
 #if (a + b > c)*(b + c > a)*(c + a > b)
 '<-->
@@ -19,4 +19,4 @@ V = 1/3*A*h
 'The sum of each two sides must be greater than the third.
 '<!--
 #end if
-'<-->5	4	3	2
+'<-->

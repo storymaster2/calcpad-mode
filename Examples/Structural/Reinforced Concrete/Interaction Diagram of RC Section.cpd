@@ -3,25 +3,25 @@
 '<div style="max-width:180mm">
 '<img class="side" style="width:150pt;" src="../../Images/structures/rc/design/column-design.png" alt="column-design.png">
 '<h4>Cross section dimensions</h4>
-'Width -'b = ?'mm, Height -'h = ?'mm
+'Width -'b = ? {300}'mm, Height -'h = ? {700}'mm
 #post
 'Cross section area -'A_c = b*h'mm²
 #show
 '<p><b>Reinforcement</b></p>
-'Left -'A_s1 = ?'mm², Right -'A_s2 = A_s1'mm²
+'Left -'A_s1 = ? {800}'mm², Right -'A_s2 = A_s1'mm²
 #post
 'Reinforcement ratio -'ρ = (A_s1 + A_s2)/A_c
 #show
 '<p><b>Concrete cover</b> (to the center of the reinforcement)</p>
-'Left -'d_1 = ?'mm, Right -'d_2 = d_1'mm
+'Left -'d_1 = ? {80}'mm, Right -'d_2 = d_1'mm
 #post
 'Effective cross section depth -'d = h - d_1'mm
 #show
 '<h4>Material properties</h4>
 '<!--'PlotWidth = 250','PlotHeight = 125'-->
 '<p><b>Concrete</b> [EN 1992-1-1, Table 3.1]</p>
-'Characteristic compressive cylinder strength -'f_ck = ?'MPa
-'Partial safety factors for concrete -'γ_c = 1.5','α_cc = ?
+'Characteristic compressive cylinder strength -'f_ck = ? {20}'MPa
+'Partial safety factors for concrete -'γ_c = 1.5','α_cc = ? {0.85}
 #post
 'Mean value of cylinder compressive strength -'f_cm = f_ck + 8'MPa
 'Design compressive cylinder strength -'f_cd = α_cc*f_ck/γ_c'MPa
@@ -29,7 +29,7 @@
 'Secant modulus of elasticity -'E_cm = 22*(f_cm/10)^0.3'GPa
 #show
 '<p><b>Steel</b></p>
-'Characteristic yield strength -'f_yk = ?'MPa
+'Characteristic yield strength -'f_yk = ? {500}'MPa
 #post
 'Partial safety factor for steel -'γ_s = 1.15
 'Design yield strength -'f_yd = f_yk/γ_s'MPa
@@ -88,4 +88,4 @@ PlotHeight = 600
 $Plot{M_Rd(ε)|N_Rd(ε) @ ε = ε_max : -ε_c2}
 '<p style=float:right><i>M</i><sub>Rd</sub></p>
 #show
-'</div>300	700	800	80	20	0.85	500
+'</div>

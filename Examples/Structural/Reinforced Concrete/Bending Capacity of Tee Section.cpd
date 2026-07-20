@@ -2,21 +2,21 @@
 '<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm">
 '<img style="width:400pt;" src="../../Images/structures/rc/design/tbeam-bending.png" alt="tbeam-bending.png">
-'Design bending moment -'M_Ed = ?'kN·m
+'Design bending moment -'M_Ed = ? {800}'kN·m
 '<h4>Cross section dimensions</h4>
-'Web -'b_w = ?'mm,'h_w = ?'mm
-'Flange -'b_f = ?'mm,'h_f = ?'mm
+'Web -'b_w = ? {300}'mm,'h_w = ? {650}'mm
+'Flange -'b_f = ? {1200}'mm,'h_f = ? {120}'mm
 #post
 'Flange area -'A_f = (b_f - b_w)*h_f'mm²
 'Section area -'A_c = b_w*h_w + A_f'mm²
 #show
 '<p><b>Concrete cover to the center of reinforcement</b></p>
-'Bottom -'d_1 = ?'mm,&nbsp;&nbsp;&nbsp;&nbsp;Top -'d_2 = ?'mm
+'Bottom -'d_1 = ? {50}'mm,&nbsp;&nbsp;&nbsp;&nbsp;Top -'d_2 = ? {50}'mm
 #post
 'Effective cross section depth -'d = h_w - d_1'mm
 #show
 '<p><b>Reinforcement</b></p>
-'Bottom -'A_s1 = ?'mm²,&nbsp;&nbsp;&nbsp;&nbsp;Top -'A_s2 = ?'mm²
+'Bottom -'A_s1 = ? {3700}'mm²,&nbsp;&nbsp;&nbsp;&nbsp;Top -'A_s2 = ? {0}'mm²
 #post
 'Reinforcement ratios
 '- bottom reinforcement -'ρ_1 = (A_s1)/(b_w*d)
@@ -25,8 +25,8 @@
 '<h4>Material properties</h4>
 '<p class="ref" style="float:right">[EN 1992-1-1, Table 3.1]</p>
 '<p><b>Concrete</b></p>
-'Characteristic compressive cylinder strength -'f_ck = ?'MPa
-'Partial safety factor for concrete -'γ_c = 1.5','α_cc = ?
+'Characteristic compressive cylinder strength -'f_ck = ? {20}'MPa
+'Partial safety factor for concrete -'γ_c = 1.5','α_cc = ? {0.85}
 #post
 'Design compressive cylinder strength -'f_cd = α_cc*f_ck/γ_c'MPa
 'Ultimate compressive strain -'ε_cu2 = 0.0035
@@ -34,7 +34,7 @@
 'Mean value of axial tensile strength -'f_ctm = 0.30*f_ck^(2/3)'MPa
 #show
 '<p><b>Steel</b></p>
-'Characteristic yield strength -'f_yk = ?'MPa
+'Characteristic yield strength -'f_yk = ? {500}'MPa
 #post
 'Partial safety factor for steel -'γ_s = 1.15
 'Design yield strength -'f_yd = f_yk/γ_s'MPa
@@ -112,4 +112,4 @@ M_Rd = (A_s1*σ_s(ε_s1(x))*(z_c - d_1) + A_s2*σ_s(ε_s2(x))*(z_c - h_w + d_2))
 	'Design checks are satisfied.
 #end if
 #show
-'</div>800	300	650	1200	120	50	50	3700	0	20	0.85	500
+'</div>

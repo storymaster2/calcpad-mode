@@ -2,8 +2,8 @@
 '<div style = "max-width:180mm;">
 '<img style="width:190pt;" alt = simply-supported-beam-distributed-load-uniform.png" class="side" src = "../../Images/mechanics/beams/simply-supported-beam-distributed-load-uniform.png">
 '<p><b>Input data</b></p>
-'Beam length -'l = ?'m
-'Load -'q = ?'kN/m
+'Beam length -'l = ? {5}'m
+'Load -'q = ? {10}'kN/m
 #post
 '<p><b>Internal forces</b></p>
 'Bending -'M_max = q*l^2/8'kN·m
@@ -13,7 +13,7 @@
 PlotWidth = 600
 PlotHeight = 150
 #show
-'Calculate internal forces at'x_1 = ?'m
+'Calculate internal forces at'x_1 = ? {1}'m
 #pre
 
 #post
@@ -26,4 +26,4 @@ V(x) = q*(l/2 - x)
 $Plot{V(x) @ x = 0 : l}
 V(x_1)'kN
 #show
-'</div>5	10	1
+'</div>

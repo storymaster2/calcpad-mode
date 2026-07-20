@@ -2,9 +2,9 @@
 '<div style = "max-width:180mm;">
 '<img style="width:190pt;" alt = "simply-supported-beam-concentrated-force.png" class="side" src = "../../Images/mechanics/beams/simply-supported-beam-concentrated-force.png">
 '<p><b>Input data</b></p>
-'Beam length -'l = ?'m
-'Load -'F = ?'kN
-'Distance -'a = ?'m
+'Beam length -'l = ? {5}'m
+'Load -'F = ? {10}'kN
+'Distance -'a = ? {2}'m
 #post
 '<p><b>Internal forces</b></p>
 'Bending
@@ -17,7 +17,7 @@ V_B = -F*a/l'kN
 PlotWidth = 600
 PlotHeight = 150
 #show
-'Calculate internal forces at'x_1 = ?'m
+'Calculate internal forces at'x_1 = ? {1}'m
 #pre
 
 #post
@@ -30,4 +30,4 @@ V(x) = V_A - F*(x > a)
 $Plot{V(x) @ x = 0 : l}
 V(x_1)'kN
 #show
-'</div>5	10	2	1
+'</div>

@@ -2,7 +2,7 @@
 "Geometrical Properties of Regular Hexagon
 '<div style="max-width:120mm"><img style="height:135pt;" alt="hexagon.png" class="side" src="../../Images/mechanics/sections/hexagon.png"></div>
 'Dimensions
-a = ?'%u
+a = ? {1}'%u
 h = sqr(3)*a'%u
 'Area
 A = 1.5*a*h'%u<sup>2</sup>
@@ -17,4 +17,4 @@ P = 6*a'%u
 I_x=2*I_y'%u<sup>4</sup>
 'Radii of gyration
 '<p><i>r</i><sub>z</sub> ='r_y = sqrt(I_y/A)'%u</p>
-r_x = sqrt(I_x/A)'%u1
+r_x = sqrt(I_x/A)'%u

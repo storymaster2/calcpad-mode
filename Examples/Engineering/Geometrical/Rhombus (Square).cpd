@@ -2,7 +2,7 @@
 "Geometrical Properties of Square Rhombus
 '<div style="max-width:120mm"><img style="height:135pt;" alt="rombus-square.png" class="side" src="../../Images/mechanics/sections/rhombus.png"></div>
 'Side length
-a = ?'%u
+a = ? {1}'%u
 'Diagonal length
 d = sqr(2*a^2)'%u
 'Area
@@ -17,4 +17,4 @@ P = 4*a'%u
 I_x = 2*I_y'%u<sup>4</sup>
 'Radii of gyration
 '<p><i>r</i><sub>z</sub> ='r_y = sqrt(I_y/A)'</p>
-r_x = sqr(I_x/A)'%u1
+r_x = sqr(I_x/A)'%u

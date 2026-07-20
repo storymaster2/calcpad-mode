@@ -56,6 +56,8 @@
   </span>
  </p>
  <h4>Animation</h4>
+ <script src="https://code.jquery.com/jquery-3.6.3.min.js">
+ </script>
  <style>#kochwaveAnim polygon{display:none; stroke:Teal; stroke-width:0.1; stroke-linejoin:round;fill:Turquoise;}</style>
  <svg id="kochwaveAnim" style="width:360pt; height:360pt" viewbox="0 0 100 100">
   <polygon fill="url(#sff)" id="kochwaveAnim-fr-1" points="0,86.602540378444 100,86.602540378444 50,0 0,86.602540378444 ">

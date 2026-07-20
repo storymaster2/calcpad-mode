@@ -2,8 +2,8 @@
 '<div style="max-width:180mm;">
 '<img style="width:165pt;" alt="cantilever-beam-distributed-load-linear.png" class="side" src="../../Images/mechanics/beams/cantilever-beam-distributed-load-linear.png">
 '<p><b>Input data</b></p>
-'Beam Length -'l = ?'m
-'Load -'q_1 = ?'kN/m,'q_2 = ?'kN/m
+'Beam Length -'l = ? {5}'m
+'Load -'q_1 = ? {10}'kN/m,'q_2 = ? {5}'kN/m
 #post
 '<p><b>Internal forces</b></p>
 'Bending -'M = l^2*(q_1 + 2*q_2)/6'kN·m
@@ -13,7 +13,7 @@
 PlotWidth = 600
 PlotHeight = 150
 #show
-'Calculate internal forces at'x_1 = ?'m
+'Calculate internal forces at'x_1 = ? {1}'m
 #pre
 
 
@@ -28,4 +28,4 @@ V(x) = V - (q_1 + q(x))*x/2
 $Plot{V(x) @ x = 0 : l}
 V(x_1)'kN
 #show
-'</div>5	10	5	1
+'</div>
