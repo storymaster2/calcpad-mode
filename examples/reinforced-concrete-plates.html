@@ -2983,11 +2983,11 @@
 <span class="c1">&#39;&lt;img alt=&quot;f-span-cl.png&quot; class=&quot;side&quot; style=&quot;height:180pt;&quot; src=&quot;../../Images/structures/rc/spans/f-span-cl.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Dimensions&lt;/h4&gt;</span>
 <span class="c1">&#39;Clear spans(&lt;i&gt;l&lt;/i&gt;&lt;sub&gt;x&lt;/sub&gt; &amp;lt; &lt;i&gt;l&lt;/i&gt;&lt;sub&gt;y&lt;/sub&gt;)</span>
-<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
+<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">4</span><span class="p">}</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">14</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;cm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design span lengths</span>
 <span class="nv">l_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">l_x_cl</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="nv">b_x</span><span class="o">/</span><span class="m">100</span><span class="p">;</span><span class="nv">h</span><span class="o">/</span><span class="m">100</span><span class="p">)</span><span class="c1">&#39;m</span>
@@ -3002,13 +3002,13 @@
 <span class="w">    </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td rowspan=&quot;2&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Parallel to &lt;i&gt;x&lt;/i&gt; - &lt;br /&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">l_x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">    </span><span class="nv">l_x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">M_Ed_xt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">    </span><span class="nv">M_Ed_xt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;!--</span>
 <span class="w">    </span><span class="k">#if</span><span class="w"> </span><span class="nv">k</span><span class="w"> </span><span class="o">≤</span><span class="w"> </span><span class="m">2</span>
@@ -3016,13 +3016,13 @@
 <span class="w">        </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td rowspan=&quot;2&quot;&gt;</span>
 <span class="w">        </span><span class="c1">&#39;Along &lt;i&gt;y&lt;/i&gt; -</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">l_y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">        </span><span class="nv">l_y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">M_Ed_yt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">        </span><span class="nv">M_Ed_yt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">l_y2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">        </span><span class="nv">l_y2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">M_Ed_yt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">        </span><span class="nv">M_Ed_yt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;!--</span>
 <span class="w">    </span><span class="k">#end if</span>
@@ -3031,8 +3031,8 @@
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Loads&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Characteristic uniform loads</span>
 <span class="w">    </span><span class="c1">&#39;Self weight -&#39;</span><span class="nv">g_sw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.25</span><span class="o">*</span><span class="nv">h</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Permanent - &#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Permanent - &#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2.5</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor -&#39;</span><span class="nv">γ_G</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.35</span><span class="c1">&#39;;&#39;</span><span class="nv">γ_Q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design uniform loads</span>
@@ -3061,8 +3061,8 @@
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Material properties&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; &amp;nbsp;&amp;nbsp;[EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0.85</span><span class="p">}</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Factor defining the effective height of the compression zone -&#39;</span><span class="nv">λ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span><span class="c1">&#39;</span>
@@ -3070,15 +3070,15 @@
 <span class="w">    </span><span class="c1">&#39;Mean value of axial tensile strength -&#39;</span><span class="nv">f_ctm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.30</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">^</span><span class="p">(</span><span class="m">2</span><span class="o">/</span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor for steel - &#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="w">    </span><span class="c1">&#39;Design yield strength - &#39;</span><span class="nv">f_yd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Limit relative compressive zone depth -&#39;</span><span class="nv">ξ_lim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.45</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Bar diameters&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;&lt;div class=&quot;fold&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Static calculations&lt;/h4&gt;</span>
@@ -3414,7 +3414,7 @@
 <span class="w">    </span><span class="c1">&#39;&lt;/table&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;4    6   25  25  14  2   0   0   0   0   0   0   0   0   2.5 2   25  0.85    500 8   8   6   6</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -3601,11 +3601,11 @@
 <span class="c1">&#39;&lt;img alt=&quot;sffs-span-cl.png&quot; class=&quot;side&quot; style=&quot;height:180pt;&quot; src=&quot;../../Images/structures/rc/spans/sffs-span-cl.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Dimensions&lt;/h4&gt;</span>
 <span class="c1">&#39;Clear spans (&lt;i&gt;l&lt;/i&gt;&lt;sub&gt;x&lt;/sub&gt; &amp;lt; &lt;i&gt;l&lt;/i&gt;&lt;sub&gt;y&lt;/sub&gt;)</span>
-<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Beam width along&lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
+<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">4</span><span class="p">}</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam width along&lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">14</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;cm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design span lengths</span>
 <span class="nv">l_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">l_x_cl</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="nv">b_x</span><span class="o">/</span><span class="m">100</span><span class="p">;</span><span class="nv">h</span><span class="o">/</span><span class="m">100</span><span class="p">)</span><span class="c1">&#39;m</span>
@@ -3620,9 +3620,9 @@
 <span class="w">    </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Along &lt;i&gt;x&lt;/i&gt; - &lt;br /&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;!--</span>
 <span class="w">    </span><span class="k">#if</span><span class="w"> </span><span class="nv">k</span><span class="w"> </span><span class="o">≤</span><span class="w"> </span><span class="m">2</span>
@@ -3630,9 +3630,9 @@
 <span class="w">        </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td&gt;</span>
 <span class="w">        </span><span class="c1">&#39;Along &lt;i&gt;y&lt;/i&gt; -</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">l_y2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">        </span><span class="nv">l_y2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">M_Ed_yt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">        </span><span class="nv">M_Ed_yt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;!--</span>
 <span class="w">    </span><span class="k">#end if</span>
@@ -3641,8 +3641,8 @@
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Loads&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Characteristic uniform loads</span>
 <span class="w">    </span><span class="c1">&#39;Self weight -&#39;</span><span class="nv">g_sw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.25</span><span class="o">*</span><span class="nv">h</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Permanent -&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Permanent -&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2.5</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor -&#39;</span><span class="nv">γ_G</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.35</span><span class="c1">&#39;;&#39;</span><span class="nv">γ_Q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design uniform loads</span>
@@ -3671,8 +3671,8 @@
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Material properties&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; &amp;nbsp;&amp;nbsp;[EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0.85</span><span class="p">}</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Factor defining the effective height of the compression zone -&#39;</span><span class="nv">λ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span><span class="c1">&#39;</span>
@@ -3680,15 +3680,15 @@
 <span class="w">    </span><span class="c1">&#39;Mean value of axial tensile strength -&#39;</span><span class="nv">f_ctm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.30</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">^</span><span class="p">(</span><span class="m">2</span><span class="o">/</span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor for steel - &#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="w">    </span><span class="c1">&#39;Design yield strength - &#39;</span><span class="nv">f_yd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Limit relative compressive zone depth -&#39;</span><span class="nv">ξ_lim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.45</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Bar diameters&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;&lt;div class=&quot;fold&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Static calculations&lt;/h4&gt;</span>
@@ -3988,7 +3988,7 @@
 <span class="w">    </span><span class="c1">&#39;&lt;/table&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;4    6   25  25  14  2   0   0   0   0   2.5 2   25  0.85    500 8   8   6   6</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -4165,11 +4165,11 @@
 <span class="c1">&#39;&lt;img alt=&quot;fsfs-span-cl.png&quot; class=&quot;side&quot; style=&quot;height:180pt;&quot; src=&quot;../../Images/structures/rc/spans/fsfs-span-cl.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Dimensions&lt;/h4&gt;</span>
 <span class="c1">&#39;Clear spans (&lt;i&gt;l&lt;/i&gt;&lt;sub&gt;x&lt;/sub&gt; &amp;lt; &lt;i&gt;l&lt;/i&gt;&lt;sub&gt;y&lt;/sub&gt;)</span>
-<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
+<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">4</span><span class="p">}</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">14</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;cm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design span lengths</span>
 <span class="nv">l_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">l_x_cl</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="nv">b_x</span><span class="o">/</span><span class="m">100</span><span class="p">;</span><span class="nv">h</span><span class="o">/</span><span class="m">100</span><span class="p">)</span><span class="c1">&#39;m</span>
@@ -4184,20 +4184,20 @@
 <span class="w">    </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td rowspan=&quot;2&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Parallel to &lt;i&gt;x&lt;/i&gt; - &lt;br /&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">l_x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">    </span><span class="nv">l_x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">M_Ed_xt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">    </span><span class="nv">M_Ed_xt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">    </span><span class="c1">&#39;(in absence of contiguous span - &lt;i&gt;l&lt;/i&gt; = 0)</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Loads&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Characteristic uniform loads</span>
 <span class="w">    </span><span class="c1">&#39;Self weight -&#39;</span><span class="nv">g_sw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.25</span><span class="o">*</span><span class="nv">h</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Permanent -&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Permanent -&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2.5</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor -&#39;</span><span class="nv">γ_G</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.35</span><span class="c1">&#39;;&#39;</span><span class="nv">γ_Q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design uniform loads</span>
@@ -4226,8 +4226,8 @@
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Material properties&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Бетон&lt;/b&gt; &amp;nbsp;&amp;nbsp;[EN 1992-1-1, EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0.85</span><span class="p">}</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Factor defining the effective height of the compression zone -&#39;</span><span class="nv">λ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span><span class="c1">&#39;</span>
@@ -4235,15 +4235,15 @@
 <span class="w">    </span><span class="c1">&#39;Mean value of axial tensile strength -&#39;</span><span class="nv">f_ctm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.30</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">^</span><span class="p">(</span><span class="m">2</span><span class="o">/</span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor for steel - &#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="w">    </span><span class="c1">&#39;Design yield strength - &#39;</span><span class="nv">f_yd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Limit relative compressive zone depth -&#39;</span><span class="nv">ξ_lim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.45</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Bar diameters&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;&lt;div class=&quot;fold&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Static calculations&lt;/h4&gt;</span>
@@ -4516,7 +4516,7 @@
 <span class="w">    </span><span class="c1">&#39;&lt;/table&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;4    6   25  25  14  2   0   0   0   0   2.5 2   25  0.85    500 8   8   6</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -4681,11 +4681,11 @@
 <span class="c1">&#39;&lt;img alt=&quot;sfsf-span-cl.png&quot; class=&quot;side&quot; style=&quot;height:190pt;&quot; src=&quot;../../Images/structures/rc/spans/sfsf-span-cl.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Dimensions&lt;/h4&gt;</span>
 <span class="c1">&#39;Clear spans (&lt;i&gt;l&lt;/i&gt;&lt;sub&gt;x&lt;/sub&gt; &amp;lt; &lt;i&gt;l&lt;/i&gt;&lt;sub&gt;y&lt;/sub&gt;)</span>
-<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
+<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">4</span><span class="p">}</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">14</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;cm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design span lengths</span>
 <span class="nv">l_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">l_x_cl</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="nv">b_x</span><span class="o">/</span><span class="m">100</span><span class="p">;</span><span class="nv">h</span><span class="o">/</span><span class="m">100</span><span class="p">)</span><span class="c1">&#39;m</span>
@@ -4703,13 +4703,13 @@
 <span class="w">        </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td rowspan=&quot;2&quot;&gt;</span>
 <span class="w">        </span><span class="c1">&#39;Along &lt;i&gt;y&lt;/i&gt; -</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">l_y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">        </span><span class="nv">l_y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">M_Ed_yt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">        </span><span class="nv">M_Ed_yt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">l_y2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">        </span><span class="nv">l_y2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">M_Ed_yt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">        </span><span class="nv">M_Ed_yt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;!--</span>
 <span class="w">    </span><span class="k">#end if</span>
@@ -4718,8 +4718,8 @@
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Loads&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Characteristic uniform loads</span>
 <span class="w">    </span><span class="c1">&#39;Self weight -&#39;</span><span class="nv">g_sw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.25</span><span class="o">*</span><span class="nv">h</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Permanent - &#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Permanent - &#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2.5</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor -&#39;</span><span class="nv">γ_G</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.35</span><span class="c1">&#39;;&#39;</span><span class="nv">γ_Q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design uniform loads</span>
@@ -4748,8 +4748,8 @@
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Material properties&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; &amp;nbsp;&amp;nbsp;[ EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0.85</span><span class="p">}</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Factor defining the effective height of the compression zone -&#39;</span><span class="nv">λ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span><span class="c1">&#39;</span>
@@ -4757,15 +4757,15 @@
 <span class="w">    </span><span class="c1">&#39;Mean value of axial tensile strength -&#39;</span><span class="nv">f_ctm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.30</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">^</span><span class="p">(</span><span class="m">2</span><span class="o">/</span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor for steel - &#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="w">    </span><span class="c1">&#39;Design yield strength - &#39;</span><span class="nv">f_yd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Limit relative compressive zone depth -&#39;</span><span class="nv">ξ_lim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.45</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Bar diameters&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;&lt;div class=&quot;fold&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Static calculations&lt;/h4&gt;</span>
@@ -5028,7 +5028,7 @@
 <span class="w">    </span><span class="c1">&#39;&lt;/table&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;4    6   25  25  14  2   0   0   0   0   2.5 2   25  0.85    500 8   8   6   6</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -5194,11 +5194,11 @@
 <span class="c1">&#39;&lt;img alt=&quot;ssfs-span-cl.png&quot; class=&quot;side&quot; style=&quot;height:170pt;&quot; src=&quot;../../Images/structures/rc/spans/ssfs-span-cl.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Dimensions&lt;/h4&gt;</span>
 <span class="c1">&#39;Clear spans (&lt;i&gt;l&lt;/i&gt;&lt;sub&gt;x&lt;/sub&gt; &amp;lt; &lt;i&gt;l&lt;/i&gt;&lt;sub&gt;y&lt;/sub&gt;)</span>
-<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
+<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">4</span><span class="p">}</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">14</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;cm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design span lengths</span>
 <span class="nv">l_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">l_x_cl</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="nv">b_x</span><span class="o">/</span><span class="m">100</span><span class="p">;</span><span class="nv">h</span><span class="o">/</span><span class="m">100</span><span class="p">)</span><span class="c1">&#39;m</span>
@@ -5213,16 +5213,16 @@
 <span class="w">    </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Parallel to &lt;i&gt;x&lt;/i&gt; - &lt;br /&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">    </span><span class="c1">&#39;(in absence of contiguous span - &lt;i&gt;l&lt;/i&gt; = 0)</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Loads&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Characteristic uniform loads</span>
 <span class="w">    </span><span class="c1">&#39;Self weight -&#39;</span><span class="nv">g_sw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.25</span><span class="o">*</span><span class="nv">h</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Permanent -&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Permanent -&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2.5</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor -&#39;</span><span class="nv">γ_G</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.35</span><span class="c1">&#39;;&#39;</span><span class="nv">γ_Q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design uniform loads</span>
@@ -5251,8 +5251,8 @@
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Material properties&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; &amp;nbsp;&amp;nbsp;[EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0.85</span><span class="p">}</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Factor defining the effective height of the compression zone -&#39;</span><span class="nv">λ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span>
@@ -5260,15 +5260,15 @@
 <span class="w">    </span><span class="c1">&#39;Mean value of axial tensile strength -&#39;</span><span class="nv">f_ctm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.30</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">^</span><span class="p">(</span><span class="m">2</span><span class="o">/</span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor for steel - &#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="w">    </span><span class="c1">&#39;Design yield strength - &#39;</span><span class="nv">f_yd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Limit relative compressive zone depth -&#39;</span><span class="nv">ξ_lim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.45</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Bar diameters&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;&lt;div class=&quot;fold&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Static calculations&lt;/h4&gt;</span>
@@ -5529,7 +5529,7 @@
 <span class="w">    </span><span class="c1">&#39;&lt;/table&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;4    6   25  25  14  2   0   0   2.5 2   25  0.85    500 8   8   6</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -5691,11 +5691,11 @@
 <span class="c1">&#39;&lt;img alt=&quot;sfff-span-cl.png&quot; class=&quot;side&quot; style=&quot;height:180pt;&quot; src=&quot;../../Images/structures/rc/spans/sfff-span-cl.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Dimensions&lt;/h4&gt;</span>
 <span class="c1">&#39;Clear spans (&lt;i&gt;l&lt;/i&gt;&lt;sub&gt;x&lt;/sub&gt; &amp;lt; &lt;i&gt;l&lt;/i&gt;&lt;sub&gt;y&lt;/sub&gt;)</span>
-<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
+<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">4</span><span class="p">}</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">14</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;cm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design span lengths</span>
 <span class="nv">l_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">l_x_cl</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="nv">b_x</span><span class="o">/</span><span class="m">100</span><span class="p">;</span><span class="nv">h</span><span class="o">/</span><span class="m">100</span><span class="p">)</span><span class="c1">&#39;md</span>
@@ -5710,9 +5710,9 @@
 <span class="w">    </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Parallel to &lt;i&gt;x&lt;/i&gt; - &lt;br /&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;!--</span>
 <span class="w">    </span><span class="k">#if</span><span class="w"> </span><span class="nv">k</span><span class="w"> </span><span class="o">≤</span><span class="w"> </span><span class="m">2</span>
@@ -5720,13 +5720,13 @@
 <span class="w">        </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td rowspan=&quot;2&quot;&gt;</span>
 <span class="w">        </span><span class="c1">&#39;Parallel to &lt;i&gt;y&lt;/i&gt; -</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">l_y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">        </span><span class="nv">l_y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">M_Ed_yt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">        </span><span class="nv">M_Ed_yt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">l_y2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">        </span><span class="nv">l_y2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">M_Ed_yt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">        </span><span class="nv">M_Ed_yt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;!--</span>
 <span class="w">    </span><span class="k">#end if</span>
@@ -5735,8 +5735,8 @@
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Loads&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Characteristic uniform loads</span>
 <span class="w">    </span><span class="c1">&#39;Self weight -&#39;</span><span class="nv">g_sw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.25</span><span class="o">*</span><span class="nv">h</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Permanent - &#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Permanent - &#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2.5</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor -&#39;</span><span class="nv">γ_G</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.35</span><span class="c1">&#39;;&#39;</span><span class="nv">γ_Q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design uniform loads</span>
@@ -5765,8 +5765,8 @@
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Material properties&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; &amp;nbsp;&amp;nbsp;[EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0.85</span><span class="p">}</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Factor defining the effective height of the compression zone -&#39;</span><span class="nv">λ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span><span class="c1">&#39;</span>
@@ -5774,15 +5774,15 @@
 <span class="w">    </span><span class="c1">&#39;Mean value of axial tensile strength -&#39;</span><span class="nv">f_ctm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.30</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">^</span><span class="p">(</span><span class="m">2</span><span class="o">/</span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor for steel - &#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="w">    </span><span class="c1">&#39;Design yield strength - &#39;</span><span class="nv">f_yd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Limit relative compressive zone depth -&#39;</span><span class="nv">ξ_lim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.45</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Bar diameters&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;&lt;div class=&quot;fold&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Static calculations&lt;/h4&gt;</span>
@@ -6104,7 +6104,7 @@
 <span class="w">    </span><span class="c1">&#39;&lt;/table&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;4    6   25  25  14  2   0   0   0   0   0   0   2.5 2   25  0.85    500 8   8   6   6</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -6287,11 +6287,11 @@
 <span class="c1">&#39;&lt;img alt=&quot;fsff-span-cl.png&quot; class=&quot;side&quot; style=&quot;height:180pt;&quot; src=&quot;../../Images/structures/rc/spans/fsff-span-cl.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Dimensions&lt;/h4&gt;</span>
 <span class="c1">&#39;Clear spans (&lt;i&gt;l&lt;/i&gt;&lt;sub&gt;x&lt;/sub&gt; &amp;lt; &lt;i&gt;l&lt;/i&gt;&lt;sub&gt;y&lt;/sub&gt;)</span>
-<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
+<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">4</span><span class="p">}</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">14</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;cm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design span lengths</span>
 <span class="nv">l_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">l_x_cl</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="nv">b_x</span><span class="o">/</span><span class="m">100</span><span class="p">;</span><span class="nv">h</span><span class="o">/</span><span class="m">100</span><span class="p">)</span><span class="c1">&#39;m</span>
@@ -6306,13 +6306,13 @@
 <span class="w">    </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td rowspan=&quot;2&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Parallel to &lt;i&gt;x&lt;/i&gt; - &lt;br /&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">l_x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">    </span><span class="nv">l_x1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">M_Ed_xt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">    </span><span class="nv">M_Ed_xt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">    </span><span class="nv">l_x2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">    </span><span class="nv">M_Ed_xt2_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">    </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;!--</span>
 <span class="w">    </span><span class="k">#if</span><span class="w"> </span><span class="nv">k</span><span class="w"> </span><span class="o">≤</span><span class="w"> </span><span class="m">2</span>
@@ -6320,9 +6320,9 @@
 <span class="w">        </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td&gt;</span>
 <span class="w">        </span><span class="c1">&#39;Parallel to &lt;i&gt;y&lt;/i&gt; -</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">l_y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">        </span><span class="nv">l_y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">M_Ed_yt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">        </span><span class="nv">M_Ed_yt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;!--</span>
 <span class="w">    </span><span class="k">#end if</span>
@@ -6331,8 +6331,8 @@
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Loads&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Characteristic uniform loads</span>
 <span class="w">    </span><span class="c1">&#39;Self weight -&#39;</span><span class="nv">g_sw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.25</span><span class="o">*</span><span class="nv">h</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Permanent -&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
+<span class="w">    </span><span class="c1">&#39;Permanent -&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2.5</span><span class="p">}</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
+<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;kN/m&lt;sup&gt;2&lt;/sup&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor -&#39;</span><span class="nv">γ_G</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.35</span><span class="c1">&#39;;&#39;</span><span class="nv">γ_Q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design uniform loads</span>
@@ -6361,8 +6361,8 @@
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Material properties&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; &amp;nbsp;&amp;nbsp;[EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0.85</span><span class="p">}</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Factor defining the effective height of the compression zone -&#39;</span><span class="nv">λ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span><span class="c1">&#39;</span>
@@ -6370,15 +6370,15 @@
 <span class="w">    </span><span class="c1">&#39;Mean value of axial tensile strength -&#39;</span><span class="nv">f_ctm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.30</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">^</span><span class="p">(</span><span class="m">2</span><span class="o">/</span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor for steel - &#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="w">    </span><span class="c1">&#39;Design yield strength - &#39;</span><span class="nv">f_yd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Limit relative compressive zone depth -&#39;</span><span class="nv">ξ_lim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.45</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Bar diameters&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;&lt;div class=&quot;fold&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Static calculations&lt;/h4&gt;</span>
@@ -6691,7 +6691,6 @@
 <span class="k">#end if</span>
 <span class="k">#show</span>
 <span class="c1">&#39;&lt;/div&gt;</span>
-<span class="m">4</span><span class="w">   </span><span class="m">6</span><span class="w"> </span><span class="m">25</span><span class="w">    </span><span class="m">25</span><span class="w">    </span><span class="m">14</span><span class="w">    </span><span class="m">2</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">2.5</span><span class="w">   </span><span class="m">2</span><span class="w"> </span><span class="m">25</span><span class="w">    </span><span class="m">0.85</span><span class="w">  </span><span class="m">500</span><span class="w">   </span><span class="m">8</span><span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="m">6</span><span class="w"> </span><span class="m">6</span>
 </code></pre></div>
 
 </figure>
@@ -6873,11 +6872,11 @@
 <span class="c1">&#39;&lt;img alt=&quot;sssf-span-cl.png&quot; class=&quot;side&quot; style=&quot;height:180pt;&quot; src=&quot;../../Images/structures/rc/spans/sssf-span-cl.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Dimensions&lt;/h4&gt;</span>
 <span class="c1">&#39;Clear spans (&lt;i&gt;l&lt;/i&gt;&lt;sub&gt;x&lt;/sub&gt; &amp;lt; &lt;i&gt;l&lt;/i&gt;&lt;sub&gt;y&lt;/sub&gt;)</span>
-<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
+<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">4</span><span class="p">}</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">14</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;cm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design span lengths</span>
 <span class="nv">l_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">l_x_cl</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="nv">b_x</span><span class="o">/</span><span class="m">100</span><span class="p">;</span><span class="nv">h</span><span class="o">/</span><span class="m">100</span><span class="p">)</span><span class="c1">&#39;m</span>
@@ -6895,9 +6894,9 @@
 <span class="w">        </span><span class="c1">&#39;&lt;table&gt;&lt;tr&gt;&lt;td&gt;</span>
 <span class="w">        </span><span class="c1">&#39;Along &lt;i&gt;y&lt;/i&gt; -</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">l_y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m;</span>
+<span class="w">        </span><span class="nv">l_y1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;m;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;td&gt;</span>
-<span class="w">        </span><span class="nv">M_Ed_yt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN·m/m</span>
+<span class="w">        </span><span class="nv">M_Ed_yt1_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0</span><span class="p">}</span><span class="c1">&#39;kN·m/m</span>
 <span class="w">        </span><span class="c1">&#39;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</span>
 <span class="w">        </span><span class="c1">&#39;&lt;!--</span>
 <span class="w">    </span><span class="k">#end if</span>
@@ -6906,8 +6905,8 @@
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Loads&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Characteristic uniform loads</span>
 <span class="w">    </span><span class="c1">&#39;Self weight -&#39;</span><span class="nv">g_sw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.25</span><span class="o">*</span><span class="nv">h</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Permanent -&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Permanent -&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2.5</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor -&#39;</span><span class="nv">γ_G</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.35</span><span class="c1">&#39;;&#39;</span><span class="nv">γ_Q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design uniform loads</span>
@@ -6936,8 +6935,8 @@
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Material properties&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; &amp;nbsp;&amp;nbsp;[EN 1992-1-1, EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0.85</span><span class="p">}</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Factor defining the effective height of the compression zone -&#39;</span><span class="nv">λ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span><span class="c1">&#39;</span>
@@ -6945,15 +6944,15 @@
 <span class="w">    </span><span class="c1">&#39;Mean value of axial tensile strength -&#39;</span><span class="nv">f_ctm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.30</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">^</span><span class="p">(</span><span class="m">2</span><span class="o">/</span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor for steel - &#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="w">    </span><span class="c1">&#39;Design yield strength - &#39;</span><span class="nv">f_yd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Limit relative compressive zone depth -&#39;</span><span class="nv">ξ_lim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.45</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Bar diameters&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm, parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;&lt;div class=&quot;fold&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Static calculations&lt;/h4&gt;</span>
@@ -7194,7 +7193,7 @@
 <span class="w">    </span><span class="c1">&#39;&lt;/table&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;4    6   25  25  14  2   0   0   2.5 2   25  0.85    500 8   8   6   6</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
@@ -7355,11 +7354,11 @@
 <span class="c1">&#39;&lt;img alt=&quot;ss-span-cl.png&quot; style=&quot;height:170pt;&quot; class=&quot;side&quot; src=&quot;../../Images/structures/rc/spans/ss-span-cl.png&quot;&gt;</span>
 <span class="c1">&#39;&lt;h4&gt;Dimensions&lt;/h4&gt;</span>
 <span class="c1">&#39;Clear spans (&lt;i&gt;l&lt;/i&gt;&lt;sub&gt;x&lt;/sub&gt; &amp;lt; &lt;i&gt;l&lt;/i&gt;&lt;sub&gt;y&lt;/sub&gt;)</span>
-<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;m</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
-<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;cm</span>
+<span class="nv">l_x_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">4</span><span class="p">}</span><span class="c1">&#39;m,&#39;</span><span class="nv">l_y_cl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;m</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">b_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Beam width along &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">b_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Slab thickness -&#39;</span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">14</span><span class="p">}</span><span class="c1">&#39;cm</span>
+<span class="c1">&#39;Concrete cover -&#39;</span><span class="nv">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;cm</span>
 <span class="k">#post</span>
 <span class="c1">&#39;Design span lengths</span>
 <span class="nv">l_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">l_x_cl</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="nv">b_x</span><span class="o">/</span><span class="m">100</span><span class="p">;</span><span class="nv">h</span><span class="o">/</span><span class="m">100</span><span class="p">)</span><span class="c1">&#39;m</span>
@@ -7375,8 +7374,8 @@
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Span length&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;Design spans lengths and edge moments in adjacent panels</span>
 <span class="w">    </span><span class="c1">&#39;Self weight -&#39;</span><span class="nv">g_sw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.25</span><span class="o">*</span><span class="nv">h</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Permanent-&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
-<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Permanent-&#39;</span><span class="nv">g_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2.5</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
+<span class="w">    </span><span class="c1">&#39;Variable -&#39;</span><span class="nv">q_k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">2</span><span class="p">}</span><span class="c1">&#39;kN/m²</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor -&#39;</span><span class="nv">γ_G</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.35</span><span class="c1">&#39;;&#39;</span><span class="nv">γ_Q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design uniform loads</span>
@@ -7405,8 +7404,8 @@
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Material properties&lt;/h4&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Concrete&lt;/b&gt; &amp;nbsp;&amp;nbsp;[EN 1992-1-1, Table 3.1]&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
-<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic compressive cylinder strength -&#39;</span><span class="nv">f_ck</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">25</span><span class="p">}</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Partial safety factors for concrete -&#39;</span><span class="nv">γ_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.5</span><span class="c1">&#39;,&#39;</span><span class="nv">α_cc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">0.85</span><span class="p">}</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Design compressive cylinder strength -&#39;</span><span class="nv">f_cd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">α_cc</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">/</span><span class="nv">γ_c</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Factor defining the effective height of the compression zone -&#39;</span><span class="nv">λ</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.8</span><span class="c1">&#39;</span>
@@ -7414,15 +7413,15 @@
 <span class="w">    </span><span class="c1">&#39;Mean value of axial tensile strength -&#39;</span><span class="nv">f_ctm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.30</span><span class="o">*</span><span class="nv">f_ck</span><span class="o">^</span><span class="p">(</span><span class="m">2</span><span class="o">/</span><span class="m">3</span><span class="p">)</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;&lt;p&gt;&lt;b&gt;Steel&lt;/b&gt;&lt;/p&gt;</span>
-<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;MPa</span>
+<span class="w">    </span><span class="c1">&#39;Characteristic yield strength -&#39;</span><span class="nv">f_yk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">500</span><span class="p">}</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;Partial safety factor for steel - &#39;</span><span class="nv">γ_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.15</span>
 <span class="w">    </span><span class="c1">&#39;Design yield strength - &#39;</span><span class="nv">f_yd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">f_yk</span><span class="o">/</span><span class="nv">γ_s</span><span class="c1">&#39;MPa</span>
 <span class="w">    </span><span class="c1">&#39;Limit relative compressive zone depth -&#39;</span><span class="nv">ξ_lim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.45</span>
 <span class="w">    </span><span class="k">#show</span>
 <span class="w">    </span><span class="c1">&#39;Bar diameters</span>
-<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
-<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Bottom parallel to &lt;i&gt;x&lt;/i&gt; -&#39;</span><span class="nv">d_bxb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">8</span><span class="p">}</span><span class="c1">&#39;mm</span>
+<span class="w">    </span><span class="c1">&#39;- Top parallel to &lt;i&gt;y&lt;/i&gt; -&#39;</span><span class="nv">d_byb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">?</span><span class="w"> </span><span class="p">{</span><span class="m">6</span><span class="p">}</span><span class="c1">&#39;mm</span>
 <span class="w">    </span><span class="k">#post</span>
 <span class="w">    </span><span class="c1">&#39;&lt;div class=&quot;fold&quot;&gt;</span>
 <span class="w">    </span><span class="c1">&#39;&lt;h4&gt;Static calculations&lt;/h4&gt;</span>
@@ -7589,7 +7588,7 @@
 <span class="w">    </span><span class="c1">&#39;&lt;/table&gt;</span>
 <span class="k">#end if</span>
 <span class="k">#show</span>
-<span class="c1">&#39;&lt;/div&gt;4    6   25  25  14  2   2.5 2   25  0.85    500 8   6</span>
+<span class="c1">&#39;&lt;/div&gt;</span>
 </code></pre></div>
 
 </figure>
