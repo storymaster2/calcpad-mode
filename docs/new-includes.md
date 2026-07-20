@@ -14,8 +14,7 @@
 
 An included file can include others in turn, and those can include more — the chain is followed automatically.
 
-- **Circular includes are safe.** If a file ends up including itself (directly or through another file), the repeat is skipped instead of looping forever.
-Filenames are matched case-insensitively.
+- **Circular includes are safe.** If a file ends up including itself (directly or through another file), the repeat is skipped instead of looping forever. Filenames are matched case-insensitively.
 - **There's a depth limit.** Include chains can go up to 20 levels deep; beyond that, the include is skipped and a comment is left in its place noting the file that couldn't be included.
 
 ## `#include` vs `#read`

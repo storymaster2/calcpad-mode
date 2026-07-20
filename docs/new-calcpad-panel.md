@@ -6,18 +6,15 @@ The **CalcpadCE panel** is the tabbed sidebar that sits beside the editor.
 It shows what your document defines, lets you insert symbols and snippets, controls the calculation and plot settings, and drives export.
 Because every CalcpadCE frontend embeds the same panel, the tabs and settings are identical everywhere; only how you open it differs:
 
-- **VS Code** — click the **CalcpadCE** icon in the activity bar.
-The view title bar has **CalcpadCE: Run Preview** (re-render) and **Stop Server** buttons.
+- **VS Code** — click the **CalcpadCE** icon in the activity bar. The view title bar has **CalcpadCE: Run Preview** (re-render) and **Stop Server** buttons.
 - **Desktop app** — **View → Toggle Sidebar**.
 
 ## Views
 
 The panel has two top-level views, switched from the icons at its top:
 
-- **CalcpadCE** — the tabbed working view (below).
-This is the default.
-- **Files** — opens a folder and shows a file tree so you can browse and open `.cpd` files without leaving the panel.
-Includes *Open Folder*, *Collapse All*, and a *Show all files* toggle.
+- **CalcpadCE** — the tabbed working view (below). This is the default.
+- **Files** — opens a folder and shows a file tree so you can browse and open `.cpd` files without leaving the panel. Includes *Open Folder*, *Collapse All*, and a *Show all files* toggle.
 
 ## Panel tabs
 

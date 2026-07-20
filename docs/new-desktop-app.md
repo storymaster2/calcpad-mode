@@ -22,8 +22,7 @@ On Linux the app will tell you which package to install if none is found — see
 
 ## Your first document
 
-1. Launch the app.
-It opens with an empty **Untitled-1** tab.
+1. Launch the app. It opens with an empty **Untitled-1** tab.
 2. Type a calculation, for example:
 
    ```calcpad
@@ -35,10 +34,8 @@ It opens with an empty **Untitled-1** tab.
    δ = P·L^3/(3·E·I)
    ```
 
-3. The **preview pane** renders your report live as you type.
-Toggle it from **View → Toggle Preview**.
-4. Save with **Ctrl+S** (or **File → Save**).
-A native save dialog lets you choose the location.
+3. The **preview pane** renders your report live as you type. Toggle it from **View → Toggle Preview**.
+4. Save with **Ctrl+S** (or **File → Save**). A native save dialog lets you choose the location.
 
 ## Working with tabs
 
@@ -59,8 +56,7 @@ How tabs behave:
 - **Unsaved changes** are marked with a dot on the tab; undoing back to the last saved state clears it.
 - **Opening an already-open file** activates its existing tab instead of duplicating it.
 - **Opening a file from an empty Untitled tab** replaces it in place rather than stacking a new tab.
-- **Closing a tab with unsaved changes** prompts Save / Don't Save / Cancel.
-Quitting the app walks through every unsaved tab; cancel any prompt to abort the quit.
+- **Closing a tab with unsaved changes** prompts Save / Don't Save / Cancel. Quitting the app walks through every unsaved tab; cancel any prompt to abort the quit.
 - Hover, definitions, references, the linter, the preview, and the TOC are all scoped to the active tab, so symbols and errors never bleed between unrelated documents.
 
 ## Opening files
@@ -68,8 +64,7 @@ Quitting the app walks through every unsaved tab; cancel any prompt to abort the
 There are several ways to open documents:
 
 - **File → Open…** — native file picker.
-- **Drag and drop** — drop one or more files onto the editor; each opens in its own tab.
-Dropping plain text (e.g. from a browser) opens it as a new untitled tab.
+- **Drag and drop** — drop one or more files onto the editor; each opens in its own tab. Dropping plain text (e.g. from a browser) opens it as a new untitled tab.
 - **Files tab** in the sidebar — open a folder and browse its tree.
 - **Recent files** — tracked automatically and available from the File menu.
 
@@ -84,8 +79,7 @@ Dropping plain text (e.g. from a browser) opens it as a new untitled tab.
 
 Two key behaviors worth knowing:
 
-- **Enter always inserts a newline** — it never accepts a suggestion.
-Press **Tab** to accept a completion.
+- **Enter always inserts a newline** — it never accepts a suggestion. Press **Tab** to accept a completion.
 - **Tab accepts suggestions** and triggers completion on a partial word.
 
 These are the same editor features as the [VS Code extension](new-vscode-extension.md), so anything you learn in one carries over to the other.
@@ -104,8 +98,7 @@ From **View** you can:
 
 - **Toggle Preview** — show/hide the pane.
 - **Preview Mode: Wrapped** — the normal report view.
-- **Preview Mode: Unwrapped** — the fully expanded source, with macros and includes resolved.
-Useful for debugging what the engine computes.
+- **Preview Mode: Unwrapped** — the fully expanded source, with macros and includes resolved. Useful for debugging what the engine computes.
 
 ### Running on demand (Auto-Run off)
 

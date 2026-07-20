@@ -11,8 +11,7 @@ You don't have to write these by hand: the **Metadata** tab in the CalcpadCE pan
 Open the [CalcpadCE panel](new-calcpad-panel.md) and switch to the **Metadata** tab.
 Then click a line in your document, and the tab shows a small form for that line:
 
-- **On a definition** (a variable, function, macro, or custom unit) you can add a **description**, and for functions and macros, a **type and description for each parameter** and the **return type**.
-The parameter rows are filled in to match the definition automatically.
+- **On a definition** (a variable, function, macro, or custom unit) you can add a **description**, and for functions and macros, a **type and description for each parameter** and the **return type**. The parameter rows are filled in to match the definition automatically.
 - **On any other line** you get the document-wide options: **settings overrides**, **lint-ignore** regions, and **no-print** regions.
 
 Fill in what you want and click **Apply**.

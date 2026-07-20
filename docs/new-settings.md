@@ -32,11 +32,8 @@ Editing settings here keeps them in sync with the host and the server — in VS 
 
 ## Units
 
-- **Default Input Length Unit** — `m` / `cm` / `mm`.
-Used for `%u` placeholders in input forms.
-- **Non-Metric Units** — **UK (Imperial)** or **US Customary**.
-Selects the definition of bare unit names that differ between the two systems (`gal`, `ton`, `cwt`, `pt`, `qt`, `bbl`, `tonf`, `therm`, …).
-This lives on `Settings.IsUs` and is unified across the WPF app, the CLI, and the web/desktop/VS Code hosts.
+- **Default Input Length Unit** — `m` / `cm` / `mm`. Used for `%u` placeholders in input forms.
+- **Non-Metric Units** — **UK (Imperial)** or **US Customary**. Selects the definition of bare unit names that differ between the two systems (`gal`, `ton`, `cwt`, `pt`, `qt`, `bbl`, `tonf`, `therm`, …). This lives on `Settings.IsUs` and is unified across the WPF app, the CLI, and the web/desktop/VS Code hosts.
 
 ## Server
 
@@ -57,8 +54,7 @@ Desktop app only.
 Pick the Monaco editor's font family from:
 
 - **JuliaMono** (bundled default) or **System Default**.
-- Any additional `.woff2`/`.woff`/`.ttf`/`.otf` files dropped into the desktop app's *fonts folder*.
-Use **Open Fonts Folder** to reveal it, drop your fonts in, then reopen the Font Family picker to pick them up.
+- Any additional `.woff2`/`.woff`/`.ttf`/`.otf` files dropped into the desktop app's *fonts folder*. Use **Open Fonts Folder** to reveal it, drop your fonts in, then reopen the Font Family picker to pick them up.
 
 ## Editor features
 
@@ -66,8 +62,7 @@ Use **Open Fonts Folder** to reveal it, drop your fonts in, then reopen the Font
 - **Comment Format** — Auto (detect `#md` on/off) / HTML / Markdown; controls what the formatting hotkeys emit.
 - **Enable Formatting Hotkeys** — the Ctrl+B / Ctrl+I / Ctrl+1–6 … bindings.
 - **Sync Preview to Cursor Line** — scroll the preview to follow the line the cursor is on.
-- **Auto-Run Preview** *(default on)* — when off, the preview only re-renders when the preview panel is first opened or a manual **Run Preview** is triggered (**Ctrl+Alt+X**, the ▶ Run button, the editor context menu, or the Server → Refresh menu in the desktop app).
-Turn this off for large documents where every keystroke re-render is too costly.
+- **Auto-Run Preview** *(default on)* — when off, the preview only re-renders when the preview panel is first opened or a manual **Run Preview** is triggered (**Ctrl+Alt+X**, the ▶ Run button, the editor context menu, or the Server → Refresh menu in the desktop app). Turn this off for large documents where every keystroke re-render is too costly.
 
 ## Library
 
@@ -82,9 +77,7 @@ The lowest severity surfaced as a diagnostic.
 ## Diagnostics
 
 - **Open Logs Folder** — opens the folder holding server logs and the most recent crash dump.
-- **Max Output Lines (per channel)** *(web/desktop)* — 10–100000, default 1000.
-Number of lines retained in each Output panel channel before older lines are dropped.
-Lower values reduce memory use and keep the UI responsive when logs are noisy.
+- **Max Output Lines (per channel)** *(web/desktop)* — 10–100000, default 1000. Number of lines retained in each Output panel channel before older lines are dropped. Lower values reduce memory use and keep the UI responsive when logs are noisy.
 
 ## Named configurations
 

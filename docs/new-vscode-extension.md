@@ -10,10 +10,8 @@ For the CalcpadCE language itself, start with **[Writing Math](writing-math.md)*
 ## Requirements
 
 - **Visual Studio Code** 1.82 or newer.
-- **.NET runtime** on your PATH. The extension bundles a local CalcpadCE server that it launches automatically; it needs `dotnet` to run it.
-Verify with `dotnet --info` in a terminal.
-- A **Chromium-based browser** (Chrome, Edge, Chromium) for PDF export.
-See [PDF Export](new-pdf-export.md).
+- **.NET runtime** on your PATH. The extension bundles a local CalcpadCE server that it launches automatically; it needs `dotnet` to run it. Verify with `dotnet --info` in a terminal.
+- A **Chromium-based browser** (Chrome, Edge, Chromium) for PDF export. See [PDF Export](new-pdf-export.md).
 
 ## Installing the extension
 
@@ -28,8 +26,7 @@ Alternatively, from a terminal: `code --install-extension vscode-calcpad-<versio
 
 ## Your first document
 
-1. Create a new file and save it with a **`.cpd`** extension (for example `beam.cpd`). VS Code detects the `calcpad` language automatically.
-The `.cpdz` binary format is also recognized.
+1. Create a new file and save it with a **`.cpd`** extension (for example `beam.cpd`). VS Code detects the `calcpad` language automatically. The `.cpdz` binary format is also recognized.
 2. Type a calculation, for example:
 
    ```calcpad
