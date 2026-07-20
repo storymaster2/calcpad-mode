@@ -44,6 +44,8 @@
   </span>
  </p>
  <h4>Animation</h4>
+ <script src="https://code.jquery.com/jquery-3.6.3.min.js">
+ </script>
  <style>#kochwaveWave polyline{display:none; stroke:Teal; stroke-width:0.08; stroke-linejoin:round;}</style>
  <svg id="kochwaveWave" style="width:400pt; height:200pt;" viewbox="0 48 120 60">
   <defs>
