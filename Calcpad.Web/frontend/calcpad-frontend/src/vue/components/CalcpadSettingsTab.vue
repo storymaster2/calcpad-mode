@@ -97,6 +97,7 @@
             @change="updateSettings"
           />
           Adaptive Plotting
+          <span class="setting-info" title="Concentrates sample points where the curve bends sharply instead of spacing them evenly. Produces smoother plots of curved functions at a lower point count; disable for a fixed dense sampling.">ⓘ</span>
         </label>
       </div>
 
@@ -131,6 +132,7 @@
             @change="updateSettings"
           />
           Vector Graphics
+          <span class="setting-info" title="Renders plots as SVG (scalable, sharp at any zoom) instead of raster PNG images.">ⓘ</span>
         </label>
       </div>
 

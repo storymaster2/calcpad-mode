@@ -1,4 +1,4 @@
-# Build the CalcPadCE Web desktop app (Tauri + embedded ASP.NET Core sidecar)
+# Build the CalcpadCE desktop app (Tauri + embedded ASP.NET Core sidecar)
 # on Windows.
 #
 # Publishes Calcpad.Server via sync-bundled-server.mjs, renames the apphost

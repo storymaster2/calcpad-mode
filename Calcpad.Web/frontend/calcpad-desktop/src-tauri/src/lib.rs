@@ -165,7 +165,7 @@ fn install_panic_hook() {
             .and_then(|m| m.lock().ok().map(|g| g.clone()))
             .unwrap_or_default();
         let body = format!(
-            "=== CalcPad Desktop panic ===\n\
+            "=== CalcpadCE Desktop panic ===\n\
              Time (unix ms): {ms}\n\
              Thread: {thread}\n\
              Location: {location}\n\
@@ -842,6 +842,8 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
             &MenuItem::with_id(app, "close-tab", "Close Tab", true, Some("CmdOrCtrl+W"))?,
             &sep()?,
             &MenuItem::with_id(app, "export-pdf", "Export PDF...", true, None::<&str>)?,
+            &MenuItem::with_id(app, "export-html", "Export HTML...", true, None::<&str>)?,
+            &MenuItem::with_id(app, "export-docx", "Export Word...", true, None::<&str>)?,
             &sep()?,
             &MenuItem::with_id(app, "quit", "Quit", true, Some("CmdOrCtrl+Q"))?,
         ],

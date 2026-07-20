@@ -59,6 +59,30 @@ namespace Calcpad.Tests.HighlighterTests
             Assert.DoesNotContain("6.12345", html);
         }
 
+        [Fact]
+        public void LineContinuation_MetadataCommentParsesAsSingleJsonBlock()
+        {
+            // A metadata comment split across lines with an explicit " _" continuation
+            // must be recognized as one HtmlComment block with intact JSON. Regression:
+            // the opener line was typed as plain Comment and the continuation line's
+            // leading JSON quote was stripped as if it were a comment delimiter.
+            var source =
+                "'<!--{\"desc\":\"k\",\"paramTypes\":[\"value\"], _\n" +
+                "\"paramDesc\":[\"ndfdf\"]}-->";
+
+            var tokens = new CalcpadTokenizer().Tokenize(source);
+            var blocks = new HtmlCommentParser().Parse(tokens);
+
+            var block = Assert.Single(blocks);
+            Assert.Equal(HtmlCommentParseStatus.Success, block.Status);
+            Assert.True(block.Data.HasValue);
+
+            var data = block.Data.Value;
+            Assert.Equal("k", data.GetProperty("desc").GetString());
+            Assert.Equal("value", data.GetProperty("paramTypes")[0].GetString());
+            Assert.Equal("ndfdf", data.GetProperty("paramDesc")[0].GetString());
+        }
+
         private static void ApplyHtmlCommentSettings(string source, Settings settings)
         {
             var tokens = new CalcpadTokenizer().Tokenize(source);

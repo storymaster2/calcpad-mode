@@ -63,7 +63,7 @@ function getEmptyPreviewHtml(theme: 'light' | 'dark'): string {
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>CalcPad Preview</title>
+    <title>CalcpadCE Preview</title>
     <style>
         body { color: ${c.fg}; background: ${c.bg}; padding: 20px; font-family: var(--vscode-font-family, system-ui, sans-serif); }
         h3 { text-align: center; }
@@ -78,7 +78,7 @@ function getEmptyPreviewHtml(theme: 'light' | 'dark'): string {
 </head>
 <body>
     <h3>Empty Document</h3>
-    <p>Start typing CalcPad code to see the preview.</p>
+    <p>Start typing CalcpadCE code to see the preview.</p>
     <h4>Formatting Hotkeys</h4>
     <table>
         <tr><th>Bold</th><td>Ctrl+B</td></tr>
@@ -102,7 +102,7 @@ function getEmptyPreviewHtml(theme: 'light' | 'dark'): string {
 }
 
 function getSampleContent(): string {
-    return `'CalcPad Web Editor
+    return `'CalcpadCE Web Editor
 'Enter your calculations below
 
 a = 3
@@ -136,13 +136,13 @@ async function rgbaToPng(rgba: Uint8Array, width: number, height: number): Promi
 async function showServerBlockedDialog(details: string): Promise<void> {
     const { message: dialogMessage } = await import('@tauri-apps/plugin-dialog');
     const body =
-        "CalcPad's calculation server started but never became ready.\n\n"
+        "CalcpadCE's calculation server started but never became ready.\n\n"
         + 'The editor still works, but preview, linting, and PDF/Word export '
         + 'need the server. Choose Server → Restart Server to try again.\n\n'
         + `Details: ${details}`;
     try {
         await dialogMessage(body, {
-            title: 'CalcPad server unavailable',
+            title: 'CalcpadCE server unavailable',
             kind: 'warning',
             okLabel: 'OK',
         });
@@ -885,7 +885,7 @@ async function bootstrap(): Promise<void> {
         }
     });
 
-    appInstance.appendOutput('info', `CalcPad Web started — server: ${serverUrl}`);
+    appInstance.appendOutput('info', `CalcpadCE Web started — server: ${serverUrl}`);
 
     // Flush any server-manager log lines buffered before the Output panel mounted,
     // then redirect future ones straight into the panel.
@@ -908,7 +908,7 @@ async function bootstrap(): Promise<void> {
         };
         serverManager.onCrashExhausted = (crashOutput: string) => {
             appInstance.appendOutput('error',
-                'CalcPad server crashed repeatedly — auto-restart disabled. ' +
+                'CalcpadCE server crashed repeatedly — auto-restart disabled. ' +
                 'Use Server → Restart Server to try again.');
             if (crashOutput) appInstance.appendOutput('error', crashOutput);
         };
@@ -1136,7 +1136,7 @@ async function bootstrap(): Promise<void> {
             const choice = await appInstance.showConfirm({
                 title: 'Recover unsaved changes?',
                 message:
-                    `CalcPad found ${drafts.length} unsaved draft${drafts.length === 1 ? '' : 's'} `
+                    `CalcpadCE found ${drafts.length} unsaved draft${drafts.length === 1 ? '' : 's'} `
                     + `from a previous session:\n\n${summary}\n\n`
                     + `Restore them into new tabs? Choose "Don't Restore" to discard.`,
                 yesLabel: 'Restore',
@@ -1577,6 +1577,14 @@ async function bootstrap(): Promise<void> {
 
                 case 'export-pdf':
                     tauriBridge.handleMessage({ type: 'generatePdf' });
+                    break;
+
+                case 'export-html':
+                    tauriBridge.handleMessage({ type: 'saveSourceHtml' });
+                    break;
+
+                case 'export-docx':
+                    tauriBridge.handleMessage({ type: 'saveDocx' });
                     break;
 
                 case 'toggle-sidebar':

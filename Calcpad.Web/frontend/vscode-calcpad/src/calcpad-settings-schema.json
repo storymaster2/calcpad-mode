@@ -94,11 +94,11 @@
     },
     "server": {
       "type": "object",
-      "description": "CalcPad server configuration",
+      "description": "CalcpadCE server configuration",
       "properties": {
         "url": {
           "type": "string",
-          "description": "Server URL for CalcPad API",
+          "description": "Server URL for CalcpadCE API",
           "default": ""
         }
       }

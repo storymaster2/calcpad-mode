@@ -322,7 +322,17 @@ namespace Calcpad.Highlighter.Tokenizer
 
                 if (_builder.Length > 0)
                 {
-                    Append(_state.CurrentTypeOrPrevious);
+                    var appendType = _state.CurrentTypeOrPrevious;
+                    // Detect HTML comment markers before emitting, so a <!-- opener
+                    // on a line ending in " _" is typed as HtmlComment and _inHtmlComment
+                    // carries the open block into the continuation line.
+                    if (appendType == TokenType.Comment || _inHtmlComment)
+                    {
+                        _state.CurrentType = appendType;
+                        CheckHtmlComment();
+                        appendType = _state.CurrentType;
+                    }
+                    Append(appendType);
                 }
             }
 

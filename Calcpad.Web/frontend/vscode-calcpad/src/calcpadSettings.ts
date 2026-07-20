@@ -36,7 +36,7 @@ let _outputChannel: vscode.OutputChannel | undefined;
 
 function getOutputChannel(): vscode.OutputChannel {
     if (!_outputChannel) {
-        _outputChannel = vscode.window.createOutputChannel('CalcPad Settings');
+        _outputChannel = vscode.window.createOutputChannel('CalcpadCE Settings');
     }
     return _outputChannel;
 }

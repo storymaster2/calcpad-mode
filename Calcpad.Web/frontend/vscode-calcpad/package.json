@@ -1,6 +1,6 @@
 {
   "name": "vscode-calcpad",
-  "displayName": "VS Code CalcPad",
+  "displayName": "VS Code CalcpadCE",
   "description": "Calculator extension for VS Code",
   "version": "0.3.0",
   "publisher": "imartincei",
@@ -19,7 +19,7 @@
       {
         "id": "calcpad",
         "aliases": [
-          "CalcPad",
+          "CalcpadCE",
           "calcpad"
         ],
         "extensions": [
@@ -216,55 +216,55 @@
     "commands": [
       {
         "command": "vscode-calcpad.activate",
-        "title": "Activate CalcPad"
+        "title": "Activate CalcpadCE"
       },
       {
         "command": "vscode-calcpad.previewHtml",
-        "title": "CalcPad Preview",
+        "title": "CalcpadCE Preview",
         "icon": "$(preview)"
       },
       {
         "command": "vscode-calcpad.showInsert",
-        "title": "Show CalcPad Insert Panel",
+        "title": "Show CalcpadCE Insert Panel",
         "icon": "$(add)"
       },
       {
         "command": "vscode-calcpad.editMetadataProperties",
-        "title": "CalcPad: Add / Edit Metadata Properties",
-        "category": "Calcpad"
+        "title": "CalcpadCE: Add / Edit Metadata Properties",
+        "category": "CalcpadCE"
       },
       {
         "command": "vscode-calcpad.exportToPdf",
-        "title": "Export CalcPad to PDF",
+        "title": "Export CalcpadCE to PDF",
         "icon": "$(file-pdf)"
       },
       {
         "command": "vscode-calcpad.previewUnwrapped",
-        "title": "CalcPad Preview Unwrapped",
+        "title": "CalcpadCE Preview Unwrapped",
         "icon": "$(eye)"
       },
       {
         "command": "vscode-calcpad.focusPreviewToLine",
-        "title": "CalcPad: Focus Preview to Line",
+        "title": "CalcpadCE: Focus Preview to Line",
         "icon": "$(target)"
       },
       {
         "command": "vscode-calcpad.viewWebviewSource",
-        "title": "CalcPad: View Webview Source HTML"
+        "title": "CalcpadCE: View Webview Source HTML"
       },
       {
         "command": "vscode-calcpad.printToPdf",
-        "title": "Print CalcPad Preview to PDF",
+        "title": "Print CalcpadCE Preview to PDF",
         "icon": "$(file-pdf)"
       },
       {
         "command": "vscode-calcpad.saveSourceHtml",
-        "title": "CalcPad: Save Source HTML…",
+        "title": "CalcpadCE: Save Source HTML…",
         "icon": "$(file-code)"
       },
       {
         "command": "vscode-calcpad.saveDocx",
-        "title": "CalcPad: Save as Word Document…",
+        "title": "CalcpadCE: Save as Word Document…",
         "icon": "$(file)"
       },
       {
@@ -274,94 +274,94 @@
       },
       {
         "command": "vscode-calcpad.formatBold",
-        "title": "CalcPad: Bold"
+        "title": "CalcpadCE: Bold"
       },
       {
         "command": "vscode-calcpad.formatItalic",
-        "title": "CalcPad: Italic"
+        "title": "CalcpadCE: Italic"
       },
       {
         "command": "vscode-calcpad.formatUnderline",
-        "title": "CalcPad: Underline"
+        "title": "CalcpadCE: Underline"
       },
       {
         "command": "vscode-calcpad.formatSubscript",
-        "title": "CalcPad: Subscript"
+        "title": "CalcpadCE: Subscript"
       },
       {
         "command": "vscode-calcpad.formatSuperscript",
-        "title": "CalcPad: Superscript"
+        "title": "CalcpadCE: Superscript"
       },
       {
         "command": "vscode-calcpad.formatHeading1",
-        "title": "CalcPad: Heading 1"
+        "title": "CalcpadCE: Heading 1"
       },
       {
         "command": "vscode-calcpad.formatHeading2",
-        "title": "CalcPad: Heading 2"
+        "title": "CalcpadCE: Heading 2"
       },
       {
         "command": "vscode-calcpad.formatHeading3",
-        "title": "CalcPad: Heading 3"
+        "title": "CalcpadCE: Heading 3"
       },
       {
         "command": "vscode-calcpad.formatHeading4",
-        "title": "CalcPad: Heading 4"
+        "title": "CalcpadCE: Heading 4"
       },
       {
         "command": "vscode-calcpad.formatHeading5",
-        "title": "CalcPad: Heading 5"
+        "title": "CalcpadCE: Heading 5"
       },
       {
         "command": "vscode-calcpad.formatHeading6",
-        "title": "CalcPad: Heading 6"
+        "title": "CalcpadCE: Heading 6"
       },
       {
         "command": "vscode-calcpad.formatParagraph",
-        "title": "CalcPad: Paragraph"
+        "title": "CalcpadCE: Paragraph"
       },
       {
         "command": "vscode-calcpad.formatLineBreak",
-        "title": "CalcPad: Line Break"
+        "title": "CalcpadCE: Line Break"
       },
       {
         "command": "vscode-calcpad.formatBulletedList",
-        "title": "CalcPad: Bulleted List"
+        "title": "CalcpadCE: Bulleted List"
       },
       {
         "command": "vscode-calcpad.formatNumberedList",
-        "title": "CalcPad: Numbered List"
+        "title": "CalcpadCE: Numbered List"
       },
       {
         "command": "vscode-calcpad.toggleComment",
-        "title": "CalcPad: Toggle Comment"
+        "title": "CalcpadCE: Toggle Comment"
       },
       {
         "command": "vscode-calcpad.uncomment",
-        "title": "CalcPad: Uncomment"
+        "title": "CalcpadCE: Uncomment"
       },
       {
         "command": "vscode-calcpad.pasteAsComment",
-        "title": "CalcPad: Paste as Comment"
+        "title": "CalcpadCE: Paste as Comment"
       },
       {
         "command": "vscode-calcpad.prettifyDocument",
-        "title": "CalcPad: Prettify Document",
+        "title": "CalcpadCE: Prettify Document",
         "icon": "$(symbol-ruler)"
       },
       {
         "command": "calcpad.refreshDocument",
-        "title": "CalcPad: Run Preview",
+        "title": "CalcpadCE: Run Preview",
         "icon": "$(refresh)"
       },
       {
         "command": "calcpad.stopServer",
-        "title": "Stop CalcPad Server",
+        "title": "Stop CalcpadCE Server",
         "icon": "$(debug-stop)"
       },
       {
         "command": "vscode-calcpad.installJuliaMono",
-        "title": "CalcPad: Install JuliaMono Font"
+        "title": "CalcpadCE: Install JuliaMono Font"
       }
     ],
     "menus": {
@@ -568,12 +568,12 @@
       }
     ],
     "configuration": {
-      "title": "CalcPad",
+      "title": "CalcpadCE",
       "properties": {
         "calcpad.enableFormattingHotkeys": {
           "type": "boolean",
           "default": true,
-          "description": "Enable formatting hotkeys (Ctrl+B, Ctrl+I, Ctrl+1-6, etc.) for CalcPad files. Mirrored from the active CalcPad settings config on activation — edit via the CalcPad sidebar, not here (this key exists only so keybinding `when` clauses can reference it)."
+          "description": "Enable formatting hotkeys (Ctrl+B, Ctrl+I, Ctrl+1-6, etc.) for CalcpadCE files. Mirrored from the active CalcpadCE settings config on activation — edit via the CalcpadCE sidebar, not here (this key exists only so keybinding `when` clauses can reference it)."
         }
       }
     },
@@ -581,7 +581,7 @@
       "calcpad-ui": [
         {
           "id": "calcpadVueUI",
-          "name": "CalcPad",
+          "name": "CalcpadCE",
           "type": "webview"
         }
       ]
@@ -590,7 +590,7 @@
       "activitybar": [
         {
           "id": "calcpad-ui",
-          "title": "CalcPad",
+          "title": "CalcpadCE",
           "icon": "./calcpad-icon.png"
         }
       ]

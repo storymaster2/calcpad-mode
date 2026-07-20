@@ -1,7 +1,7 @@
 {
   "name": "calcpad-frontend",
   "version": "0.3.0",
-  "description": "Shared CalcPad frontend logic for VS Code extension and Electron desktop app",
+  "description": "Shared CalcpadCE frontend logic for VS Code extension, Tauri desktop app, and web browser app",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
