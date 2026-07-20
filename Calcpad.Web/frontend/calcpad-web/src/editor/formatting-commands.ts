@@ -39,31 +39,31 @@ export function registerFormattingCommands(
     const KC = monaco.KeyCode;
 
     // Inline formatting
-    add('calcpad.formatBold',         'CalcPad: Bold',         [KM.CtrlCmd | KC.KeyB], () => wrapInline(editor, bridge, 'bold'));
-    add('calcpad.formatItalic',       'CalcPad: Italic',       [KM.CtrlCmd | KC.KeyI], () => wrapInline(editor, bridge, 'italic'));
-    add('calcpad.formatUnderline',    'CalcPad: Underline',    [KM.CtrlCmd | KC.KeyU], () => wrapInline(editor, bridge, 'underline'));
-    add('calcpad.formatSubscript',    'CalcPad: Subscript',    [KM.CtrlCmd | KC.Equal], () => wrapInline(editor, bridge, 'subscript'));
-    add('calcpad.formatSuperscript',  'CalcPad: Superscript',  [KM.CtrlCmd | KM.Shift | KC.Equal], () => wrapInline(editor, bridge, 'superscript'));
+    add('calcpad.formatBold',         'CalcpadCE: Bold',         [KM.CtrlCmd | KC.KeyB], () => wrapInline(editor, bridge, 'bold'));
+    add('calcpad.formatItalic',       'CalcpadCE: Italic',       [KM.CtrlCmd | KC.KeyI], () => wrapInline(editor, bridge, 'italic'));
+    add('calcpad.formatUnderline',    'CalcpadCE: Underline',    [KM.CtrlCmd | KC.KeyU], () => wrapInline(editor, bridge, 'underline'));
+    add('calcpad.formatSubscript',    'CalcpadCE: Subscript',    [KM.CtrlCmd | KC.Equal], () => wrapInline(editor, bridge, 'subscript'));
+    add('calcpad.formatSuperscript',  'CalcpadCE: Superscript',  [KM.CtrlCmd | KM.Shift | KC.Equal], () => wrapInline(editor, bridge, 'superscript'));
 
     // Headings (Ctrl+1..Ctrl+6)
     const digitKeys = [KC.Digit1, KC.Digit2, KC.Digit3, KC.Digit4, KC.Digit5, KC.Digit6];
     for (let i = 0; i < 6; i++) {
         const level = i + 1;
-        add(`calcpad.formatHeading${level}`, `CalcPad: Heading ${level}`,
+        add(`calcpad.formatHeading${level}`, `CalcpadCE: Heading ${level}`,
             [KM.CtrlCmd | digitKeys[i]],
             () => insertHeading(editor, bridge, level));
     }
 
     // Block elements
-    add('calcpad.formatParagraph',    'CalcPad: Paragraph',     [KM.CtrlCmd | KC.KeyL], () => insertParagraph(editor));
-    add('calcpad.formatLineBreak',    'CalcPad: Line Break',    [KM.CtrlCmd | KC.KeyR], () => insertLineBreak(editor));
-    add('calcpad.formatBulletedList', 'CalcPad: Bulleted List', [KM.CtrlCmd | KM.Shift | KC.KeyL], () => insertBulletedList(editor, bridge));
-    add('calcpad.formatNumberedList', 'CalcPad: Numbered List', [KM.CtrlCmd | KM.Shift | KC.KeyN], () => insertNumberedList(editor, bridge));
+    add('calcpad.formatParagraph',    'CalcpadCE: Paragraph',     [KM.CtrlCmd | KC.KeyL], () => insertParagraph(editor));
+    add('calcpad.formatLineBreak',    'CalcpadCE: Line Break',    [KM.CtrlCmd | KC.KeyR], () => insertLineBreak(editor));
+    add('calcpad.formatBulletedList', 'CalcpadCE: Bulleted List', [KM.CtrlCmd | KM.Shift | KC.KeyL], () => insertBulletedList(editor, bridge));
+    add('calcpad.formatNumberedList', 'CalcpadCE: Numbered List', [KM.CtrlCmd | KM.Shift | KC.KeyN], () => insertNumberedList(editor, bridge));
 
     // Comments
-    add('calcpad.toggleComment',  'CalcPad: Toggle Comment',   [KM.CtrlCmd | KC.KeyQ], () => toggleComment(editor));
-    add('calcpad.uncomment',      'CalcPad: Uncomment',        [KM.CtrlCmd | KM.Shift | KC.KeyQ], () => uncomment(editor));
-    add('calcpad.pasteAsComment', 'CalcPad: Paste as Comment', [KM.CtrlCmd | KM.Shift | KC.KeyV], () => pasteAsComment(editor));
+    add('calcpad.toggleComment',  'CalcpadCE: Toggle Comment',   [KM.CtrlCmd | KC.KeyQ], () => toggleComment(editor));
+    add('calcpad.uncomment',      'CalcpadCE: Uncomment',        [KM.CtrlCmd | KM.Shift | KC.KeyQ], () => uncomment(editor));
+    add('calcpad.pasteAsComment', 'CalcpadCE: Paste as Comment', [KM.CtrlCmd | KM.Shift | KC.KeyV], () => pasteAsComment(editor));
 
     return { dispose() { for (const d of disposables) d.dispose(); } };
 }

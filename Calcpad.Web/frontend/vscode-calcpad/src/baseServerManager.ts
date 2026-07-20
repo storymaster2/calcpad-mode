@@ -346,7 +346,7 @@ export class BaseServerManager {
                 detail +=
                     `\nWindows blocked the executable (Defender / SmartScreen / AppLocker). ` +
                     `Right-click ${useAppHost ? path.basename(exePath) : path.basename(this.dotnetPath)} ` +
-                    `in Windows Explorer → Properties → check "Unblock", then click the CalcPad refresh button to retry.`;
+                    `in Windows Explorer → Properties → check "Unblock", then click the CalcpadCE refresh button to retry.`;
             }
             this._lastCrashOutput.push(detail);
             this._processClosed = true; // make waitForReady fast-fail

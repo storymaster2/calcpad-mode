@@ -89,8 +89,8 @@ export class DotnetRuntimeManager {
      */
     public async promptUserForInstallation(status: DotnetStatus): Promise<'install-local' | 'download' | 'cancel'> {
         const message = status === 'not-found'
-            ? `CalcPad requires the .NET ${DOTNET_MAJOR_VERSION}.0 runtime to run calculations locally. It was not found on your system.`
-            : `CalcPad requires the ASP.NET Core ${DOTNET_MAJOR_VERSION}.0 runtime, but only older versions were found on your system.`;
+            ? `CalcpadCE requires the .NET ${DOTNET_MAJOR_VERSION}.0 runtime to run calculations locally. It was not found on your system.`
+            : `CalcpadCE requires the ASP.NET Core ${DOTNET_MAJOR_VERSION}.0 runtime, but only older versions were found on your system.`;
 
         const choice = await vscode.window.showWarningMessage(
             message,
@@ -133,7 +133,7 @@ export class DotnetRuntimeManager {
 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: 'CalcPad: Installing .NET runtime...',
+            title: 'CalcpadCE: Installing .NET runtime...',
             cancellable: false
         }, async (progress) => {
             progress.report({ message: 'Downloading runtime...' });
@@ -232,14 +232,14 @@ export class DotnetRuntimeManager {
             } catch (err) {
                 const message = err instanceof Error ? err.message : String(err);
                 this.log(`Failed to install runtime locally: ${message}`);
-                vscode.window.showErrorMessage(`CalcPad: Failed to install .NET runtime: ${message}`);
+                vscode.window.showErrorMessage(`CalcpadCE: Failed to install .NET runtime: ${message}`);
                 return null;
             }
         } else if (choice === 'download') {
             this.openDownloadPage();
             if (serverMode === 'local') {
                 vscode.window.showInformationMessage(
-                    'CalcPad: Please restart VS Code after installing the .NET runtime.'
+                    'CalcpadCE: Please restart VS Code after installing the .NET runtime.'
                 );
             }
             return null;

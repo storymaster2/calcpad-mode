@@ -1,7 +1,7 @@
 [package]
 name = "calcpad-desktop"
 version = "0.3.0"
-description = "CalcPadCE Web desktop shell"
+description = "CalcpadCE desktop shell"
 authors = ["Isaiah Martin"]
 edition = "2021"
 rust-version = "1.77"

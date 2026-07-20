@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Default capabilities for the CalcPadCE Web desktop app.",
+  "description": "Default capabilities for the CalcpadCE desktop app.",
   "windows": ["main"],
   "permissions": [
     "core:default",

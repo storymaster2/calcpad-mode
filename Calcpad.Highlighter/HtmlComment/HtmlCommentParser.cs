@@ -36,17 +36,10 @@ namespace Calcpad.Highlighter.HtmlComment
     /// <summary>
     /// Extracts and parses JSON payloads embedded in Calcpad HTML comment syntax.
     ///
-    /// Supported forms (all produce the same result):
-    ///   '&lt;!--{json: "hello"}--&gt;
-    ///   '&lt;!--{json: "hello"}--&gt;'
-    ///   '&lt;!--{          (multi-line, no inner closing quotes)
-    ///   'json: "hello"
-    ///   '}
-    ///   '--&gt;
-    ///   '&lt;!--{'         (multi-line, inner closing quotes per line)
-    ///   'json: "hello"'
-    ///   '}'
-    ///   '--&gt;'
+    /// Supported forms:
+    ///   '&lt;!--{"json": "hello"}--&gt;                single line (optional trailing quote)
+    ///   '&lt;!--{"json": "hello", _                    multi line via " _" continuation
+    ///   "more": "world"}--&gt;
     ///
     /// Requires that the tokenizer has been run with <see cref="CalcpadTokenizer._inHtmlComment"/>
     /// state tracking enabled, so all lines of a multi-line block are typed as HtmlComment.
@@ -75,7 +68,7 @@ namespace Calcpad.Highlighter.HtmlComment
                 if (token.Type != TokenType.HtmlComment)
                     continue;
 
-                var content = StripCommentQuotes(token.Text);
+                var content = token.Text;
 
                 if (state == ParseState.Normal)
                 {
@@ -155,26 +148,6 @@ namespace Calcpad.Highlighter.HtmlComment
 
             // Any open block at end of stream is silently discarded (unterminated)
             return results;
-        }
-
-        /// <summary>
-        /// Strips the leading comment-quote character (<c>'</c> or <c>"</c>) and,
-        /// if the remainder ends with the same character, the trailing one too.
-        /// </summary>
-        private static string StripCommentQuotes(string text)
-        {
-            if (text.Length == 0)
-                return text;
-
-            char first = text[0];
-            if (first != '\'' && first != '"')
-                return text;
-
-            var inner = text[1..];
-            if (inner.Length > 0 && inner[^1] == first)
-                inner = inner[..^1];
-
-            return inner;
         }
 
         private static HtmlCommentBlock? BuildBlock(int startLine, int endLine, string rawJson)

@@ -472,6 +472,10 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
         private void ValidateFunctionCalls(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
+            // When a function is redefined, the latest definition wins (matching Calcpad.Core),
+            // so calls are checked against the last definition's parameter count.
+            var lastDefParamCount = BuildLastDefinitionParamCounts(stage3, tokenProvider);
+
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
                 if (!tokenProvider.IsCpdMode(i)) continue;
@@ -486,6 +490,12 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 if (LineParser.IsDirectiveLine(trimmed))
                     continue;
 
+                // The name on the left of a function definition is a (re)definition, not a call.
+                // Redefining an existing function is allowed, so don't check it against a param count.
+                var defMatch = CalcpadPatterns.FunctionDefinition.Match(line);
+                var defName = defMatch.Success ? defMatch.Groups[1].Value : null;
+                var defNameCol = defMatch.Success ? defMatch.Groups[1].Index : -1;
+
                 var tokens = tokenProvider.GetTokensForLine(i);
 
                 foreach (var token in tokens)
@@ -495,6 +505,9 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                         continue;
 
                     var funcName = token.Text;
+
+                    if (funcName == defName && token.Column == defNameCol)
+                        continue;
 
                     // Skip built-in functions (they have variable param counts)
                     if (CalcpadBuiltIns.Functions.Contains(funcName))
@@ -511,13 +524,15 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                             if (argList.Count == 1 && argList[0].Length == 0)
                                 argList.Clear();
 
+                            var expected = lastDefParamCount.TryGetValue(funcName, out var pc)
+                                ? pc : funcInfo.ParamCount;
                             int totalActual = argList.Count;
-                            if (totalActual != funcInfo.ParamCount)
+                            if (totalActual != expected)
                             {
                                 var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
                                 if (endCol <= token.Column + token.Length) endCol = token.Column + token.Length;
                                 result.AddError(i, token.Column, endCol, "CPD-3302",
-                                    "'" + funcName + "' expects " + funcInfo.ParamCount + " parameter(s) but got " + totalActual);
+                                    "'" + funcName + "' expects " + expected + " parameter(s) but got " + totalActual);
                             }
                         }
                     }
@@ -529,6 +544,35 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Maps each user-defined function name to the parameter count of its last textual
+        /// definition. The tokenizer only registers the first definition's arity, but Calcpad
+        /// resolves redefinitions to the latest one, so call checks must use the last count.
+        /// </summary>
+        private static Dictionary<string, int> BuildLastDefinitionParamCounts(Stage3Context stage3, TokenizedLineProvider tokenProvider)
+        {
+            var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (int i = 0; i < stage3.Lines.Count; i++)
+            {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
+                var line = stage3.Lines[i];
+                if (LineParser.ShouldSkipLine(line))
+                    continue;
+
+                var defMatch = CalcpadPatterns.FunctionDefinition.Match(line);
+                if (!defMatch.Success)
+                    continue;
+
+                var paramList = ParameterParser.ParseParameters(defMatch.Groups[2].Value);
+                if (paramList.Count == 1 && paramList[0].Trim().Length == 0)
+                    paramList.Clear();
+
+                counts[defMatch.Groups[1].Value] = paramList.Count;
+            }
+            return counts;
         }
 
         private void ValidateMacroCalls(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)

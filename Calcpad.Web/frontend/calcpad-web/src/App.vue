@@ -927,7 +927,7 @@ export interface OutputLine {
 }
 
 const OUTPUT_CHANNEL_LABELS: Record<OutputChannel, string> = {
-  app: 'CalcPad',
+  app: 'CalcpadCE',
   preview: 'Preview Console',
   server: 'Server',
 }
@@ -1287,7 +1287,7 @@ function injectPreviewConsole(html: string, groupId: string): string {
     '    var r = e.reason; var d = r && (r.stack || r.message) || String(r);',
     "    post('error', ['[Unhandled Rejection] ' + d]);",
     '  });',
-    "  console.log('CalcPad preview console interception initialized');",
+    "  console.log('CalcpadCE preview console interception initialized');",
     '})();',
   ].join('\n')
   const open = '<' + 'script>'

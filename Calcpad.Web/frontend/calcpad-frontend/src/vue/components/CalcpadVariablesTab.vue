@@ -13,7 +13,7 @@
         Loading variables...
       </div>
       <div v-else-if="!hasVariables" class="no-variables">
-        No variables found. Open a CalcPad document to see variables, macros, and functions.
+        No variables found. Open a CalcpadCE document to see variables, macros, and functions.
       </div>
       <div v-else-if="searchTerm && !hasFilteredResults" class="no-variables">
         No results found for "{{ searchTerm }}"

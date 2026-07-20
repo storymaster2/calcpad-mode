@@ -11,7 +11,7 @@ import {
     mkdir,
     exists,
 } from '@tauri-apps/plugin-fs';
-import { open as dialogOpen, save as dialogSave, message as dialogMessage } from '@tauri-apps/plugin-dialog';
+import { open as dialogOpen, save as dialogSave, message as dialogMessage, ask as dialogAsk } from '@tauri-apps/plugin-dialog';
 import { openPath } from '@tauri-apps/plugin-opener';
 import { Store } from '@tauri-apps/plugin-store';
 import { platform } from '@tauri-apps/plugin-os';
@@ -57,6 +57,11 @@ const MAX_RECENT_FILES = 10;
 function pathDirname(p: string): string {
     const idx = Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\'));
     return idx > 0 ? p.slice(0, idx) : '';
+}
+
+function pathBasename(p: string): string {
+    const idx = Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\'));
+    return idx >= 0 ? p.slice(idx + 1) : p;
 }
 
 /** POSIX-style relative path from `from` to `to`, using forward slashes. */
@@ -313,13 +318,13 @@ export class TauriMessageBridge extends BaseMessageBridge {
         return candidate;
     }
 
-    protected async saveExportedFile(req: ExportRequest): Promise<void> {
+    protected async saveExportedFile(req: ExportRequest): Promise<string | null> {
         const filePath = await dialogSave({
             title: req.dialogTitle,
-            defaultPath: this.getDialogDefaultPath(),
+            defaultPath: this.getExportDefaultPath(req),
             filters: [{ name: `${req.dialogTitle} Files`, extensions: req.extensions }],
         });
-        if (!filePath) return;
+        if (!filePath) return null;
         this.rememberDialogDir(filePath);
         if (typeof req.data === 'string') {
             await writeTextFile(filePath, req.data);
@@ -329,6 +334,17 @@ export class TauriMessageBridge extends BaseMessageBridge {
                 : new Uint8Array(req.data as ArrayBuffer);
             await fsWriteFile(filePath, bytes);
         }
+        return filePath;
+    }
+
+    protected async onPdfSaved(filePath: string): Promise<void> {
+        const open = await dialogAsk(`PDF saved to ${filePath}`, {
+            title: 'PDF export complete',
+            kind: 'info',
+            okLabel: 'Open PDF',
+            cancelLabel: 'Close',
+        });
+        if (open) await this.openPathSafe(filePath);
     }
 
     protected async buildFileContext(_content: string): Promise<{ sourceFilePath?: string }> {
@@ -394,6 +410,12 @@ export class TauriMessageBridge extends BaseMessageBridge {
         this.handleGetServerLog();
         if (await this.browserMissing()) {
             await this.warnBrowserMissing();
+            return;
+        }
+        try {
+            await dialogMessage(msg, { title: 'Failed to generate PDF', kind: 'error', okLabel: 'OK' });
+        } catch {
+            /* output panel already carries the error */
         }
     }
 
@@ -475,6 +497,22 @@ export class TauriMessageBridge extends BaseMessageBridge {
         return this._lastDialogDir ?? undefined;
     }
 
+    /**
+     * Default path for an export Save dialog: the active document's name with the
+     * export's extension swapped in (e.g. `report.cpd` → `report.html`), placed in
+     * the document's folder — mirroring how Save As prefills the `.cpd` name.
+     */
+    private getExportDefaultPath(req: ExportRequest): string | undefined {
+        const ext = req.extensions[0];
+        const activePath = this.activeTabFilePath();
+        const source = activePath || this.activeTabTitle();
+        if (!source) return this.getDialogDefaultPath();
+        const base = pathBasename(source).replace(/\.[^./\\]+$/, '') || 'calcpad-output';
+        const name = ext ? `${base}.${ext}` : base;
+        const dir = activePath ? pathDirname(activePath) : this._lastDialogDir;
+        return dir ? pathResolve(dir, name) : name;
+    }
+
     private getSaveDialogDefaultPath(): string | undefined {
         const activePath = this.activeTabFilePath();
         if (activePath) return activePath;
@@ -497,7 +535,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
             multiple: false,
             defaultPath: this.getDialogDefaultPath(),
             filters: [
-                { name: 'CalcPad Files', extensions: ['cpd'] },
+                { name: 'CalcpadCE Files', extensions: ['cpd'] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
@@ -548,7 +586,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
             title: 'Save File',
             defaultPath: this.getSaveDialogDefaultPath(),
             filters: [
-                { name: 'CalcPad Files', extensions: ['cpd'] },
+                { name: 'CalcpadCE Files', extensions: ['cpd'] },
                 { name: 'All Files', extensions: ['*'] },
             ],
         });
@@ -861,7 +899,7 @@ export class TauriMessageBridge extends BaseMessageBridge {
         const message =
             'PDF export needs a Chromium-family browser, but none was found on PATH.\n\n'
             + advice
-            + '\n\nAfter installing, restart CalcPad (Server → Restart App) and try again.';
+            + '\n\nAfter installing, restart CalcpadCE (Server → Restart App) and try again.';
         try {
             await dialogMessage(message, {
                 title: 'Chromium browser required for PDF export',

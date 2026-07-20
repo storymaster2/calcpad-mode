@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Build the CalcPadCE Web desktop app (Tauri + embedded ASP.NET Core sidecar).
+# Build the CalcpadCE desktop app (Tauri + embedded ASP.NET Core sidecar).
 #
 # Steps:
 #   1. Publish Calcpad.Server for the target RID via sync-bundled-server.mjs.

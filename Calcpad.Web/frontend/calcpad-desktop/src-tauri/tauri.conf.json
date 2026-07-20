@@ -1,7 +1,7 @@
 {
-  "productName": "CalcPadCE Web",
+  "productName": "CalcpadCE",
   "version": "0.3.0",
-  "identifier": "com.calcpad.desktop",
+  "identifier": "com.calcpadce.desktop",
   "build": {
     "frontendDist": "../../calcpad-web/dist"
   },
@@ -9,7 +9,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "CalcPadCE Web",
+        "title": "CalcpadCE",
         "width": 1400,
         "height": 900,
         "minWidth": 800,
@@ -45,16 +45,16 @@
         "ext": [
           "cpd"
         ],
-        "name": "Calcpad Document",
-        "description": "Calcpad calculation document",
-        "mimeType": "application/x-calcpad",
+        "name": "CalcpadCE Document",
+        "description": "CalcpadCE calculation document",
+        "mimeType": "application/x-calcpadce",
         "role": "Editor",
         "rank": "Default"
       }
     ],
     "category": "DeveloperTool",
-    "shortDescription": "CalcPadCE Web desktop editor",
-    "longDescription": "CalcPadCE Web is a Vue-based editor for Calcpad calculation files, backed by an embedded ASP.NET Core server.",
+    "shortDescription": "CalcpadCE desktop editor",
+    "longDescription": "CalcpadCE is a Vue-based editor for CalcpadCE calculation files, backed by an embedded ASP.NET Core server.",
     "macOS": {
       "minimumSystemVersion": "11.0"
     }

@@ -30,7 +30,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         private readonly _settingsManager: CalcpadSettingsManager,
         private readonly _insertManager: CalcpadInsertManager
     ) {
-        this._outputChannel = vscode.window.createOutputChannel('CalcPad Vue');
+        this._outputChannel = vscode.window.createOutputChannel('CalcpadCE Vue');
         this._outputChannel.appendLine('CalcPad Vue UI Provider initialized');
 
         // Register callback to refresh UI when snippets are loaded from server
@@ -579,12 +579,12 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="${styleUri}" rel="stylesheet">
-    <title>CalcPad Vue UI</title>
+    <title>CalcpadCE Vue UI</title>
 </head>
 <body>
     <div id="app">
         <div style="padding: 20px; text-align: center; color: #666; font-size: 12px;">
-            Loading Vue.js CalcPad UI...
+            Loading Vue.js CalcpadCE UI...
             <br><small>If this message persists, check the developer console for errors</small>
         </div>
     </div>

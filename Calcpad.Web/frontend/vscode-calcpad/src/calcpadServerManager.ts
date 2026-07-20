@@ -168,7 +168,7 @@ export class CalcpadServerManager extends BaseServerManager implements vscode.Di
 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: 'CalcPad: Downloading server libraries...',
+            title: 'CalcpadCE: Downloading server libraries...',
             cancellable: false
         }, async (progress) => {
             for (let i = 0; i < missing.length; i++) {
@@ -337,7 +337,7 @@ export class CalcpadServerManager extends BaseServerManager implements vscode.Di
 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: 'CalcPad: Downloading native libraries...',
+            title: 'CalcpadCE: Downloading native libraries...',
             cancellable: false
         }, async (progress) => {
             await this.downloadNativeLib(info, binDir, progress);

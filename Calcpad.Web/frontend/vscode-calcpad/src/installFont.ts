@@ -89,7 +89,7 @@ export async function maybePromptInstall(context: vscode.ExtensionContext): Prom
     }
 
     const choice = await vscode.window.showInformationMessage(
-        'CalcPad recommends the JuliaMono font for better math symbol rendering in .cpd files. Install now?',
+        'CalcpadCE recommends the JuliaMono font for better math symbol rendering in .cpd files. Install now?',
         'Install',
         'Not Now',
         "Don't Ask Again"

@@ -95,3 +95,8 @@ noUnits = clrunits(length)
 hpConv = hp([1; 2; 3])
 isHpRes = ishp(hpConv)
 deepNest = sqr(abs(sin(45) + cos(45)))
+
+' Function redefinition is allowed (reports CPD-3314 Information, not an error)
+redef(a) = a + 1
+redef(a; b) = a + b
+redefUse = redef(2; 3)

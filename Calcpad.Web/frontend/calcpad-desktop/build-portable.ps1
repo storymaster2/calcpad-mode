@@ -1,4 +1,4 @@
-# Build a portable (no-installer) Windows build of CalcPadCE Web.
+# Build a portable (no-installer) Windows build of CalcpadCE.
 #
 # Publishes Calcpad.Server via sync-bundled-server.mjs, runs `tauri build
 # --no-bundle` (Tauri copies bundle.resources next to the exe at compile time
@@ -19,8 +19,8 @@ $SyncScript  = Join-Path $RepoRoot 'Calcpad.Web\frontend\vscode-calcpad\scripts\
 $BinariesDir = Join-Path $ScriptDir 'src-tauri\binaries'
 $ReleaseDir  = Join-Path $ScriptDir "src-tauri\target\$Target\release"
 $OutputDir   = Join-Path $ScriptDir 'src-tauri\target\portable'
-$StageDir    = Join-Path $OutputDir 'CalcPadCE-Web-portable-win64'
-$ZipPath     = Join-Path $OutputDir 'CalcPadCE-Web-portable-win64.zip'
+$StageDir    = Join-Path $OutputDir 'CalcpadCE-portable-win64'
+$ZipPath     = Join-Path $OutputDir 'CalcpadCE-portable-win64.zip'
 
 Write-Host ">> Cargo target: $Target"
 Write-Host ">> .NET RID:     $Rid"
@@ -56,7 +56,7 @@ foreach ($sub in 'bg', 'zh', 'Fonts') {
 }
 
 $exeSrc = Join-Path $StageDir 'calcpad-desktop.exe'
-$exeDst = Join-Path $StageDir 'CalcPadCE Web.exe'
+$exeDst = Join-Path $StageDir 'CalcpadCE.exe'
 if (Test-Path $exeSrc) {
     Move-Item -Force -Path $exeSrc -Destination $exeDst
 }

@@ -59,6 +59,7 @@ namespace Calcpad.Highlighter.Linter.Constants
             ["CPD-3311"] = "Empty parameter in function call",
             ["CPD-3312"] = "Unused variable",
             ["CPD-3313"] = "Unused function",
+            ["CPD-3314"] = "Redefinition of existing function",
 
             // Stage 3: Semantic (CPD-34xx)
             ["CPD-3401"] = "Invalid operator usage",

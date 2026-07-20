@@ -96,11 +96,12 @@ export class MessageBridge extends BaseMessageBridge {
         return `data:${mimeType};base64,${bytesToBase64(data)}`;
     }
 
-    protected async saveExportedFile(req: ExportRequest): Promise<void> {
+    protected async saveExportedFile(req: ExportRequest): Promise<string | null> {
         const part: BlobPart = req.data instanceof Uint8Array
             ? new Uint8Array(req.data)
             : req.data;
         triggerBlobDownload(new Blob([part], { type: req.mime }), req.defaultName);
+        return null;
     }
 
     protected async buildFileContext(_content: string): Promise<{ sourceFilePath?: string }> {
