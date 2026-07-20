@@ -1,7 +1,7 @@
 '<!-- Area $A = \pi\, a\, b$ and approximate circumference of an ellipse from its two semi-axes. -->
 '<div style="max-width:110mm;"><img style="height:65pt;" class="side" alt="ellipse.png" src="../../Images/math/area/ellipse.png"></div>
 'Dimensions
-a = ?','b = ?
+a = ? {2}','b = ? {1}
 'Area
 A = π*a*b/4
 'Circumference
@@ -10,4 +10,4 @@ A = π*a*b/4
 P = π*(a+b)/2*(1 + 3*h/(10 + sqr(4 - 3*h)))
 'Using series (up to the 4-th member)
 P = π*(a+b)/2*(1 + 1/4*h + 1/64*h^2 + 1/256*h^3)
-'2	1
+'

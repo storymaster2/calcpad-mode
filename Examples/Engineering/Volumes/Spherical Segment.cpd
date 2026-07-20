@@ -1,9 +1,9 @@
 '<!-- Volume and surface area of a spherical segment (the slab between two parallel planes cutting a sphere). -->
 '<div style = "max-width:130mm"><img style="height:60pt;" class="side" alt="segment.png" src = "../../Images/math/volume/segment.png"></div>
 'Raduses of bases
-a = ?','b = ?
+a = ? {3}','b = ? {2}
 'Height
-h = ?
+h = ? {1}
 'Radius of sphere
 R = sqr(((a - b)^2 + h^2)*((a + b)^2 + h^2))/(2*h)
 'Volume
@@ -15,4 +15,4 @@ A = π*a^2
 B = π*b^2
 'Total surface area
 S = S_o + A + B
-'3	2	1
+'

@@ -2,7 +2,7 @@
 "Geometrical Properties of Circular Pipe
 '<div style="max-width:150mm"><img style="height:135pt;" alt="circular-pipe.png" class="side" src="../../Images/mechanics/sections/circular-pipe.png"></div>
 'Dimensions
-d = ?'%u,'t = ?'%u
+d = ? {1}'%u,'t = ? {0.1}'%u
 d_1 = d - 2*t'%u
 'Area
 A = π*(d^2 - d_1^2)/4'%u<sup>2</sup>
@@ -20,4 +20,4 @@ I_t = π*(d^4 - d_1^4)/32'%u<sup>4</sup>
 W_t = 2*I_t/d'%u<sup>3</sup>
 'Radii of gyration
 '<p><i>r</i><sub>z</sub> ='r_y = sqrt(I_y/A)'%u</p>
-r_x = sqr(I_x/A)'%u1	0.1
+r_x = sqr(I_x/A)'%u

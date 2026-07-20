@@ -5,7 +5,7 @@
 '<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm">
 '<h4>Static scheme</h4>
-'<p id="type" class="flip_base" style="display:none">'type = ?'</p>
+'<p id="type" class="flip_base" style="display:none">'type = ? {0}'</p>
 #pre
 '<p><select data-target="type" class="flip_trigger">
 '<option value="1">Cantilever with concentrated load</option>
@@ -40,9 +40,9 @@
 	#hide
 #end if
 #show
-'Beam length -'L = ?'m
+'Beam length -'L = ? {5.75}'m
 'Exposure class:
-'<p id="w_max" style="display:none">'w_max = ?'</p>
+'<p id="w_max" style="display:none">'w_max = ? {0.4}'</p>
 #pre
 '<p><select data-target="w_max">
 '<option value="0.4">X0 or XC1</option>
@@ -57,41 +57,41 @@
 #show
 '
 '<h4>Bending moments</h4>
-'Characteristic combination (<i>g</i> + <i>q</i>) -'M_k = ?'kNm
-'Quasi-permanent combination (<i>g</i> + <i>ψ</i><sub>2</sub><i>q</i>) -'M_qp = ?'kNm
+'Characteristic combination (<i>g</i> + <i>q</i>) -'M_k = ? {200}'kNm
+'Quasi-permanent combination (<i>g</i> + <i>ψ</i><sub>2</sub><i>q</i>) -'M_qp = ? {157}'kNm
 '
 '<img class="side" src="../../Images/structures/rc/design/beam-tsection.png" alt="beam-tsection.png" style="width:150pt;">
 '<h4>Cross section dimensions</h4>
-'Stem:'b = ?'mm,'h = ?'mm
-'Flange:'b_f = ?'mm,'h_f = ?'mm
-'Concrete cover -'c = ?'mm (to bars surface)
+'Stem:'b = ? {250}'mm,'h = ? {550}'mm
+'Flange:'b_f = ? {2400}'mm,'h_f = ? {140}'mm
+'Concrete cover -'c = ? {30}'mm (to bars surface)
 '<p><b>Tension reinforcement</b></p>
-'Bar count -'n_1 = ?'with diameter -'Φ_1 = ?'mm
+'Bar count -'n_1 = ? {4}'with diameter -'Φ_1 = ? {20}'mm
 #post
 'Reinforcement area -'A_s1 = n_1*π*Φ_1^2/4'mm²
 #show
-'Concrete cover to the center of reinforcement -'d_1 = ?'mm
+'Concrete cover to the center of reinforcement -'d_1 = ? {45}'mm
 #post
 'Effective cross section depth -'d = h - d_1'mm
 #show
-'Spacing between bar centers -'s = ?'mm
+'Spacing between bar centers -'s = ? {50}'mm
 '<p><b>Compression reinforcement</b></p>
-'Bar count -'n_2 = ?'with diameter -'Φ_2 = ?'mm
+'Bar count -'n_2 = ? {2}'with diameter -'Φ_2 = ? {8}'mm
 #post
 'Reinforcement area -'A_s2 = n_2*π*Φ_2^2/4'mm²
 #show
-'Concrete cover to the center of reinforcement -'d_2 = ?'mm
+'Concrete cover to the center of reinforcement -'d_2 = ? {45}'mm
 '
 '<h4>Material properties</h4>
 '<p><b>Concrete</b> [EN 1992-1-1, Table 3.1]</p>
-'Characteristic compressive cylinder strength -'f_ck = ?'MPa
+'Characteristic compressive cylinder strength -'f_ck = ? {25}'MPa
 #post
 'Mean value of cylinder compressive strength -'f_cm = f_ck + 8'MPa
 'Mean value of axial tensile strength -'f_ctm = 0.30*f_ck^(2/3)'MPa
 'Secant modulus of elasticity -'E_cm = 22*(f_cm/10)^0.3'GPa
 #show
 '<p><b>Steel</b></p>
-'Characteristic yield strength -'f_yk = ?'MPa
+'Characteristic yield strength -'f_yk = ? {500}'MPa
 #post
 'Modulus of elasticity -'E_s = 200'GPa
 'Ratio of steel to concrete moduli of elasticity -'α = E_s/E_cm
@@ -101,7 +101,7 @@
 '<h4>Concrete creep and shrinkage</h4>
 '<p class = "ref">[EN 1992-1-1 B.1(1)]</p>
 '<p><b>Creep</b></p>
-'Relative humidity of the environment -'RH = ?'%
+'Relative humidity of the environment -'RH = ? {60}'%
 #post
 'Perimeter of cross section in contact with the atmosphere
 u = 2*(b + h)'mm
@@ -394,4 +394,4 @@ S = A_s1*(d - x) - A_s2*(x - d_2)'mm<sup>3</sup>
 #show
 '</div>
 #pre
-'<script>if(window.jQuery){$(".flip_trigger").change(function(){$(".flip").hide();$(".flip_"+$(this).val()).show();});$(".flip").hide();$(".flip_"+$(".flip_base input").val()).show();}</script>0	5.75	0.4	200	157	250	550	2400	140	30	4	20	45	50	2	8	45	25	500	60
+'<script>if(window.jQuery){$(".flip_trigger").change(function(){$(".flip").hide();$(".flip_"+$(this).val()).show();});$(".flip").hide();$(".flip_"+$(".flip_base input").val()).show();}</script>

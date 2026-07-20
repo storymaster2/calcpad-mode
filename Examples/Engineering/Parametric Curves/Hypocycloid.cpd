@@ -5,8 +5,8 @@
 'General equation:
 x(θ) = (k - 1)*cos(θ) + cos((k - 1)*θ)
 y(θ) = (k - 1)*sin(θ) - sin((k - 1)*θ)
-'Outer radius: 'R = ?
-'Inner radius: 'r = ?
+'Outer radius: 'R = ? {22}
+'Inner radius: 'r = ? {3}
 'Ratio: 'k = R/r
 #pre
 
@@ -18,4 +18,4 @@ PlotWidth = 400
 #post
 $Plot{x(θ)|y(θ) @ θ = 0 : 2*π*r}
 #show
-'</div>22	3
+'</div>

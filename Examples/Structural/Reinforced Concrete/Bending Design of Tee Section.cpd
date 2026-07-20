@@ -2,11 +2,11 @@
 '<small>According to <strong>Eurocode</strong>: EN 1992-1-1</small>
 '<div style="max-width:180mm;">
 '<img style="width:400pt;" src="../../Images/structures/rc/design/tbeam-bending.png" alt="tbeam-bending.png">
-'Design bending moment -'M_Ed = ?'kN·m
+'Design bending moment -'M_Ed = ? {800}'kN·m
 '<h4>Cross section dimensions</h4>
-'Web -'b_w = ?'mm,'h_w = ?'mm
-'Flange -'b_f = ?'mm,'h_f = ?'mm
-'Concrete cover to the center of reinforcement -'d_1 = ?'mm
+'Web -'b_w = ? {250}'mm,'h_w = ? {600}'mm
+'Flange -'b_f = ? {1200}'mm,'h_f = ? {120}'mm
+'Concrete cover to the center of reinforcement -'d_1 = ? {50}'mm
 #post
 'Effective cross section depth -'d = h_w - d_1'mm
 'Flange area -'A_f = (b_f - b_w)*h_f'mm<sup>2</sup>
@@ -15,8 +15,8 @@
 '<h4>Material properties</h4>
 '<p class="ref" style="float:right">[EN 1992-1-1, Table 3.1]</p>
 '<p><b>Concrete</b></p>
-'Characteristic compressive cylinder strength -'f_ck = ?'MPa
-'Partial safety factor for concrete -'γ_c = 1.5','α_cc = ?
+'Characteristic compressive cylinder strength -'f_ck = ? {20}'MPa
+'Partial safety factor for concrete -'γ_c = 1.5','α_cc = ? {0.85}
 #post
 'Design compressive cylinder strength -'f_cd = α_cc*f_ck/γ_c'MPa
 'Factor for effective compression zone depth -'λ = 0.8
@@ -25,7 +25,7 @@
 'Mean value of axial tensile strength -'f_ctm = 0.30*f_ck^(2/3)'MPa
 #show
 '<p><b>Steel</b></p>
-'Characteristic yield strength -'f_yk = ?'MPa
+'Characteristic yield strength -'f_yk = ? {500}'MPa
 #post
 'Partial safety factor for steel -'γ_s = 1.15
 'Design yield strength -'f_yd = f_yk/γ_s'MPa
@@ -43,7 +43,7 @@ M_f = b_f*h_f*η*f_cd*(d - h_f/2)*10^-6'kN·m
 	'Relative depth of compression zone corresponding to design yield strain
 	ξ_yd = ε_cu3/(ε_cu3 + ε_yd)
 	#show
-	'Limit compression zone depth -'ξ_lim = ?
+	'Limit compression zone depth -'ξ_lim = ? {0.62}
 	'(enter <i>ξ</i><sub>yd</sub> for elastic or 0.45 for plastic analysis)
 	#post
 	#if ξ ≤ ξ_lim
@@ -93,4 +93,4 @@ M_f = b_f*h_f*η*f_cd*(d - h_f/2)*10^-6'kN·m
 	'<p class="err">Reinforcement ratio is greater than the maximum:'ρ_1'>'ρ_max'mm<sup>2</sup></p>'
 #end if
 #show
-'</div>800	250	600	1200	120	50	20	0.85	500	0.62
+'</div>

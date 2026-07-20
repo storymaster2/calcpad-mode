@@ -2,9 +2,9 @@
 '<div style = "max-width:130mm"><img style="height:70pt;" class="side" alt="rectangular-frustum.png" src = "../../Images/math/volume/rectangular-frustum.png"></div>
 'Dimensions
 '<table>
-'<tr><td>Bottom base -</td><td>'A = ?'</td><td>'B = ?'</td></tr>
-'<tr><td>Top base -</td><td>'a = ?'</td><td>'b = ?'</td></tr>
-'<tr><td><p>Height -</p></td><td>'h = ?'</td><td> </td></tr>
+'<tr><td>Bottom base -</td><td>'A = ? {8}'</td><td>'B = ? {2}'</td></tr>
+'<tr><td>Top base -</td><td>'a = ? {6}'</td><td>'b = ? {4}'</td></tr>
+'<tr><td><p>Height -</p></td><td>'h = ? {5}'</td><td> </td></tr>
 '</table>
 'Heights of side faces
 h_a = sqr(h^2 + (B - b)^2/4)
@@ -18,4 +18,4 @@ A_1 = A*B
 A_2 = a*b
 'Total surface area
 S = S_o + A_1 + A_2
-'8	2	6	4	5
+'

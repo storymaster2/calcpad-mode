@@ -2,7 +2,7 @@
 "Geometrical Properties of Square
 '<div style="max-width:100mm"><img style="height:135pt;" alt="square.png" class="side" src="../../Images/mechanics/sections/square.png"></div>
 'Side length
-a= ?'%u
+a= ? {1}'%u
 'Area
 A = a^2'%u<sup>2</sup>
 'Centroid
@@ -15,4 +15,4 @@ P = 4*a'%u
 I_x=2*I_y'%u<sup>4</sup>
 'Radii of gyration
 '<p><i>r</i><sub>z</sub> ='r_y = sqrt(I_y/A)'%u</p>
-r_x = sqr(I_x/A)'%u1
+r_x = sqr(I_x/A)'%u

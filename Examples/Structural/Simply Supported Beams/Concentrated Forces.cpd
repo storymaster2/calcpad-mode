@@ -2,9 +2,9 @@
 '<div style = "max-width:180mm;">
 '<img style="width:190pt;" alt = "simply-supported-beam-forces.png" class="side" src = "../../Images/mechanics/beams/simply-supported-beam-forces.png">
 '<p><b>Input data</b></p>
-'Beam length -'l = ?'m
-'Load -'F = ?'kN
-'Number of forces -'n = ?
+'Beam length -'l = ? {5}'m
+'Load -'F = ? {10}'kN
+'Number of forces -'n = ? {2}
 #post
 'Number of spacings -'n_1 = n + 1
 '<p><b>Internal forces</b></p>
@@ -19,7 +19,7 @@
 PlotWidth = 600
 PlotHeight = 150
 #show
-'Calculate internal forces at'x_1 = ?'m
+'Calculate internal forces at'x_1 = ? {1}'m
 #pre
 
 #post
@@ -35,4 +35,4 @@ V(x) = V_max - F*n(x)
 $Plot{V(x) @ x = 0 : l}
 V(x_1)'kN
 #show
-'</div>5	10	2	1
+'</div>

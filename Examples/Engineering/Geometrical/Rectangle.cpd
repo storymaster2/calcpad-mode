@@ -2,7 +2,7 @@
 "Geometrical Properties of Rectangle
 '<div style = "max-width:120mm"><img style="height:150pt;" alt="rectangle.png" class="side" src="../../Images/mechanics/sections/rectangle.png"></div>
 'Dimensions
-h = ?'%u,'b = ?'%u
+h = ? {2}'%u,'b = ? {1}'%u
 'Area
 A = h*b'%u<sup>2</sup>
 'Centroid
@@ -36,4 +36,4 @@ I_t = b*h^3*(1 - 0.630*h/b + 0.052*(h/b)^5)/3'%u<sup>4</sup>
 'Torsional section modulus
 W_t = b*h^2*(1 - 0.630*h/b + 0.250*(h/b)^2)/3'%u<sup>3</sup>
 #end if
-#end if2	1
+#end if

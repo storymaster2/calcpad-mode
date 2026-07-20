@@ -5,6 +5,7 @@ x = hp([0; 1])', 'y = hp([0; 0])
 'Number of iterations -'n = 7
 '<h4>Animation</h4>
 #val
+'<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
 '<style>#kochwaveWave polyline{display:none; stroke:Teal; stroke-width:0.08; stroke-linejoin:round;}</style>
 #hide 8
 w = 400', 'h = 200', 'k = 120

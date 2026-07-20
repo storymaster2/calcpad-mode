@@ -1,9 +1,9 @@
 '<!-- Volume and surface area of a right prism with a regular $n$-gon base, from side length and height. -->
 '<div style = "max-width:130mm"><img style="height:65pt;" class="side" alt="polygonal-prism.png" src = "../../Images/math/volume/polygonal-prism.png"></div>
 'Dimensions
-'Number of sides -'n = ?
-'Side length -'a = ?
-'Height -'h = ?
+'Number of sides -'n = ? {6}
+'Side length -'a = ? {1}
+'Height -'h = ? {2}
 '<!--
 #if n > 2
 '<-->
@@ -19,4 +19,4 @@ S = 2*A + n*a*h
 'It is required that n > 2
 '<!--
 #end if
-'<-->6	1	2
+'<-->

@@ -1,10 +1,10 @@
 '<!-- Simply supported beam under a full-span uniform load $q$, recovering the serviceability-relevant mid-span deflection $d_{max} = 5 q l^4 / (384 E I)$ and the support rotation $\varphi_{max} = q l^3 / (24 E I)$. -->
 '<div style = "max-width: 180mm;">
 '<img style="width:165pt;" class="side" src="../../Images/mechanics/beams/deflection-simply-supported-beam-distributed-load.png" alt="deflection-simply-supported-beam-distributed-load.png">
-'Beam length - 'l = ?'m
-'Load - 'q = ?'kN/m
-'Second moment of area - 'I = ?'cm<sup>4</sup>
-'Modulus of elasticity - 'E = ?'GPa
+'Beam length - 'l = ? {6}'m
+'Load - 'q = ? {30}'kN/m
+'Second moment of area - 'I = ? {160000}'cm<sup>4</sup>
+'Modulus of elasticity - 'E = ? {30}'GPa
 'Functions of rotation and deflection along the beam
 EI = E*I*0.01
 φ(x) = q/EI*(x^3/6 - l*x^2/4 + l^3/24)
@@ -18,6 +18,6 @@ $Plot{-d(x)*10^3 @ x = 0 : l}
 d_max = d(l/2)*10^3'mm
 'Maximum rotation
 φ_max = φ(0)*10^3'rad·10³
-'Calculate deflection at'x = ?'m
+'Calculate deflection at'x = ? {3}'m
 d(x)*10^3'mm
-'</div>6	30	160000	30	3
+'</div>

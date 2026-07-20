@@ -2,7 +2,7 @@
 "Geometrical Properties of Ellipse
 '<div style="max-width:120mm"><img style="height:112pt;" alt="ellipse.png" class="side" src="../../Images/mechanics/sections/ellipse.png"></div>
 'Dimensions
-a=?'%u,'b=?'%u
+a=? {2}'%u,'b=? {1}'%u
 'Area
 A = π*a*b'%u<sup>2</sup>
 'Centroid
@@ -27,4 +27,4 @@ W_t = π*b*a^2/2'%u<sup>3</sup>
 'Radii of gyration
 r_y = sqrt(I_y/A)'%u
 r_z = sqrt(I_z/A)'%u
-r_x = sqrt(I_x/A)'%u2	1
+r_x = sqrt(I_x/A)'%u
