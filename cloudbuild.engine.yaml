@@ -1,7 +1,19 @@
-# Cloud Build config for Calcpad.Server → Artifact Registry → Cloud Run.
-# Used by trigger calcpad-server-update (user-managed SA requires explicit logging).
-# Push must happen in a step before deploy; the top-level `images:` list only
-# runs after all steps finish.
+# Engine pipeline: Calcpad.Server → Artifact Registry → Cloud Run.
+# Trigger: calcpad-server-update → this file (cloudbuild.engine.yaml)
+#
+# Suggested path filters (Included):
+#   Calcpad.Web/backend/**
+#   Calcpad.Core/**
+#   Calcpad.Highlighter/**
+#   Calcpad.OpenXml/**
+#   Calcpad.Cli/**
+#   cloudbuild.engine.yaml
+# Suggested path filters (Ignored):
+#   Calcpad.Web/frontend/**
+#   docs/**
+#   Examples/**
+#
+# Push must happen in a step before deploy; top-level `images:` runs after all steps.
 substitutions:
   _REGION: us-west1
   _AR_REPO: calcpad-engine

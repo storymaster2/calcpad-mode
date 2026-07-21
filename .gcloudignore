@@ -1,0 +1,13 @@
+.git/
+**/.vs/
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.vite/
+**/*.user
+**/*.vsix
+Calcpad.Web/frontend/calcpad-desktop/
+Examples/
+docs/
+**/TestResults/

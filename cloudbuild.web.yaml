@@ -1,0 +1,70 @@
+# Frontend pipeline: calcpad-web static app → Artifact Registry → Cloud Run.
+# Create trigger calcpad-web-update later → this file (cloudbuild.web.yaml)
+#
+# Suggested path filters (Included):
+#   Calcpad.Web/frontend/**
+#   cloudbuild.web.yaml
+# Suggested path filters (Ignored):
+#   Calcpad.Web/backend/**
+#   Calcpad.Core/**
+#   Calcpad.Highlighter/**
+#   Calcpad.OpenXml/**
+#   Calcpad.Cli/**
+#   cloudbuild.engine.yaml
+#
+# _ENGINE_URL is baked into the Vite build as VITE_SERVER_URL (browser calls the
+# engine directly; CORS is open on the engine today).
+substitutions:
+  _REGION: us-west1
+  _AR_REPO: calcpad-engine
+  _IMAGE: calcpad-web
+  _SERVICE: calcpad-web
+  _ENGINE_URL: https://calcpad-server-914029425445.us-west1.run.app
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:latest
+      - -f
+      - Calcpad.Web/frontend/Dockerfile
+      - --build-arg
+      - VITE_SERVER_URL=${_ENGINE_URL}
+      - Calcpad.Web/frontend
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:latest
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --port=8080
+      - --allow-unauthenticated
+      - --memory=512Mi
+      - --cpu=1
+      - --min-instances=0
+      - --max-instances=3
+      - --quiet
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
