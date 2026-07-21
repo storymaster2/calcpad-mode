@@ -3,7 +3,8 @@
  *
  * Library CORS_ORIGIN must include this app's origin, e.g.:
  *   - Dev:  http://localhost:5173
- *   - Prod: hosted calcpad-web Cloud Run / custom domain
+ *   - Prod: https://detail-library.modearchitecture.com
+ *     (SPA is served at /calcpad/ on that host; CORS uses the origin only)
  *
  * Spec: docs/calcpad-editor-session-contract.md
  */

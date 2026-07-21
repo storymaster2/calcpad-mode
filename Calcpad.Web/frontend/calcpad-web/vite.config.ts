@@ -3,8 +3,11 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
 const isNeutralinoBuild = process.env.NEUTRALINO_BUILD === '1';
+// Cloud Run behind Detail Library uses /calcpad/; local + Neutralino stay at /.
+const base = isNeutralinoBuild ? '/' : (process.env.VITE_BASE_PATH || '/');
 
 export default defineConfig({
+    base,
     plugins: [vue()],
     define: {
         'import.meta.env.VITE_PLATFORM': JSON.stringify('web'),

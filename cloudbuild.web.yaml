@@ -1,5 +1,5 @@
 # Frontend pipeline: calcpad-web static app → Artifact Registry → Cloud Run.
-# Create trigger calcpad-web-update later → this file (cloudbuild.web.yaml)
+# Trigger: calcpad-web-update → this file (cloudbuild.web.yaml)
 #
 # Suggested path filters (Included):
 #   Calcpad.Web/frontend/**
@@ -12,14 +12,16 @@
 #   Calcpad.Cli/**
 #   cloudbuild.engine.yaml
 #
-# _ENGINE_URL is baked into the Vite build as VITE_SERVER_URL (browser calls the
-# engine directly; CORS is open on the engine today).
+# Served at https://detail-library.modearchitecture.com/calcpad/
+# (_BASE_PATH baked into Vite; LB must route /calcpad → this service).
+# _ENGINE_URL is baked as VITE_SERVER_URL (browser calls the engine directly).
 substitutions:
   _REGION: us-west1
   _AR_REPO: calcpad-engine
   _IMAGE: calcpad-web
   _SERVICE: calcpad-web
   _ENGINE_URL: https://calcpad-server-914029425445.us-west1.run.app
+  _BASE_PATH: /calcpad/
 
 steps:
   - name: gcr.io/cloud-builders/docker
@@ -33,6 +35,8 @@ steps:
       - Calcpad.Web/frontend/Dockerfile
       - --build-arg
       - VITE_SERVER_URL=${_ENGINE_URL}
+      - --build-arg
+      - VITE_BASE_PATH=${_BASE_PATH}
       - Calcpad.Web/frontend
 
   - name: gcr.io/cloud-builders/docker

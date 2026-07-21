@@ -45,14 +45,23 @@ const isNeutralino = typeof (window as any).NL_TOKEN !== 'undefined';
 
 // Determine server URL:
 // 1. ?server= query param
-// 2. VITE_SERVER_URL env var
-// 3. Default to same origin
+// 2. VITE_SERVER_URL env var (required when hosted under a path like /calcpad/)
+// 3. Same origin only for root local/dev — never use library host as the engine
 function getServerUrl(): string {
     const params = new URLSearchParams(window.location.search);
     const fromParam = params.get('server');
     if (fromParam) return fromParam;
 
     if (import.meta.env.VITE_SERVER_URL) return import.meta.env.VITE_SERVER_URL;
+
+    const base = import.meta.env.BASE_URL || '/';
+    if (base !== '/') {
+        console.warn(
+            '[CalcPad] VITE_SERVER_URL is unset while base is',
+            base,
+            '— falling back to location.origin will not hit the calc engine.',
+        );
+    }
 
     return window.location.origin;
 }
