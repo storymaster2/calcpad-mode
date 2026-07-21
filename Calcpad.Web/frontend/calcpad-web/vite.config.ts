@@ -24,7 +24,7 @@ export default defineConfig({
         port: 5173,
         proxy: {
             '/api': {
-                target: process.env.VITE_SERVER_URL || 'http://localhost:9420',
+                target: process.env.VITE_SERVER_URL || 'https://calcpad-server-914029425445.us-west1.run.app',
                 changeOrigin: true,
             },
         },

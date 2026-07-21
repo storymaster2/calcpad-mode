@@ -1,9 +1,10 @@
-# Cloud Build config for Calcpad.Server → Artifact Registry.
+# Cloud Build config for Calcpad.Server → Artifact Registry → Cloud Run.
 # Used by trigger calcpad-server-update (user-managed SA requires explicit logging).
 substitutions:
   _REGION: us-west1
   _AR_REPO: calcpad-engine
   _IMAGE: calcpad-server
+  _SERVICE: calcpad-server
 
 steps:
   - name: gcr.io/cloud-builders/docker
@@ -16,6 +17,17 @@ steps:
       - -f
       - Calcpad.Web/backend/Dockerfile
       - .
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --quiet
 
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA

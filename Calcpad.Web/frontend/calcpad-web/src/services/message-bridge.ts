@@ -42,7 +42,16 @@ export class MessageBridge {
         this.definitionsService = new CalcpadDefinitionsService(this.apiClient);
         this.settings = this.loadSettings();
 
-        // Load snippets on startup
+        // Bootstrap URL (VITE_SERVER_URL / ?server=) wins over a stale localStorage
+        // default so Settings and API calls stay pointed at the same engine.
+        if (serverUrl && serverUrl !== this.settings.server.url) {
+            this.settings = {
+                ...this.settings,
+                server: { ...this.settings.server, url: serverUrl, mode: 'remote' },
+            };
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings));
+        }
+
         this.snippetService.loadSnippets();
     }
 
