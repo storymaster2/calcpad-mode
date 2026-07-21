@@ -4,6 +4,7 @@
 
 // --- Types -------------------------------------------------------------------
 export type {
+    ClientFileCache,
     LintRequest,
     LintResponse,
     LintDiagnostic,
@@ -12,19 +13,15 @@ export type {
     HighlightToken,
     DefinitionsRequest,
     DefinitionsResponse,
+    PersistedUiOverrides,
     MacroDefinition,
     FunctionDefinition,
     VariableDefinition,
     CustomUnitDefinition,
+    FindReferencesResponse,
     SymbolLocation,
-    SymbolKind,
-    SymbolAtPositionRequest,
-    SymbolAtPositionResponse,
     PrettifyRequest,
     PrettifyResponse,
-    CalcpadError,
-    CalcpadErrorSource,
-    ConvertResult,
 } from './types/api';
 export { CalcpadTokenType, CalcpadTypeId } from './types/api';
 
@@ -33,17 +30,9 @@ export type { ILogger, IFileSystem } from './types/interfaces';
 export type { PdfSettings } from './types/pdf-settings';
 export { DEFAULT_PDF_SETTINGS } from './types/pdf-settings';
 
-export type { CalcpadSettings, CalcpadExtras, CalcpadSettingsBlob } from './types/settings';
+export type { CalcpadSettings } from './types/settings';
 export {
     getDefaultSettings,
-    getDefaultExtras,
-    getDefaultSettingsBlob,
-    deserializeSettingsBlob,
-    serializeSettingsBlob,
-    getExtraString,
-    getExtraBool,
-    getExtraNumber,
-    getExtraObject,
     colorScaleToEnum,
     lightDirectionToEnum,
     buildApiSettings,
@@ -59,9 +48,10 @@ export type {
 } from './types/snippets';
 
 // --- API Client --------------------------------------------------------------
-export { CalcpadApiClient, parseConvertErrorHeader } from './api/client';
+export { CalcpadApiClient } from './api/client';
 
 // --- Services ----------------------------------------------------------------
+export { CalcpadServerManager } from './services/server-manager';
 export { CalcpadLintService } from './services/linter';
 export { CalcpadDefinitionsService } from './services/definitions';
 export { CalcpadSnippetService } from './services/snippets';
@@ -70,30 +60,33 @@ export {
     TOKEN_TYPE_MAP,
     mapTokenTypeToIndex,
 } from './services/highlight';
+export {
+    expandEnvironmentVariables,
+    isAbsolutePath,
+    stripLocalBlocks,
+    parseIncludeDirective,
+    parseReadDirective,
+    extractReferencedFilenames,
+    extractReferencedFilenamesFromGlobalScope,
+    buildClientFileCache,
+    buildClientFileCacheFromContent,
+} from './services/file-cache';
+
+// --- UI Preview --------------------------------------------------------------
+export {
+    getDatagridCdnTags,
+    htmlHasDatagrids,
+    getUiEventScript,
+} from './services/ui-preview';
+
+// --- UI Overrides Persistence ------------------------------------------------
+export {
+    serializeUiOverrides,
+    updateUiOverridesInContent,
+} from './services/ui-overrides';
 
 // --- Base64 Truncation -------------------------------------------------------
 export { truncateBase64Content } from './services/base64-truncate';
-
-// --- Image Utilities ---------------------------------------------------------
-export {
-    IMAGE_EXTENSIONS,
-    IMAGE_MIME_TYPES,
-    mimeFromExtension,
-    isImageExtension,
-    buildImageCommentLine,
-    bytesToBase64,
-} from './services/image-utils';
-export type { ImageStorageMode, PickedImage } from './services/image-utils';
-
-// --- Plot Extraction + ZIP ---------------------------------------------------
-export { extractPlotsFromHtml } from './services/plot-extract';
-export type { ExtractedPlot } from './services/plot-extract';
-export { buildZip } from './services/zip-writer';
-export type { ZipEntry } from './services/zip-writer';
-
-// --- Message Bridge (base class) --------------------------------------------
-export { BaseMessageBridge } from './services/message-bridge/base';
-export type { ExportRequest } from './services/message-bridge/base';
 
 // --- Headings / TOC ----------------------------------------------------------
 export type { TocHeading } from './services/headings';
@@ -110,22 +103,6 @@ export {
     findQuickTypeReplacement,
 } from './text/quick-type';
 export {
-    buildInsertSnippet,
-    hasSnippetPlaceholders,
-    replaceParameterPlaceholders,
-    formatInsertLabel,
-} from './text/snippet-insert';
-export type { CompletionKind, CompletionData } from './text/completion-format';
-export {
-    buildParameterSnippet,
-    buildParameterizedDoc,
-    formatMacroCompletion,
-    formatFunctionCompletion,
-    formatVariableCompletion,
-    formatCustomUnitCompletion,
-    formatBuiltinSnippetCompletion,
-} from './text/completion-format';
-export {
     INDENT_INCREASE_PATTERNS,
     INDENT_DECREASE_PATTERNS,
     shouldIncreaseIndent,
@@ -134,38 +111,3 @@ export {
     couldCompleteDedentKeyword,
     calculateExpectedIndent,
 } from './text/auto-indent';
-export type { InlineFormat, CommentFormat } from './text/comment-formatting';
-export {
-    HTML_INLINE,
-    MARKDOWN_INLINE,
-    getIndentLength,
-    splitIndent,
-    stripCommentPrefix,
-    lineHasCommentPrefix,
-    isColumnInTextContext,
-    getCommentPrefixInsertColumn,
-    buildHeadingLine,
-    buildParagraphLine,
-    buildListLines,
-} from './text/comment-formatting';
-export type {
-    MetadataCommentData,
-    MetadataCommentBlock,
-    MetadataLineContext,
-    MetadataDefKind,
-    MetadataDefinition,
-    DefinitionResolver,
-    MetadataSettingKey,
-    LintCode,
-} from './text/metadata-comment';
-export {
-    FUNCTION_PARAM_TYPES,
-    MACRO_PARAM_TYPES,
-    METADATA_SETTINGS_KEYS,
-    LINT_CODES,
-    findMetadataCommentBlock,
-    computeMetadataBlock,
-    serializeMetadataComment,
-    buildDefinitionResolver,
-    analyzeMetadataLine,
-} from './text/metadata-comment';

@@ -1,5 +1,5 @@
 import type { CalcpadApiClient } from '../api/client';
-import type { DefinitionsResponse } from '../types/api';
+import type { DefinitionsResponse, ClientFileCache } from '../types/api';
 import type { ILogger } from '../types/interfaces';
 
 /**
@@ -33,7 +33,7 @@ export class CalcpadDefinitionsService {
     public async refreshDefinitions(
         content: string,
         documentKey: string,
-        sourceFilePath?: string
+        clientFileCache?: ClientFileCache
     ): Promise<DefinitionsResponse | null> {
         const reqId = ++this.requestId;
         const startTime = Date.now();
@@ -46,7 +46,7 @@ export class CalcpadDefinitionsService {
             return null;
         }
 
-        const definitions = await this.apiClient.definitions(content, sourceFilePath);
+        const definitions = await this.apiClient.definitions(content, clientFileCache);
 
         if (definitions) {
             this.cache.set(documentKey, definitions);

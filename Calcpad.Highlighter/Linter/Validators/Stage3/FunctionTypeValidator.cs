@@ -49,7 +49,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
             foreach (var token in tokens)
             {
-                if (token.Type != TokenType.Function)
+                if (token.Type != TokenType.Function && token.Type != TokenType.StringFunction)
                     continue;
 
                 var funcName = token.Text;
@@ -61,7 +61,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
                 // Compute column of first character inside the parentheses
                 var parenCol = token.Column + token.Length;
-                ParsingHelpers.SkipWhitespace(line, ref parenCol);
+                while (parenCol < line.Length && char.IsWhiteSpace(line[parenCol]))
+                    parenCol++;
                 var paramStartCol = parenCol + 1; // skip the '('
 
                 var paramTokenGroups = new List<List<Token>>();
@@ -202,7 +203,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                         continue;
                     }
 
-                    if (sig.IsArgumentCompatible(expectedType, actualTypes[i]))
+                    if (FunctionSignature.IsTypeCompatible(expectedType, actualTypes[i]))
                     {
                         matchScore++;
                     }
@@ -235,7 +236,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 if (expectedType == ParameterType.Any || expectedType == ParameterType.Various)
                     continue;
 
-                if (!bestMatch.IsArgumentCompatible(expectedType, actualTypes[i]))
+                if (!FunctionSignature.IsTypeCompatible(expectedType, actualTypes[i]))
                 {
                     var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
                     var expectedName = FunctionSignature.GetTypeName(expectedType);
@@ -283,6 +284,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 CalcpadType.Value => "scalar",
                 CalcpadType.Vector => "vector",
                 CalcpadType.Matrix => "matrix",
+                CalcpadType.StringVariable => "string",
                 CalcpadType.Various => "various",
                 CalcpadType.Unknown => "unknown",
                 _ => type.ToString().ToLower()
@@ -303,7 +305,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             if (paramTokens.Count == 1)
             {
                 var t = paramTokens[0];
-                if (t.Type == TokenType.Variable || t.Type == TokenType.LocalVariable)
+                if (t.Type == TokenType.Variable || t.Type == TokenType.StringVariable ||
+                    t.Type == TokenType.LocalVariable)
                 {
                     if (functionParams.Contains(t.Text))
                         return CalcpadType.Various;
@@ -353,7 +356,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 if (depth > 0)
                     continue;
 
-                if (t.Type == TokenType.Function)
+                if (t.Type == TokenType.Function || t.Type == TokenType.StringFunction)
                 {
                     if (stage3.TypeTracker != null)
                     {
@@ -365,7 +368,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     continue;
                 }
 
-                if (t.Type == TokenType.Variable || t.Type == TokenType.LocalVariable)
+                if (t.Type == TokenType.Variable || t.Type == TokenType.StringVariable ||
+                    t.Type == TokenType.LocalVariable)
                 {
                     // Element access (v.1, v.i) yields a scalar — skip the base variable's
                     // type and consume the index token. Bracket-form indices like v.(expr)

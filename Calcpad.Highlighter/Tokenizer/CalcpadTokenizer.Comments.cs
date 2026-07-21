@@ -309,7 +309,7 @@ namespace Calcpad.Highlighter.Tokenizer
                     {
                         _tagState = _builder.Length == 1 ? TagState.Closing : TagState.SelfClosing;
                     }
-                    else if (!(char.IsAsciiLetter(c) || char.IsDigit(c) && _builder.Length == 2 && _builder[1] == 'h'))
+                    else if (!(IsLatinLetter(c) || char.IsDigit(c) && _builder.Length == 2 && _builder[1] == 'h'))
                     {
                         return false;
                     }
@@ -319,7 +319,7 @@ namespace Calcpad.Highlighter.Tokenizer
                     _state.CurrentType = TokenType.Tag;
                 }
             }
-            else if (_tagState == TagState.SelfClosing || (_tagState == TagState.Closing && !char.IsAsciiLetter(c)))
+            else if (_tagState == TagState.SelfClosing || (_tagState == TagState.Closing && !IsLatinLetter(c)))
             {
                 return false;
             }

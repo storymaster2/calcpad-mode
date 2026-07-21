@@ -16,31 +16,28 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sin(§)",
-                IsElementWise = true,
                 Description = "Sine",
                 Documentation = "Computes the sine of an angle. The angle is interpreted using the current `#deg` / `#rad` / `#gra` setting; pass an angle with explicit units (`deg`, `rad`, `gra`) to override.",
                 Example = "sin(30*deg)",
                 Category = "Functions/Trigonometric",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar from -1 to 1",
+                ReturnTypeDescription = "Scalar in [-1, 1]",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Angle" }]
             },
             new SnippetItem
             {
                 Insert = "cos(§)",
-                IsElementWise = true,
                 Description = "Cosine",
                 Documentation = "Computes the cosine of an angle. The angle is interpreted using the current `#deg` / `#rad` / `#gra` setting; pass an angle with explicit units to override.",
                 Example = "cos(60*deg)",
                 Category = "Functions/Trigonometric",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar from -1 to 1",
+                ReturnTypeDescription = "Scalar in [-1, 1]",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Angle" }]
             },
             new SnippetItem
             {
                 Insert = "tan(§)",
-                IsElementWise = true,
                 Description = "Tangent",
                 Documentation = "Computes the tangent (sin/cos) of an angle. Undefined at odd multiples of π/2 (90°, 270°, ...).",
                 Example = "tan(45*deg)",
@@ -52,7 +49,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "csc(§)",
-                IsElementWise = true,
                 Description = "Cosecant",
                 Documentation = "Computes the cosecant (1/sin) of an angle. Undefined at integer multiples of π (0°, 180°, ...).",
                 Category = "Functions/Trigonometric",
@@ -63,7 +59,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sec(§)",
-                IsElementWise = true,
                 Description = "Secant",
                 Documentation = "Computes the secant (1/cos) of an angle. Undefined at odd multiples of π/2 (90°, 270°, ...).",
                 Category = "Functions/Trigonometric",
@@ -74,7 +69,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "cot(§)",
-                IsElementWise = true,
                 Description = "Cotangent",
                 Documentation = "Computes the cotangent (cos/sin) of an angle. Undefined at integer multiples of π (0°, 180°, ...).",
                 Category = "Functions/Trigonometric",
@@ -91,29 +85,26 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "asin(§)",
-                IsElementWise = true,
                 Description = "Inverse sine (arc sine)",
                 Documentation = "Returns the angle whose sine is `x`. Result is in the range [-π/2, π/2] (or [-90°, 90°]). Errors if |x| > 1.",
                 Category = "Functions/Inverse Trigonometric",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Angle in the current angle unit",
-                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value from -1 to 1" }]
+                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value in [-1, 1]" }]
             },
             new SnippetItem
             {
                 Insert = "acos(§)",
-                IsElementWise = true,
                 Description = "Inverse cosine (arc cosine)",
                 Documentation = "Returns the angle whose cosine is `x`. Result is in the range [0, π] (or [0°, 180°]). Errors if |x| > 1.",
                 Category = "Functions/Inverse Trigonometric",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Angle in the current angle unit",
-                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value from -1 to 1" }]
+                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value in [-1, 1]" }]
             },
             new SnippetItem
             {
                 Insert = "atan(§)",
-                IsElementWise = true,
                 Description = "Inverse tangent (arc tangent)",
                 Documentation = "Returns the angle whose tangent is `x`. Result is in the range (-π/2, π/2). For full-quadrant resolution from `(x, y)` coordinates, use `atan2`.",
                 Category = "Functions/Inverse Trigonometric",
@@ -124,7 +115,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "atan2(§; §)",
-                IsElementWise = true,
                 Description = "Two-argument arc tangent",
                 Documentation = "Returns the angle of the vector `(x, y)` measured from the positive x-axis, with the correct quadrant. Result is in (-π, π] (or (-180°, 180°]).",
                 Example = "atan2(1; 1)  ' returns 45°",
@@ -140,7 +130,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "acsc(§)",
-                IsElementWise = true,
                 Description = "Inverse cosecant",
                 Documentation = "Returns the angle whose cosecant is `x`. Defined for |x| ≥ 1.",
                 Category = "Functions/Inverse Trigonometric",
@@ -151,7 +140,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "asec(§)",
-                IsElementWise = true,
                 Description = "Inverse secant",
                 Documentation = "Returns the angle whose secant is `x`. Defined for |x| ≥ 1.",
                 Category = "Functions/Inverse Trigonometric",
@@ -162,7 +150,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "acot(§)",
-                IsElementWise = true,
                 Description = "Inverse cotangent",
                 Documentation = "Returns the angle whose cotangent is `x`.",
                 Category = "Functions/Inverse Trigonometric",
@@ -177,7 +164,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sinh(§)",
-                IsElementWise = true,
                 Description = "Hyperbolic sine",
                 Documentation = "Computes (e^x − e^-x) / 2. Argument is dimensionless.",
                 Category = "Functions/Hyperbolic",
@@ -188,7 +174,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "cosh(§)",
-                IsElementWise = true,
                 Description = "Hyperbolic cosine",
                 Documentation = "Computes (e^x + e^-x) / 2. Argument is dimensionless. Result is always ≥ 1.",
                 Category = "Functions/Hyperbolic",
@@ -199,18 +184,16 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "tanh(§)",
-                IsElementWise = true,
                 Description = "Hyperbolic tangent",
                 Documentation = "Computes sinh(x) / cosh(x). Result is in (-1, 1) and approaches ±1 for large |x|.",
                 Category = "Functions/Hyperbolic",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar  > -1 and < 1",
+                ReturnTypeDescription = "Scalar in (-1, 1)",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value" }]
             },
             new SnippetItem
             {
                 Insert = "csch(§)",
-                IsElementWise = true,
                 Description = "Hyperbolic cosecant",
                 Documentation = "Computes 1 / sinh(x). Undefined at x = 0.",
                 Category = "Functions/Hyperbolic",
@@ -221,18 +204,16 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sech(§)",
-                IsElementWise = true,
                 Description = "Hyperbolic secant",
-                Documentation = "Computes 1 / cosh(x). Result is > 0 and ≤ 1.",
+                Documentation = "Computes 1 / cosh(x). Result is in (0, 1].",
                 Category = "Functions/Hyperbolic",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar > 0 and ≤ 1",
+                ReturnTypeDescription = "Scalar in (0, 1]",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value" }]
             },
             new SnippetItem
             {
                 Insert = "coth(§)",
-                IsElementWise = true,
                 Description = "Hyperbolic cotangent",
                 Documentation = "Computes cosh(x) / sinh(x). Undefined at x = 0.",
                 Category = "Functions/Hyperbolic",
@@ -247,7 +228,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "asinh(§)",
-                IsElementWise = true,
                 Description = "Inverse hyperbolic sine",
                 Documentation = "Returns the value whose hyperbolic sine is `x`. Equivalent to `ln(x + sqrt(x² + 1))`. Defined for all real `x`.",
                 Category = "Functions/Inverse Hyperbolic",
@@ -258,7 +238,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "acosh(§)",
-                IsElementWise = true,
                 Description = "Inverse hyperbolic cosine",
                 Documentation = "Returns the non-negative value whose hyperbolic cosine is `x`. Equivalent to `ln(x + sqrt(x² − 1))`. Errors if `x < 1`.",
                 Category = "Functions/Inverse Hyperbolic",
@@ -269,18 +248,16 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "atanh(§)",
-                IsElementWise = true,
                 Description = "Inverse hyperbolic tangent",
                 Documentation = "Returns the value whose hyperbolic tangent is `x`. Equivalent to `0.5 · ln((1 + x) / (1 − x))`. Errors if `|x| ≥ 1`.",
                 Category = "Functions/Inverse Hyperbolic",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Scalar",
-                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value > -1 and < 1" }]
+                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value in (-1, 1)" }]
             },
             new SnippetItem
             {
                 Insert = "acsch(§)",
-                IsElementWise = true,
                 Description = "Inverse hyperbolic cosecant",
                 Documentation = "Returns the value whose hyperbolic cosecant is `x`. Equivalent to `asinh(1/x)`. Undefined at `x = 0`.",
                 Category = "Functions/Inverse Hyperbolic",
@@ -291,18 +268,16 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "asech(§)",
-                IsElementWise = true,
                 Description = "Inverse hyperbolic secant",
                 Documentation = "Returns the value whose hyperbolic secant is `x`. Equivalent to `acosh(1/x)`. Defined for `x ∈ (0, 1]`.",
                 Category = "Functions/Inverse Hyperbolic",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Scalar ≥ 0",
-                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value > 0 and ≤ 1" }]
+                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value in (0, 1]" }]
             },
             new SnippetItem
             {
                 Insert = "acoth(§)",
-                IsElementWise = true,
                 Description = "Inverse hyperbolic cotangent",
                 Documentation = "Returns the value whose hyperbolic cotangent is `x`. Equivalent to `atanh(1/x)`. Defined for `|x| > 1`.",
                 Category = "Functions/Inverse Hyperbolic",
@@ -317,7 +292,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "log(§)",
-                IsElementWise = true,
                 Description = "Decimal (base-10) logarithm",
                 Documentation = "Computes log₁₀(x). Errors when `x ≤ 0` (real mode). For complex mode, the principal branch is used.",
                 Category = "Functions/Logarithmic, Exponential and Roots",
@@ -328,7 +302,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "ln(§)",
-                IsElementWise = true,
                 Description = "Natural logarithm",
                 Documentation = "Computes the natural logarithm (base e) of `x`. Errors when `x ≤ 0` (real mode).",
                 Category = "Functions/Logarithmic, Exponential and Roots",
@@ -339,7 +312,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "log_2(§)",
-                IsElementWise = true,
                 Description = "Binary (base-2) logarithm",
                 Documentation = "Computes log₂(x). Errors when `x ≤ 0` (real mode).",
                 Category = "Functions/Logarithmic, Exponential and Roots",
@@ -350,7 +322,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "exp(§)",
-                IsElementWise = true,
                 Description = "Exponential function (e^x)",
                 Documentation = "Computes Euler's number `e` raised to the power `x`. Inverse of `ln`.",
                 Category = "Functions/Logarithmic, Exponential and Roots",
@@ -361,7 +332,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sqr(§)",
-                IsElementWise = true,
                 Description = "Square root",
                 Documentation = "Returns the principal square root of `x`. Identical to `sqrt`. Errors for negative `x` in real mode.",
                 Label = "sqr(x)",
@@ -373,7 +343,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sqrt(§)",
-                IsElementWise = true,
                 Description = "Square root",
                 Documentation = "Returns the principal square root of `x`. Identical to `sqr`. Errors for negative `x` in real mode.",
                 Label = "sqrt(x)",
@@ -385,7 +354,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "cbrt(§)",
-                IsElementWise = true,
                 Description = "Cubic root",
                 Documentation = "Returns the real cube root of `x`. Defined for all real `x`, including negatives.",
                 Category = "Functions/Logarithmic, Exponential and Roots",
@@ -396,7 +364,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "root(§; §)",
-                IsElementWise = true,
                 Description = "N-th root",
                 Documentation = "Returns the principal n-th root of `x`, equivalent to `x^(1/n)`. Use a positive integer for `n`.",
                 Example = "root(8; 3)  ' returns 2",
@@ -416,7 +383,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "round(§)",
-                IsElementWise = true,
                 Description = "Round to the nearest integer",
                 Documentation = "Rounds `x` to the nearest integer using banker's rounding (ties go to even). Preserves units.",
                 Example = "round(2.5)  ' returns 2",
@@ -428,7 +394,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "floor(§)",
-                IsElementWise = true,
                 Description = "Round down (towards -∞)",
                 Documentation = "Returns the largest integer not exceeding `x`. Preserves units. For negative numbers, rounds away from zero.",
                 Example = "floor(-1.2)  ' returns -2",
@@ -440,7 +405,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "ceiling(§)",
-                IsElementWise = true,
                 Description = "Round up (towards +∞)",
                 Documentation = "Returns the smallest integer not less than `x`. Preserves units.",
                 Example = "ceiling(1.2)  ' returns 2",
@@ -452,7 +416,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "trunc(§)",
-                IsElementWise = true,
                 Description = "Truncate towards zero",
                 Documentation = "Discards the fractional part of `x`, leaving only the integer portion. Preserves units. Same as `floor` for positive `x`, `ceiling` for negative `x`.",
                 Category = "Functions/Rounding",
@@ -467,7 +430,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "mod(§; §)",
-                IsElementWise = true,
                 Description = "Remainder of integer division",
                 Documentation = "Computes `x mod y`, i.e., the remainder after dividing `x` by `y`. Sign of the result follows `x`.",
                 Example = "mod(10; 3)  ' returns 1",
@@ -484,7 +446,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             {
                 Insert = "gcd(§; §)",
                 Description = "Greatest common divisor",
-                Documentation = "Returns the largest positive integer that divides every argument exactly. Accepts two or more arguments. Vector/matrix arguments are flattened element-wise first.",
+                Documentation = "Returns the largest positive integer that divides every argument exactly. Accepts two or more arguments.",
                 Example = "gcd(12; 18; 30)  ' returns 6",
                 Category = "Functions/Integer",
                 KeywordType = "Function",
@@ -492,14 +454,14 @@ namespace Calcpad.Highlighter.Snippets.Data
                 ReturnTypeDescription = "Positive integer",
                 Parameters =
                 [
-                    new SnippetParameter { Name = "values", Type = ParameterType.Various, Description = "Two or more integers, vectors, or matrices", IsVariadic = true }
+                    new SnippetParameter { Name = "values", Type = ParameterType.Integer, Description = "Two or more integers", IsVariadic = true }
                 ]
             },
             new SnippetItem
             {
                 Insert = "lcm(§; §)",
                 Description = "Least common multiple",
-                Documentation = "Returns the smallest positive integer that is a multiple of every argument. Accepts two or more arguments. Vector/matrix arguments are flattened element-wise first.",
+                Documentation = "Returns the smallest positive integer that is a multiple of every argument. Accepts two or more arguments.",
                 Example = "lcm(4; 6)  ' returns 12",
                 Category = "Functions/Integer",
                 KeywordType = "Function",
@@ -507,7 +469,7 @@ namespace Calcpad.Highlighter.Snippets.Data
                 ReturnTypeDescription = "Positive integer",
                 Parameters =
                 [
-                    new SnippetParameter { Name = "values", Type = ParameterType.Various, Description = "Two or more integers, vectors, or matrices", IsVariadic = true }
+                    new SnippetParameter { Name = "values", Type = ParameterType.Integer, Description = "Two or more integers", IsVariadic = true }
                 ]
             },
 
@@ -517,7 +479,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "re(§)",
-                IsElementWise = true,
                 Description = "Real part of a complex number",
                 Documentation = "Returns the real part of `z`. For a real input, returns `z` unchanged.",
                 Category = "Functions/Complex",
@@ -528,7 +489,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "im(§)",
-                IsElementWise = true,
                 Description = "Imaginary part of a complex number",
                 Documentation = "Returns the imaginary part of `z` as a real scalar. For a real input, returns 0.",
                 Category = "Functions/Complex",
@@ -550,7 +510,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "phase(§)",
-                IsElementWise = true,
                 Description = "Phase angle of a complex number",
                 Documentation = "Returns the argument (phase angle) of `z`, equivalent to `atan2(im(z); re(z))`. Result is in the current angle unit.",
                 Category = "Functions/Complex",
@@ -561,7 +520,6 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "conj(§)",
-                IsElementWise = true,
                 Description = "Complex conjugate",
                 Documentation = "Returns the complex conjugate of `z`, i.e., flips the sign of the imaginary part. For real input, returns `z` unchanged.",
                 Category = "Functions/Complex",
@@ -879,21 +837,6 @@ namespace Calcpad.Highlighter.Snippets.Data
                     new SnippetParameter { Name = "v", Type = ParameterType.Vector, Description = "Vector" }
                 ]
             },
-            // take - from matrix (n; matrix)
-            new SnippetItem
-            {
-                Insert = "take(§; §)",
-                Description = "Returns the n-th element from a matrix",
-                Documentation = "The matrix is linearized into a vector (row by row) and `M[n]` (1-based) is returned. Errors if `n` is out of range.",
-                Category = "Functions/Aggregate and Interpolation",
-                KeywordType = "Function",
-                ReturnTypeDescription = "Scalar",
-                Parameters =
-                [
-                    new SnippetParameter { Name = "n", Type = ParameterType.Integer, Description = "Index (1-based)" },
-                    new SnippetParameter { Name = "m", Type = ParameterType.Matrix, Description = "Matrix" }
-                ]
-            },
             // line - scalar pairs (x; x1; y1; x2; y2; ...)
             new SnippetItem
             {
@@ -926,21 +869,6 @@ namespace Calcpad.Highlighter.Snippets.Data
                     new SnippetParameter { Name = "yData", Type = ParameterType.Vector, Description = "Y data points vector" }
                 ]
             },
-            // line - with matrix (x; matrix)
-            new SnippetItem
-            {
-                Insert = "line(§; §)",
-                Description = "Linear interpolation over a linearized matrix",
-                Documentation = "The matrix is linearized into a vector (row by row) and used as the data pairs `(x1, y1), (x2, y2), …` for piecewise linear interpolation at `x`.",
-                Category = "Functions/Aggregate and Interpolation",
-                KeywordType = "Function",
-                ReturnTypeDescription = "Scalar",
-                Parameters =
-                [
-                    new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Interpolation point" },
-                    new SnippetParameter { Name = "m", Type = ParameterType.Matrix, Description = "Matrix" }
-                ]
-            },
             // spline - scalar pairs (x; x1; y1; x2; y2; ...)
             new SnippetItem
             {
@@ -970,21 +898,6 @@ namespace Calcpad.Highlighter.Snippets.Data
                     new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Interpolation point" },
                     new SnippetParameter { Name = "xData", Type = ParameterType.Vector, Description = "X data points vector" },
                     new SnippetParameter { Name = "yData", Type = ParameterType.Vector, Description = "Y data points vector" }
-                ]
-            },
-            // spline - with matrix (x; matrix)
-            new SnippetItem
-            {
-                Insert = "spline(§; §)",
-                Description = "Hermite spline interpolation over a linearized matrix",
-                Documentation = "The matrix is linearized into a vector (row by row) and used as the data pairs for smooth Hermite cubic spline interpolation at `x`.",
-                Category = "Functions/Aggregate and Interpolation",
-                KeywordType = "Function",
-                ReturnTypeDescription = "Scalar",
-                Parameters =
-                [
-                    new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Interpolation point" },
-                    new SnippetParameter { Name = "m", Type = ParameterType.Matrix, Description = "Matrix" }
                 ]
             },
 
@@ -1081,23 +994,22 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem
             {
                 Insert = "sign(§)",
-                IsElementWise = true,
                 Description = "Sign of a number (-1, 0, or 1)",
                 Documentation = "Returns -1 for negative `x`, 0 for `x = 0`, and 1 for positive `x`. Strips units.",
                 Category = "Functions/Other",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar with values -1, 0, or 1",
+                ReturnTypeDescription = "Scalar in {-1, 0, 1}",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Value" }]
             },
             new SnippetItem
             {
                 Insert = "random(§)",
                 Description = "Random number between 0 and x",
-                Documentation = "Returns a uniformly distributed random scalar from 0 to x. With no argument, returns a value from 0 to 1. Re-evaluating the document re-rolls the value.",
-                Example = "random(100)  ' random integer-ish value from 0 to 100",
+                Documentation = "Returns a uniformly distributed random scalar in `[0, x)`. With no argument, returns a value in `[0, 1)`. Re-evaluating the document re-rolls the value.",
+                Example = "random(100)  ' random integer-ish value in [0, 100)",
                 Category = "Functions/Other",
                 KeywordType = "Function",
-                ReturnTypeDescription = "Scalar from 0 to x",
+                ReturnTypeDescription = "Scalar in [0, x)",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Upper bound", IsOptional = true }]
             },
             new SnippetItem
@@ -1155,6 +1067,532 @@ namespace Calcpad.Highlighter.Snippets.Data
                 ReturnTypeDescription = "Boolean (0 or 1)",
                 Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Any, Description = "Value to check" }]
             },
+
+            // ============================================
+            // STRING FUNCTIONS
+            // ============================================
+            new SnippetItem
+            {
+                Insert = "len$(§)",
+                Description = "Returns the length of a string",
+                Documentation = "Returns the number of characters in `s$` as a unitless scalar.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.Value,
+                ReturnTypeDescription = "Non-negative integer",
+                Parameters = [new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String" }]
+            },
+            new SnippetItem
+            {
+                Insert = "trim$(§)",
+                Description = "Trims whitespace from both ends of a string",
+                Documentation = "Returns `s$` with leading and trailing whitespace removed.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters = [new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String" }]
+            },
+            new SnippetItem
+            {
+                Insert = "ltrim$(§)",
+                Description = "Trims whitespace from the start of a string",
+                Documentation = "Returns `s$` with leading whitespace removed.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters = [new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String" }]
+            },
+            new SnippetItem
+            {
+                Insert = "rtrim$(§)",
+                Description = "Trims whitespace from the end of a string",
+                Documentation = "Returns `s$` with trailing whitespace removed.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters = [new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String" }]
+            },
+            new SnippetItem
+            {
+                Insert = "ucase$(§)",
+                Description = "Converts a string to upper case",
+                Documentation = "Returns `s$` with all letters converted to upper case using the invariant culture.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters = [new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String" }]
+            },
+            new SnippetItem
+            {
+                Insert = "lcase$(§)",
+                Description = "Converts a string to lower case",
+                Documentation = "Returns `s$` with all letters converted to lower case using the invariant culture.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters = [new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String" }]
+            },
+            new SnippetItem
+            {
+                Insert = "string$(§)",
+                Description = "Converts a value to its string representation (without units)",
+                Documentation = "Formats `x` as a string using the document's current decimal-places setting. Units are stripped — use `string$(x; 'true')` to include them.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters = [new SnippetParameter { Name = "x", Type = ParameterType.Any, Description = "Value to convert" }]
+            },
+            new SnippetItem
+            {
+                Insert = "string$(§; 'true')",
+                Description = "Converts a value to its string representation including units",
+                Documentation = "Formats `x` as a string. When `includeUnits` is `'true'`, the unit suffix is appended.",
+                Label = "string$ (with units)",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "x", Type = ParameterType.Any, Description = "Value to convert" },
+                    new SnippetParameter { Name = "includeUnits", Type = ParameterType.String, Description = "'true' to include units, 'false' to exclude" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "val$(§)",
+                Description = "Parses a string to a numeric value",
+                Documentation = "Parses `s$` as a number using invariant-culture decimal point. Errors if the string is not a valid number. Units are stripped — use `val$(s$; 'true')` to include them.",
+                Example = "val$('3.14')  ' returns 3.14",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.Value,
+                ReturnTypeDescription = "Scalar",
+                Parameters = [new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String to parse" }]
+            },
+            new SnippetItem
+            {
+                Insert = "val$(§; 'true')",
+                Description = "Parses a string to a numeric value preserving units",
+                Documentation = "Parses `s$` as a number. When `includeUnits` is `'true'`, the unit suffix is retained (e.g., `val$('3.5 kN'; 'true')` returns `3.5 kN`). For table variables, each cell's units are preserved in the resulting matrix literal.",
+                Label = "val$ (with units)",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.Value,
+                ReturnTypeDescription = "Scalar",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String or table variable to parse" },
+                    new SnippetParameter { Name = "includeUnits", Type = ParameterType.String, Description = "'true' to preserve units, 'false' to strip" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "left$(§; §)",
+                Description = "Returns the leftmost characters of a string",
+                Documentation = "Returns the first `count` characters of `s$`. If `count` exceeds the string length, returns the whole string.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String" },
+                    new SnippetParameter { Name = "count", Type = ParameterType.Integer, Description = "Number of characters" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "right$(§; §)",
+                Description = "Returns the rightmost characters of a string",
+                Documentation = "Returns the last `count` characters of `s$`. If `count` exceeds the string length, returns the whole string.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String" },
+                    new SnippetParameter { Name = "count", Type = ParameterType.Integer, Description = "Number of characters" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "compare$(§; §)",
+                Description = "Compares two strings (-1, 0, or 1)",
+                Documentation = "Lexicographic ordinal comparison. Returns -1 if `a$` precedes `b$`, 0 if they are equal, 1 if `a$` follows `b$`.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.Value,
+                ReturnTypeDescription = "Scalar in {-1, 0, 1}",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "a$", Type = ParameterType.String, Description = "First string" },
+                    new SnippetParameter { Name = "b$", Type = ParameterType.String, Description = "Second string" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "space$(§)",
+                Description = "Creates a string of spaces",
+                Documentation = "Returns a string consisting of `count` space characters. Useful for fixed-width formatting.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters = [new SnippetParameter { Name = "count", Type = ParameterType.Integer, Description = "Number of spaces" }]
+            },
+            new SnippetItem
+            {
+                Insert = "chr$('newline')",
+                Description = "Returns the newline character (\\n)",
+                Documentation = "Returns the literal newline character. Calcpad string literals don't process backslash escapes, so use `chr$('newline')` to embed an actual newline — e.g. `join$(tbl$; chr$('newline'); ', ')` to render each table row on its own line.",
+                Label = "chr$ (newline)",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters = [new SnippetParameter { Name = "name", Type = ParameterType.String, Description = "Character name: 'newline'" }]
+            },
+            new SnippetItem
+            {
+                Insert = "mid$(§; §; §)",
+                Description = "Extracts a substring from a string",
+                Documentation = "Returns the substring of `s$` starting at position `start` (1-based) with length `count`. Result is clipped if it would extend past the end of the string.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String" },
+                    new SnippetParameter { Name = "start", Type = ParameterType.Integer, Description = "Start position (1-based)" },
+                    new SnippetParameter { Name = "count", Type = ParameterType.Integer, Description = "Number of characters" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "replace$(§; §; §)",
+                Description = "Replaces all occurrences of a substring",
+                Documentation = "Returns `s$` with every occurrence of `old$` replaced by `new$`. Case-sensitive, ordinal match.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "Source string" },
+                    new SnippetParameter { Name = "old$", Type = ParameterType.String, Description = "String to find" },
+                    new SnippetParameter { Name = "new$", Type = ParameterType.String, Description = "Replacement string" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "instr$(§; §; §)",
+                Description = "Finds the position of a substring (1-based, 0 if not found)",
+                Documentation = "Searches `s$` from position `start` (1-based) for the first occurrence of `search$`. Returns the 1-based index, or 0 if not found.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.Value,
+                ReturnTypeDescription = "Non-negative integer",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "start", Type = ParameterType.Integer, Description = "Start position (1-based)" },
+                    new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String to search in" },
+                    new SnippetParameter { Name = "search$", Type = ParameterType.String, Description = "String to find" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "find$(§; §)",
+                Description = "Finds all positions of a substring, returns a vector",
+                Documentation = "Returns a vector of 1-based positions where `search$` occurs in `s$`. Empty vector if not found.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.Value,
+                ReturnTypeDescription = "Vector of positions",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "search$", Type = ParameterType.String, Description = "String to find" },
+                    new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String to search in" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "concat$(§; §)",
+                Description = "Concatenates multiple strings",
+                Documentation = "Joins all arguments into a single string in order. Numeric arguments are converted to strings using the document's formatting.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "values", Type = ParameterType.Any, Description = "Strings to concatenate", IsVariadic = true }
+                ]
+            },
+
+            // ============================================
+            // JSON FUNCTIONS
+            // ============================================
+            new SnippetItem
+            {
+                Insert = "parsejson$(§; §)",
+                Description = "Parses a JSON string and extracts a value at the given path",
+                Documentation = "Walks `path$` through `json$` and returns the value at that location as a string. Path uses dot notation for objects and `[i]` for arrays.",
+                Example = "parsejson$('{\"a\":[10,20]}'; 'a[1]')  ' returns '20'",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "json$", Type = ParameterType.String, Description = "JSON string to parse" },
+                    new SnippetParameter { Name = "path$", Type = ParameterType.String, Description = "Path to value (e.g., \"key\", \"nested.arr[0]\")" }
+                ]
+            },
+
+            // ============================================
+            // STRING TABLE FUNCTIONS
+            // ============================================
+            new SnippetItem
+            {
+                Insert = "table$(§; §)",
+                Description = "Creates an empty string table with the specified dimensions",
+                Documentation = "Allocates a `rows × cols` table of empty strings. Cells can be assigned via index access.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringTable,
+                ReturnTypeDescription = "String table",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "rows", Type = ParameterType.Integer, Description = "Number of rows" },
+                    new SnippetParameter { Name = "cols", Type = ParameterType.Integer, Description = "Number of columns" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "split$(§; §; §)",
+                Description = "Splits a string into a table using row and column delimiters",
+                Documentation = "First splits `s$` on `rowDelim$` to create rows, then splits each row on `colDelim$`. Useful for parsing CSV-like data.",
+                Example = "split$('a,b\\nc,d'; '\\n'; ',')  ' 2x2 table",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringTable,
+                ReturnTypeDescription = "String table",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "s$", Type = ParameterType.String, Description = "String to split" },
+                    new SnippetParameter { Name = "rowDelim$", Type = ParameterType.String, Description = "Row delimiter" },
+                    new SnippetParameter { Name = "colDelim$", Type = ParameterType.String, Description = "Column delimiter" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "join$(§; §; §)",
+                Description = "Joins a table into a string using row and column delimiters",
+                Documentation = "Inverse of `split$`. Joins each row with `colDelim$`, then joins rows with `rowDelim$`. Defaults: `rowDelim$ = '\\n'`, `colDelim$ = ','`.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t$", Type = ParameterType.StringTable, Description = "Table to join" },
+                    new SnippetParameter { Name = "rowDelim$", Type = ParameterType.String, Description = "Row delimiter", IsOptional = true },
+                    new SnippetParameter { Name = "colDelim$", Type = ParameterType.String, Description = "Column delimiter", IsOptional = true }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "rowToStringArray$(§; §)",
+                Description = "Extracts a row from a table as a JSON string array (e.g., [\"a\", \"b\", \"c\"])",
+                Documentation = "Returns the `row`-th row of `t$` formatted as a JSON array of strings. Useful for round-tripping table rows through JSON-aware tools.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "JSON array string",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t$", Type = ParameterType.StringTable, Description = "Table variable" },
+                    new SnippetParameter { Name = "row", Type = ParameterType.Integer, Description = "Row index (1-based)" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "colToStringArray$(§; §)",
+                Description = "Extracts a column from a table as a JSON string array (e.g., [\"a\", \"b\", \"c\"])",
+                Documentation = "Returns the `col`-th column of `t$` formatted as a JSON array of strings.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "JSON array string",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t$", Type = ParameterType.StringTable, Description = "Table variable" },
+                    new SnippetParameter { Name = "col", Type = ParameterType.Integer, Description = "Column index (1-based)" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "tableToStringArray$(§)",
+                Description = "Converts an entire table to a nested JSON string array (e.g., [[\"a\",\"b\"],[\"c\",\"d\"]])",
+                Documentation = "Serializes the whole table as a nested JSON array (rows of strings).",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "JSON nested array string",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t$", Type = ParameterType.StringTable, Description = "Table variable" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "typeOf$(§)",
+                Description = "Returns the type of an expression as a string (value, complex, vector, matrix, string, table, or undefined)",
+                Documentation = "Returns one of `'value'`, `'complex'`, `'vector'`, `'matrix'`, `'string'`, `'table'`, or `'undefined'`. Useful for runtime branching.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringVariable,
+                ReturnTypeDescription = "String type tag",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "expr", Type = ParameterType.Any, Description = "Expression or variable to check" }
+                ]
+            },
+
+            // ============================================
+            // STRING TABLE MANIPULATION FUNCTIONS
+            // ============================================
+            new SnippetItem
+            {
+                Insert = "augmentT$(§; §)",
+                Description = "Concatenates two or more tables horizontally (side by side)",
+                Documentation = "Returns a new table with all input tables placed side-by-side. All inputs must have the same number of rows.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringTable,
+                ReturnTypeDescription = "String table",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t1$", Type = ParameterType.StringTable, Description = "First table" },
+                    new SnippetParameter { Name = "t2$", Type = ParameterType.StringTable, Description = "Second table (more can follow)" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "stackT$(§; §)",
+                Description = "Concatenates two or more tables vertically (stacked)",
+                Documentation = "Returns a new table with input tables stacked top to bottom. All inputs must have the same number of columns.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringTable,
+                ReturnTypeDescription = "String table",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t1$", Type = ParameterType.StringTable, Description = "First table" },
+                    new SnippetParameter { Name = "t2$", Type = ParameterType.StringTable, Description = "Second table (more can follow)" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "rowT$(§; §)",
+                Description = "Extracts a single row from a table as a 1-row table",
+                Documentation = "Returns a 1-row table containing the `row`-th row of `t$`. Use `rowToStringArray$` for a JSON-array view.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringTable,
+                ReturnTypeDescription = "1-row string table",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t$", Type = ParameterType.StringTable, Description = "Table variable" },
+                    new SnippetParameter { Name = "row", Type = ParameterType.Integer, Description = "Row index (1-based)" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "colT$(§; §)",
+                Description = "Extracts a single column from a table as a 1-column table",
+                Documentation = "Returns a 1-column table containing the `col`-th column of `t$`.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringTable,
+                ReturnTypeDescription = "1-column string table",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t$", Type = ParameterType.StringTable, Description = "Table variable" },
+                    new SnippetParameter { Name = "col", Type = ParameterType.Integer, Description = "Column index (1-based)" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "extractRowsT$(§; [§])",
+                Description = "Extracts multiple rows from a table by index",
+                Documentation = "Returns a new table with the specified rows of `t$`, in the order given by `indices`. Indices may repeat to duplicate rows.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringTable,
+                ReturnTypeDescription = "String table",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t$", Type = ParameterType.StringTable, Description = "Table variable" },
+                    new SnippetParameter { Name = "indices", Type = ParameterType.Vector, Description = "Row indices (1-based, e.g., [1; 3; 5])" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "extractColsT$(§; [§])",
+                Description = "Extracts multiple columns from a table by index",
+                Documentation = "Returns a new table with the specified columns of `t$`, in the order given by `indices`.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringTable,
+                ReturnTypeDescription = "String table",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t$", Type = ParameterType.StringTable, Description = "Table variable" },
+                    new SnippetParameter { Name = "indices", Type = ParameterType.Vector, Description = "Column indices (1-based, e.g., [1; 3; 5])" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "subTable$(§; §; §; §; §)",
+                Description = "Extracts a rectangular sub-table by row and column bounds",
+                Documentation = "Returns the rectangular block of `t$` from `(r1, c1)` to `(r2, c2)` inclusive (1-based, inclusive bounds).",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringTable,
+                ReturnTypeDescription = "String table",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t$", Type = ParameterType.StringTable, Description = "Table variable" },
+                    new SnippetParameter { Name = "r1", Type = ParameterType.Integer, Description = "Starting row (1-based)" },
+                    new SnippetParameter { Name = "c1", Type = ParameterType.Integer, Description = "Starting column (1-based)" },
+                    new SnippetParameter { Name = "r2", Type = ParameterType.Integer, Description = "Ending row (1-based)" },
+                    new SnippetParameter { Name = "c2", Type = ParameterType.Integer, Description = "Ending column (1-based)" }
+                ]
+            },
+            new SnippetItem
+            {
+                Insert = "transposeT$(§)",
+                Description = "Transposes a table (swaps rows and columns)",
+                Documentation = "Returns a new table where rows and columns are swapped. A `m × n` table becomes `n × m`.",
+                Category = "Functions/String",
+                KeywordType = "Function",
+                ReturnType = CalcpadType.StringTable,
+                ReturnTypeDescription = "String table (transposed)",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "t$", Type = ParameterType.StringTable, Description = "Table variable" }
+                ]
+            }
         ];
     }
 }

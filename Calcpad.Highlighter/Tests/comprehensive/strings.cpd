@@ -1,0 +1,241 @@
+' String Variables and Functions
+
+' Basic string variable assignment
+#string s$ = trim$('  hello world  ')
+
+' String function calls - 1 argument
+n = len$(s$)
+#string t$ = trim$(s$)
+t$
+#string lt$ = ltrim$('  left')
+lt$
+#string rt$ = rtrim$('right  ')
+rt$
+#string u$ = ucase$(s$)
+u$
+#string l$ = lcase$(u$)
+l$
+#string numStr$ = string$(42)
+numStr$
+numVal = val$('3.14')
+
+' String function calls - 2 arguments
+#string left2$ = left$(s$; 5)
+#string right2$ = right$(s$; 5)
+#string concatenated$ = concat$(left2$; right2$)
+concatenated$
+#string cmp$ = compare$(s$; 'hello world')
+
+' String function calls - 3 arguments
+#string mid3$ = mid$(s$; 1; 5)
+#string replaced$ = replace$(s$; 'world'; 'earth')
+pos = instr$(0; s$; 'world')
+
+' Variadic string function
+#string joined$ = concat$(s$; ' '; u$)
+joined$
+
+' String concatenation with +
+#string greeting$ = concat$('Hello'; ' '; 'World')
+
+' String equality check
+s$ ≡ 'hello world'
+
+' Using strings in control flow
+#if s$
+  'String is non-empty
+#end if
+
+' String in a loop
+#string result$ = string$(0)
+#for i = 1 : 3
+  result$ = concat$(result$; string$(i))
+#loop
+
+' ===== STRING TABLES =====
+
+' Table declaration with literal
+#string tbl$ = ['a'; 'b' | 'c'; 'd']
+
+' Table declaration with constructor
+#string tbl2$ = table$(2; 3)
+
+' Table element access
+tbl$
+tbl$(1; 1)
+tbl$(2; 2)
+
+' Table element write
+tbl2$(1; 1) = 'hello'
+tbl2$
+
+' Split string into table
+#string csv$ = 'a,b,c|d,e,f'
+#string data$ = split$(csv$; '|'; ',')
+data$
+' Join table into string
+#string back$ = join$(data$; '|'; ',')
+#string flat$ = join$(data$; ',')
+
+' Table in a loop
+#string loopTable$ = table$(3; 1)
+#for j = 1 : 3
+  loopTable$(j; 1) = string$(j)
+#loop
+loopTable$
+' Cross-type: string of matrix creates table
+#string fromMatrix$ = string$([1; 2 | 3; 4])
+fromMatrix$
+
+' ===== STRING WITH UNITS =====
+
+' Scalar with units
+x = 5m
+#string noUnits$ = string$(x)
+noUnits$
+#string withUnits$ = string$(x; 'true')
+withUnits$
+#string withoutUnits$ = string$(x; 'false')
+withoutUnits$
+
+' Case-insensitive boolean
+#string upperCase$ = string$(x; 'TRUE')
+upperCase$
+
+' Vector to table with units
+v = [1; 2; 3]*m
+#string vecNoUnits$ = string$(v)
+vecNoUnits$
+#string vecWithUnits$ = string$(v; 'true')
+vecWithUnits$
+
+' Matrix to table with units
+M = [1; 2 | 3; 4]*kN
+#string matNoUnits$ = string$(M)
+matNoUnits$
+#string matWithUnits$ = string$(M; 'true')
+matWithUnits$
+
+' ===== VAL WITH UNITS =====
+
+' Scalar string with units, parsed back to a value with units
+#string forceStr$ = '3.5 kN'
+forceWithUnits = val$(forceStr$; 'true')
+forceWithUnits
+forceNoUnits = val$(forceStr$; 'false')
+forceNoUnits
+forceDefault = val$('3.5 kN')
+forceDefault
+
+' Round-trip: string then val
+y = 7.25 m
+#string yStr$ = string$(y; 'true')
+yRound = val$(yStr$; 'true')
+yRound
+
+' Unit propagation in arithmetic
+total = val$('10 kN'; 'true') + val$('5 kN'; 'true')
+total
+
+' Table with mixed units, preserved in matrix literal
+#string unitTbl$ = ['3.5kN'; '2kN' | '1 m'; '4 m']
+Mu = val$(unitTbl$; 'true')
+Mu
+Mu_no = val$(unitTbl$; 'false')
+Mu_no
+
+' Table 1x1 with units
+#string singleCell$ = ['9.81 m/s^2']
+g = val$(singleCell$; 'true')
+g
+
+' ===== ROW/COL TO STRING ARRAY =====
+
+#string opts$ = ['Option A'; 'Option B'; 'Option C' | '1'; '2'; '3']
+#string keys$ = rowToStringArray$(opts$; 1)
+keys$
+#string values$ = rowToStringArray$(opts$; 2)
+values$
+#string col1$ = colToStringArray$(opts$; 1)
+col1$
+
+' tableToStringArray — full table as nested JSON array
+#string nested$ = tableToStringArray$(opts$)
+nested$
+
+' ===== TABLE MANIPULATION FUNCTIONS =====
+
+#string src$ = ['a'; 'b'; 'c' | 'd'; 'e'; 'f' | 'g'; 'h'; 'i']
+
+' rowT$ — extract single row
+#string row2$ = rowT$(src$; 2)
+row2$
+
+' colT$ — extract single column
+#string col3$ = colT$(src$; 3)
+col3$
+
+' extractRowsT$ — extract multiple rows
+#string rows13$ = extractRowsT$(src$; [1; 3])
+rows13$
+
+' extractColsT$ — extract multiple columns
+#string cols12$ = extractColsT$(src$; [1; 2])
+cols12$
+
+' subTable$ — extract rectangular region
+#string sub$ = subTable$(src$; 1; 1; 2; 2)
+sub$
+
+' transposeT$ — swap rows and columns
+#string transposed$ = transposeT$(src$)
+transposed$
+
+' augmentT$ — horizontal concatenation
+#string left$ = ['x'; 'y' | 'z'; 'w']
+#string wide$ = augmentT$(left$; left$)
+wide$
+
+' stackT$ — vertical concatenation
+#string tall$ = stackT$(left$; left$)
+tall$
+
+' ===== TYPEOF FUNCTION =====
+
+' Scalar value
+scalarVar = 5m
+#string typeScalar$ = typeOf$(scalarVar)
+typeScalar$
+
+' Vector
+vecVar = [1; 2; 3]
+#string typeVec$ = typeOf$(vecVar)
+typeVec$
+
+' Matrix
+matVar = [1; 2 | 3; 4]
+#string typeMat$ = typeOf$(matVar)
+typeMat$
+
+' String variable
+#string strVar$ = 'hello'
+#string typeStr$ = typeOf$(strVar$)
+typeStr$
+
+' Table variable
+#string tblVar$ = ['a'; 'b']
+#string typeTbl$ = typeOf$(tblVar$)
+typeTbl$
+
+' Expression (not a variable)
+#string typeExpr$ = typeOf$(2 + 3)
+typeExpr$
+
+' ===== STRING WITH UNITS =====
+x = 5in
+#string withUnits$ = string$(x; 'true')
+withUnits$
+
+M = [1; 2 | 3; 4]*kN
+#string matWithUnits$ = string$(M; 'true')
+matWithUnits$

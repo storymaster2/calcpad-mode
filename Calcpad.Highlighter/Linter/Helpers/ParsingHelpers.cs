@@ -11,36 +11,6 @@ namespace Calcpad.Highlighter.Linter.Helpers
     public static class ParsingHelpers
     {
         /// <summary>
-        /// Advances <paramref name="pos"/> past any whitespace characters in <paramref name="text"/>.
-        /// </summary>
-        public static void SkipWhitespace(ReadOnlySpan<char> text, ref int pos)
-        {
-            while (pos < text.Length && char.IsWhiteSpace(text[pos]))
-                pos++;
-        }
-
-        /// <summary>
-        /// Finds the position of the close character that matches the open character at
-        /// <paramref name="openPos"/>, tracking nesting depth. Returns the index of the
-        /// matching <paramref name="close"/>, or -1 if unbalanced.
-        /// </summary>
-        public static int FindMatchingClose(ReadOnlySpan<char> text, int openPos, char open, char close)
-        {
-            var depth = 0;
-            for (int i = openPos; i < text.Length; i++)
-            {
-                var c = text[i];
-                if (c == open) depth++;
-                else if (c == close)
-                {
-                    depth--;
-                    if (depth == 0) return i;
-                }
-            }
-            return -1;
-        }
-
-        /// <summary>
         /// Extracts function parameter names from a function definition line.
         /// For example: "square(x) = x^2" returns {"x"}
         /// </summary>
@@ -88,16 +58,30 @@ namespace Calcpad.Highlighter.Linter.Helpers
         {
             // Skip whitespace to find opening paren
             var pos = afterFuncName;
-            SkipWhitespace(line, ref pos);
+            while (pos < line.Length && char.IsWhiteSpace(line[pos]))
+                pos++;
 
             if (pos >= line.Length || line[pos] != '(')
                 return (false, string.Empty);
 
             var startPos = pos + 1; // After opening paren
-            var closePos = FindMatchingClose(line, pos, '(', ')');
 
-            if (closePos >= 0)
-                return (true, line.Substring(startPos, closePos - startPos));
+            // Find matching closing paren
+            var depth = 1;
+            pos++;
+
+            while (pos < line.Length && depth > 0)
+            {
+                if (line[pos] == '(') depth++;
+                else if (line[pos] == ')') depth--;
+                pos++;
+            }
+
+            if (depth == 0)
+            {
+                var endPos = pos - 1; // Before closing paren
+                return (true, line.Substring(startPos, endPos - startPos));
+            }
 
             // Unbalanced - return what we have
             return (true, line.Substring(startPos));
@@ -110,13 +94,23 @@ namespace Calcpad.Highlighter.Linter.Helpers
         public static int FindClosingParen(string line, int afterFuncName)
         {
             var pos = afterFuncName;
-            SkipWhitespace(line, ref pos);
+            while (pos < line.Length && char.IsWhiteSpace(line[pos]))
+                pos++;
 
             if (pos >= line.Length || line[pos] != '(')
                 return afterFuncName;
 
-            var closePos = FindMatchingClose(line, pos, '(', ')');
-            return closePos >= 0 ? closePos + 1 : line.Length;
+            var depth = 1;
+            pos++;
+
+            while (pos < line.Length && depth > 0)
+            {
+                if (line[pos] == '(') depth++;
+                else if (line[pos] == ')') depth--;
+                pos++;
+            }
+
+            return pos;
         }
 
         /// <summary>
@@ -125,11 +119,24 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// </summary>
         public static string ExtractBlockContent(string line, int braceStart)
         {
+            var depth = 0;
             var start = braceStart + 1;
-            var closePos = FindMatchingClose(line, braceStart, '{', '}');
-            return closePos >= 0
-                ? line.Substring(start, closePos - start)
-                : line.Substring(start);
+
+            for (int i = braceStart; i < line.Length; i++)
+            {
+                if (line[i] == '{') depth++;
+                else if (line[i] == '}')
+                {
+                    depth--;
+                    if (depth == 0)
+                    {
+                        return line.Substring(start, i - start);
+                    }
+                }
+            }
+
+            // Unbalanced - return what we have
+            return line.Substring(start);
         }
 
         /// <summary>
@@ -138,8 +145,17 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// </summary>
         public static int FindClosingBrace(string line, int braceStart)
         {
-            var closePos = FindMatchingClose(line, braceStart, '{', '}');
-            return closePos >= 0 ? closePos : line.Length;
+            var depth = 0;
+            for (int i = braceStart; i < line.Length; i++)
+            {
+                if (line[i] == '{') depth++;
+                else if (line[i] == '}')
+                {
+                    depth--;
+                    if (depth == 0) return i;
+                }
+            }
+            return line.Length;
         }
     }
 }

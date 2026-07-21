@@ -94,12 +94,12 @@
     },
     "server": {
       "type": "object",
-      "description": "CalcpadCE server configuration",
+      "description": "CalcPad server configuration",
       "properties": {
         "url": {
           "type": "string",
-          "description": "Server URL for CalcpadCE API",
-          "default": ""
+          "description": "Server URL for CalcPad API",
+          "default": "http://localhost:9420"
         }
       }
     },

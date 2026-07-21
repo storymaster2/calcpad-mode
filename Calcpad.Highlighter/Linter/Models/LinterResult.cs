@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using Calcpad.Highlighter.Linter.Helpers;
 
 namespace Calcpad.Highlighter.Linter.Models
@@ -7,37 +7,10 @@ namespace Calcpad.Highlighter.Linter.Models
     public class LinterResult
     {
         public List<LinterDiagnostic> Diagnostics { get; set; } = new();
-        private int _errorCount;
-        private int _warningCount;
-
-        public bool HasErrors => _errorCount > 0;
-        public bool HasWarnings => _warningCount > 0;
-        public int ErrorCount => _errorCount;
-        public int WarningCount => _warningCount;
-
-        internal void AppendDiagnostic(LinterDiagnostic diagnostic)
-        {
-            Diagnostics.Add(diagnostic);
-            switch (diagnostic.Severity)
-            {
-                case LinterSeverity.Error: _errorCount++; break;
-                case LinterSeverity.Warning: _warningCount++; break;
-            }
-        }
-
-        internal void RemoveDiagnostics(Predicate<LinterDiagnostic> match)
-        {
-            Diagnostics.RemoveAll(d =>
-            {
-                if (!match(d)) return false;
-                switch (d.Severity)
-                {
-                    case LinterSeverity.Error: _errorCount--; break;
-                    case LinterSeverity.Warning: _warningCount--; break;
-                }
-                return true;
-            });
-        }
+        public bool HasErrors => Diagnostics.Any(d => d.Severity == LinterSeverity.Error);
+        public bool HasWarnings => Diagnostics.Any(d => d.Severity == LinterSeverity.Warning);
+        public int ErrorCount => Diagnostics.Count(d => d.Severity == LinterSeverity.Error);
+        public int WarningCount => Diagnostics.Count(d => d.Severity == LinterSeverity.Warning);
 
         // Stage contexts for line continuation mapping
         internal Stage1Context Stage1Context { get; set; }

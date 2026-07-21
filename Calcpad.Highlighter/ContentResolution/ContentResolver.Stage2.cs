@@ -244,20 +244,29 @@ namespace Calcpad.Highlighter.ContentResolution
                         int afterDollar = dollarIdx + 1;
 
                         // Skip whitespace
-                        ParsingHelpers.SkipWhitespace(lineSpan, ref afterDollar);
+                        while (afterDollar < lineSpan.Length && char.IsWhiteSpace(lineSpan[afterDollar]))
+                            afterDollar++;
 
                         if (afterDollar < lineSpan.Length && lineSpan[afterDollar] == '(')
                         {
                             // Find matching close paren and extract args
                             int parenStart = afterDollar;
-                            var closePos = ParsingHelpers.FindMatchingClose(lineSpan, parenStart, '(', ')');
+                            int depth = 1;
+                            int pos = parenStart + 1;
 
-                            if (closePos >= 0)
+                            while (pos < lineSpan.Length && depth > 0)
                             {
-                                var argsStr = lineSpan.Slice(parenStart + 1, closePos - parenStart - 1).ToString();
+                                if (lineSpan[pos] == '(') depth++;
+                                else if (lineSpan[pos] == ')') depth--;
+                                pos++;
+                            }
+
+                            if (depth == 0)
+                            {
+                                var argsStr = lineSpan.Slice(parenStart + 1, pos - parenStart - 2).ToString();
                                 var args = ParameterParser.ParseMacroParameters(argsStr);
                                 results.Add((macroName, args));
-                                i = closePos + 1;
+                                i = pos;
                                 continue;
                             }
                         }
@@ -281,13 +290,21 @@ namespace Calcpad.Highlighter.ContentResolution
         }
 
         /// <summary>
-        /// Tests whether a trimmed line span is a #local or #global directive.
-        /// Matches Core's Validator.IsKeyword(line, ...).
+        /// Tests whether a trimmed line span is a #local directive.
+        /// Matches Core's Validator.IsKeyword(line, "#local").
         /// </summary>
-        private static bool IsLocalOrGlobalDirective(ReadOnlySpan<char> trimmedSpan)
+        private static bool IsLocalDirective(ReadOnlySpan<char> trimmedSpan)
         {
-            return trimmedSpan.StartsWith("#local", StringComparison.OrdinalIgnoreCase) ||
-                   trimmedSpan.StartsWith("#global", StringComparison.OrdinalIgnoreCase);
+            return trimmedSpan.StartsWith("#local", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Tests whether a trimmed line span is a #global directive.
+        /// Matches Core's Validator.IsKeyword(line, "#global").
+        /// </summary>
+        private static bool IsGlobalDirective(ReadOnlySpan<char> trimmedSpan)
+        {
+            return trimmedSpan.StartsWith("#global", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -355,20 +372,26 @@ namespace Calcpad.Highlighter.ContentResolution
 
             // Process each line, filtering #local sections and recursing for nested #include.
             // Matches Core's CalcpadReader.Include: #local sections are excluded from includes.
-            var directives = new DirectiveState();
+            var isLocal = false;
 
             for (int j = 0; j < includedStage1.Lines.Count; j++)
             {
                 var line = includedStage1.Lines[j];
                 var trimmedSpan = line.AsSpan().Trim();
 
-                if (IsLocalOrGlobalDirective(trimmedSpan))
+                if (IsLocalDirective(trimmedSpan))
                 {
-                    directives.Apply(trimmedSpan);
+                    isLocal = true;
                     continue;
                 }
 
-                if (directives.Scope == ScopeMode.Local)
+                if (IsGlobalDirective(trimmedSpan))
+                {
+                    isLocal = false;
+                    continue;
+                }
+
+                if (isLocal)
                     continue;
 
                 if (IsIncludeDirective(trimmedSpan))

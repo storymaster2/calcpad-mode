@@ -43,6 +43,9 @@ export const calcpadDarkTheme: monaco.editor.IStandaloneThemeData = {
         { token: 'svg', foreground: '00CED1' },
         { token: 'input', foreground: 'FF5555' },
         { token: 'format', foreground: 'A9A9A9' },
+        { token: 'stringVariable', foreground: '4EC9B0' },
+        { token: 'stringFunction', foreground: '4EC9B0', fontStyle: 'bold' },
+        { token: 'stringTable', foreground: 'B5CEA8' },
     ],
     colors: {
         'editor.background': '#1e1e1e',
@@ -53,58 +56,5 @@ export const calcpadDarkTheme: monaco.editor.IStandaloneThemeData = {
         'editor.inactiveSelectionBackground': '#3a3d41',
         'editorBracketMatch.background': '#0064001a',
         'editorBracketMatch.border': '#888888',
-    },
-};
-
-/**
- * CalcPad light theme for Monaco. Colors mirror the light-mode color rules
- * in the VS Code extension's package.json — same token roles as the dark
- * theme, retuned for contrast on a white background.
- */
-export const calcpadLightTheme: monaco.editor.IStandaloneThemeData = {
-    base: 'vs',
-    inherit: true,
-    ...({ semanticHighlighting: true } as object),
-    rules: [
-        { token: 'comment', foreground: '008000' },
-        { token: 'keyword', foreground: 'AF00DB' },
-        { token: 'number', foreground: '000000' },
-        { token: 'operator', foreground: '795E26' },
-        { token: 'bracket', foreground: 'C71585' },
-        { token: 'identifier', foreground: '000000' },
-
-        { token: 'const', foreground: '000000' },
-        { token: 'lineContinuation', foreground: '795E26' },
-        { token: 'variable', foreground: '0451A5' },
-        { token: 'localVariable', foreground: '2E5A9E' },
-        { token: 'function', foreground: '000000', fontStyle: 'bold' },
-        { token: 'macro', foreground: '8B008B' },
-        { token: 'macroParameter', foreground: 'A040A0' },
-        { token: 'units', foreground: '0F8080' },
-        { token: 'setting', foreground: '0070C1' },
-        { token: 'controlBlockKeyword', foreground: 'AF00DB' },
-        { token: 'endKeyword', foreground: 'AF00DB' },
-        { token: 'command', foreground: 'AF00DB' },
-        { token: 'include', foreground: '6F42C1' },
-        { token: 'filePath', foreground: '6F42C1' },
-        { token: 'dataExchangeKeyword', foreground: 'AF00DB' },
-        { token: 'htmlComment', foreground: '6A737D' },
-        { token: 'tag', foreground: '800080' },
-        { token: 'htmlContent', foreground: '008000' },
-        { token: 'javascript', foreground: '795E26' },
-        { token: 'css', foreground: '0451A5' },
-        { token: 'svg', foreground: '0F8080' },
-        { token: 'input', foreground: 'CD3131' },
-        { token: 'format', foreground: '6A737D' },
-    ],
-    colors: {
-        'editor.background': '#ffffff',
-        'editor.foreground': '#000000',
-        'editorLineNumber.foreground': '#237893',
-        'editorLineNumber.activeForeground': '#0b216f',
-        'editor.selectionBackground': '#add6ff',
-        'editor.inactiveSelectionBackground': '#e5ebf1',
-        'editorBracketMatch.background': '#0064001a',
-        'editorBracketMatch.border': '#b9b9b9',
     },
 };

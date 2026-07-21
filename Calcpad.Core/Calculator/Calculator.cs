@@ -82,7 +82,7 @@ namespace Calcpad.Core
             { '←', 18 },
         }.ToFrozenDictionary();
 
-        internal static readonly char[] Operators = ['^', '/', '\\', '⦼', '*', '-', '+', '<', '>', '≤', '≥', '≡', '≠', '∧', '∨', '⊕', '=', '∠'];
+        internal static readonly char[] Operators = ['^', '/', '\\', '⦼', '*', '-', '+', '<', '>', '≤', '≥', '≡', '≠', '∧', '∨', '⊕', '∠', '=', '←'];
 
         private static readonly bool[] _isZeroPreservingOperator = [
             false,   // ^  0
@@ -261,27 +261,10 @@ namespace Calcpad.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static void CheckTrigFunctionUnits(string func, Unit unit)
+        protected static void CheckFunctionUnits(string func, Unit unit)
         {
             if (unit is not null && !unit.IsAngle)
                 throw Exceptions.InvalidUnitsFunction(func, Unit.GetText(unit));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static void CheckFunctionUnits(string func, Unit unit)
-        {
-            if (unit is not null)
-                throw Exceptions.InvalidUnitsFunction(func, Unit.GetText(unit));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static void CheckFunctionUnits(string func, Unit u1, Unit u2)
-        {
-            if (u1 is not null)
-                throw Exceptions.InvalidUnitsFunction(func, Unit.GetText(u1));
-
-            if (u2 is not null)
-                throw Exceptions.InvalidUnitsFunction(func, Unit.GetText(u2));
         }
 
         protected static int GetRoot(in IScalarValue root)

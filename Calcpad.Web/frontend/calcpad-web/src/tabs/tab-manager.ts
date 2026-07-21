@@ -27,8 +27,6 @@ export type ActiveModelChangeListener = (
     tabId: string | null,
     model: monaco.editor.ITextModel | null,
 ) => void;
-export type TabContentChangeListener = (tabId: string) => void;
-export type TabRemovedListener = (tabId: string) => void;
 
 /**
  * Owns the open-tabs list, their Monaco models, and view-state restoration.
@@ -46,19 +44,8 @@ export class TabManager {
 
     private listeners = new Set<TabsListener>();
     private activeModelListeners = new Set<ActiveModelChangeListener>();
-    private contentListeners = new Set<TabContentChangeListener>();
-    private removedListeners = new Set<TabRemovedListener>();
 
-    /**
-     * @param editor   The editor instance this manager swaps models on.
-     * @param idPrefix Namespacing prefix for tab ids and model URIs. Must be
-     *                 unique per editor group so two groups can't create two
-     *                 Monaco models with the same URI (which Monaco rejects).
-     */
-    constructor(
-        private editor: monaco.editor.IStandaloneCodeEditor,
-        private idPrefix: string = '',
-    ) {}
+    constructor(private editor: monaco.editor.IStandaloneCodeEditor) {}
 
     // ---- Subscription ----
 
@@ -70,16 +57,6 @@ export class TabManager {
     onActiveModelChanged(listener: ActiveModelChangeListener): () => void {
         this.activeModelListeners.add(listener);
         return () => this.activeModelListeners.delete(listener);
-    }
-
-    onTabContentChanged(listener: TabContentChangeListener): () => void {
-        this.contentListeners.add(listener);
-        return () => this.contentListeners.delete(listener);
-    }
-
-    onTabRemoved(listener: TabRemovedListener): () => void {
-        this.removedListeners.add(listener);
-        return () => this.removedListeners.delete(listener);
     }
 
     // ---- Read API ----
@@ -106,26 +83,9 @@ export class TabManager {
         return t ? this.toState(t) : null;
     }
 
-    /** Lookup the Monaco model for the tab matching `filePath`, or null. */
-    findModelByPath(filePath: string): monaco.editor.ITextModel | null {
-        return this.tabs.find(t => t.filePath === filePath)?.model ?? null;
-    }
-
     isDirty(id?: string): boolean {
         const t = id ? this.tabs.find(t => t.id === id) : this.findActive();
         return !!t?.dirty;
-    }
-
-    getContent(id: string): string | null {
-        return this.tabs.find(t => t.id === id)?.model.getValue() ?? null;
-    }
-
-    getFilePath(id: string): string | null {
-        return this.tabs.find(t => t.id === id)?.filePath ?? null;
-    }
-
-    getTitle(id: string): string | null {
-        return this.tabs.find(t => t.id === id)?.title ?? null;
     }
 
     anyDirty(): boolean {
@@ -220,7 +180,6 @@ export class TabManager {
         tab.contentSub.dispose();
         tab.model.dispose();
         this.tabs.splice(idx, 1);
-        for (const l of this.removedListeners) l(id);
 
         if (wasActive) {
             const nextActive = this.tabs[idx] ?? this.tabs[idx - 1] ?? null;
@@ -263,23 +222,6 @@ export class TabManager {
         }
     }
 
-    /**
-     * Restore a tab from an autosave draft. Unlike openFile, the tab starts
-     * dirty — the on-disk file (if any) may differ from `content`, so the
-     * user must explicitly save to reconcile.
-     */
-    openDraft(opts: { filePath: string | null; title: string; content: string }): string {
-        const tab = this.createTab({ title: opts.title, filePath: opts.filePath, content: opts.content });
-        // Force dirty even though content matches the model's initial value:
-        // set savedVersionId to a value the alternative-version-id can never
-        // hit (it starts at 1 and only grows), so recomputeDirty sees a diff.
-        tab.savedVersionId = -1;
-        tab.dirty = true;
-        this.activate(tab.id);
-        this.emit();
-        return tab.id;
-    }
-
     /** Replace the active tab's content as if it had just been opened from disk. */
     reloadActive(content: string): void {
         const t = this.findActive();
@@ -311,30 +253,10 @@ export class TabManager {
         if (t) this.activate(t.id);
     }
 
-    /**
-     * Dispose every model + subscription this manager owns. Used when an
-     * editor group is closed (unsplit). Fires the removed-listeners so the
-     * caller can clean up per-tab state (drafts) first, then clears listeners
-     * so no stale callbacks fire against the disposed editor.
-     */
-    disposeAll(): void {
-        for (const t of this.tabs) {
-            for (const l of this.removedListeners) l(t.id);
-            t.contentSub.dispose();
-            t.model.dispose();
-        }
-        this.tabs = [];
-        this._activeId = null;
-        this.listeners.clear();
-        this.activeModelListeners.clear();
-        this.contentListeners.clear();
-        this.removedListeners.clear();
-    }
-
     // ---- Internals ----
 
     private createTab(opts: { title: string; filePath: string | null; content: string }): InternalTab {
-        const id = `${this.idPrefix}tab-${++this._seq}`;
+        const id = `tab-${++this._seq}`;
         // Use a unique URI per model — Monaco needs this so markers/providers
         // can distinguish tabs. Path includes the tab id so the URI is stable
         // across rename and unique even when two tabs hold the same file path.
@@ -349,10 +271,7 @@ export class TabManager {
             model,
             viewState: null,
             savedVersionId,
-            contentSub: model.onDidChangeContent(() => {
-                this.recomputeDirty(id);
-                for (const l of this.contentListeners) l(id);
-            }),
+            contentSub: model.onDidChangeContent(() => this.recomputeDirty(id)),
         };
         this.tabs.push(tab);
         this.emit();

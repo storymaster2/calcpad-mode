@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Calcpad.Highlighter.Linter.Constants;
 using Calcpad.Highlighter.Linter.Helpers;
 using Calcpad.Highlighter.Linter.Models;
@@ -43,7 +42,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
         private void ValidateFunctionNaming(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
-            var definedNames = new HashSet<string>(StringComparer.Ordinal);
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
                 if (!tokenProvider.IsCpdMode(i)) continue;
@@ -64,17 +62,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 {
                     var funcName = funcMatch.Groups[1].Value;
                     var paramsStr = funcMatch.Groups[2].Value.Trim();
-
-                    // Redefining a user-defined function is allowed - inform rather than error.
-                    // Built-in conflicts (CPD-3204) and macros ($) are handled separately.
-                    if (!funcName.EndsWith("$") && !CalcpadBuiltIns.Functions.Contains(funcName)
-                        && !definedNames.Add(funcName))
-                    {
-                        var startPos = line.IndexOf(funcName, StringComparison.Ordinal);
-                        var col = startPos >= 0 ? startPos : 0;
-                        result.AddInformation(i, col, col + funcName.Length, "CPD-3314",
-                            "Function '" + funcName + "' redefines an existing function");
-                    }
 
                     // Functions must have at least one parameter
                     if (string.IsNullOrWhiteSpace(paramsStr))
@@ -158,10 +145,10 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 return;
             }
 
-            // Check for conflict with built-in constants (WARNING - redefinition is allowed)
+            // Check for conflict with built-in constants (ERROR)
             if (CalcpadBuiltIns.CommonConstants.Contains(identifier))
             {
-                result.AddWarning(stage3Line, col, endPos, "CPD-3207",
+                result.AddError(stage3Line, col, endPos, "CPD-3207",
                     "Variable name '" + identifier + "' conflicts with built-in constant");
                 return; // Don't report additional conflicts
             }

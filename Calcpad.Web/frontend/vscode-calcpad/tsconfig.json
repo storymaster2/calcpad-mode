@@ -7,10 +7,6 @@
             "ES2020",
             "DOM"
         ],
-        "types": [
-            "node",
-            "vscode"
-        ],
         "sourceMap": true,
         "rootDir": "src",
         "strict": true,

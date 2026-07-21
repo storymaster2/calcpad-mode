@@ -1,5 +1,5 @@
 import type { CalcpadApiClient } from '../api/client';
-import type { LintResponse, LintDiagnostic } from '../types/api';
+import type { LintResponse, LintDiagnostic, ClientFileCache } from '../types/api';
 import type { ILogger } from '../types/interfaces';
 import { truncateBase64Content } from './base64-truncate';
 
@@ -23,6 +23,7 @@ export class CalcpadLintService {
      */
     public async lintContent(
         content: string,
+        clientFileCache?: ClientFileCache,
         sourceFilePath?: string
     ): Promise<LintResponse | null> {
         const reqId = ++this.requestId;
@@ -36,7 +37,7 @@ export class CalcpadLintService {
         }
 
         const truncated = truncateBase64Content(content);
-        const response = await this.apiClient.lint(truncated, sourceFilePath);
+        const response = await this.apiClient.lint(truncated, clientFileCache, sourceFilePath);
 
         if (response) {
             this.logger?.appendLine(

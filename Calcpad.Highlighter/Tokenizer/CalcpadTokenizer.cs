@@ -34,7 +34,7 @@ namespace Calcpad.Highlighter.Tokenizer
         {
             public int Line;
             public int TokenStartColumn;
-            public ReadOnlyMemory<char> Text;
+            public string Text;
             public char TextComment;
             public char TagComment;
             public bool IsSubscript;
@@ -113,11 +113,10 @@ namespace Calcpad.Highlighter.Tokenizer
                 InitMacroCollectionState();
 
             int lineNum = 0;
-            // ReadOnlyMemory<char> slices survive across nested helper calls — a ref-struct
-            // ReadOnlySpan cannot, since TokenizerState stores Text as a field.
-            foreach (var lineMemory in new LineMemoryEnumerator(source.AsMemory()))
+            var sourceSpan = source.AsSpan();
+            foreach (var lineSpan in new LineEnumerator(sourceSpan))
             {
-                TokenizeLineInternal(lineMemory, lineNum++);
+                TokenizeLineInternal(lineSpan.ToString(), lineNum++);
             }
 
             return _result;
@@ -131,14 +130,13 @@ namespace Calcpad.Highlighter.Tokenizer
             _result = new TokenizerResult();
             _builder = new StringBuilder(100);
             _inHtmlComment = false;
-            TokenizeLineInternal(line.AsMemory(), lineNumber);
+            TokenizeLineInternal(line, lineNumber);
             return _result;
         }
 
-        private void TokenizeLineInternal(ReadOnlyMemory<char> textMemory, int lineNumber)
+        private void TokenizeLineInternal(string text, int lineNumber)
         {
-            InitState(textMemory, lineNumber);
-            var text = textMemory.Span;
+            InitState(text, lineNumber);
             _builder.Clear();
             _tagState = TagState.None;
 
@@ -159,7 +157,7 @@ namespace Calcpad.Highlighter.Tokenizer
                 }
 
                 // Line continuation check - works in both code and comments
-                if (c == '_' && (i == len - 1 || text[(i + 1)..].IsWhiteSpace()) && i > 0 && text[i - 1] == ' ')
+                if (c == '_' && (i == len - 1 || text.AsSpan(i + 1).IsWhiteSpace()) && i > 0 && text[i - 1] == ' ')
                 {
                     ParseLineBreak();
                     break;
@@ -306,7 +304,9 @@ namespace Calcpad.Highlighter.Tokenizer
                     ParseDelimiter(c);
                 }
                 else if (c == '.' && _builder.Length == 0 &&
-                         (_state.CurrentType == TokenType.MacroParameter || _state.CurrentType == TokenType.Macro))
+                         (_state.CurrentType == TokenType.MacroParameter || _state.CurrentType == TokenType.Macro ||
+                          _state.CurrentType == TokenType.StringVariable || _state.CurrentType == TokenType.StringFunction ||
+                          _state.CurrentType == TokenType.StringTable))
                 {
                     // Element access dot after macro parameter/call (e.g., l_v$.iζ, m$.(i; j))
                     // The macro token was already emitted by ParseMacro(), treat . as operator
@@ -418,7 +418,7 @@ namespace Calcpad.Highlighter.Tokenizer
             }
         }
 
-        private void InitState(ReadOnlyMemory<char> textMemory, int lineNumber)
+        private void InitState(string text, int lineNumber)
         {
             // Preserve special content state across lines
             var prevInSpecialContent = _state.InSpecialContent;
@@ -431,12 +431,14 @@ namespace Calcpad.Highlighter.Tokenizer
             _pendingFunctionLine = -1;
             _pendingFunctionParenDepth = 0;
             _beforeFirstCodeToken = true;
+            _expectingStringVariable = false;
+            _expectingStringTableVariable = false;
             _state = new TokenizerState
             {
                 Line = lineNumber,
-                Text = textMemory,
+                Text = text,
                 IsLeading = true,
-                IsPlot = IsPlotLine(textMemory.Span),
+                IsPlot = IsPlotLine(text),
                 AllowUnaryMinus = true,
                 Keyword = string.Empty,
                 InSpecialContent = prevInSpecialContent,

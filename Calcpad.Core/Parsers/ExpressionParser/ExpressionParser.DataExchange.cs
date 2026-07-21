@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Calcpad.OpenXml;
 
 namespace Calcpad.Core
@@ -9,21 +10,51 @@ namespace Calcpad.Core
     {
         private static class DataExchange
         {
-            internal static string[][] Read(ReadWriteOptions options)
+            internal static string[][] Read(ReadWriteOptions options, ClientFileCache clientFileCache = null)
             {
                 var fileName = $"{options.Path}.{options.Ext}";
                 if (fileName == ".")
                     throw Exceptions.MissingFileName();
 
                 var fullPath = options.FullPath;
-                if (!File.Exists(fullPath))
+                var fileExists = File.Exists(fullPath);
+
+                if (!fileExists && clientFileCache != null)
+                {
+                    if (clientFileCache.TryGetErrorMultiKey(fullPath, fileName, out var cachedError))
+                        throw new MathParserException(cachedError);
+
+                    try
+                    {
+                        // Excel files need raw bytes; CSV/text files need a UTF-8 string
+                        if (options.IsExcel)
+                        {
+                            if (!ExcelData.IsExcelFile(options.Ext.ToString()))
+                                throw Exceptions.FileFormatNotSupported(options.Ext.ToString());
+
+                            if (clientFileCache.TryGetBytes(fullPath, out var cachedBytes) ||
+                                clientFileCache.TryGetBytes(fileName, out cachedBytes))
+                                return ReadExcelFromMemory(options, cachedBytes);
+                        }
+                        else if (clientFileCache.TryGetContentMultiKey(fullPath, fileName, out var cachedContent))
+                        {
+                            return ReadCSVFromString(options, cachedContent);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        throw new MathParserException(e.Message);
+                    }
+                }
+
+                if (!fileExists)
                     throw Exceptions.FileNotFound(fileName);
 
                 try
                 {
                     if (options.IsExcel)
                     {
-                        if (!options.Ext.Equals("xlsx", StringComparison.OrdinalIgnoreCase) && !options.Ext.Equals("xlsm", StringComparison.OrdinalIgnoreCase))
+                        if (!ExcelData.IsExcelFile(options.Ext.ToString()))
                             throw Exceptions.FileFormatNotSupported(options.Ext.ToString());
 
                         return ReadExcel(options);
@@ -34,6 +65,27 @@ namespace Calcpad.Core
                 {
                     throw new MathParserException(e.Message);
                 }
+            }
+
+            private static string[][] ReadCSVFromString(ReadWriteOptions options, string content)
+            {
+                int i = 0;
+                var (start, end) = ParseBounds(options.Start, options.End);
+                var lines = new List<string>();
+                using var reader = new StringReader(content);
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    ++i;
+                    if (i >= start.row)
+                    {
+                        if (end.row > 0 && i > end.row)
+                            break;
+
+                        lines.Add(line);
+                    }
+                }
+                return FormatCSVData(options, lines, start, end);
             }
 
             private static string[][] ReadCSV(ReadWriteOptions options)
@@ -54,10 +106,15 @@ namespace Calcpad.Core
                         lines.Add(line);
                     }
                 }
+                return FormatCSVData(options, lines, start, end);
+            }
+
+            private static string[][] FormatCSVData(ReadWriteOptions options, List<string> lines, (int row, int col) start, (int row, int col) end)
+            {
                 string[][] data = new string[lines.Count][];
                 var j0 = Math.Max(0, start.col - 1);
                 var n = lines.Count;
-                for (i = 0; i < n; ++i)
+                for (int i = 0; i < n; ++i)
                 {
                     if (start.col == 0 && end.col == 0)
                         data[i] = lines[i].Split(options.Separator, StringSplitOptions.TrimEntries);
@@ -131,28 +188,39 @@ namespace Calcpad.Core
                 return ExcelData.Read(options.FullPath, sheet, start, end);
             }
 
-            internal static void Write(ReadWriteOptions options, string[][] data)
+            private static string[][] ReadExcelFromMemory(ReadWriteOptions options, byte[] contentBytes)
+            {
+                var sheet = options.Sheet.ToString();
+                var start = options.Start.ToString();
+                var end = options.End.ToString();
+                return ExcelData.ReadFromMemory(contentBytes, sheet, start, end);
+            }
+
+            internal static string ReadString(ReadWriteOptions options, ClientFileCache clientFileCache = null)
             {
                 var fileName = $"{options.Path}.{options.Ext}";
                 if (fileName == ".")
                     throw Exceptions.MissingFileName();
 
                 var fullPath = options.FullPath;
-                var dir = Path.GetDirectoryName(fullPath);
-                if (!Directory.Exists(dir))
-                    throw Exceptions.PathNotFound(dir);
+                var fileExists = File.Exists(fullPath);
+
+                if (!fileExists && clientFileCache != null)
+                {
+                    if (clientFileCache.TryGetErrorMultiKey(fullPath, fileName, out var cachedError))
+                        throw new MathParserException(cachedError);
+
+                    if (clientFileCache.TryGetContentMultiKey(fullPath, fileName, out var cachedContent))
+                        return NormalizeLinesToSeparator(cachedContent);
+                }
+
+                if (!fileExists)
+                    throw Exceptions.FileNotFound(fileName);
 
                 try
                 {
-                    if (options.IsExcel)
-                    {
-                        if (!options.Ext.Equals("xlsx", StringComparison.OrdinalIgnoreCase) && !options.Ext.Equals("xlsm", StringComparison.OrdinalIgnoreCase))
-                            throw Exceptions.FileFormatNotSupported(options.Ext.ToString());
-
-                        WriteExcel(options, data);
-                    }
-                    else
-                        WriteCSV(options, data);
+                    var content = File.ReadAllText(fullPath);
+                    return NormalizeLinesToSeparator(content);
                 }
                 catch (Exception e)
                 {
@@ -160,7 +228,75 @@ namespace Calcpad.Core
                 }
             }
 
-            private static void WriteCSV(ReadWriteOptions options, string[][] data)
+            internal static void WriteString(ReadWriteOptions options, string content, WriteCache writeCache = null)
+            {
+                var fileName = $"{options.Path}.{options.Ext}";
+                if (fileName == ".")
+                    throw Exceptions.MissingFileName();
+
+                try
+                {
+                    var text = content.Replace("|", Environment.NewLine);
+
+                    if (writeCache != null)
+                    {
+                        var bytes = new UTF8Encoding(false).GetBytes(text);
+                        var ct = GuessTextContentType(options.Ext);
+                        if (options.Append)
+                            writeCache.AppendBytes(fileName, ct, bytes);
+                        else
+                            writeCache.PutBytes(fileName, ct, bytes);
+                        return;
+                    }
+
+                    var fullPath = options.FullPath;
+                    var dir = Path.GetDirectoryName(fullPath);
+                    if (!Directory.Exists(dir))
+                        throw Exceptions.PathNotFound(dir);
+
+                    if (options.Append)
+                        File.AppendAllText(fullPath, text);
+                    else
+                        File.WriteAllText(fullPath, text);
+                }
+                catch (Exception e)
+                {
+                    throw new MathParserException(e.Message);
+                }
+            }
+
+            internal static void Write(ReadWriteOptions options, string[][] data, WriteCache writeCache = null)
+            {
+                var fileName = $"{options.Path}.{options.Ext}";
+                if (fileName == ".")
+                    throw Exceptions.MissingFileName();
+
+                if (writeCache == null)
+                {
+                    var dir = Path.GetDirectoryName(options.FullPath);
+                    if (!Directory.Exists(dir))
+                        throw Exceptions.PathNotFound(dir);
+                }
+
+                try
+                {
+                    if (options.IsExcel)
+                    {
+                        if (!ExcelData.IsExcelFile(options.Ext.ToString()))
+                            throw Exceptions.FileFormatNotSupported(options.Ext.ToString());
+
+                        WriteExcel(options, data, writeCache, fileName);
+                    }
+                    else
+                        WriteCSV(options, data, writeCache, fileName);
+                }
+                catch (Exception e)
+                {
+                    throw new MathParserException(e.Message);
+                }
+            }
+
+            private static void WriteCSV(ReadWriteOptions options, string[][] data, WriteCache writeCache, string fileName)
             {
                 var (start, end) = ParseBounds(options.Start, options.End);
                 var i0 = Math.Max(0, start.row - 1);
@@ -168,13 +304,38 @@ namespace Calcpad.Core
                 if (end.row > 0)
                     n = Math.Min(n, end.row);
 
-                using var writer = new StreamWriter(options.FullPath, options.Append);
                 var j0 = Math.Max(0, start.col - 1);
+
+                if (writeCache != null)
+                {
+                    using var ms = new MemoryStream();
+                    using (var writer = new StreamWriter(ms, new UTF8Encoding(false), leaveOpen: true))
+                    {
+                        WriteCSVRows(writer, options, data, i0, n, j0, end.col);
+                    }
+                    var bytes = ms.ToArray();
+                    var ct = options.Ext.Equals("csv", StringComparison.OrdinalIgnoreCase)
+                        ? "text/csv"
+                        : GuessTextContentType(options.Ext);
+                    if (options.Append)
+                        writeCache.AppendBytes(fileName, ct, bytes);
+                    else
+                        writeCache.PutBytes(fileName, ct, bytes);
+                    return;
+                }
+
+                using var fileWriter = new StreamWriter(options.FullPath, options.Append);
+                WriteCSVRows(fileWriter, options, data, i0, n, j0, end.col);
+                fileWriter.Close();
+            }
+
+            private static void WriteCSVRows(StreamWriter writer, ReadWriteOptions options, string[][] data, int i0, int n, int j0, int endCol)
+            {
                 for (int i = i0; i < n; ++i)
                 {
                     var m = data[i].Length - j0;
-                    if (end.col > 0)
-                        m = Math.Min(m, end.col - j0);
+                    if (endCol > 0)
+                        m = Math.Min(m, endCol - j0);
 
                     if (m > 0)
                     {
@@ -184,16 +345,41 @@ namespace Calcpad.Core
                     else
                         writer.WriteLine();
                 }
-                writer.Close();
             }
 
-            private static void WriteExcel(ReadWriteOptions options, string[][] matrix)
+            private static void WriteExcel(ReadWriteOptions options, string[][] matrix, WriteCache writeCache, string fileName)
             {
                 var sheet = options.Sheet.ToString();
                 var start = options.Start.ToString();
                 var end = options.End.ToString();
+
+                if (writeCache != null)
+                {
+                    byte[] existing = null;
+                    if (options.Append)
+                        writeCache.TryGetBytes(fileName, out existing);
+                    var resultBytes = ExcelData.Write(existing, sheet, start, end, matrix, options.Append);
+                    writeCache.PutBytes(
+                        fileName,
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        resultBytes);
+                    return;
+                }
+
                 ExcelData.Write(options.FullPath, sheet, start, end, matrix, options.Append);
             }
+
+            private static string GuessTextContentType(ReadOnlySpan<char> ext)
+            {
+                if (ext.Equals("csv", StringComparison.OrdinalIgnoreCase)) return "text/csv";
+                if (ext.Equals("json", StringComparison.OrdinalIgnoreCase)) return "application/json";
+                if (ext.Equals("xml", StringComparison.OrdinalIgnoreCase)) return "application/xml";
+                if (ext.Equals("html", StringComparison.OrdinalIgnoreCase) || ext.Equals("htm", StringComparison.OrdinalIgnoreCase)) return "text/html";
+                return "text/plain";
+            }
         }
+
+        private static string NormalizeLinesToSeparator(string content)
+            => content.Replace("\r\n", "|").Replace("\n", "|").Replace("\r", "|");
     }
 }

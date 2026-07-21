@@ -1,50 +1,17 @@
 // Type definitions for CalcpadVuePanel
 
-// Which host is running the Vue UI. Exactly one of isVSCode / isWeb / isDesktop
-// is true. `isWebOrDesktop` is a convenience — true for the calcpad-web/desktop
-// hosts (which share App.vue's in-page Output panel, tab strip, etc.) and false
-// for VS Code (where the extension embeds a subset of the UI).
-export interface VersionConfig {
-  isVSCode: boolean
-  isWeb: boolean
-  isDesktop: boolean
-  isWebOrDesktop: boolean
-}
-
-export const DEFAULT_VERSION_CONFIG: VersionConfig = {
-  isVSCode: true,
-  isWeb: false,
-  isDesktop: false,
-  isWebOrDesktop: false,
-}
-
 export interface SnippetParameter {
   name: string
   description?: string
-  /** Type from the backend ParameterType enum (e.g. "Scalar", "Vector", "Matrix", "Any"). */
-  type?: string
-  /** Human-readable type description; falls back to `type` when absent. */
-  typeDescription?: string
-  isOptional?: boolean
-  isVariadic?: boolean
 }
 
 export interface InsertItem {
   label?: string
   tag: string
   description?: string
-  /** Long-form description for docstrings. */
-  documentation?: string
-  /** Usage example. */
-  example?: string
   categoryPath?: string
   category?: string
   quickType?: string
-  keywordType?: string
-  returnType?: string
-  returnTypeDescription?: string
-  isElementWise?: boolean
-  acceptsAnyCount?: boolean
   parameters?: SnippetParameter[]
 }
 
@@ -83,7 +50,6 @@ export interface Settings {
     url: string
   }
   units: string
-  isUs: boolean
 }
 
 export interface VariableItem {
@@ -97,12 +63,6 @@ export interface VariableItem {
   paramTypes?: string[]
   paramDescriptions?: string[]
   defaults?: (string | null)[]
-  /** Value/expression type for variables and custom units (e.g. "Scalar", "Vector"). */
-  type?: string
-  /** Return type for functions. */
-  returnType?: string
-  /** Right-hand-side expression for functions/variables/custom units. */
-  expression?: string
 }
 
 export interface VariablesData {
@@ -110,6 +70,28 @@ export interface VariablesData {
   variables: VariableItem[]
   functions: VariableItem[]
   customUnits: VariableItem[]
+}
+
+export interface S3User {
+  username: string
+  id: string
+}
+
+export interface S3File {
+  fileName: string
+  size: number
+  lastModified: string
+}
+
+export interface S3State {
+  isAuthenticated: boolean
+  authToken: string | null
+  currentUser: S3User | null
+  apiUrl: string
+  files: S3File[]
+  loading: boolean
+  error: string | null
+  searchQuery: string
 }
 
 export interface Tab {
@@ -135,16 +117,38 @@ export interface VscodeMessage {
 export type { PdfSettings } from '../../types/pdf-settings'
 export { DEFAULT_PDF_SETTINGS } from '../../types/pdf-settings'
 
+// S3 File Management Types
+export interface S3File {
+  fileName: string
+  size: number
+  lastModified: string
+  tags?: string[]
+}
+
+export interface S3User {
+  id: string
+  username: string
+  email: string
+  role: number
+}
+
+export interface S3Config {
+  apiBaseUrl: string
+  minio: {
+    endpoint: string
+    useSSL: boolean
+  }
+  fileUpload: {
+    maxFileSize: number
+  }
+  ui: {
+    defaultTab: string
+    filesPerPage: number
+  }
+}
+
 export interface TocHeading {
   level: number   // 1-6
   text: string    // Heading text content (stripped of markup)
   line: number    // 1-indexed line number in the source document
-}
-
-export interface FileNode {
-  name: string
-  path: string
-  isDirectory: boolean
-  children?: FileNode[]
-  loaded?: boolean
 }

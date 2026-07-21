@@ -114,13 +114,20 @@ namespace Calcpad.Highlighter.Tokenizer
                     _state.CurrentType = TokenType.Function;
                     // Check if this is a function DEFINITION by looking ahead for "(...) ="
                     // Only mark params as LocalVariable for definitions, not calls
-                    _state.IsFunctionDefinition = IsFunctionDefinitionLine(_state.Text.Span, _state.TokenStartColumn);
+                    _state.IsFunctionDefinition = IsFunctionDefinitionLine(_state.Text, _state.TokenStartColumn);
                     _state.IsInFunctionParams = _state.IsFunctionDefinition;
                 }
                 else if (t == TokenType.Function)
                 {
                     // This is a call to a known function - NOT a definition
                     // Don't mark params as local variables
+                    _state.IsFunctionDefinition = false;
+                    _state.IsInFunctionParams = false;
+                }
+                else if (t == TokenType.StringFunction)
+                {
+                    // String function call: len$(...), trim$(...)
+                    // Treat as regular function call brackets - do NOT enter MacroArgs mode
                     _state.IsFunctionDefinition = false;
                     _state.IsInFunctionParams = false;
                 }
@@ -245,12 +252,6 @@ namespace Calcpad.Highlighter.Tokenizer
             Append(_state.CurrentTypeOrPrevious);
             _builder.Append(c);
 
-            // @ or & in a command block introduces a scoped variable so the next identifier is
-            // a local variable, e.g. $Sum{x^2 @ x = 1 : 10}. This must be flagged even inside a
-            // nested command (CommandCount > 0), which the branch below would otherwise short-circuit.
-            if ((c == '@' || c == '&') && _state.IsInCommandBlock)
-                _state.IsAfterAtOrAmp = true;
-
             if (_state.CommandCount > 0 || c == ';')
             {
                 Append(TokenType.Operator);
@@ -274,6 +275,13 @@ namespace Calcpad.Highlighter.Tokenizer
                 }
                 Append(TokenType.Operator);
             }
+            else if ((c == '@' || c == '&') && _state.IsInCommandBlock)
+            {
+                // @ or & in command block introduces a scoped variable
+                // e.g., $Sum{x^2 @ x = 1 : 10} or $Root{f(x) & x = 0 : 5}
+                _state.IsAfterAtOrAmp = true;
+                Append(TokenType.Operator);
+            }
             else
             {
                 Append(TokenType.Operator);
@@ -282,7 +290,7 @@ namespace Calcpad.Highlighter.Tokenizer
             _state.CurrentType = TokenType.Bracket;
         }
 
-        private void ParseImaginary(char c, int i, int len, ReadOnlySpan<char> text)
+        private void ParseImaginary(char c, int i, int len, string text)
         {
             var j = i + 1;
             if (j < len && text[j] == 'n')
@@ -321,17 +329,7 @@ namespace Calcpad.Highlighter.Tokenizer
 
                 if (_builder.Length > 0)
                 {
-                    var appendType = _state.CurrentTypeOrPrevious;
-                    // Detect HTML comment markers before emitting, so a <!-- opener
-                    // on a line ending in " _" is typed as HtmlComment and _inHtmlComment
-                    // carries the open block into the continuation line.
-                    if (appendType == TokenType.Comment || _inHtmlComment)
-                    {
-                        _state.CurrentType = appendType;
-                        CheckHtmlComment();
-                        appendType = _state.CurrentType;
-                    }
-                    Append(appendType);
+                    Append(_state.CurrentTypeOrPrevious);
                 }
             }
 

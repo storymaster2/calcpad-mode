@@ -1,15 +1,24 @@
 import * as monaco from 'monaco-editor';
 import type { EditorBridge } from './bridge';
-import {
-    HTML_INLINE,
-    MARKDOWN_INLINE,
-    getCommentPrefixInsertColumn,
-    buildHeadingLine,
-    buildParagraphLine,
-    buildListLines,
-    type InlineFormat,
-    type CommentFormat,
-} from 'calcpad-frontend';
+
+type InlineFormat = 'bold' | 'italic' | 'underline' | 'subscript' | 'superscript';
+type CommentFormat = 'html' | 'markdown';
+
+const HTML_INLINE: Record<InlineFormat, [string, string]> = {
+    bold: ['<strong>', '</strong>'],
+    italic: ['<em>', '</em>'],
+    underline: ['<ins>', '</ins>'],
+    subscript: ['<sub>', '</sub>'],
+    superscript: ['<sup>', '</sup>'],
+};
+
+const MARKDOWN_INLINE: Record<InlineFormat, [string, string]> = {
+    bold: ['**', '**'],
+    italic: ['*', '*'],
+    underline: ['++', '++'],
+    subscript: ['~', '~'],
+    superscript: ['^', '^'],
+};
 
 /**
  * Register the 18 CalcPad text-formatting commands plus their keybindings on the editor.
@@ -39,31 +48,31 @@ export function registerFormattingCommands(
     const KC = monaco.KeyCode;
 
     // Inline formatting
-    add('calcpad.formatBold',         'CalcpadCE: Bold',         [KM.CtrlCmd | KC.KeyB], () => wrapInline(editor, bridge, 'bold'));
-    add('calcpad.formatItalic',       'CalcpadCE: Italic',       [KM.CtrlCmd | KC.KeyI], () => wrapInline(editor, bridge, 'italic'));
-    add('calcpad.formatUnderline',    'CalcpadCE: Underline',    [KM.CtrlCmd | KC.KeyU], () => wrapInline(editor, bridge, 'underline'));
-    add('calcpad.formatSubscript',    'CalcpadCE: Subscript',    [KM.CtrlCmd | KC.Equal], () => wrapInline(editor, bridge, 'subscript'));
-    add('calcpad.formatSuperscript',  'CalcpadCE: Superscript',  [KM.CtrlCmd | KM.Shift | KC.Equal], () => wrapInline(editor, bridge, 'superscript'));
+    add('calcpad.formatBold',         'CalcPad: Bold',         [KM.CtrlCmd | KC.KeyB], () => wrapInline(editor, bridge, 'bold'));
+    add('calcpad.formatItalic',       'CalcPad: Italic',       [KM.CtrlCmd | KC.KeyI], () => wrapInline(editor, bridge, 'italic'));
+    add('calcpad.formatUnderline',    'CalcPad: Underline',    [KM.CtrlCmd | KC.KeyU], () => wrapInline(editor, bridge, 'underline'));
+    add('calcpad.formatSubscript',    'CalcPad: Subscript',    [KM.CtrlCmd | KC.Equal], () => wrapInline(editor, bridge, 'subscript'));
+    add('calcpad.formatSuperscript',  'CalcPad: Superscript',  [KM.CtrlCmd | KM.Shift | KC.Equal], () => wrapInline(editor, bridge, 'superscript'));
 
     // Headings (Ctrl+1..Ctrl+6)
     const digitKeys = [KC.Digit1, KC.Digit2, KC.Digit3, KC.Digit4, KC.Digit5, KC.Digit6];
     for (let i = 0; i < 6; i++) {
         const level = i + 1;
-        add(`calcpad.formatHeading${level}`, `CalcpadCE: Heading ${level}`,
+        add(`calcpad.formatHeading${level}`, `CalcPad: Heading ${level}`,
             [KM.CtrlCmd | digitKeys[i]],
             () => insertHeading(editor, bridge, level));
     }
 
     // Block elements
-    add('calcpad.formatParagraph',    'CalcpadCE: Paragraph',     [KM.CtrlCmd | KC.KeyL], () => insertParagraph(editor));
-    add('calcpad.formatLineBreak',    'CalcpadCE: Line Break',    [KM.CtrlCmd | KC.KeyR], () => insertLineBreak(editor));
-    add('calcpad.formatBulletedList', 'CalcpadCE: Bulleted List', [KM.CtrlCmd | KM.Shift | KC.KeyL], () => insertBulletedList(editor, bridge));
-    add('calcpad.formatNumberedList', 'CalcpadCE: Numbered List', [KM.CtrlCmd | KM.Shift | KC.KeyN], () => insertNumberedList(editor, bridge));
+    add('calcpad.formatParagraph',    'CalcPad: Paragraph',     [KM.CtrlCmd | KC.KeyL], () => insertParagraph(editor));
+    add('calcpad.formatLineBreak',    'CalcPad: Line Break',    [KM.CtrlCmd | KC.KeyR], () => insertLineBreak(editor));
+    add('calcpad.formatBulletedList', 'CalcPad: Bulleted List', [KM.CtrlCmd | KM.Shift | KC.KeyL], () => insertBulletedList(editor, bridge));
+    add('calcpad.formatNumberedList', 'CalcPad: Numbered List', [KM.CtrlCmd | KM.Shift | KC.KeyN], () => insertNumberedList(editor, bridge));
 
     // Comments
-    add('calcpad.toggleComment',  'CalcpadCE: Toggle Comment',   [KM.CtrlCmd | KC.KeyQ], () => toggleComment(editor));
-    add('calcpad.uncomment',      'CalcpadCE: Uncomment',        [KM.CtrlCmd | KM.Shift | KC.KeyQ], () => uncomment(editor));
-    add('calcpad.pasteAsComment', 'CalcpadCE: Paste as Comment', [KM.CtrlCmd | KM.Shift | KC.KeyV], () => pasteAsComment(editor));
+    add('calcpad.toggleComment',  'CalcPad: Toggle Comment',   [KM.CtrlCmd | KC.KeyQ], () => toggleComment(editor));
+    add('calcpad.uncomment',      'CalcPad: Uncomment',        [KM.CtrlCmd | KM.Shift | KC.KeyQ], () => uncomment(editor));
+    add('calcpad.pasteAsComment', 'CalcPad: Paste as Comment', [KM.CtrlCmd | KM.Shift | KC.KeyV], () => pasteAsComment(editor));
 
     return { dispose() { for (const d of disposables) d.dispose(); } };
 }
@@ -89,36 +98,15 @@ function detectFormatAtCursor(editor: monaco.editor.IStandaloneCodeEditor): Comm
     return mdActive ? 'markdown' : 'html';
 }
 
-/**
- * Insert a comment quote on every selected line that needs one, right after
- * its indentation (same rule headings use). A line is skipped when it already
- * opens a comment or when the selection already lands inside a text region
- * mid-line. Returns the 1-based column each quote was inserted at, keyed by
- * line number, for shifting selections.
- */
-function ensureCommentPrefixes(
-    model: monaco.editor.ITextModel,
-    selections: readonly monaco.Selection[],
-    edits: monaco.editor.IIdentifiedSingleEditOperation[],
-): Map<number, number> {
-    const startColByLine = new Map<number, number>();
-    for (const sel of selections) {
-        const prev = startColByLine.get(sel.startLineNumber);
-        if (prev === undefined || sel.startColumn < prev) startColByLine.set(sel.startLineNumber, sel.startColumn);
+function stripCommentPrefix(lineText: string): [string, string, string] {
+    if (lineText.startsWith("'")) {
+        const inner = lineText.substring(1);
+        if (inner.endsWith("'")) {
+            return ["'", inner.slice(0, -1), "'"];
+        }
+        return ["'", inner, ''];
     }
-
-    const insertedAt = new Map<number, number>();
-    for (const [lineNumber, startColumn] of startColByLine) {
-        const insertCol = getCommentPrefixInsertColumn(model.getLineContent(lineNumber), startColumn - 1);
-        if (insertCol === null) continue;
-        edits.push({
-            range: new monaco.Range(lineNumber, insertCol, lineNumber, insertCol),
-            text: "'",
-            forceMoveMarkers: true,
-        });
-        insertedAt.set(lineNumber, insertCol);
-    }
-    return insertedAt;
+    return ['', lineText, ''];
 }
 
 function wrapInline(
@@ -134,30 +122,24 @@ function wrapInline(
     if (selections.length === 0) return;
 
     const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];
-    // Bold/italic/etc. need the line wrapped in a comment for the HTML tags
-    // to render, same as headings — add one if missing.
-    const insertedAt = ensureCommentPrefixes(model, selections, edits);
-
     const newSelections: monaco.Selection[] = [];
 
     for (const sel of selections) {
-        const shift = insertedAt.has(sel.startLineNumber) ? 1 : 0;
-        const startCol = sel.startColumn + shift;
-        const endShift = sel.endLineNumber === sel.startLineNumber ? shift : 0;
         const isEmpty = sel.isEmpty();
         if (isEmpty) {
             const text = prefix + suffix;
             edits.push({ range: sel, text, forceMoveMarkers: true });
             // After insert, cursor sits between prefix and suffix.
-            const placedCol = startCol + prefix.length;
-            newSelections.push(new monaco.Selection(sel.startLineNumber, placedCol, sel.startLineNumber, placedCol));
+            // Insert is at sel.getStartPosition(); after insert the cursor will be after the inserted text;
+            // we want it before suffix.
+            const start = sel.getStartPosition();
+            // Translate: column advances by prefix.length, then we want it there.
+            const placedCol = start.column + prefix.length;
+            newSelections.push(new monaco.Selection(start.lineNumber, placedCol, start.lineNumber, placedCol));
         } else {
             const selectedText = model.getValueInRange(sel);
             edits.push({ range: sel, text: prefix + selectedText + suffix, forceMoveMarkers: true });
-            newSelections.push(new monaco.Selection(
-                sel.startLineNumber, startCol,
-                sel.endLineNumber, sel.endColumn + endShift + prefix.length + suffix.length,
-            ));
+            newSelections.push(new monaco.Selection(sel.startLineNumber, sel.startColumn, sel.endLineNumber, sel.endColumn + prefix.length + suffix.length));
         }
     }
 
@@ -178,9 +160,23 @@ function insertHeading(
     for (const sel of selections) {
         const lineNumber = sel.positionLineNumber;
         const lineText = model.getLineContent(lineNumber);
+        let [, content, trailingQuote] = stripCommentPrefix(lineText);
+
+        const htmlMatch = content.match(/^<h[1-6]>(.*)<\/h[1-6]>$/);
+        if (htmlMatch) content = htmlMatch[1];
+        const mdMatch = content.match(/^(#{1,6})\s+(.*)$/);
+        if (mdMatch) content = mdMatch[2];
+
+        let newLine: string;
+        if (format === 'html') {
+            newLine = `'<h${level}>${content}</h${level}>${trailingQuote}`;
+        } else {
+            newLine = `'${'#'.repeat(level)} ${content}${trailingQuote}`;
+        }
+
         edits.push({
             range: new monaco.Range(lineNumber, 1, lineNumber, lineText.length + 1),
-            text: buildHeadingLine(lineText, level, format),
+            text: newLine,
             forceMoveMarkers: true,
         });
     }
@@ -196,9 +192,10 @@ function insertParagraph(editor: monaco.editor.IStandaloneCodeEditor): void {
     for (const sel of selections) {
         const lineNumber = sel.positionLineNumber;
         const lineText = model.getLineContent(lineNumber);
+        const [, content, trailingQuote] = stripCommentPrefix(lineText);
         edits.push({
             range: new monaco.Range(lineNumber, 1, lineNumber, lineText.length + 1),
-            text: buildParagraphLine(lineText),
+            text: `'<p>${content}</p>${trailingQuote}`,
             forceMoveMarkers: true,
         });
     }
@@ -227,9 +224,20 @@ function insertBulletedList(
     const startLine = sel.startLineNumber;
     const endLine = sel.endLineNumber;
 
-    const lineTexts: string[] = [];
-    for (let i = startLine; i <= endLine; i++) lineTexts.push(model.getLineContent(i));
-    const lines = buildListLines(lineTexts, format, false);
+    const lines: string[] = [];
+    if (format === 'html') {
+        lines.push("'<ul>");
+        for (let i = startLine; i <= endLine; i++) {
+            const [, content, tq] = stripCommentPrefix(model.getLineContent(i));
+            lines.push(`'<li>${content}</li>${tq}`);
+        }
+        lines.push("'</ul>");
+    } else {
+        for (let i = startLine; i <= endLine; i++) {
+            const [, content, tq] = stripCommentPrefix(model.getLineContent(i));
+            lines.push(`'- ${content}${tq}`);
+        }
+    }
 
     editor.executeEdits('calcpad-format-ul', [{
         range: new monaco.Range(startLine, 1, endLine, model.getLineLength(endLine) + 1),
@@ -250,9 +258,22 @@ function insertNumberedList(
     const startLine = sel.startLineNumber;
     const endLine = sel.endLineNumber;
 
-    const lineTexts: string[] = [];
-    for (let i = startLine; i <= endLine; i++) lineTexts.push(model.getLineContent(i));
-    const lines = buildListLines(lineTexts, format, true);
+    const lines: string[] = [];
+    if (format === 'html') {
+        lines.push("'<ol>");
+        for (let i = startLine; i <= endLine; i++) {
+            const [, content, tq] = stripCommentPrefix(model.getLineContent(i));
+            lines.push(`'<li>${content}</li>${tq}`);
+        }
+        lines.push("'</ol>");
+    } else {
+        let num = 1;
+        for (let i = startLine; i <= endLine; i++) {
+            const [, content, tq] = stripCommentPrefix(model.getLineContent(i));
+            lines.push(`'${num}. ${content}${tq}`);
+            num++;
+        }
+    }
 
     editor.executeEdits('calcpad-format-ol', [{
         range: new monaco.Range(startLine, 1, endLine, model.getLineLength(endLine) + 1),

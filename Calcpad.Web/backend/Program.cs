@@ -1,7 +1,9 @@
 using Calcpad.Server;
 using Calcpad.Server.Services;
-using System.Net;
+using System.Net.WebSockets;
 using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 // Auto-flush stdout so the parent process (VS Code extension) sees logs in real time
 // when stdio is piped (non-TTY), instead of waiting for buffer flush on exit.
@@ -34,31 +36,23 @@ try
     FileLogger.LogInfo("Starting Calcpad Server");
 
     // Set default environment variables if not set
-    Environment.SetEnvironmentVariable("CALCPAD_HOST", Environment.GetEnvironmentVariable("CALCPAD_HOST") ?? "127.0.0.1");
+    Environment.SetEnvironmentVariable("CALCPAD_HOST", Environment.GetEnvironmentVariable("CALCPAD_HOST") ?? "0.0.0.0");
 
     // Pull our custom CLI flags out of args before handing them to ASP.NET.
     // --port-file <path>          Write the bound base URL to this file once
-    //                             Kestrel is listening. Used by the Tauri
-    //                             desktop host to discover the random-port
-    //                             server without hard-coding 9420.
+    //                             Kestrel is listening. Used by the Neutralino
+    //                             desktop to discover the random-port server
+    //                             without hard-coding 9420.
     // --exit-on-stdin-close       When stdin reaches EOF (parent process died
-    //                             and dropped our stdin pipe), exit. On by
-    //                             default whenever stdin is piped; opt out
+    //                             and dropped our stdin pipe), exit. Default
+    //                             for Neutralino-spawned launches; opt out
     //                             via env CALCPAD_DETACHED=1 (VS Code does
     //                             this so the server outlives the spawning
     //                             window and is shared across instances).
     // --no-exit-on-stdin-close    Force-disable the watchdog (overrides the
     //                             default-on logic for stdin-piped launches).
-    //                             Tauri sets this because it uses --parent-pid
-    //                             for death detection instead.
-    // --parent-pid <pid>          Poll the given PID every 2s; self-exit when
-    //                             that process disappears. Defense-in-depth
-    //                             for the Tauri host: if Rust panics or is
-    //                             SIGKILL'd without a chance to run its
-    //                             kill-on-exit hook, this reaps the server.
     string? portFile = null;
     bool? exitOnStdinCloseExplicit = null;
-    int? parentPid = null;
     var passthroughArgs = new List<string>(args.Length);
     for (int i = 0; i < args.Length; i++)
     {
@@ -74,44 +68,12 @@ try
         {
             exitOnStdinCloseExplicit = false;
         }
-        else if (args[i] == "--parent-pid" && i + 1 < args.Length
-                 && int.TryParse(args[++i], out var pidValue))
-        {
-            parentPid = pidValue;
-        }
         else
         {
             passthroughArgs.Add(args[i]);
         }
     }
     var forwardedArgs = passthroughArgs.ToArray();
-
-    if (parentPid is int watchedPid)
-    {
-        FileLogger.LogInfo("Parent PID watchdog enabled", watchedPid.ToString());
-        _ = Task.Run(async () =>
-        {
-            while (true)
-            {
-                try
-                {
-                    _ = System.Diagnostics.Process.GetProcessById(watchedPid);
-                }
-                catch (ArgumentException)
-                {
-                    FileLogger.LogInfo("Parent process gone — shutting down", watchedPid.ToString());
-                    if (!string.IsNullOrEmpty(portFile))
-                    {
-                        try { if (File.Exists(portFile)) File.Delete(portFile); } catch { /* best-effort */ }
-                    }
-                    Environment.Exit(0);
-                    return;
-                }
-                catch { /* transient — retry next tick */ }
-                await Task.Delay(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
-            }
-        });
-    }
 
     // Decide whether the EOF watchdog runs. Default-on when stdin is piped
     // (we're a child of *something* that may die and orphan us), opt-out
@@ -134,16 +96,39 @@ try
 
     if (exitOnStdinClose && Console.IsInputRedirected)
     {
-        // Death-detection background task: stdin stays open until the parent
-        // dies, so reading until EOF is the death signal for any parent that
-        // pipes stdio (build scripts, raw shells). Tauri opts out via
-        // --no-exit-on-stdin-close and uses --parent-pid instead.
+        // Death-detection background task. Two modes, picked by sniffing the
+        // first stdin line:
+        //
+        //   1. Neutralino extension protocol — Neutralino writes a single
+        //      JSON line ({nlPort, nlToken, nlConnectToken, nlExtensionId})
+        //      then *closes its end of stdin*. Stdin EOFs immediately, so
+        //      EOF is a useless death signal here. Instead the extension
+        //      must open ws://localhost:{nlPort}?extensionId=...&connectToken=...
+        //      and exit when that socket closes (per
+        //      https://neutralino.js.org/docs/how-to/extensions-overview).
+        //
+        //   2. Anything else (raw piped-stdin parent like a build script):
+        //      stdin stays open until the parent dies, so reading until EOF
+        //      is the correct death signal.
         _ = Task.Run(async () =>
         {
             try
             {
-                while (await Console.In.ReadLineAsync().ConfigureAwait(false) != null) { /* drain */ }
-                FileLogger.LogInfo("stdin EOF; parent likely exited — shutting down");
+                var firstLine = await Console.In.ReadLineAsync().ConfigureAwait(false);
+                NeutralinoExtensionInfo? neuInfo = TryParseNeutralinoInfo(firstLine);
+
+                if (neuInfo is not null)
+                {
+                    FileLogger.LogInfo("Neutralino extension protocol detected",
+                        $"nlPort={neuInfo.NlPort} extensionId={neuInfo.NlExtensionId}");
+                    await WatchNeutralinoSocketAsync(neuInfo).ConfigureAwait(false);
+                    FileLogger.LogInfo("Neutralino WebSocket closed — parent exited; shutting down");
+                }
+                else
+                {
+                    while (await Console.In.ReadLineAsync().ConfigureAwait(false) != null) { /* drain */ }
+                    FileLogger.LogInfo("stdin EOF; parent likely exited — shutting down");
+                }
             }
             catch (Exception ex)
             {
@@ -163,10 +148,10 @@ try
 
     // When nothing was set explicitly (no --urls, no CALCPAD_PORT env), prefer
     // an OS-assigned random port over the legacy hard-coded 9420 — this is
-    // what Tauri sidecar launches want, and it eliminates the "address already
-    // in use" failure mode for orphan processes. Callers that need a fixed
-    // port (`dotnet run` for dev, the VS Code extension explicitly passing
-    // --urls) keep their existing behavior.
+    // what Neutralino-extension launches want, and it eliminates the
+    // "address already in use" failure mode for orphan processes. Callers
+    // that need a fixed port (`dotnet run` for dev, the VS Code extension
+    // explicitly passing --urls) keep their existing behavior.
     bool hasExplicitUrls = forwardedArgs.Any(a => a == "--urls");
     bool hasExplicitPort = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CALCPAD_PORT"));
     if (!hasExplicitUrls && !hasExplicitPort)
@@ -185,18 +170,6 @@ try
 
     // Create and configure web application using shared service
     var (app, serverUrl) = CalcpadApiService.CreateConfiguredApp(forwardedArgs);
-
-    // Server mode (non-localhost binding) is in development and not yet supported:
-    // the include-resolution path that ships uploaded files from a remote browser
-    // is being reworked. Crash early if anything resolves to a non-loopback URL.
-    foreach (var u in serverUrl.Split(';', StringSplitOptions.RemoveEmptyEntries))
-    {
-        if (!Program.IsLoopbackUrl(u))
-            throw new InvalidOperationException(
-                $"Calcpad server is bound to '{u}' which is not localhost. " +
-                "Server mode is in development and not yet supported. " +
-                "Set CALCPAD_HOST=127.0.0.1 or pass --urls http://127.0.0.1:<port>.");
-    }
 
     FileLogger.LogInfo("Starting console application", serverUrl);
     Console.WriteLine($"Calcpad Server starting at {serverUrl}");
@@ -227,8 +200,8 @@ try
     lifetime.ApplicationStopped.Register(() => FileLogger.LogInfo("ApplicationStopped"));
 
     // When --port-file was given, write the bound URL once Kestrel is
-    // listening. The frontend (Tauri desktop) polls this file to discover
-    // the random-port server without hard-coding 9420.
+    // listening. The frontend (Neutralino desktop) polls this file to
+    // discover the random-port server without hard-coding 9420.
     if (!string.IsNullOrEmpty(portFile))
     {
         lifetime.ApplicationStarted.Register(() =>
@@ -294,17 +267,84 @@ catch (Exception ex)
 // inside Main is too late. The VS Code extension's spawn-time env in
 // calcpad-frontend/server-manager.ts owns this configuration.
 
+// ─── Neutralino extension protocol helpers ────────────────────────────────────
+
+/// <summary>
+/// First stdin line written by Neutralino to a freshly-spawned extension. See
+/// https://neutralino.js.org/docs/how-to/extensions-overview — the extension
+/// must use these to open a WebSocket back to Neutralino, then exit when the
+/// socket closes (Neutralino does not SIGTERM extension processes on exit).
+/// </summary>
+internal sealed class NeutralinoExtensionInfo
+{
+    [JsonPropertyName("nlPort")]          public string NlPort { get; set; } = "";
+    [JsonPropertyName("nlToken")]         public string NlToken { get; set; } = "";
+    [JsonPropertyName("nlConnectToken")]  public string NlConnectToken { get; set; } = "";
+    [JsonPropertyName("nlExtensionId")]   public string NlExtensionId { get; set; } = "";
+}
+
 internal static partial class Program
 {
     /// <summary>
-    /// True if the URL's host resolves to a loopback address (localhost, 127.0.0.0/8, ::1).
-    /// Used to gate server-mode bindings until the remote-include path is finished.
+    /// Try to parse a stdin line as Neutralino's extension-handshake JSON.
+    /// Returns null on anything that doesn't structurally match.
     /// </summary>
-    internal static bool IsLoopbackUrl(string urlString)
+    internal static NeutralinoExtensionInfo? TryParseNeutralinoInfo(string? line)
     {
-        if (!Uri.TryCreate(urlString, UriKind.Absolute, out var uri)) return false;
-        var host = uri.Host;
-        if (string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase)) return true;
-        return IPAddress.TryParse(host, out var ip) && IPAddress.IsLoopback(ip);
+        if (string.IsNullOrWhiteSpace(line)) return null;
+        var trimmed = line.TrimStart();
+        if (!trimmed.StartsWith('{')) return null;
+        try
+        {
+            var info = JsonSerializer.Deserialize<NeutralinoExtensionInfo>(line);
+            if (info is null) return null;
+            // All four fields must be populated for the handshake to be valid.
+            if (string.IsNullOrEmpty(info.NlPort)
+                || string.IsNullOrEmpty(info.NlConnectToken)
+                || string.IsNullOrEmpty(info.NlExtensionId))
+            {
+                return null;
+            }
+            return info;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Connect to the Neutralino extension WebSocket and block until it closes.
+    /// Closure means Neutralino exited; the caller should then exit too.
+    /// </summary>
+    internal static async Task WatchNeutralinoSocketAsync(NeutralinoExtensionInfo info)
+    {
+        using var ws = new ClientWebSocket();
+        var uri = new Uri(
+            $"ws://localhost:{info.NlPort}?extensionId={Uri.EscapeDataString(info.NlExtensionId)}"
+            + $"&connectToken={Uri.EscapeDataString(info.NlConnectToken)}");
+        try
+        {
+            await ws.ConnectAsync(uri, CancellationToken.None).ConfigureAwait(false);
+            FileLogger.LogInfo("Connected to Neutralino extension WebSocket", uri.ToString());
+
+            var buffer = new byte[4096];
+            while (ws.State == WebSocketState.Open)
+            {
+                var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None)
+                                     .ConfigureAwait(false);
+                if (result.MessageType == WebSocketMessageType.Close) break;
+                // Discard any inbound messages — Neutralino uses this channel
+                // for extension RPC, which we don't participate in. Just
+                // staying connected is enough to detect the close.
+            }
+        }
+        catch (Exception ex)
+        {
+            // Connection failure or read error means we can't detect parent
+            // death this way. Treat that as "parent gone" and let the
+            // caller exit, rather than hanging forever.
+            FileLogger.LogInfo("Neutralino WebSocket error (treating as disconnect)", ex.Message);
+        }
     }
 }

@@ -15,16 +15,15 @@
       </div>
 
       <div class="setting-group">
-        <label for="degrees">Angle Units:</label>
-        <select
+        <label for="degrees">Degrees:</label>
+        <input
           id="degrees"
           v-model.number="localSettings.math.degrees"
-          @change="updateSettings"
-        >
-          <option :value="0">Radians</option>
-          <option :value="1">Degrees</option>
-          <option :value="2">Gradians</option>
-        </select>
+          type="number"
+          min="0"
+          max="360"
+          @input="updateSettings"
+        />
       </div>
 
       <div class="setting-group">
@@ -57,35 +56,7 @@
             @change="updateSettings"
           />
           Format Equations
-          <span class="setting-info" title="Professional (checked) renders equations in stacked math form; Inline (unchecked) renders them on a single line.">ⓘ</span>
         </label>
-      </div>
-
-      <div class="setting-group">
-        <label>
-          <input
-            v-model="localSettings.math.zeroSmallMatrixElements"
-            type="checkbox"
-            @change="updateSettings"
-          />
-          Zero Small Matrix Elements
-          <span class="setting-info" title="Display very small matrix/vector values as 0 instead of using scientific notation.">ⓘ</span>
-        </label>
-      </div>
-
-      <div class="setting-group">
-        <label for="maxOutputCount">
-          Max Output Count:
-          <span class="setting-info" title="Maximum number of rows/columns shown for large matrices and vectors (5–100).">ⓘ</span>
-        </label>
-        <input
-          id="maxOutputCount"
-          v-model.number="localSettings.math.maxOutputCount"
-          type="number"
-          min="5"
-          max="100"
-          @input="updateSettings"
-        />
       </div>
 
       <h3>Plot Settings</h3>
@@ -97,7 +68,6 @@
             @change="updateSettings"
           />
           Adaptive Plotting
-          <span class="setting-info" title="Concentrates sample points where the curve bends sharply instead of spacing them evenly. Produces smoother plots of curved functions at a lower point count; disable for a fixed dense sampling.">ⓘ</span>
         </label>
       </div>
 
@@ -132,7 +102,6 @@
             @change="updateSettings"
           />
           Vector Graphics
-          <span class="setting-info" title="Renders plots as SVG (scalable, sharp at any zoom) instead of raster PNG images.">ⓘ</span>
         </label>
       </div>
 
@@ -176,52 +145,12 @@
 
       <div class="setting-group">
         <label for="lightDirection">Light Direction:</label>
-        <select
+        <input
           id="lightDirection"
           v-model="localSettings.plot.lightDirection"
-          @change="updateSettings"
-        >
-          <option value="NorthWest">NorthWest</option>
-          <option value="North">North</option>
-          <option value="NorthEast">NorthEast</option>
-          <option value="West">West</option>
-          <option value="East">East</option>
-          <option value="SouthWest">SouthWest</option>
-          <option value="South">South</option>
-          <option value="SouthEast">SouthEast</option>
-        </select>
-      </div>
-
-      <h3>Units</h3>
-      <div class="setting-group">
-        <label for="units">
-          Default Input Length Unit:
-          <span class="setting-info" title="Default length unit used for %u placeholders in input forms.">ⓘ</span>
-        </label>
-        <select
-          id="units"
-          v-model="localSettings.units"
-          @change="updateSettings"
-        >
-          <option value="m">m (meters)</option>
-          <option value="cm">cm (centimeters)</option>
-          <option value="mm">mm (millimeters)</option>
-        </select>
-      </div>
-
-      <div class="setting-group">
-        <label for="nonMetricUnits">
-          Non-Metric Units:
-          <span class="setting-info" title="Selects US or UK definitions for bare unit names that differ between the two systems (gal, ton, cwt, pt, qt, bbl, tonf, therm, etc.).">ⓘ</span>
-        </label>
-        <select
-          id="nonMetricUnits"
-          v-model="localSettings.isUs"
-          @change="updateSettings"
-        >
-          <option :value="false">UK (Imperial)</option>
-          <option :value="true">US Customary</option>
-        </select>
+          type="text"
+          @input="updateSettings"
+        />
       </div>
 
       <h3>Server Settings</h3>
@@ -233,6 +162,20 @@
           type="text"
           @input="updateSettings"
         />
+      </div>
+
+      <h3>Units</h3>
+      <div class="setting-group">
+        <label for="units">Units System:</label>
+        <select
+          id="units"
+          v-model="localSettings.units"
+          @change="updateSettings"
+        >
+          <option value="SI">SI (International System)</option>
+          <option value="Imperial">Imperial</option>
+          <option value="US">US Customary</option>
+        </select>
       </div>
 
       <h3>Preview Theme</h3>
@@ -278,10 +221,9 @@
           @change="updateColorTheme"
         >
           <option
-            v-if="colorTheme && !knownThemeLabels.has(colorTheme) && colorTheme !== 'System'"
+            v-if="colorTheme && !knownThemeLabels.has(colorTheme)"
             :value="colorTheme"
           >{{ colorTheme }}</option>
-          <option value="System">System</option>
           <optgroup v-if="darkThemes.length" label="Dark">
             <option
               v-for="t in darkThemes"
@@ -299,44 +241,6 @@
         </select>
       </div>
 
-      <h3 v-if="versionConfig.isDesktop">Editor Font</h3>
-      <div v-if="versionConfig.isDesktop" class="setting-group">
-        <label for="editorFontFamily">
-          Font Family:
-          <span class="setting-info" title="JuliaMono is the bundled default. Drop .woff2/.woff/.ttf/.otf files into the fonts folder to make them available here.">ⓘ</span>
-        </label>
-        <select
-          id="editorFontFamily"
-          v-model="editorFontFamily"
-          @mousedown="requestFontRescan"
-          @focus="requestFontRescan"
-          @change="updateEditorFontFamily"
-        >
-          <option value="JuliaMono">JuliaMono (default)</option>
-          <option value="system">System Default</option>
-          <optgroup v-if="userFontOptions.length" label="From fonts folder">
-            <option
-              v-for="name in userFontOptions"
-              :key="name"
-              :value="name"
-            >{{ name }}</option>
-          </optgroup>
-          <option
-            v-if="editorFontFamily && !isKnownFont"
-            :value="editorFontFamily"
-          >{{ editorFontFamily }} (missing)</option>
-        </select>
-      </div>
-      <div v-if="versionConfig.isDesktop" class="setting-group">
-        <button
-          class="diagnostics-button"
-          title="Open the folder where custom fonts can be dropped. Reopen the Font Family picker to pick up new fonts."
-          @click="openFontsFolder"
-        >
-          Open Fonts Folder
-        </button>
-      </div>
-
       <h3>Editor Features</h3>
       <div class="setting-group">
         <label>
@@ -345,8 +249,7 @@
             type="checkbox"
             @change="updateQuickTyping"
           />
-          Enable Quick Typing
-          <span class="setting-info" title="Type shortcuts like ~a → α, ~' → ′">ⓘ</span>
+          Enable Quick Typing (e.g., ~a → α, ~' → ′)
         </label>
       </div>
 
@@ -370,41 +273,13 @@
             type="checkbox"
             @change="updateFormattingHotkeys"
           />
-          Enable Formatting Hotkeys
-          <span class="setting-info" title="Ctrl+B for bold, Ctrl+I for italic, etc.">ⓘ</span>
-        </label>
-      </div>
-
-      <div class="setting-group">
-        <label>
-          <input
-            v-model="enablePreviewCursorSync"
-            type="checkbox"
-            @change="updatePreviewCursorSync"
-          />
-          Sync Preview to Cursor Line
-          <span class="setting-info" title="Scroll the preview to follow the line the cursor is on in the editor.">ⓘ</span>
-        </label>
-      </div>
-
-      <div class="setting-group">
-        <label>
-          <input
-            v-model="enableAutoRun"
-            type="checkbox"
-            @change="updateAutoRun"
-          />
-          Auto-Run Preview
-          <span class="setting-info" title="When off, the preview only re-renders when it is first opened or a manual run is triggered.">ⓘ</span>
+          Enable Formatting Hotkeys (Ctrl+B, Ctrl+I, etc.)
         </label>
       </div>
 
       <h3>Library</h3>
       <div class="setting-group">
-        <label for="libraryPath">
-          Library Path:
-          <span class="setting-info" title="Shared .cpd/.txt files for #include autocomplete. Supports %ENV% variables.">ⓘ</span>
-        </label>
+        <label for="libraryPath">Library Path:</label>
         <input
           id="libraryPath"
           v-model="libraryPath"
@@ -412,6 +287,7 @@
           placeholder="%USERPROFILE%\Documents\CalcpadLibrary"
           @input="updateLibraryPath"
         />
+        <span class="setting-hint">Shared .cpd/.txt files for #include autocomplete. Supports %ENV% variables.</span>
       </div>
 
       <h3>Linter</h3>
@@ -430,89 +306,22 @@
 
       <h3>Diagnostics</h3>
       <div class="setting-group">
-        <button
-          class="diagnostics-button"
-          title="Opens the folder containing server logs and the most recent crash dump."
-          @click="openLogsFolder"
-        >
+        <button class="diagnostics-button" @click="openLogsFolder">
           Open Logs Folder
         </button>
+        <span class="setting-hint">Opens the folder containing server logs and the most recent crash dump.</span>
       </div>
 
-      <div v-if="versionConfig.isWebOrDesktop" class="setting-group">
-        <label for="maxOutputLines">
-          Max Output Lines (per channel):
-          <span class="setting-info" title="Lines retained in each Output channel before older lines are dropped. Lower values reduce memory use and improve responsiveness when logs are noisy.">ⓘ</span>
-        </label>
-        <input
-          id="maxOutputLines"
-          v-model.number="maxOutputLines"
-          type="number"
-          min="10"
-          max="100000"
-          step="100"
-          @change="updateMaxOutputLines"
-        />
-      </div>
-
-      <h3>Configuration</h3>
-      <div class="setting-group">
-        <label for="activeConfig">Active Config:</label>
-        <select
-          id="activeConfig"
-          :value="activeConfig"
-          @change="switchConfig(($event.target as HTMLSelectElement).value)"
-        >
-          <option
-            v-for="name in availableConfigs"
-            :key="name"
-            :value="name"
-          >{{ name }}</option>
-        </select>
-      </div>
-
-      <div class="setting-group">
-        <label for="configName">Save current settings as:</label>
-        <div class="color-input-row">
-          <input
-            id="configName"
-            v-model="newConfigName"
-            type="text"
-            placeholder="e.g. my-config"
-            @keyup.enter="saveNamedConfig"
-          />
-          <button
-            class="reset-inline-btn"
-            :disabled="!newConfigName.trim()"
-            @click="saveNamedConfig"
-          >
-            Save
-          </button>
-        </div>
-        <span v-if="saveError" class="setting-error">{{ saveError }}</span>
-      </div>
-
-      <div class="settings-actions">
-        <button @click="openSettingsFolder" class="reset-button">
-          Open Settings Folder
-        </button>
-        <button @click="resetSettings" class="reset-button">
-          Reset to Default
-        </button>
-      </div>
-
-      <h3 v-if="appVersion">About</h3>
-      <div v-if="appVersion" class="setting-group">
-        <span class="app-version">CalcpadCE Web v{{ appVersion }}</span>
-      </div>
+      <button @click="resetSettings" class="reset-button">
+        Reset Settings
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import type { Settings, ThemeInfo, VersionConfig } from '../types'
-import { DEFAULT_VERSION_CONFIG } from '../types'
+import type { Settings, ThemeInfo } from '../types'
 
 // Props
 interface Props {
@@ -523,18 +332,9 @@ interface Props {
   initialEnableQuickTyping?: boolean
   initialCommentFormat?: string
   initialEnableFormattingHotkeys?: boolean
-  initialEnablePreviewCursorSync?: boolean
-  initialEnableAutoRun?: boolean
   initialDarkBackground?: string
   initialLinterMinSeverity?: string
-  initialMaxOutputLines?: number
-  versionConfig?: VersionConfig
   initialLibraryPath?: string
-  initialActiveConfig?: string
-  initialAvailableConfigs?: string[]
-  initialEditorFontFamily?: string
-  initialAvailableFonts?: string[]
-  appVersion?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -561,10 +361,9 @@ const props = withDefaults(defineProps<Props>(), {
       lightDirection: 'NorthWest'
     },
     server: {
-      url: ''
+      url: 'http://localhost:9420'
     },
-    units: 'm',
-    isUs: false
+    units: 'm'
   }),
   initialPreviewTheme: 'system',
   initialColorTheme: '',
@@ -572,18 +371,9 @@ const props = withDefaults(defineProps<Props>(), {
   initialEnableQuickTyping: true,
   initialCommentFormat: 'auto',
   initialEnableFormattingHotkeys: true,
-  initialEnablePreviewCursorSync: false,
-  initialEnableAutoRun: true,
   initialDarkBackground: '#1a1a2e',
   initialLinterMinSeverity: 'information',
-  initialMaxOutputLines: 1000,
-  versionConfig: () => ({ ...DEFAULT_VERSION_CONFIG }),
-  initialLibraryPath: '',
-  initialActiveConfig: 'default',
-  initialAvailableConfigs: () => ['default'],
-  initialEditorFontFamily: 'JuliaMono',
-  initialAvailableFonts: () => [],
-  appVersion: ''
+  initialLibraryPath: ''
 })
 
 // Emits
@@ -594,20 +384,11 @@ const emit = defineEmits<{
   updateQuickTyping: [enabled: boolean]
   updateCommentFormat: [format: string]
   updateFormattingHotkeys: [enabled: boolean]
-  updatePreviewCursorSync: [enabled: boolean]
-  updateAutoRun: [enabled: boolean]
   updateDarkBackground: [color: string]
   updateLinterMinSeverity: [severity: string]
-  updateMaxOutputLines: [value: number]
   updateLibraryPath: [path: string]
   resetSettings: []
-  saveNamedConfig: [name: string]
-  switchConfig: [name: string]
-  openSettingsFolder: []
   openLogsFolder: []
-  openFontsFolder: []
-  refreshFonts: []
-  updateEditorFontFamily: [family: string]
 }>()
 
 // State
@@ -619,30 +400,12 @@ const availableThemes = ref<ThemeInfo[]>(props.initialAvailableThemes)
 const darkThemes = computed(() => availableThemes.value.filter(t => t.kind === 'dark'))
 const lightThemes = computed(() => availableThemes.value.filter(t => t.kind === 'light'))
 const knownThemeLabels = computed(() => new Set(availableThemes.value.map(t => t.label)))
-const userFontOptions = computed(() =>
-  availableFonts.value.filter(f => f && f !== 'JuliaMono')
-)
-const isKnownFont = computed(() => {
-  const v = editorFontFamily.value
-  if (!v) return true
-  if (v === 'JuliaMono' || v === 'system') return true
-  return availableFonts.value.includes(v)
-})
 const enableQuickTyping = ref(props.initialEnableQuickTyping)
 const commentFormat = ref(props.initialCommentFormat)
 const enableFormattingHotkeys = ref(props.initialEnableFormattingHotkeys)
-const enablePreviewCursorSync = ref(props.initialEnablePreviewCursorSync)
-const enableAutoRun = ref(props.initialEnableAutoRun)
 const darkBackground = ref(props.initialDarkBackground)
 const linterMinSeverity = ref(props.initialLinterMinSeverity)
-const maxOutputLines = ref(props.initialMaxOutputLines)
 const libraryPath = ref(props.initialLibraryPath)
-const activeConfig = ref(props.initialActiveConfig)
-const availableConfigs = ref<string[]>(props.initialAvailableConfigs)
-const editorFontFamily = ref(props.initialEditorFontFamily)
-const availableFonts = ref<string[]>(props.initialAvailableFonts)
-const newConfigName = ref('')
-const saveError = ref('')
 
 // Methods
 const updateSettings = () => {
@@ -669,14 +432,6 @@ const updateFormattingHotkeys = () => {
   emit('updateFormattingHotkeys', enableFormattingHotkeys.value)
 }
 
-const updatePreviewCursorSync = () => {
-  emit('updatePreviewCursorSync', enablePreviewCursorSync.value)
-}
-
-const updateAutoRun = () => {
-  emit('updateAutoRun', enableAutoRun.value)
-}
-
 const updateDarkBackground = () => {
   emit('updateDarkBackground', darkBackground.value)
 }
@@ -690,12 +445,6 @@ const updateLinterMinSeverity = () => {
   emit('updateLinterMinSeverity', linterMinSeverity.value)
 }
 
-const updateMaxOutputLines = () => {
-  const n = Number(maxOutputLines.value)
-  if (!Number.isFinite(n) || n < 10) return
-  emit('updateMaxOutputLines', Math.floor(n))
-}
-
 const updateLibraryPath = () => {
   emit('updateLibraryPath', libraryPath.value)
 }
@@ -704,41 +453,8 @@ const resetSettings = () => {
   emit('resetSettings')
 }
 
-const saveNamedConfig = () => {
-  const name = newConfigName.value.trim()
-  if (!name) return
-  if (name.toLowerCase() === 'default') {
-    saveError.value = 'The "default" config is protected and cannot be overridden.'
-    return
-  }
-  saveError.value = ''
-  emit('saveNamedConfig', name)
-  newConfigName.value = ''
-}
-
-const switchConfig = (name: string) => {
-  if (!name) return
-  emit('switchConfig', name)
-}
-
-const openSettingsFolder = () => {
-  emit('openSettingsFolder')
-}
-
 const openLogsFolder = () => {
   emit('openLogsFolder')
-}
-
-const openFontsFolder = () => {
-  emit('openFontsFolder')
-}
-
-const requestFontRescan = () => {
-  emit('refreshFonts')
-}
-
-const updateEditorFontFamily = () => {
-  emit('updateEditorFontFamily', editorFontFamily.value)
 }
 
 // Watch for prop changes
@@ -795,20 +511,6 @@ watch(
 )
 
 watch(
-  () => props.initialEnablePreviewCursorSync,
-  (newValue) => {
-    enablePreviewCursorSync.value = newValue
-  }
-)
-
-watch(
-  () => props.initialEnableAutoRun,
-  (newValue) => {
-    enableAutoRun.value = newValue
-  }
-)
-
-watch(
   () => props.initialDarkBackground,
   (newValue) => {
     darkBackground.value = newValue
@@ -823,44 +525,9 @@ watch(
 )
 
 watch(
-  () => props.initialMaxOutputLines,
-  (newValue) => {
-    maxOutputLines.value = newValue
-  }
-)
-
-watch(
   () => props.initialLibraryPath,
   (newValue) => {
     libraryPath.value = newValue
-  }
-)
-
-watch(
-  () => props.initialActiveConfig,
-  (newValue) => {
-    activeConfig.value = newValue
-  }
-)
-
-watch(
-  () => props.initialAvailableConfigs,
-  (newValue) => {
-    availableConfigs.value = newValue
-  }
-)
-
-watch(
-  () => props.initialEditorFontFamily,
-  (newValue) => {
-    editorFontFamily.value = newValue
-  }
-)
-
-watch(
-  () => props.initialAvailableFonts,
-  (newValue) => {
-    availableFonts.value = newValue
   }
 )
 
@@ -953,34 +620,11 @@ watch(
   background: var(--vscode-button-secondaryHoverBackground);
 }
 
-.setting-info {
-  margin-left: 4px;
-  font-size: 11px;
-  color: var(--vscode-descriptionForeground);
-  cursor: help;
-}
-
-.setting-error {
+.setting-hint {
   display: block;
   margin-top: 4px;
   font-size: 11px;
-  color: var(--vscode-errorForeground, #f48771);
-}
-
-.reset-inline-btn[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.settings-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.settings-actions .reset-button {
-  flex: 1;
-  margin-top: 0;
+  color: var(--vscode-descriptionForeground);
 }
 
 .reset-button {
@@ -1012,10 +656,5 @@ watch(
 
 .diagnostics-button:hover {
   background: var(--vscode-button-secondaryHoverBackground);
-}
-
-.app-version {
-  font-size: 12px;
-  color: var(--vscode-descriptionForeground);
 }
 </style>

@@ -18,41 +18,27 @@ body {
   width: 100%;
 }
 
-/* Scrollbar styles — VS Code-style overlay: transparent track, thin thumb
-   that gets more contrast on hover. */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--vscode-scrollbarSlider-background) transparent;
-}
-
+/* Scrollbar styles */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
-::-webkit-scrollbar-track,
-::-webkit-scrollbar-corner {
-  background: transparent;
+::-webkit-scrollbar-track {
+  background: var(--vscode-scrollbar-shadow);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--vscode-scrollbarSlider-background);
-  border-radius: 5px;
-  /* Inset border creates breathing room around the thumb so it looks like
-     a floating pill rather than filling the gutter. */
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  min-height: 24px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--vscode-scrollbarSlider-hoverBackground);
-  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:active {
   background: var(--vscode-scrollbarSlider-activeBackground);
-  background-clip: padding-box;
 }
 
 /* Settings tab styles */

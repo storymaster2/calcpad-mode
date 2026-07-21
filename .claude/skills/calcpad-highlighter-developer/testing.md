@@ -96,7 +96,7 @@ comprehensive/
 ├── functions.cpd           Custom defs, all built-in (trig, hyp, log, rounding, integer, complex, aggregate, conditional)
 ├── units.cpd               SI, Imperial, dimensionless, angle, electrical, custom units, conversion
 ├── control_flow.cpd        #if/#else if/#else, #for, #while, #repeat, #break, #continue, nesting
-├── macros.cpd              Inline/multiline #def macros, $ params, control flow in macros
+├── macros.cpd              Inline/multiline macros, string variables, $ params, control flow in macros
 ├── commands.cpd            $Root, $Find, $Sup, $Inf, $Area, $Integral, $Slope, $Sum, $Product, $Repeat, $While, $Block, $Inline, $Plot, $Map
 ├── output_control.cpd      #hide/#show/#pre/#post, #val/#equ/#noc, #nosub/#novar/#varsub, #round, #format, #split/#wrap, #md, #const
 ├── HTML.cpd                HTML elements, CSS, JavaScript, SVG graphics, macro-generated HTML

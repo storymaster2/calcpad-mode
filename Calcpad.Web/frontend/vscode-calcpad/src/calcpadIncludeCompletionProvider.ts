@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { CalcpadSettingsManager } from './calcpadSettings';
 
 const DIRECTIVES = ['include', 'read', 'write', 'append'] as const;
 type Directive = typeof DIRECTIVES[number];
@@ -128,7 +127,7 @@ export class CalcpadIncludeCompletionProvider implements vscode.CompletionItemPr
         );
 
         // Get library configuration
-        const libraryPath = CalcpadSettingsManager.getInstance().getExtra('libraryPath', '');
+        const libraryPath = vscode.workspace.getConfiguration('calcpad').get<string>('libraryPath', '');
         const libraryPrefix = libraryPath
             ? (libraryPath.endsWith('/') || libraryPath.endsWith('\\') ? libraryPath : libraryPath + '\\')
             : '';
@@ -161,8 +160,8 @@ export class CalcpadIncludeCompletionProvider implements vscode.CompletionItemPr
                     undefined, ''
                 );
             } else {
-                // Root level - show local files/folders + library + workspace folders
-                this.outputChannel.appendLine(`[INCLUDE COMPLETION] Root level - searching local + library + workspace`);
+                // Root level - show both local files/folders and library files/folders
+                this.outputChannel.appendLine(`[INCLUDE COMPLETION] Root level - searching local + library`);
 
                 await this.addEntriesFromDirectory(
                     documentDir, partialPath, extensions, replaceRange,
@@ -177,27 +176,6 @@ export class CalcpadIncludeCompletionProvider implements vscode.CompletionItemPr
                         resolvedLibraryPath, '', extensions, replaceRange,
                         document.uri.fsPath, completionItems, addedEntries, token,
                         'Library', '', libraryPrefix
-                    );
-                }
-
-                // Also search each open workspace folder. Skip any folder that
-                // is the doc dir or the library — those are already covered.
-                // Workspace-folder entries get absolute-path insert text so
-                // #include resolves regardless of the current file's location.
-                const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
-                const docDirNorm = path.normalize(documentDir);
-                const libNorm = resolvedLibraryPath ? path.normalize(resolvedLibraryPath) : '';
-                for (const folder of workspaceFolders) {
-                    const folderPath = folder.uri.fsPath;
-                    const folderNorm = path.normalize(folderPath);
-                    if (folderNorm === docDirNorm || (libNorm && folderNorm === libNorm)) {
-                        continue;
-                    }
-                    this.outputChannel.appendLine(`[INCLUDE COMPLETION] Also searching workspace folder: ${folderPath}`);
-                    await this.addEntriesFromDirectory(
-                        folderPath, '', extensions, replaceRange,
-                        document.uri.fsPath, completionItems, addedEntries, token,
-                        'Workspace', '', ''
                     );
                 }
             }
@@ -253,31 +231,17 @@ export class CalcpadIncludeCompletionProvider implements vscode.CompletionItemPr
 
         this.outputChannel.appendLine(`[INCLUDE COMPLETION]   Found ${entries.length} entries in ${searchDir}`);
 
-        // Insert workspace-folder entries with absolute paths so #include
-        // resolves regardless of the current file's location.
-        const useAbsolute = sourceLabel === 'Workspace';
-
         // Add subdirectory entries
         for (const [name, fileType] of entries) {
             if (fileType !== vscode.FileType.Directory || name.startsWith('.')) {
                 continue;
             }
 
-            const absPath = path.resolve(searchDir, name);
-            const absKey = 'abs:' + path.normalize(absPath).toLowerCase();
-            if (addedEntries.has(absKey)) {
-                continue;
-            }
-
-            const insertPath = useAbsolute
-                ? absPath + path.sep
-                : libraryPrefix + pathPrefix + name + '\\';
-
+            const insertPath = libraryPrefix + pathPrefix + name + '\\';
             if (addedEntries.has(insertPath)) {
                 continue;
             }
             addedEntries.add(insertPath);
-            addedEntries.add(absKey);
 
             const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Folder);
             item.insertText = insertPrefix + insertPath;
@@ -307,22 +271,15 @@ export class CalcpadIncludeCompletionProvider implements vscode.CompletionItemPr
             }
 
             // Don't suggest the current file
-            const absPath = path.resolve(searchDir, name);
-            if (absPath === currentFilePath) {
+            if (path.resolve(searchDir, name) === currentFilePath) {
                 continue;
             }
 
-            const absKey = 'abs:' + path.normalize(absPath).toLowerCase();
-            if (addedEntries.has(absKey)) {
-                continue;
-            }
-
-            const insertPath = useAbsolute ? absPath : libraryPrefix + pathPrefix + name;
+            const insertPath = libraryPrefix + pathPrefix + name;
             if (addedEntries.has(insertPath)) {
                 continue;
             }
             addedEntries.add(insertPath);
-            addedEntries.add(absKey);
 
             const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.File);
             item.insertText = insertPrefix + insertPath;

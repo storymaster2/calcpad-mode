@@ -52,22 +52,6 @@ namespace Calcpad.Highlighter.Linter.Models
         }
 
         /// <summary>
-        /// Checks whether an actual argument type is compatible with the expected parameter
-        /// type for this signature. Element-wise functions (sin, sqrt, floor, ...) also accept
-        /// vectors and matrices wherever a scalar or integer is expected, since Core applies
-        /// them element-wise and returns a vector/matrix of the same shape.
-        /// </summary>
-        public bool IsArgumentCompatible(ParameterType expected, CalcpadType actual)
-        {
-            if (IsElementWise &&
-                (actual == CalcpadType.Vector || actual == CalcpadType.Matrix) &&
-                (expected == ParameterType.Scalar || expected == ParameterType.Integer || expected == ParameterType.Any))
-                return true;
-
-            return IsTypeCompatible(expected, actual);
-        }
-
-        /// <summary>
         /// Checks if the given CalcpadType is compatible with the expected ParameterType.
         /// </summary>
         public static bool IsTypeCompatible(ParameterType expected, CalcpadType actual)
@@ -84,11 +68,10 @@ namespace Calcpad.Highlighter.Linter.Models
                 ParameterType.Any => true,
                 ParameterType.Scalar => actual == CalcpadType.Value,
                 ParameterType.Vector => actual == CalcpadType.Vector,
-                // Core coerces a vector into an n×1 column matrix (IValue.AsMatrix) wherever a
-                // matrix is expected, so matrix functions (augment, stack, hprod, transp, row, col, ...)
-                // accept vectors too.
-                ParameterType.Matrix => actual == CalcpadType.Matrix || actual == CalcpadType.Vector,
+                ParameterType.Matrix => actual == CalcpadType.Matrix,
                 ParameterType.Integer => actual == CalcpadType.Value, // Can't distinguish int from float
+                ParameterType.String => actual == CalcpadType.StringVariable || actual == CalcpadType.StringTable,
+                ParameterType.StringTable => actual == CalcpadType.StringTable,
                 ParameterType.Expression => true, // Can't validate expressions
                 _ => true
             };
@@ -106,6 +89,8 @@ namespace Calcpad.Highlighter.Linter.Models
                 ParameterType.Vector => "vector",
                 ParameterType.Matrix => "matrix",
                 ParameterType.Integer => "integer",
+                ParameterType.String => "string",
+                ParameterType.StringTable => "string table",
                 ParameterType.Boolean => "boolean",
                 ParameterType.Expression => "expression",
                 ParameterType.Various => "various",

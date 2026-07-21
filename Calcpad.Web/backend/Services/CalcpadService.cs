@@ -1,8 +1,36 @@
+using System.Collections.Concurrent;
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
 using Calcpad.Core;
 using Calcpad.Server.Controllers;
 
 namespace Calcpad.Server.Services
 {
+    /// <summary>
+    /// Bundles all state needed for server-side remote content fetching.
+    /// Created per-request from the incoming request properties.
+    /// </summary>
+    public class WebFetchContext
+    {
+        /// <summary>Content cache: filename → raw file bytes. Populated by frontend (local files) and server (remote files).</summary>
+        public Dictionary<string, byte[]> ClientFileCache { get; set; }
+            = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Fetch errors: filename → error message. Passed to Core's ClientFileCache.Errors.</summary>
+        public Dictionary<string, string> FetchErrors { get; set; }
+            = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Authentication settings for API routing.</summary>
+        public AuthSettings? AuthSettings { get; set; }
+
+        /// <summary>Timeout in milliseconds for remote fetches.</summary>
+        public int ApiTimeoutMs { get; set; } = 10000;
+
+        /// <summary>Full path of the source file on the client, for resolving relative paths.</summary>
+        public string? SourceFilePath { get; set; }
+    }
+
     public class CalcpadService
     {
         private readonly string _tempDirectory;
@@ -10,46 +38,326 @@ namespace Calcpad.Server.Services
         private static readonly FileSettingsExtractor _fileSettingsExtractor = new();
         private static readonly NoPrintRegionStripper _noPrintRegionStripper = new();
 
+        /// <summary>
+        /// Global cache of pre-fetched remote content.
+        /// Maps referenceKey (URL or &lt;service:endpoint&gt;) to raw file bytes.
+        /// Shared across all requests — URLs are the same regardless of source file.
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, byte[]> _remoteContentCache
+            = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Cache of #write/#append outputs from the most recent convert run, keyed
+        /// by client SourceFilePath. Mirrors how _remoteContentCache stores #read
+        /// inputs. Each convert replaces the prior entry for that source file.
+        /// TODO: scope by user identity when CalcpadAuth lands.
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, ExportSession> _exportSessionsBySource
+            = new(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly TimeSpan ExportSessionTtl = TimeSpan.FromHours(1);
+        private const string AnonymousExportKey = "__anonymous__";
+
+        /// <summary>One captured set of #write outputs for a given client source file.</summary>
+        public sealed class ExportSession
+        {
+            public WriteCache Cache { get; init; } = null!;
+            public DateTime ExpiresUtc { get; set; }
+        }
+
+        public sealed record ExportEntry(string Filename, string ContentType, long Size);
+
+        /// <summary>Clears all cached remote content and disk-cached files.</summary>
+        public static void ClearRemoteContentCache()
+        {
+            _remoteContentCache.Clear();
+            ClearDiskCache();
+        }
+
+        /// <summary>Deletes all .cache files from the disk cache folder.</summary>
+        public static void ClearDiskCache()
+        {
+            var folder = DiskCacheCleanupService.CacheFolder;
+            if (!Directory.Exists(folder)) return;
+            foreach (var file in Directory.EnumerateFiles(folder, "*.cache"))
+            {
+                try { File.Delete(file); } catch { }
+            }
+        }
+
+        /// <summary>Removes a specific entry from the remote content cache.</summary>
+        public static void RemoveFromRemoteContentCache(string key) => _remoteContentCache.TryRemove(key, out _);
+
         public CalcpadService()
         {
             _tempDirectory = Path.GetTempPath();
             _htmlTemplate = LoadHtmlTemplate();
         }
 
+        internal static Router CreateApiRouter(AuthSettings? authSettings = null)
+        {
+            RoutingConfig? config = authSettings?.RoutingConfig;
+            return new Router(config, authSettings);
+        }
+
         /// <summary>
-        /// Creates the Include delegate for MacroParser. Core only invokes this
-        /// when the resolved path exists on disk, so a bare File.ReadAllText is
-        /// sufficient; any I/O failure surfaces through the catch as a Calcpad
-        /// error comment. URL-hosted includes are not currently supported.
+        /// Creates a synchronous Include delegate for MacroParser.
+        /// Handles filesystem reads and API/URL fetching via Router.
+        /// Core only calls this when the file isn't found locally or in cache.
         /// </summary>
-        internal static Func<string, Queue<string>, string> CreateIncludeDelegate()
+        internal static Func<string, Queue<string>, string> CreateIncludeDelegate(Router? apiRouter, int timeoutMs, ClientFileCache? fileCache)
         {
             return (fileName, fields) =>
             {
                 try
                 {
-                    return ProcessIncludedContent(File.ReadAllText(fileName));
+                    string rawContent;
+
+                    // Filesystem access
+                    if (File.Exists(fileName))
+                    {
+                        rawContent = File.ReadAllText(fileName);
+                        return ProcessIncludedContent(rawContent);
+                    }
+
+                    // Direct URL fetch (no special syntax needed)
+                    if (Router.IsDirectUrl(fileName))
+                    {
+                        FileLogger.LogInfo($"Fetching from direct URL: {fileName}");
+                        var contentBytes = Router.FetchUrlAsync(fileName, timeoutMs).GetAwaiter().GetResult();
+
+                        FileLogger.LogInfo($"Fetch successful, received {contentBytes.Length} bytes");
+                        rawContent = System.Text.Encoding.UTF8.GetString(contentBytes);
+
+                        AddToCache(fileCache, fileName, rawContent);
+                        return ProcessIncludedContent(rawContent);
+                    }
+
+                    // API router syntax: <service:endpoint>body
+                    if (apiRouter != null && fileName.StartsWith('<'))
+                    {
+                        int closeIndex = fileName.IndexOf('>');
+                        if (closeIndex == -1)
+                            throw new InvalidOperationException("Invalid syntax: Missing '>' in specification");
+
+                        string spec = fileName.Substring(1, closeIndex - 1);
+                        string bodyContent = fileName.Substring(closeIndex + 1);
+
+                        int colonIndex = spec.IndexOf(':');
+                        if (colonIndex == -1)
+                            throw new InvalidOperationException("Invalid API syntax: Missing ':' in service specification");
+
+                        string apiService = spec.Substring(0, colonIndex);
+                        string apiEndpoint = spec.Substring(colonIndex + 1);
+
+                        FileLogger.LogInfo($"Fetching via API: service={apiService}, endpoint={apiEndpoint}, body={bodyContent}");
+                        var contentBytes = apiRouter.FetchFileBytesAsync(apiService, apiEndpoint, bodyContent, timeoutMs).GetAwaiter().GetResult();
+
+                        FileLogger.LogInfo($"Fetch successful, received {contentBytes.Length} bytes");
+                        rawContent = System.Text.Encoding.UTF8.GetString(contentBytes);
+
+                        AddToCache(fileCache, fileName, rawContent);
+                        return ProcessIncludedContent(rawContent);
+                    }
+
+                    return $"' File not found: {fileName}";
                 }
                 catch (Exception ex)
                 {
                     FileLogger.LogError($"Error reading include file: {fileName}", ex);
+
+                    // Write error to cache so Core can show it instead of "File not found"
+                    AddErrorToCache(fileCache, fileName, ex.Message);
+
                     return $"' Error reading file: {fileName} - {ex.Message}";
                 }
             };
         }
 
-        public (string Html, IReadOnlyList<string> OpenXmlExpressions, IReadOnlyList<CalcpadError> Errors) Convert(
-            string calcpadContent,
-            Settings? settings = null,
-            bool forceUnwrappedCode = false,
-            string theme = "light",
-            string? sourceFilePath = null,
-            bool forPrint = false,
-            bool captureOpenXml = false)
+        /// <summary>
+        /// Adds a successful fetch result to the file cache, offloading to disk if > 1 MB.
+        /// </summary>
+        private static void AddToCache(ClientFileCache? cache, string filename, string content)
+        {
+            if (cache == null) return;
+            cache.AddEntry(filename, System.Text.Encoding.UTF8.GetBytes(content), null);
+        }
+
+        /// <summary>
+        /// Adds an error entry to the file cache so Core can show the
+        /// fetch error instead of a generic "File not found" message.
+        /// </summary>
+        private static void AddErrorToCache(ClientFileCache? cache, string filename, string errorMessage)
+        {
+            if (cache == null) return;
+            cache.AddEntry(filename, null, errorMessage);
+        }
+
+        /// <summary>
+        /// Creates a fetch delegate that handles both direct URLs and API router syntax.
+        /// </summary>
+        private static Func<string, Task<string>> CreateFetchDelegate(Router? apiRouter, int timeoutMs)
+        {
+            return async target =>
+            {
+                if (IncludeResolver.IsUrl(target))
+                {
+                    FileLogger.LogInfo($"Pre-fetching URL: {target}");
+                    var bytes = await Router.FetchUrlAsync(target, timeoutMs).ConfigureAwait(false);
+                    return System.Text.Encoding.UTF8.GetString(bytes);
+                }
+
+                if (target.StartsWith('<') && apiRouter != null)
+                {
+                    int closeIndex = target.IndexOf('>');
+                    if (closeIndex == -1)
+                        throw new InvalidOperationException("Invalid syntax: Missing '>' in specification");
+
+                    string spec = target[1..closeIndex];
+                    string body = target[(closeIndex + 1)..];
+
+                    int colonIndex = spec.IndexOf(':');
+                    if (colonIndex == -1)
+                        throw new InvalidOperationException("Invalid API syntax: Missing ':' in service specification");
+
+                    string service = spec[..colonIndex];
+                    string endpoint = spec[(colonIndex + 1)..];
+
+                    FileLogger.LogInfo($"Pre-fetching API: {service}:{endpoint}");
+                    var bytes = await apiRouter.FetchFileBytesAsync(service, endpoint, body, timeoutMs).ConfigureAwait(false);
+                    return System.Text.Encoding.UTF8.GetString(bytes);
+                }
+
+                throw new InvalidOperationException($"Unknown remote target: {target}");
+            };
+        }
+
+        /// <summary>
+        /// Extracts remote targets (URLs and API routes) from #read directives.
+        /// Returns the cache key for each target (URL up to @ separator).
+        /// </summary>
+        internal static List<string> ExtractReadTargets(string content)
+        {
+            var results = new List<string>();
+
+            using var reader = new StringReader(content);
+            string? line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                var trimmed = line.AsSpan().Trim();
+                if (!trimmed.StartsWith("#read ", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var fromIndex = trimmed.IndexOf(" from ", StringComparison.OrdinalIgnoreCase);
+                if (fromIndex < 0)
+                    continue;
+
+                var afterFrom = trimmed[(fromIndex + 6)..].Trim();
+                if (afterFrom.IsEmpty)
+                    continue;
+
+                // Target ends at @ (range separator) or space (TYPE/SEP keywords)
+                var atIdx = afterFrom.IndexOf('@');
+                var spaceIdx = afterFrom.IndexOf(' ');
+                int end = afterFrom.Length;
+                if (atIdx > 0) end = Math.Min(end, atIdx);
+                if (spaceIdx > 0) end = Math.Min(end, spaceIdx);
+
+                var target = afterFrom[..end].Trim().ToString();
+
+                if (!string.IsNullOrEmpty(target) && IncludeResolver.IsRemoteTarget(target))
+                    results.Add(target);
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Pre-fetches all remote references (#include and #read) from content
+        /// and populates the clientFileCache dictionary (raw bytes) before processing.
+        /// Uses a global cache to avoid re-fetching the same URLs across requests.
+        /// Used by both the convert endpoint (for Core) and lint/resolve endpoints (for Highlighter).
+        /// </summary>
+        public static async Task PreFetchRemoteContentAsync(string content, WebFetchContext ctx)
+        {
+            var apiRouter = CreateApiRouter(ctx.AuthSettings);
+            var rawFetchDelegate = CreateFetchDelegate(apiRouter, ctx.ApiTimeoutMs);
+
+            // Wrap fetch delegate to check global cache before making HTTP calls
+            Func<string, Task<string>> fetchDelegate = async target =>
+            {
+                if (_remoteContentCache.TryGetValue(target, out var cachedBytes))
+                {
+                    FileLogger.LogInfo($"Cache hit for: {target}");
+                    return System.Text.Encoding.UTF8.GetString(cachedBytes);
+                }
+
+                var result = await rawFetchDelegate(target).ConfigureAwait(false);
+                _remoteContentCache.TryAdd(target, System.Text.Encoding.UTF8.GetBytes(result));
+                return result;
+            };
+
+            // 1. Resolve #include remote targets recursively
+            var includeResults = await IncludeResolver.ResolveRemoteIncludesAsync(
+                content, fetchDelegate).ConfigureAwait(false);
+
+            foreach (var kvp in includeResults)
+            {
+                if (kvp.Value.content != null && !ctx.ClientFileCache.ContainsKey(kvp.Key))
+                    ctx.ClientFileCache[kvp.Key] = System.Text.Encoding.UTF8.GetBytes(kvp.Value.content);
+                else if (kvp.Value.error != null)
+                {
+                    ctx.FetchErrors[kvp.Key] = kvp.Value.error;
+                    FileLogger.LogError($"Pre-fetch failed for #include target: {kvp.Key}: {kvp.Value.error}");
+                }
+            }
+
+            // 2. Extract #read remote targets from main content and fetched includes
+            var readTargets = ExtractReadTargets(content);
+            foreach (var kvp in includeResults)
+            {
+                if (kvp.Value.content != null)
+                    readTargets.AddRange(ExtractReadTargets(kvp.Value.content));
+            }
+
+            // 3. Fetch #read targets (fetch delegate handles cache internally)
+            foreach (var target in readTargets)
+            {
+                if (ctx.ClientFileCache.ContainsKey(target))
+                    continue;
+
+                try
+                {
+                    var fetchedContent = await fetchDelegate(target).ConfigureAwait(false);
+                    ctx.ClientFileCache[target] = System.Text.Encoding.UTF8.GetBytes(fetchedContent);
+                    FileLogger.LogInfo($"Pre-fetched #read target: {target}");
+                }
+                catch (Exception ex)
+                {
+                    ctx.FetchErrors[target] = ex.Message;
+                    FileLogger.LogError($"Pre-fetch failed for #read target: {target}", ex);
+                }
+            }
+        }
+
+        public async Task<string> GetRawCodeFromMacroParser(string calcpadContent)
         {
             if (string.IsNullOrWhiteSpace(calcpadContent))
             {
-                FileLogger.LogWarning("Convert called with empty content");
+                throw new ArgumentException("Content cannot be null or empty", nameof(calcpadContent));
+            }
+
+            var macroParser = new MacroParser();
+            string outputText;
+            macroParser.Parse(calcpadContent, out outputText, null, 0, true);
+            return outputText;
+        }
+
+        public async Task<string> ConvertAsync(string calcpadContent, Settings? settings = null, bool forceUnwrappedCode = false, string theme = "light", WebFetchContext? ctx = null, bool forPrint = false)
+        {
+            if (string.IsNullOrWhiteSpace(calcpadContent))
+            {
+                FileLogger.LogWarning("ConvertAsync called with empty content");
                 throw new ArgumentException("Content cannot be null or empty", nameof(calcpadContent));
             }
 
@@ -70,67 +378,74 @@ namespace Calcpad.Server.Services
                 // Apply any per-file settings overrides embedded in HTML comments
                 coreSettings = _fileSettingsExtractor.ApplyFileSettings(calcpadContent, coreSettings);
 
-                // 2. Parse macros and includes (server reads referenced files from disk).
-                var macroParser = new MacroParser
+                // 2. Pre-fetch all remote references (URLs and API routes) into dictionary
+                ctx ??= new WebFetchContext();
+                await PreFetchRemoteContentAsync(calcpadContent, ctx).ConfigureAwait(false);
+
+                // 3. Convert dictionary to typed ClientFileCache for Core
+                ClientFileCache typedFileCache = ConvertToClientFileCache(ctx.ClientFileCache, ctx.FetchErrors) ?? new ClientFileCache();
+                typedFileCache.DiskCacheFolder ??= DiskCacheCleanupService.CacheFolder;
+                typedFileCache.RefetchDelegate = filename =>
                 {
-                    Include = CreateIncludeDelegate(),
-                    SourceFilePath = sourceFilePath
+                    if (_remoteContentCache.TryGetValue(filename, out var cached))
+                        return cached;
+                    if (Router.IsDirectUrl(filename))
+                    {
+                        var bytes = Router.FetchUrlAsync(filename, ctx.ApiTimeoutMs).GetAwaiter().GetResult();
+                        _remoteContentCache.TryAdd(filename, bytes);
+                        return bytes;
+                    }
+                    return null;
                 };
+                coreSettings.ClientFileCache = typedFileCache;
+
+                // 4. Configure API Router (server-side, not from Core settings)
+                Router apiRouter = CreateApiRouter(ctx.AuthSettings);
+                FileLogger.LogInfo($"API Router created, AuthSettings: {(ctx.AuthSettings != null ? "configured" : "null")}");
+
+                // 5. Parse macros and includes
+                var macroParser = new MacroParser();
+                macroParser.Include = CreateIncludeDelegate(apiRouter, ctx.ApiTimeoutMs, typedFileCache);
+                macroParser.ClientFileCache = typedFileCache;
+                macroParser.SourceFilePath = ctx.SourceFilePath;
+                coreSettings.SourceFilePath = ctx.SourceFilePath;
 
                 string outputText;
                 var hasMacroErrors = macroParser.Parse(calcpadContent, out outputText, null, 0, true);
 
                 string htmlResult;
-                IReadOnlyList<string> openXmlExpressions = Array.Empty<string>();
-                var errors = new List<CalcpadError>(macroParser.Errors);
 
                 if (hasMacroErrors || forceUnwrappedCode)
                 {
-                    // Forced-unwrapped with no macro errors: silently run
-                    // ExpressionParser so the code view can highlight lines that
-                    // would error in the wrapped preview. Skip when macro errors
-                    // already exist since the expression pass would just fail.
-                    if (forceUnwrappedCode && !hasMacroErrors)
-                    {
-                        try
-                        {
-                            var silent = new ExpressionParser { Settings = coreSettings, SourceFilePath = sourceFilePath, Debug = true };
-                            silent.Parse(outputText, true, false);
-                            errors.AddRange(silent.Errors);
-                        }
-                        catch (Exception silentEx)
-                        {
-                            FileLogger.LogWarning("Silent expression parse for error collection failed", silentEx.Message);
-                        }
-                    }
-                    htmlResult = ConvertCodeToHtml(outputText, errors);
+                    htmlResult = ConvertCodeToHtml(outputText);
                 }
                 else
                 {
+                    // Capture #write/#append outputs in memory so the client can download them.
+                    var writeCache = new WriteCache { DiskCacheFolder = DiskCacheCleanupService.CacheFolder };
+                    coreSettings.WriteCache = writeCache;
+
                     try
                     {
-                        // Debug mode makes Calcpad.Core emit per-line anchors (id="line-N" class="line")
-                        // and the error-summary boxes that the interactive preview uses for line links.
-                        // Keep it off for print/PDF so exported output has no navigation anchors.
-                        var parser = new ExpressionParser { Settings = coreSettings, SourceFilePath = sourceFilePath, Debug = !forPrint };
-                        parser.Parse(outputText, true, captureOpenXml);
+                        // 5. Parse expressions and calculate
+                        var parser = new ExpressionParser { Settings = coreSettings };
+                        parser.Parse(outputText, true, false);
                         htmlResult = RemoveEmptyParagraphs(parser.HtmlResult);
-                        errors.AddRange(parser.Errors);
-                        if (captureOpenXml)
-                            openXmlExpressions = parser.OpenXmlExpressions.ToList();
                     }
                     catch (Exception parseEx)
                     {
                         FileLogger.LogWarning("Expression parsing failed, falling back to unwrapped code", parseEx.Message);
-                        htmlResult = ConvertCodeToHtml(outputText, errors);
+                        htmlResult = ConvertCodeToHtml(outputText);
                     }
+
+                    StoreExportSession(ctx.SourceFilePath, writeCache);
                 }
 
                 // 6. Apply HTML wrapper with theme support
                 var finalHtml = WrapHtmlResult(htmlResult, theme);
                 FileLogger.LogInfo("Conversion completed successfully", $"Output length: {finalHtml.Length}");
 
-                return (finalHtml, openXmlExpressions, errors);
+                return finalHtml;
             }
             catch (MathParserException ex)
             {
@@ -141,6 +456,95 @@ namespace Calcpad.Server.Services
             {
                 FileLogger.LogError("Calcpad conversion failed", ex);
                 throw new InvalidOperationException($"Calcpad conversion failed: {ex.Message}", ex);
+            }
+        }
+
+        private static string NormalizeExportKey(string? sourceFilePath) =>
+            string.IsNullOrWhiteSpace(sourceFilePath) ? AnonymousExportKey : sourceFilePath;
+
+        private static void StoreExportSession(string? sourceFilePath, WriteCache cache)
+        {
+            var key = NormalizeExportKey(sourceFilePath);
+            if (cache.Count == 0)
+            {
+                _exportSessionsBySource.TryRemove(key, out _);
+                return;
+            }
+            _exportSessionsBySource[key] = new ExportSession
+            {
+                Cache = cache,
+                ExpiresUtc = DateTime.UtcNow + ExportSessionTtl
+            };
+        }
+
+        public IReadOnlyList<ExportEntry> ListExports(string? sourceFilePath)
+        {
+            if (!TryGetSession(sourceFilePath, out var session))
+                return Array.Empty<ExportEntry>();
+            var list = new List<ExportEntry>(session.Cache.Count);
+            foreach (var (filename, contentType, size) in session.Cache.Enumerate())
+                list.Add(new ExportEntry(filename, contentType, size));
+            return list;
+        }
+
+        public bool TryGetExport(string? sourceFilePath, string filename, out byte[] bytes, out string contentType)
+        {
+            bytes = Array.Empty<byte>();
+            contentType = "application/octet-stream";
+            if (!TryGetSession(sourceFilePath, out var session))
+                return false;
+            if (!session.Cache.TryGetBytes(filename, out var b))
+                return false;
+            bytes = b;
+            session.Cache.TryGetContentType(filename, out var ct);
+            if (!string.IsNullOrEmpty(ct)) contentType = ct;
+            return true;
+        }
+
+        public bool TryGetExportZip(string? sourceFilePath, out byte[] zipBytes)
+        {
+            zipBytes = Array.Empty<byte>();
+            if (!TryGetSession(sourceFilePath, out var session) || session.Cache.Count == 0)
+                return false;
+
+            using var ms = new MemoryStream();
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                foreach (var (filename, _, _) in session.Cache.Enumerate())
+                {
+                    if (!session.Cache.TryGetBytes(filename, out var fileBytes))
+                        continue;
+                    var entry = archive.CreateEntry(filename, CompressionLevel.Fastest);
+                    using var entryStream = entry.Open();
+                    entryStream.Write(fileBytes, 0, fileBytes.Length);
+                }
+            }
+            zipBytes = ms.ToArray();
+            return true;
+        }
+
+        private static bool TryGetSession(string? sourceFilePath, out ExportSession session)
+        {
+            var key = NormalizeExportKey(sourceFilePath);
+            if (_exportSessionsBySource.TryGetValue(key, out var s) && s.ExpiresUtc > DateTime.UtcNow)
+            {
+                session = s;
+                return true;
+            }
+            if (s != null)
+                _exportSessionsBySource.TryRemove(key, out _);
+            session = null!;
+            return false;
+        }
+
+        /// <summary>Drops in-memory export sessions whose TTL has elapsed. Called from DiskCacheCleanupService.</summary>
+        public static void CleanupExpiredExportSessions()
+        {
+            var now = DateTime.UtcNow;
+            foreach (var kvp in _exportSessionsBySource)
+            {
+                if (kvp.Value.ExpiresUtc <= now)
+                    _exportSessionsBySource.TryRemove(kvp.Key, out _);
             }
         }
 
@@ -171,69 +575,36 @@ tan_angle = tan(angle°)";
         }
 
 
-        private string ConvertCodeToHtml(string code, IReadOnlyList<CalcpadError>? errorList = null)
+        private string ConvertCodeToHtml(string code)
         {
             // Convert code to HTML with line numbers and syntax highlighting (following WPF pattern)
             const string ErrorString = "#Error";
-
-            // Key by OutputLine so macro-expanded loops only highlight the exact
-            // erroring row, not every iteration that came from the same source
-            // line. Fall back to SourceLine when OutputLine isn't known (0).
-            var errorsByOutputLine = new Dictionary<int, string>();
-            var errorsBySourceLine = new Dictionary<int, string>();
-            if (errorList != null)
-            {
-                foreach (var err in errorList)
-                {
-                    if (err.OutputLine > 0)
-                    {
-                        errorsByOutputLine[err.OutputLine] = errorsByOutputLine.TryGetValue(err.OutputLine, out var prevO)
-                            ? prevO + "\n" + err.Message
-                            : err.Message;
-                    }
-                    else
-                    {
-                        errorsBySourceLine[err.SourceLine] = errorsBySourceLine.TryGetValue(err.SourceLine, out var prevS)
-                            ? prevS + "\n" + err.Message
-                            : err.Message;
-                    }
-                }
-            }
-
+            
             var errors = new Queue<int>();
             var stringBuilder = new System.Text.StringBuilder();
             var lines = code.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
+            
             stringBuilder.AppendLine("<div class=\"code\">");
             var lineNumber = 0;
-
+            
             foreach (var line in lines)
             {
                 ++lineNumber;
                 var i = line.IndexOf('\v');
                 var lineText = i < 0 ? line : line.Substring(0, i);
                 var sourceLine = i < 0 ? lineNumber.ToString() : line.Substring(i + 1);
-
+                
                 // Format line number with proper padding
                 var lineNumText = lineNumber.ToString();
                 var n = lineNumText.Length;
                 var spaceCount = Math.Max(0, 6 - n);
                 var paddedSpaces = new string(' ', spaceCount).Replace(" ", "&nbsp;");
-
-                errorsByOutputLine.TryGetValue(lineNumber, out var errMsg);
-                if (errMsg == null && int.TryParse(sourceLine, out var srcLineNum))
-                    errorsBySourceLine.TryGetValue(srcLineNum, out errMsg);
-                var errClass = errMsg != null ? " err-line" : "";
-                var errTitle = errMsg != null ? $" title=\"{System.Web.HttpUtility.HtmlAttributeEncode(errMsg)}\"" : "";
-                if (errMsg != null) errors.Enqueue(lineNumber);
-
-                // The paragraph id is the (output) line number for in-preview scrolling; the line-num
-                // anchor carries data-text=sourceLine so clicking it navigates the editor to the
-                // original source line (mirrors WPF's CodeToHtml).
-                stringBuilder.Append($"<p class=\"line-text{errClass}\" id=\"line-{lineNumber}\"{errTitle}><a class=\"line-num\" href=\"#0\" data-text=\"{sourceLine}\" title=\"Source line {sourceLine}\">{paddedSpaces}{lineNumber}</a>&emsp;│&emsp;");
+                
+                stringBuilder.Append($"<p class=\"line-text\" id=\"line-{lineNumber}\"><span class=\"line-num\" title=\"Source line {sourceLine}\">{paddedSpaces}{lineNumber}</span>&emsp;│&emsp;");
 
                 if (lineText.StartsWith(ErrorString))
                 {
+                    errors.Enqueue(lineNumber);
                     var errorText = lineText.Length > ErrorString.Length ? lineText.Substring(ErrorString.Length) : "";
                     // MacroParser already HTML encoded the error text, but we need to preserve HTML links
                     // So we decode it first, then re-encode only the parts that aren't HTML links
@@ -244,6 +615,7 @@ tan_angle = tan(angle°)";
                 {
                     // Line contains error HTML with data-text links - don't apply syntax highlighting
                     // The HTML tags are NOT encoded in the raw text from MacroParser
+                    errors.Enqueue(lineNumber);
                     stringBuilder.Append($"<span class=\"err\">{lineText}</span>");
                 }
                 else
@@ -257,8 +629,8 @@ tan_angle = tan(angle°)";
             
             stringBuilder.AppendLine("</div>");
             
-            // Add error summary
-            if (errors.Count != 0)
+            // Add error summary if there are many errors
+            if (errors.Count != 0 && lineNumber > 30)
             {
                 stringBuilder.AppendLine($"<div class=\"errorHeader\">Found <b>{errors.Count}</b> errors in modules and macros:");
                 var count = 0;
@@ -491,12 +863,11 @@ tan_angle = tan(angle°)";
 
         private string RemoveEmptyParagraphs(string htmlContent)
         {
-            // Remove blank-line paragraphs (only content is &nbsp;). Debug mode adds
-            // per-line anchors (<p id="line-N" class="line">&nbsp;</p>) so the opening
-            // tag can carry attributes — match those too, not just a bare <p>.
+            // Remove lines that only contain <p>&nbsp;</p>
+            // This matches Calcpad.Wpf behavior of hiding empty comment lines
             return System.Text.RegularExpressions.Regex.Replace(
                 htmlContent,
-                @"<p\b[^>]*>&nbsp;</p>(\r?\n)?",
+                @"<p>&nbsp;</p>(\r?\n)?",
                 string.Empty
             );
         }
@@ -507,16 +878,15 @@ tan_angle = tan(angle°)";
             var themeClass = theme.ToLower() == "dark" ? " class=\"dark-theme\"" : "";
             var templateWithTheme = _htmlTemplate.Replace("<body>", $"<body{themeClass}>");
 
-            // Register @font-face rules for fonts referenced by name in the
-            // template CSS (e.g. Jost*), so they don't depend on OS installation,
-            // and expose window.__calcpadFonts for any other client-side use.
+            // Expose bundled fonts as window.__calcpadFonts so client scripts
+            // (e.g. the DXF render module) can use them instead of hitting a CDN.
             // Injected before </head> so it runs before any module scripts in body.
-            var fontMarkup = BundledFonts.GetFontFaceStyleTag() + BundledFonts.GetInjectionScript();
-            if (!string.IsNullOrEmpty(fontMarkup))
+            var fontScript = BundledFonts.GetInjectionScript();
+            if (!string.IsNullOrEmpty(fontScript))
             {
                 var headCloseIdx = templateWithTheme.IndexOf("</head>", StringComparison.OrdinalIgnoreCase);
                 if (headCloseIdx >= 0)
-                    templateWithTheme = templateWithTheme.Insert(headCloseIdx, fontMarkup);
+                    templateWithTheme = templateWithTheme.Insert(headCloseIdx, fontScript);
             }
 
             return templateWithTheme.Replace("{{CONTENT}}", htmlContent);
@@ -533,6 +903,73 @@ tan_angle = tan(angle°)";
             {
                 // Ignore cleanup errors
             }
+        }
+
+        private static ClientFileCache? ConvertToClientFileCache(
+            Dictionary<string, byte[]>? clientFileCache,
+            Dictionary<string, string>? fetchErrors = null)
+        {
+            if ((clientFileCache == null || clientFileCache.Count == 0) &&
+                (fetchErrors == null || fetchErrors.Count == 0))
+                return null;
+
+            var cacheFolder = DiskCacheCleanupService.CacheFolder;
+
+            // Merge content and error entries into parallel arrays
+            var allKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (clientFileCache != null)
+                foreach (var key in clientFileCache.Keys)
+                    allKeys.Add(key);
+            if (fetchErrors != null)
+                foreach (var key in fetchErrors.Keys)
+                    allKeys.Add(key);
+
+            var filenames = new string[allKeys.Count];
+            var contents = new byte[]?[allKeys.Count];
+            var errors = new string?[allKeys.Count];
+            var diskGuids = new string?[allKeys.Count];
+
+            int i = 0;
+            foreach (var key in allKeys)
+            {
+                filenames[i] = key;
+                errors[i] = fetchErrors != null && fetchErrors.TryGetValue(key, out var e) ? e : null;
+
+                var bytes = clientFileCache != null && clientFileCache.TryGetValue(key, out var b) ? b : null;
+                if (bytes != null && bytes.Length > 51_200) // 50 KB
+                {
+                    // Use deterministic key so the same file always maps to the same cache file
+                    var cacheKey = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(key)))[..32];
+                    var cachePath = Path.Combine(cacheFolder, cacheKey + ".cache");
+                    if (File.Exists(cachePath))
+                    {
+                        // Already cached — just touch to prevent cleanup
+                        try { File.SetLastWriteTimeUtc(cachePath, DateTime.UtcNow); } catch { }
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(cacheFolder);
+                        File.WriteAllBytes(cachePath, bytes);
+                    }
+                    contents[i] = null;
+                    diskGuids[i] = cacheKey;
+                }
+                else
+                {
+                    contents[i] = bytes;
+                    diskGuids[i] = null;
+                }
+                i++;
+            }
+
+            return new ClientFileCache
+            {
+                Filenames = filenames,
+                Contents = contents,
+                Errors = errors,
+                DiskGuids = diskGuids,
+                DiskCacheFolder = cacheFolder
+            };
         }
 
         /// <summary>

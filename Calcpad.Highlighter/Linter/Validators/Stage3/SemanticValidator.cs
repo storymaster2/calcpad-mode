@@ -14,6 +14,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             ValidateOperators(stage3, result, tokenProvider);
             ValidateCommands(stage3, result, tokenProvider);
             ValidateDirectives(stage3, result, tokenProvider);
+            ValidateUiDirectives(stage3, result, tokenProvider);
             ValidateAssignments(stage3, result, tokenProvider);
             ValidateIncompleteExpressions(stage3, result, tokenProvider);
             ValidateConstReassignment(stage3, result);
@@ -144,6 +145,84 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             }
         }
 
+        private void ValidateUiDirectives(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
+        {
+            for (int i = 0; i < stage3.Lines.Count; i++)
+            {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
+                var line = stage3.Lines[i];
+
+                if (LineParser.ShouldSkipLine(line))
+                    continue;
+
+                var tokens = tokenProvider.GetTokensForLine(i);
+                if (tokens.Count == 0)
+                    continue;
+
+                var firstToken = tokens[0];
+                if (firstToken.Type != TokenType.Keyword)
+                    continue;
+
+                var keyword = firstToken.Text.ToLowerInvariant();
+                if (keyword != "#ui")
+                    continue;
+
+                // Found a #UI directive — validate the JSON block
+                var afterKeyword = line.Substring(firstToken.Column + firstToken.Length).TrimStart();
+
+                // JSON block is optional — only validate if present
+                var braceStart = afterKeyword.IndexOf('{');
+                if (braceStart < 0)
+                    continue; // No JSON block — type will be auto-detected at runtime
+
+                var braceEnd = afterKeyword.IndexOf('}');
+                if (braceEnd < 0 || braceEnd <= braceStart)
+                {
+                    var endCol = firstToken.Column + firstToken.Length + afterKeyword.Length;
+                    result.AddWarning(i, firstToken.Column, endCol, "CPD-3415",
+                        "#UI directive has unclosed JSON block. Missing '}'.");
+                    continue;
+                }
+
+                var jsonString = afterKeyword[braceStart..(braceEnd + 1)];
+
+                try
+                {
+                    using var doc = JsonDocument.Parse(jsonString);
+                    var root = doc.RootElement;
+
+                    // JSON is valid — validate type-specific constraints
+                    if (root.TryGetProperty("type", out var typeProp) && typeProp.ValueKind == JsonValueKind.String)
+                    {
+                        var uiType = typeProp.GetString();
+                        if (uiType == "dropdown" || uiType == "radio")
+                        {
+                            var jsonCol = firstToken.Column + firstToken.Length + 1 + braceStart;
+                            var hasKeys = root.TryGetProperty("keys", out var keysEl) && keysEl.ValueKind == JsonValueKind.Array;
+                            var hasValues = root.TryGetProperty("values", out var valuesEl) && valuesEl.ValueKind == JsonValueKind.Array;
+
+                            if (!hasKeys || !hasValues)
+                            {
+                                result.AddWarning(i, jsonCol, jsonCol + jsonString.Length, "CPD-3415",
+                                    $"#UI {uiType} requires both 'keys' and 'values' arrays.");
+                            }
+                            else if (keysEl.GetArrayLength() != valuesEl.GetArrayLength())
+                            {
+                                result.AddWarning(i, jsonCol, jsonCol + jsonString.Length, "CPD-3415",
+                                    $"#UI {uiType}: 'keys' and 'values' arrays must have the same length.");
+                            }
+                        }
+                    }
+                }
+                catch (JsonException)
+                {
+                    var jsonCol = firstToken.Column + firstToken.Length + 1 + braceStart;
+                    result.AddWarning(i, jsonCol, jsonCol + jsonString.Length, "CPD-3415",
+                        "#UI directive has invalid JSON.");
+                }
+            }
+        }
 
         private void ValidateAssignments(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {

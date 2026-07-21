@@ -43,6 +43,11 @@ export const SEMANTIC_TOKEN_TYPES = [
     // Special (26-27)
     'input',              // 26: Input markers
     'format',             // 27: Format specifiers
+
+    // String Types (28-30)
+    'stringVariable',     // 28: String variable references
+    'stringFunction',     // 29: String function calls
+    'stringTable',        // 30: String table variable references
 ];
 
 /**
@@ -76,6 +81,9 @@ export const TOKEN_TYPE_MAP: Record<number, string> = {
     [CalcpadTokenType.Svg]: 'svg',
     [CalcpadTokenType.Input]: 'input',
     [CalcpadTokenType.Format]: 'format',
+    [CalcpadTokenType.StringVariable]: 'stringVariable',
+    [CalcpadTokenType.StringFunction]: 'stringFunction',
+    [CalcpadTokenType.StringTable]: 'stringTable',
 };
 
 /**

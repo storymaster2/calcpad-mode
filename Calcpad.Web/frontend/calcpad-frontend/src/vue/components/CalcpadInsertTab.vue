@@ -84,7 +84,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import type { InsertItem } from '../types'
-import { replaceParameterPlaceholders } from '../../text/snippet-insert'
 
 // Props
 interface Props {
@@ -214,67 +213,76 @@ const buildTreeFromItems = (items: InsertItem[]): TreeNode => {
   return tree
 }
 
-// Format display text (uses label if available, falls back to tag).
-// Appends (~shortcut) for items with quick typing support.
+// Helper: Replace § placeholders with parameter names in a given text
+const replaceParamPlaceholders = (text: string, item: InsertItem): string => {
+  if (!item.parameters || item.parameters.length === 0) {
+    return text
+  }
+
+  // Count § placeholders
+  const placeholderCount = (text.match(/§/g) || []).length
+  if (placeholderCount === 0) {
+    return text
+  }
+
+  // Build replacement array
+  const replacements: string[] = []
+  for (let i = 0; i < placeholderCount; i++) {
+    if (i < item.parameters.length) {
+      replacements.push(item.parameters[i].name)
+    } else {
+      // Variadic case: more placeholders than parameters, use ellipsis
+      replacements.push('...')
+    }
+  }
+
+  // Replace § with parameter names in order
+  let result = text
+  for (const replacement of replacements) {
+    result = result.replace('§', replacement)
+  }
+
+  return result
+}
+
+// Helper: Format display text (uses label if available, falls back to tag)
+// Appends (~shortcut) for items with quick typing support
 const formatDisplayText = (item: InsertItem): string => {
-  const display = replaceParameterPlaceholders(item.label || item.tag, item)
+  const baseText = item.label || item.tag
+  const display = replaceParamPlaceholders(baseText, item)
   if (item.quickType) {
     return display + ' (~' + item.quickType + ')'
   }
   return display
 }
 
+// Helper: Format insert text (always uses tag as base)
 const formatInsertText = (item: InsertItem): string => {
-  return replaceParameterPlaceholders(item.tag, item)
+  return replaceParamPlaceholders(item.tag, item)
 }
 
-// Helper: Build a plain-text tooltip carrying the same information the
-// source-code hover shows (description, documentation, parameters with
-// type/optional/variadic, return type, element-wise note, example).
+// Helper: Build tooltip with description and parameter breakdown
 const buildTooltip = (item: InsertItem): string => {
   const lines: string[] = []
 
+  // Main description
   if (item.description) {
     lines.push(item.description)
   }
 
-  if (item.documentation) {
-    lines.push('')
-    lines.push(item.documentation)
-  }
-
+  // Parameter breakdown
   if (item.parameters && item.parameters.length > 0) {
     lines.push('')
     lines.push('Parameters:')
     for (const param of item.parameters) {
-      let paramLine = '  ' + param.name
-      const type = param.typeDescription ?? (param.type && param.type !== 'Any' ? param.type : undefined)
-      if (type) paramLine += ' (' + type + ')'
-      if (param.description) paramLine += ' - ' + param.description
-      if (param.isVariadic) paramLine += ' [variadic]'
-      else if (param.isOptional) paramLine += ' [optional]'
+      const paramLine = param.description
+        ? '  ' + param.name + ': ' + param.description
+        : '  ' + param.name
       lines.push(paramLine)
     }
   }
 
-  const returnLabel = item.returnTypeDescription
-    ?? (item.returnType && item.returnType !== 'Any' ? item.returnType : undefined)
-  if (returnLabel) {
-    lines.push('')
-    lines.push('Returns: ' + returnLabel)
-  }
-
-  if (item.isElementWise) {
-    lines.push('')
-    lines.push('Accepts a scalar, vector, or matrix — applied element-wise, returning the same shape.')
-  }
-
-  if (item.example) {
-    lines.push('')
-    lines.push('Example:')
-    lines.push('  ' + item.example.replace(/\n/g, '\n  '))
-  }
-
+  // Quick type shortcut
   if (item.quickType) {
     lines.push('')
     lines.push('Quick type: ~' + item.quickType)

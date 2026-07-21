@@ -12,5 +12,33 @@
     "[markdown]": {
         // Two trailing spaces in Markdown signal a line break in the rendered output.
         "files.trimTrailingWhitespace": false,
+    },
+    "calcpad.settings": {
+        "math": {
+            "decimals": 2,
+            "degrees": 0,
+            "isComplex": false,
+            "substitute": true,
+            "formatEquations": true,
+            "zeroSmallMatrixElements": true,
+            "maxOutputCount": 20,
+            "formatString": ""
+        },
+        "plot": {
+            "isAdaptive": true,
+            "screenScaleFactor": 2,
+            "imagePath": "",
+            "imageUri": "",
+            "vectorGraphics": false,
+            "colorScale": "Rainbow",
+            "smoothScale": false,
+            "shadows": true,
+            "lightDirection": "NorthWest"
+        },
+        "server": {
+            "url": "",
+            "mode": "auto"
+        },
+        "units": "m"
     }
 }

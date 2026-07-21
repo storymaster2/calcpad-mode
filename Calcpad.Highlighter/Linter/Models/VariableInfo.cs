@@ -33,6 +33,12 @@ namespace Calcpad.Highlighter.Linter.Models
         public List<string> Parameters { get; set; } = new();
 
         /// <summary>
+        /// For macros: default values parallel to Parameters.
+        /// null entry = required parameter; string = optional with default value expression.
+        /// </summary>
+        public List<string> ParameterDefaults { get; set; }
+
+        /// <summary>
         /// For functions/macros: parameter count
         /// </summary>
         public int ParameterCount => Parameters.Count;
@@ -91,9 +97,13 @@ namespace Calcpad.Highlighter.Linter.Models
         {
             return Type switch
             {
-                CalcpadType.Function => Name + "(" + string.Join("; ", Parameters) + ")",
+                CalcpadType.Function => Name + "(" + string.Join("; ", System.Linq.Enumerable.Select(Parameters, (p, i) =>
+                    ParameterDefaults != null && i < ParameterDefaults.Count && ParameterDefaults[i] != null
+                        ? p + "=" + ParameterDefaults[i] : p)) + ")",
                 CalcpadType.InlineMacro or CalcpadType.MultilineMacro => Name + (Parameters.Count > 0
-                    ? "(" + string.Join("; ", Parameters) + ")"
+                    ? "(" + string.Join("; ", System.Linq.Enumerable.Select(Parameters, (p, i) =>
+                        ParameterDefaults != null && i < ParameterDefaults.Count && ParameterDefaults[i] != null
+                            ? p + "=" + ParameterDefaults[i] : p)) + ")"
                     : ""),
                 CalcpadType.CustomUnit => "." + UnitName,
                 _ => Name

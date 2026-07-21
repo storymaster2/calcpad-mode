@@ -2,33 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Wpf: Run",
-            "type": "coreclr",
+            "name": "Server: Run",
+            "type": "node",
             "request": "launch",
-            "preLaunchTask": "Wpf: Build",
-            "program": "${workspaceFolder}/Calcpad.Wpf/bin/Debug/net10.0-windows/CalcpadCE.exe",
-            "args": [],
-            "cwd": "${workspaceFolder}/Calcpad.Wpf",
-            "console": "internalConsole",
-            "stopAtEntry": false
-        },
-        {
-            "name": "Server: Debug (.NET)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "Server: Build (.NET)",
-            "program": "${workspaceFolder}/Calcpad.Web/backend/bin/Debug/net10.0/Calcpad.Server.dll",
-            "args": ["--urls", "http://127.0.0.1:9420"],
-            "cwd": "${workspaceFolder}/Calcpad.Web/backend",
-            "stopAtEntry": false,
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
-                "uriFormat": "%s/swagger"
-            },
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            }
+            "runtimeExecutable": "bash",
+            "runtimeArgs": [
+                "${workspaceFolder}/Calcpad.Web/backend/scripts/restart-dev-server.sh"
+            ],
+            "console": "integratedTerminal"
         },
         {
             "name": "Extension: Run",
@@ -40,20 +21,89 @@
             "outFiles": [
                 "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
             ],
-            "preLaunchTask": "Extension: Compile & Sync Server"
+            "preLaunchTask": "Extension: Compile"
         },
         {
-            // `tauri dev` hot-reloads the Vue frontend and rebuilds the Rust
-            // shell on change. Sidecar staging runs via preLaunchTask so the
-            // ShellExt lookup in lib.rs resolves.
-            "name": "Desktop: Dev (Tauri)",
+            "name": "Extension + Server: Run",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension + Server: Compile & Start"
+        },
+        {
+            "name": "Extension + Bundled Server (Linux x64)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension: Compile + Deploy Bundle"
+        },
+        {
+            "name": "Extension + Bundled Server (Fedora x64)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension: Compile + Deploy Bundle"
+        },
+        {
+            "name": "Extension + Bundled Server (Debian x64)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension: Compile + Deploy Bundle"
+        },
+        {
+            "name": "Extension + Bundled Server (Windows x64)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/Calcpad.Web/frontend/vscode-calcpad/out/**/*.js"
+            ],
+            "preLaunchTask": "Extension: Compile + Deploy Bundle"
+        },
+        {
+            "name": "Desktop: Run Local Build (Linux x64)",
             "type": "node",
             "request": "launch",
-            "runtimeExecutable": "npx",
-            "runtimeArgs": ["tauri", "dev"],
-            "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop",
+            "runtimeExecutable": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/dist/calcpad-desktop/calcpad-desktop-linux_x64",
+            "cwd": "${workspaceFolder}/Calcpad.Web/frontend/calcpad-desktop/dist/calcpad-desktop",
+            "env": {
+                "GDK_BACKEND": "x11",
+                "WEBKIT_DISABLE_DMABUF_RENDERER": "1",
+                "BROWSER_PATH": "/usr/bin/chromium"
+            },
             "console": "integratedTerminal",
-            "preLaunchTask": "Desktop: Stage Sidecar"
+            "preLaunchTask": "Desktop: Clean & Rebuild"
+        },
+        {
+            "name": "Desktop: Run Installed (Arch pacman)",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "/usr/bin/calcpad-ce",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Desktop: Install via pacman (Arch)"
         }
     ]
 }

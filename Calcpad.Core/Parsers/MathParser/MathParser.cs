@@ -23,6 +23,7 @@ namespace Calcpad.Core
         private Token[] _rpn;
         private readonly List<SolverBlock> _solveBlocks = [];
         private readonly Container<CustomFunction> _functions = new();
+        private bool _hasOptionalParams;
         private readonly Dictionary<string, Variable> _variables = new(StringComparer.Ordinal);
         private readonly Dictionary<string, Unit> _units = new(StringComparer.Ordinal);
         private readonly Input _input;
@@ -105,6 +106,14 @@ namespace Calcpad.Core
             }
         }
 
+        internal string ResultTypeName => _result switch
+        {
+            Matrix => "matrix",
+            Vector => "vector",
+            ComplexValue c when c.IsComplex => "complex",
+            IScalarValue => "value",
+            _ => "undefined"
+        };
 
         public double Real => Result.Re;
         public double Imaginary => Result.Im;
@@ -441,14 +450,23 @@ namespace Calcpad.Core
             if (n > 0 &&
                 !double.TryParse(numberSpan, CultureInfo.InvariantCulture.NumberFormat, out d) &&
                 !double.TryParse(numberSpan, numFormat, out d))
-                throw Exceptions.InvalidNumber(numberSpan.ToString());
+                return RealValue.NaN;
 
             Unit u = null;
             if (n < s.Length)
             {
                 var unitSpan = s[n..];
                 if (!Unit.TryGet(unitSpan.ToString(), out u))
-                    u = UnitsParser.Parse(unitSpan, null);
+                {
+                    try
+                    {
+                        u = UnitsParser.Parse(unitSpan, null);
+                    }
+                    catch
+                    {
+                        return RealValue.NaN;
+                    }
+                }
             }
             return n == 0 ? new(u) : new(d, u);
         }
@@ -502,7 +520,10 @@ namespace Calcpad.Core
             _result = RealValue.Zero;
             _isCalculated = false;
             _functionDefinitionIndex = -1;
-            var input = _input.GetInput(expression, allowAssignment);
+            // Rewrite keyword args at call sites before tokenization: "f(3; y=4)" → "f(3; 4)"
+            var exprString = expression.ToString();
+            var rewritten = RewriteFunctionCallKeywordArgs(exprString);
+            var input = _input.GetInput(ReferenceEquals(rewritten, exprString) ? expression : rewritten.AsSpan(), allowAssignment);
             new SyntaxAnalyser(_functions).Check(input, IsCalculation && IsEnabled, out var isFunctionDefinition);
             _input.OrderOperators(input, isFunctionDefinition || _isSolver > 0 || IsPlotting, _assignmentIndex);
             if (isFunctionDefinition)
@@ -511,7 +532,7 @@ namespace Calcpad.Core
                     throw Exceptions.FunctionDefinitionInSolver();
 
                 _rpn = null;
-                AddFunction(input);
+                AddFunction(input, exprString);
             }
             else
                 _rpn = Input.GetRpn(input);
@@ -638,10 +659,13 @@ namespace Calcpad.Core
                 throw Exceptions.ResultNotReal(Core.Complex.Format(value.Complex, _settings.Decimals, Phasor, OutputWriter.OutputFormat.Text));
         }
 
-        private void AddFunction(Queue<Token> input)
+        private void AddFunction(Queue<Token> input, string rawExpression)
         {
             var t = input.Dequeue();
             var parameters = new List<string>(2);
+            var defaults = new List<string>(2);
+            bool hasDefaults = false;
+            var rawDefaults = ExtractRawDefaults(rawExpression);
             if (t.Type == TokenTypes.CustomFunction)
             {
                 var name = t.Content;
@@ -660,7 +684,23 @@ namespace Calcpad.Core
                             break;
                         }
                         if (t.Type == TokenTypes.Variable)
+                        {
                             parameters.Add(t.Content);
+                            // Check for default value: "y=0" → Variable(y) Operator(=) expr
+                            if (input.Count > 0 &&
+                                input.Peek().Type == TokenTypes.Operator &&
+                                input.Peek().Content == "=")
+                            {
+                                input.Dequeue(); // consume '='
+                                SkipDefaultTokens(input);
+                                // Use the raw source text for the default expression
+                                rawDefaults.TryGetValue(t.Content, out var rawDefault);
+                                defaults.Add(rawDefault);
+                                hasDefaults = true;
+                            }
+                            else
+                                defaults.Add(null); // required parameter
+                        }
                         else if (t.Type != TokenTypes.Divisor)
                             throw Exceptions.InvalidFunctionToken(t.Content);
 
@@ -690,6 +730,11 @@ namespace Calcpad.Core
 
 
                         cf.AddParameters(parameters);
+                        if (hasDefaults)
+                        {
+                            cf.DefaultExpressions = defaults.ToArray();
+                            _hasOptionalParams = true;
+                        }
                         cf.Rpn = rpn;
                         try
                         {
@@ -728,6 +773,258 @@ namespace Calcpad.Core
                 3 => new CustomFunction3() { IsReadOnly = isConst },
                 _ => new CustomFunctionN() { IsReadOnly = isConst },
             };
+        }
+
+        /// <summary>
+        /// Skips default value tokens in the queue (until ';' or ')' at depth 0).
+        /// The actual default text is extracted from the raw source by ExtractRawDefaults.
+        /// </summary>
+        private static void SkipDefaultTokens(Queue<Token> input)
+        {
+            int depth = 0;
+            while (input.Count > 0)
+            {
+                var peek = input.Peek();
+                if (depth == 0 && (peek.Type == TokenTypes.Divisor || peek.Type == TokenTypes.BracketRight))
+                    break;
+                var t = input.Dequeue();
+                if (t.Type == TokenTypes.BracketLeft) depth++;
+                else if (t.Type == TokenTypes.BracketRight) depth--;
+            }
+        }
+
+        /// <summary>
+        /// Extracts raw default expressions from the source text of a function definition.
+        /// Preserves original formatting (e.g., "1kg" stays as "1kg", not "1*kg").
+        /// </summary>
+        private static Dictionary<string, string> ExtractRawDefaults(ReadOnlySpan<char> expression)
+        {
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var openParen = expression.IndexOf('(');
+            if (openParen < 0) return result;
+
+            // Find matching close paren
+            int depth = 1, closeParen = -1;
+            for (int i = openParen + 1; i < expression.Length && depth > 0; i++)
+            {
+                if (expression[i] == '(') depth++;
+                else if (expression[i] == ')') { depth--; if (depth == 0) closeParen = i; }
+            }
+            if (closeParen < 0) return result;
+
+            // Split params at ';' depth 0 and extract "name = default" pairs
+            var paramsSpan = expression[(openParen + 1)..closeParen];
+            depth = 0;
+            int start = 0;
+            for (int i = 0; i <= paramsSpan.Length; i++)
+            {
+                char c = i < paramsSpan.Length ? paramsSpan[i] : ';';
+                if (c == '(') depth++;
+                else if (c == ')') depth--;
+                else if ((c == ';' && depth == 0) || i == paramsSpan.Length)
+                {
+                    var param = paramsSpan[start..i].Trim();
+                    var eqIdx = -1;
+                    // Find first '=' not inside parens
+                    int pd = 0;
+                    for (int j = 0; j < param.Length; j++)
+                    {
+                        if (param[j] == '(') pd++;
+                        else if (param[j] == ')') pd--;
+                        else if (param[j] == '=' && pd == 0) { eqIdx = j; break; }
+                    }
+                    if (eqIdx > 0)
+                    {
+                        var name = param[..eqIdx].Trim();
+                        var defaultVal = param[(eqIdx + 1)..].Trim();
+                        result[name.ToString()] = defaultVal.ToString();
+                    }
+                    start = i + 1;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Rewrites keyword argument calls at the text level before tokenization.
+        /// "f(3; y=4)" → "f(3; 4)" and "f(3)" → "f(3; 0)" when f has optional params.
+        /// Returns the same string object if no changes are made.
+        /// </summary>
+        private string RewriteFunctionCallKeywordArgs(string expression)
+        {
+            if (!_hasOptionalParams)
+                return expression;
+
+            var sb = new StringBuilder();
+            int pos = 0;
+            bool changed = false;
+            while (pos < expression.Length)
+            {
+                // Find next identifier start
+                int nameStart = pos;
+                while (pos < expression.Length && (char.IsLetterOrDigit(expression[pos]) || expression[pos] == '_'))
+                    pos++;
+
+                if (pos == nameStart)
+                {
+                    // Not an identifier character — copy and advance
+                    sb.Append(expression[pos++]);
+                    continue;
+                }
+
+                var name = expression[nameStart..pos];
+                if (pos >= expression.Length || expression[pos] != '(')
+                {
+                    sb.Append(name);
+                    continue;
+                }
+
+                // Look up this name as a custom function with optional params
+                var idx = _functions.IndexOf(name);
+                if (idx < 0)
+                {
+                    sb.Append(name);
+                    continue;
+                }
+                var cf = _functions[idx];
+                if (cf.DefaultExpressions == null)
+                {
+                    sb.Append(name);
+                    continue;
+                }
+
+                int openParen = pos;
+                // Check if this is a definition: nameStart == 0 (or only whitespace before) and after ')' there is '='
+                int depth = 1, closeParen = -1;
+                for (int i = openParen + 1; i < expression.Length && depth > 0; i++)
+                {
+                    if (expression[i] == '(') depth++;
+                    else if (expression[i] == ')') { depth--; if (depth == 0) { closeParen = i; break; } }
+                }
+                if (closeParen < 0)
+                {
+                    sb.Append(name);
+                    continue;
+                }
+
+                // Skip if this is a re-definition: expression[..nameStart].Trim() == "" and '=' follows ')'
+                bool isAtStart = expression[..nameStart].Trim().Length == 0;
+                if (isAtStart)
+                {
+                    int afterClose = closeParen + 1;
+                    while (afterClose < expression.Length && expression[afterClose] == ' ') afterClose++;
+                    if (afterClose < expression.Length && expression[afterClose] == '=')
+                    {
+                        // This is a redefinition like f(x; y=0) = body — don't rewrite
+                        sb.Append(name);
+                        continue;
+                    }
+                }
+
+                var argsText = expression[(openParen + 1)..closeParen];
+                if (TryResolveKeywordArgs(cf, name, argsText, out var resolvedArgs))
+                {
+                    sb.Append(name).Append('(').Append(resolvedArgs).Append(')');
+                    pos = closeParen + 1;
+                    changed = true;
+                }
+                else
+                {
+                    sb.Append(name);
+                }
+            }
+            return changed ? sb.ToString() : expression;
+        }
+
+        /// <summary>
+        /// Resolves positional and keyword arguments for a custom function with optional params.
+        /// Returns false if no keyword args and no defaults needed (caller can pass through unchanged).
+        /// </summary>
+        private static bool TryResolveKeywordArgs(CustomFunction cf, string funcName, string argsText, out string resolved)
+        {
+            resolved = null;
+            var args = SplitAtSemicolonDepth0(argsText);
+            var positional = new List<string>(args.Count);
+            var keywords = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var arg in args)
+            {
+                var trimmed = arg.Trim();
+                if (trimmed.Length == 0) continue;
+                if (TryParseKeywordArg(trimmed, cf, out var paramName, out var value))
+                    keywords[paramName] = value;
+                else
+                    positional.Add(trimmed);
+            }
+
+            bool needsKeywords = keywords.Count > 0;
+            bool needsDefaults = positional.Count + keywords.Count < cf.ParameterCount;
+            if (!needsKeywords && !needsDefaults)
+                return false; // no rewriting needed
+
+            var result = new string[cf.ParameterCount];
+            int posIdx = 0;
+            for (int i = 0; i < cf.ParameterCount; i++)
+            {
+                var pName = cf.ParameterName(i);
+                if (keywords.TryGetValue(pName, out var kwVal))
+                    result[i] = kwVal;
+                else if (posIdx < positional.Count)
+                    result[i] = positional[posIdx++];
+                else if (cf.DefaultExpressions[i] != null)
+                    result[i] = cf.DefaultExpressions[i];
+                else
+                    throw Exceptions.InvalidFunction(funcName);
+            }
+            resolved = string.Join("; ", result);
+            return true;
+        }
+
+        private static bool TryParseKeywordArg(ReadOnlySpan<char> arg, CustomFunction cf, out string paramName, out string value)
+        {
+            // Detect: "identifier = expr" where identifier is a parameter name
+            // Handles optional whitespace around '=': "x=5", "x = 5"
+            var trimmed = arg.Trim();
+            int i = 0;
+            while (i < trimmed.Length && (char.IsLetterOrDigit(trimmed[i]) || trimmed[i] == '_')) i++;
+            if (i > 0)
+            {
+                var potentialName = trimmed[..i];
+                var rest = trimmed[i..].TrimStart();
+                if (!rest.IsEmpty && rest[0] == '=')
+                {
+                    for (int p = 0; p < cf.ParameterCount; p++)
+                    {
+                        if (potentialName.Equals(cf.ParameterName(p), StringComparison.OrdinalIgnoreCase))
+                        {
+                            paramName = potentialName.ToString();
+                            value = rest[1..].Trim().ToString();
+                            return true;
+                        }
+                    }
+                }
+            }
+            paramName = null;
+            value = null;
+            return false;
+        }
+
+        private static List<string> SplitAtSemicolonDepth0(string s)
+        {
+            var result = new List<string>();
+            int depth = 0, start = 0;
+            for (int i = 0; i < s.Length; i++)
+            {
+                if (s[i] == '(') depth++;
+                else if (s[i] == ')') depth--;
+                else if (s[i] == ';' && depth == 0)
+                {
+                    result.Add(s[start..i]);
+                    start = i + 1;
+                }
+            }
+            result.Add(s[start..]);
+            return result;
         }
 
         private void BindParameters(ReadOnlySpan<Parameter> parameters, Token[] rpn)
@@ -866,10 +1163,133 @@ namespace Calcpad.Core
             }
         }
 
+        internal string ResultAsValWithUnits
+        {
+            get
+            {
+                if (_result is IScalarValue scalar)
+                    return FormatResultValue(scalar);
+
+                var sb = new StringBuilder();
+                sb.Append('[');
+                if (_result is Vector vector)
+                    for (int i = 0, len = vector.Length - 1; i <= len; ++i)
+                    {
+                        sb.Append(FormatResultValue(vector[i]));
+                        if (i < len)
+                            sb.Append(", ");
+                    }
+                else if (_result is Matrix matrix)
+                    for (int i = 0, m = matrix.RowCount - 1; i <= m; ++i)
+                    {
+                        sb.Append('[');
+                        for (int j = 0, n = matrix.ColCount - 1; j <= n; ++j)
+                        {
+                            sb.Append(FormatResultValue(matrix[i, j]));
+                            if (j < n)
+                                sb.Append(", ");
+                        }
+                        sb.Append(']');
+                        if (i < m)
+                            sb.Append(", ");
+                    }
+
+                sb.Append(']');
+                return sb.ToString();
+
+                string FormatResultValue(in IScalarValue value)
+                {
+                    var decimals = _settings.Decimals;
+                    string s;
+                    if (value is RealValue real)
+                        s = Convert(real.D);
+                    else
+                    {
+                        var c = value.Complex;
+                        if (c.IsReal)
+                            s = Convert(c.Re);
+                        else if (c.IsImaginary)
+                            s = Convert(c.Im) + 'i';
+                        else
+                        {
+                            var sa = Convert(c.Re);
+                            var sb = Convert(Math.Abs(c.Im));
+                            s = c.Im < 0 ? $"({sa} – {sb}i)" : $"({sa} + {sb}i)";
+                        }
+                    }
+                    var unitText = Units?.Text;
+                    return string.IsNullOrEmpty(unitText) ? s : s + unitText;
+
+                    string Convert(double d) =>
+                        Math.Round(d, decimals).ToString(CultureInfo.InvariantCulture);
+                }
+            }
+        }
+
         public override string ToString() => _output.Render(OutputWriter.OutputFormat.Text);
         public string ToHtml() => _output.Render(OutputWriter.OutputFormat.Html);
         public string ToXml() => _output.Render(OutputWriter.OutputFormat.Xml)
             .Replace("    ", string.Empty).ReplaceLineEndings();
+
+        internal string[,] ResultAsStringTable()
+        {
+            var decimals = _settings.Decimals;
+            if (_result is IScalarValue scalar)
+                return new string[,] { { FormatVal(scalar) } };
+            if (_result is Vector vector)
+            {
+                var table = new string[1, vector.Length];
+                for (int i = 0; i < vector.Length; i++)
+                    table[0, i] = FormatVal(vector[i]);
+                return table;
+            }
+            if (_result is Matrix matrix)
+            {
+                var rows = matrix.RowCount;
+                var cols = matrix.ColCount;
+                var table = new string[rows, cols];
+                for (int r = 0; r < rows; r++)
+                    for (int c = 0; c < cols; c++)
+                        table[r, c] = FormatVal(matrix[r, c]);
+                return table;
+            }
+            return new string[,] { { "0" } };
+
+            string FormatVal(in IScalarValue value) =>
+                Math.Round(value.Re, decimals).ToString(CultureInfo.InvariantCulture);
+        }
+
+        internal string[,] ResultAsStringTableWithUnits()
+        {
+            var decimals = _settings.Decimals;
+            var unitText = Units?.Text ?? string.Empty;
+            if (_result is IScalarValue scalar)
+                return new string[,] { { FormatVal(scalar) } };
+            if (_result is Vector vector)
+            {
+                var table = new string[1, vector.Length];
+                for (int i = 0; i < vector.Length; i++)
+                    table[0, i] = FormatVal(vector[i]);
+                return table;
+            }
+            if (_result is Matrix matrix)
+            {
+                var rows = matrix.RowCount;
+                var cols = matrix.ColCount;
+                var table = new string[rows, cols];
+                for (int r = 0; r < rows; r++)
+                    for (int c = 0; c < cols; c++)
+                        table[r, c] = FormatVal(matrix[r, c]);
+                return table;
+            }
+            return new string[,] { { "0" } };
+
+            string FormatVal(in IScalarValue value)
+            {
+                var s = Math.Round(value.Re, decimals).ToString(CultureInfo.InvariantCulture);
+                return string.IsNullOrEmpty(unitText) ? s : s + unitText;
+            }
+        }
 
         internal double GetSettingsVariable(string name, double defaultValue)
         {

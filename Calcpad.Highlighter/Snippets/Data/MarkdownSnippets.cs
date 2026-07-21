@@ -12,61 +12,61 @@ namespace Calcpad.Highlighter.Snippets.Data
         [
             new SnippetItem
             {
-                Insert = "### text",
+                Insert = "### §",
                 Description = "Markdown heading level 3",
                 Category = "Markdown"
             },
             new SnippetItem
             {
-                Insert = "#### text",
+                Insert = "#### §",
                 Description = "Markdown heading level 4",
                 Category = "Markdown"
             },
             new SnippetItem
             {
-                Insert = "##### text",
+                Insert = "##### §",
                 Description = "Markdown heading level 5",
                 Category = "Markdown"
             },
             new SnippetItem
             {
-                Insert = "###### text",
+                Insert = "###### §",
                 Description = "Markdown heading level 6",
                 Category = "Markdown"
             },
             new SnippetItem
             {
-                Insert = "**text**",
+                Insert = "**§**",
                 Description = "Markdown bold / strong",
                 Category = "Markdown"
             },
             new SnippetItem
             {
-                Insert = "*text*",
+                Insert = "*§*",
                 Description = "Markdown italic / emphasis",
                 Category = "Markdown"
             },
             new SnippetItem
             {
-                Insert = "++text++",
+                Insert = "++§++",
                 Description = "Markdown underline / insert",
                 Category = "Markdown"
             },
             new SnippetItem
             {
-                Insert = "~~text~~",
+                Insert = "~~§~~",
                 Description = "Markdown strikethrough / delete",
                 Category = "Markdown"
             },
             new SnippetItem
             {
-                Insert = "~text~",
+                Insert = "~§~",
                 Description = "Markdown subscript",
                 Category = "Markdown"
             },
             new SnippetItem
             {
-                Insert = "^text^",
+                Insert = "^§^",
                 Description = "Markdown superscript",
                 Category = "Markdown"
             },

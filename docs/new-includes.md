@@ -1,39 +1,96 @@
-# Includes and File Reads
+# Recursive Includes and API Routing
 
-`#include` and `#read` let you pull in other files, and both can follow chains of files.
+> Calcpad.Web only (web editor and VS Code extension). Not available in the WPF desktop application.
 
-## Reusing code with `#include`
+`#include` and `#read` now support recursive resolution, remote URLs, and a structured `<service:endpoint>` syntax for API calls.
 
-`#include` inlines another Calcpad file's source into your document at parse time, so you can keep shared constants, functions, and macros in one place and reuse them everywhere:
+## Recursive `#include` resolution
+
+Included files can themselves include other files. The resolver passes a shared `visited` set through the recursion:
 
 ```text
 ' top.cpd
-#include shared/constants.cpd
-#include shared/helpers.cpd
+#include 'shared/constants.cpd'
+#include 'shared/helpers.cpd'
 ```
 
-An included file can include others in turn, and those can include more — the chain is followed automatically.
+### Depth limit
 
-- **Circular includes are safe.** If a file ends up including itself (directly or through another file), the repeat is skipped instead of looping forever. Filenames are matched case-insensitively.
-- **There's a depth limit.** Include chains can go up to 20 levels deep; beyond that, the include is skipped and a comment is left in its place noting the file that couldn't be included.
+Recursion depth is capped at **20 levels**. When exceeded, the include is replaced with:
+
+```text
+' Error: Include file not provided: <filename>
+```
+
+### Circular reference detection
+
+A case-insensitive set tracks every filename already expanded on the current path. A second attempt to include the same file is skipped — preventing infinite loops on self-referential or mutually-referential files.
+
+## Remote URL support (HTTP/HTTPS)
+
+Include content directly from the web:
+
+```text
+#include "https://example.com/shared-calcs.cpd"
+```
+
+- Only `http://` and `https://` are recognized
+- Default timeout: **10 seconds** (configurable per request via `apiTimeoutMs`)
+- User-Agent: `Calcpad/1.0` (static fetch) or `Calcpad-Server/1.0` (routed API calls)
+- Non-2xx responses throw an error with status code and reason phrase
+
+## `<service:endpoint>` routing syntax
+
+Structured remote calls are written as:
+
+```text
+#include "<weather_api:forecast>{\"city\":\"Seattle\"}"
+```
+
+Parsed as `serviceName:endpointName` plus a trailing request body. The body determines the HTTP method:
+
+- Body starts with `{` or `[` → **POST** with `Content-Type: application/json`
+- Otherwise → **GET**
+
+### Routing config structure
+
+```json
+{
+  "weather_api": {
+    "base_url": "https://api.weather.com",
+    "auth": "jwt",
+    "endpoints": {
+      "current":  "/v1/current",
+      "forecast": "/v1/forecast"
+    }
+  }
+}
+```
+
+- Keys use `snake_case`
+- `auth: "jwt"` causes `Authorization: Bearer <token>` to be added from the request's auth settings
+- Final URL is `base_url + endpoint_template`
+
+## Pre-fetching and caching
+
+Before the main conversion runs, all remote `#include` and `#read` targets are fetched asynchronously in parallel.
+
+- **Global cache** — shared across all requests, keyed by URL or `<service:endpoint>` token
+- **Per-request `ClientFileCache`** — base64-encoded file contents supplied by the client
+- **Disk cache** — files over ~1 MB are offloaded to `{AppContext.BaseDirectory}/cache/` as SHA-256-keyed `.cache` files
+- Cache files older than 24 hours are deleted by an hourly cleanup service
+- Cache cleared manually via `POST /api/calcpad/refresh-cache` (single key, multiple keys, or full flush)
+
+## Source mapping and error attribution
+
+Every expanded line tracks its origin through three maps so diagnostics trace errors back to the original file and line number, even after several layers of include and macro expansion.
 
 ## `#include` vs `#read`
 
-Both bring in outside content, but they do different jobs:
-
-| | `#include` | `#read` |
+| Aspect | `#include` | `#read` |
 |--------|-----------|---------|
-| What it brings in | Calcpad source code | Data (CSV, TSV, Excel, JSON) |
-| When it happens | At parse time — the source is inlined | At run time — the data is loaded into a variable |
-| Result | The included code becomes part of your document | You get a matrix or vector variable to compute with |
-
-## Errors point to the right place
-
-> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
-
-Even after several layers of includes and macro expansion, error messages and diagnostics point back to the original file and line number — so a problem in a shared file is reported where it actually lives, not at the `#include` line.
-
-## See also
-
-- [Working with Files](working-with-files.md) · [Programming](programming.md)
-- [Using the VS Code Extension](new-vscode-extension.md) — path completion for `#include` and `#read`
+| When processed | Parse time (substituted) | Runtime (evaluated) |
+| Content | Calcpad source code | CSV, TSV, Excel, JSON data |
+| Scope filtering | `#local` blocks stripped | n/a |
+| Output | Nested source inlined | Directive preserved; produces a matrix/vector variable |
+| Pre-fetching | Yes | Yes |

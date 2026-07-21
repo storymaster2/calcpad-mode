@@ -25,12 +25,15 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
-    <!-- Pin Microsoft.OpenApi to a patched version to resolve GHSA-v5pm-xwqc-g5wc,
-         which affects the 2.3.0 pulled in transitively by the two packages above. -->
-    <PackageReference Include="Microsoft.OpenApi" Version="2.9.0" />
     <!-- PDF generation -->
     <PackageReference Include="PuppeteerSharp" Version="21.1.1" />
     <PackageReference Include="PDFsharp" Version="6.2.0" />
+    <!-- Authentication -->
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+    <!-- S3-compatible object storage (Garage / AWS S3 / MinIO / RustFS) -->
+    <PackageReference Include="AWSSDK.S3" Version="3.7.412" />
   </ItemGroup>
 
   <ItemGroup>

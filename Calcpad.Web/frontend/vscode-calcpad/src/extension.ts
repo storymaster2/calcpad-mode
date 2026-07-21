@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { CalcpadApiClient, DEFAULT_PDF_SETTINGS, parseConvertErrorHeader, findMetadataCommentBlock, serializeMetadataComment, computeMetadataBlock, buildDefinitionResolver } from 'calcpad-frontend';
+import { CalcpadApiClient, buildClientFileCacheFromContent, DEFAULT_PDF_SETTINGS, getDatagridCdnTags, htmlHasDatagrids, getUiEventScript, updateUiOverridesInContent } from 'calcpad-frontend';
 import type { PdfSettings as FrontendPdfSettings } from 'calcpad-frontend';
 import { CalcpadServerLinter } from './calcpadServerLinter';
 import { CalcpadSemanticTokensProvider, semanticTokensLegend } from './calcpadSemanticTokensProvider';
@@ -22,13 +22,12 @@ import { CommentFormatter } from './commentFormatter';
 import { CalcpadServerManager } from './calcpadServerManager';
 import { DotnetRuntimeManager } from './dotnetRuntimeManager';
 import { VSCodeLogger, VSCodeFileSystem } from './adapters';
-import { installJuliaMonoCommand, maybePromptInstall } from './installFont';
+import { UiInputModel } from './uiInputModel';
 
-// The wrapped ("regular") and unwrapped previews are independent panels that can
-// coexist: the unwrapped one is stacked directly below the regular one so the
-// error/line-link "two-step" navigation (regular → unwrapped → source) reads top-to-bottom.
-let wrappedPanel: vscode.WebviewPanel | undefined = undefined;
-let unwrappedPanel: vscode.WebviewPanel | undefined = undefined;
+let activePreviewPanel: vscode.WebviewPanel | unknown = undefined;
+let activePreviewType: 'regular' | 'unwrapped' | 'ui' | undefined = undefined;
+let uiInputModel: UiInputModel | null = null;
+let uiOverridesCommentLine: number | undefined = undefined;
 let previewUpdateTimeout: NodeJS.Timeout | unknown = undefined;
 let previewSourceEditor: vscode.TextEditor | undefined = undefined;
 let linter: CalcpadServerLinter;
@@ -38,86 +37,6 @@ let outputChannel: vscode.OutputChannel;
 let calcpadOutputHtmlChannel: vscode.OutputChannel;
 let calcpadWebviewConsoleChannel: vscode.OutputChannel;
 let extensionContext: vscode.ExtensionContext;
-let vueUiProvider: CalcpadVueUIProvider | undefined;
-
-const PREVIEW_BUSY_DELAY_MS = 400;
-
-/**
- * Detect whether the cursor sits inside a metadata comment (`'<!--{...}-->`)
- * and push it to the Vue panel's Metadata tab. Also drives the
- * `calcpad.inMetadataComment` context key that gates the editor context-menu
- * command. Single-line only, matching the shared detector.
- */
-function updateMetadataContext(editor: vscode.TextEditor | undefined): void {
-    let block = null;
-    if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
-        const lines = editor.document.getText().split(/\r?\n/);
-        const line = editor.selection.active.line;
-        const resolve = buildDefinitionResolver(
-            definitionsService.getCachedDefinitions(editor.document.uri.toString())
-            ?? { functions: [], macros: [], variables: [], customUnits: [] });
-        block = computeMetadataBlock(lines, line, resolve);
-    }
-    vscode.commands.executeCommand('setContext', 'calcpad.inMetadataComment', block !== null && !block.isNew);
-    vueUiProvider?.updateMetadataContext(block);
-}
-
-/**
- * A "Calculating…" page shown in the preview webview during long renders,
- * mirroring the spinner overlay in calcpad-web.
- */
-function getPreviewLoadingHtml(): string {
-    return `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Calculating</title>
-    <style>
-        html, body { height: 100%; margin: 0; }
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            background: #fff;
-            color: #333;
-            font: 14px/1.4 var(--vscode-font-family, 'Segoe UI', sans-serif);
-        }
-        .preview-spinner {
-            width: 36px;
-            height: 36px;
-            border: 3px solid rgba(0, 0, 0, 0.15);
-            border-top-color: #0078d4;
-            border-radius: 50%;
-            animation: preview-spin 0.8s linear infinite;
-        }
-        @keyframes preview-spin { to { transform: rotate(360deg); } }
-    </style>
-</head>
-<body>
-    <div class="preview-spinner"></div>
-    <span>Calculating…</span>
-</body>
-</html>`;
-}
-
-/**
- * Shows the loading page in the preview webview only if the render outlasts
- * PREVIEW_BUSY_DELAY_MS, so fast renders never flash it (mirrors Calcpad.Wpf's
- * delayed spinner). Returns a function that must be called when the render ends.
- */
-function showPreviewLoading(panel: vscode.WebviewPanel): () => void {
-    const timer = setTimeout(() => {
-        panel.webview.html = getPreviewLoadingHtml();
-    }, PREVIEW_BUSY_DELAY_MS);
-    let ended = false;
-    return () => {
-        if (ended) return;
-        ended = true;
-        clearTimeout(timer);
-    };
-}
 
 // Extends the shared PdfSettings with additional server-side fields
 interface FullPdfSettings extends FrontendPdfSettings {
@@ -140,23 +59,22 @@ interface FullPdfSettings extends FrontendPdfSettings {
 
 
 function getPdfSettings(): FullPdfSettings {
-    const settingsManager = CalcpadSettingsManager.getInstance();
-    const stored = settingsManager.getExtraObject('pdfSettings', {} as Partial<FullPdfSettings>);
+    const config = vscode.workspace.getConfiguration('calcpad');
     const activeEditor = vscode.window.activeTextEditor;
 
     const fileName = activeEditor
         ? path.basename(activeEditor.document.fileName, path.extname(activeEditor.document.fileName))
-        : 'CalcpadCE Document';
+        : 'CalcPad Document';
 
     return {
         // User-configurable settings (defaults from shared module)
-        format: stored.format ?? DEFAULT_PDF_SETTINGS.format,
-        marginTop: stored.marginTop ?? DEFAULT_PDF_SETTINGS.marginTop,
-        marginBottom: stored.marginBottom ?? DEFAULT_PDF_SETTINGS.marginBottom,
-        marginLeft: stored.marginLeft ?? DEFAULT_PDF_SETTINGS.marginLeft,
-        marginRight: stored.marginRight ?? DEFAULT_PDF_SETTINGS.marginRight,
-        documentTitle: stored.documentTitle || fileName,
-        dateTimeFormat: stored.dateTimeFormat ?? DEFAULT_PDF_SETTINGS.dateTimeFormat,
+        format: config.get<string>('pdf.format', DEFAULT_PDF_SETTINGS.format),
+        marginTop: config.get<string>('pdf.marginTop', DEFAULT_PDF_SETTINGS.marginTop),
+        marginBottom: config.get<string>('pdf.marginBottom', DEFAULT_PDF_SETTINGS.marginBottom),
+        marginLeft: config.get<string>('pdf.marginLeft', DEFAULT_PDF_SETTINGS.marginLeft),
+        marginRight: config.get<string>('pdf.marginRight', DEFAULT_PDF_SETTINGS.marginRight),
+        documentTitle: config.get<string>('pdf.documentTitle') || fileName,
+        dateTimeFormat: config.get<string>('pdf.dateTimeFormat', DEFAULT_PDF_SETTINGS.dateTimeFormat),
 
         // Hardcoded defaults (to be re-exposed in UI later)
         enableHeader: true,
@@ -178,7 +96,8 @@ function getPdfSettings(): FullPdfSettings {
 }
 
 function getEffectivePreviewTheme(): 'light' | 'dark' {
-    const previewTheme = CalcpadSettingsManager.getInstance().getExtra('previewTheme', 'system');
+    const config = vscode.workspace.getConfiguration('calcpad');
+    const previewTheme = config.get<string>('previewTheme', 'system');
 
     if (previewTheme === 'light') {
         return 'light';
@@ -306,7 +225,8 @@ function getImageCacheScript(imageCache: Record<string, string>): string {
 function getThemeOverrideScript(previewTheme: 'light' | 'dark'): string {
     const bodyClass = previewTheme === 'light' ? 'vscode-light' : 'vscode-dark';
     const themeKind = previewTheme === 'light' ? 'vscode-light' : 'vscode-dark';
-    const darkBg = CalcpadSettingsManager.getInstance().getExtra('darkBackground', '#1e1e1e');
+    const config = vscode.workspace.getConfiguration('calcpad');
+    const darkBg = config.get<string>('darkBackground', '#1e1e1e');
     const bg = previewTheme === 'light' ? '#ffffff' : darkBg;
     return `
         <script>
@@ -424,23 +344,14 @@ function getErrorNavigationScript(): string {
                 // Find all error links with data-text attributes
                 const errorLinks = document.querySelectorAll('a[data-text]');
 
-                // The code view (unwrapped output, or the wrapped view's fallback when
-                // parsing errors occur) renders .line-num anchors whose data-text is
-                // already a source line. The true wrapped view has no .line-num and its
-                // error links carry expanded *output* lines. Tag each click so the
-                // extension only does the output->unwrapped two-step for real output lines.
-                const isCodeView = !!document.querySelector('.line-num');
-
                 errorLinks.forEach(link => {
                     link.addEventListener('click', function(e) {
                         e.preventDefault();
                         const lineNumber = this.getAttribute('data-text');
                         if (lineNumber) {
-                            const lineType = (this.classList.contains('line-num') || isCodeView) ? 'source' : 'output';
                             vscode.postMessage({
                                 type: 'navigateToLine',
-                                line: parseInt(lineNumber, 10),
-                                lineType: lineType
+                                line: parseInt(lineNumber, 10)
                             });
                         }
                     });
@@ -450,159 +361,59 @@ function getErrorNavigationScript(): string {
     `;
 }
 
-/**
- * Give the preview a clearly visible vertical scrollbar. VS Code webviews scroll
- * natively but the default scrollbar is nearly invisible, so we style it to match
- * the extension's Vue sidebar (calcpad-frontend/src/vue/styles/base.css). Reserving
- * the gutter with `overflow-y: scroll` keeps the layout from shifting.
- */
-function getScrollbarStyleScript(): string {
-    return `
-        <style>
-            html { overflow-y: scroll; }
-            body { min-height: 100vh; }
-            .code { overflow-y: auto; }
-            ::-webkit-scrollbar { width: 12px; height: 12px; }
-            ::-webkit-scrollbar-track { background: var(--vscode-scrollbar-shadow, transparent); }
-            ::-webkit-scrollbar-thumb {
-                background: var(--vscode-scrollbarSlider-background, rgba(121,121,121,0.4));
-                border-radius: 6px;
-            }
-            ::-webkit-scrollbar-thumb:hover { background: var(--vscode-scrollbarSlider-hoverBackground, rgba(100,100,100,0.7)); }
-            ::-webkit-scrollbar-thumb:active { background: var(--vscode-scrollbarSlider-activeBackground, rgba(85,85,85,0.9)); }
-            ::-webkit-scrollbar-corner { background: transparent; }
-            /* Pin the arrow to its own line and extend the anchor across the body's
-               left margin so the whole gutter is a hover+click target. Each arrow is
-               always in the DOM at opacity 0 so pointing at the margin reveals it
-               directly — no need to hover the line text first. */
-            .line { position: relative; }
-            /* Brief flash when the preview is focused to the editor's cursor line. */
-            .cpd-line-focus { background-color: var(--vscode-editor-findMatchHighlightBackground, rgba(120,170,255,0.28)) !important; transition: background-color 0.3s ease !important; }
-            .lineLink {
-                left: -3em !important;
-                top: 0 !important;
-                bottom: 0 !important;
-                width: 3em !important;
-                height: auto !important;
-                font-size: 16pt !important;
-                padding-right: 4pt !important;
-                box-sizing: border-box !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: flex-end !important;
-                opacity: 0 !important;
-                transition: opacity 0.15s !important;
-            }
-            .lineLink:hover { opacity: 1 !important; }
-        </style>
-    `;
+interface ExportEntryDto {
+    filename: string;
+    contentType: string;
+    size: number;
 }
 
 /**
- * Inject the line-link behaviour ported from the WPF preview (doc/template.html):
- *  - each wrapped-view output line (.line) gets a hover "←" link that navigates via
- *    postMessage('navigateToLine'). Its data-text is the output line; the extension
- *    resolves output→source (the two-step hop) when the document has macros/includes.
- *    The unwrapped view isn't decorated here: its .line-num anchors already carry the
- *    source line and are handled by getErrorNavigationScript's a[data-text] binding.
- *  - error-summary .roundBox chips scroll the preview to that output line.
- *  - a 'scrollToLine' target (set by the two-step navigation) is scrolled into
- *    view on load. Baking the target into the HTML avoids a postMessage race with
- *    the webview reload.
- * The arrows are created after DOMContentLoaded (so after getErrorNavigationScript
- * binds), hence they get their own click handler here.
+ * After a convert run, materialize #write/#append outputs based on calcpad.write.mode.
+ * - "localFile": fetch each entry from the server export cache and write to disk.
+ * - "cacheDownload": leave them in the server cache; the Vue Export tab handles download.
+ *
+ * Path resolution mirrors #read: absolute paths are written as-is; relative paths
+ * resolve against the source .cpd directory.
  */
-function getLineLinkScript(scrollToLine?: number): string {
-    const scrollTarget = typeof scrollToLine === 'number' ? String(scrollToLine) : 'null';
-    return `
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                function hideAllLineLinks() {
-                    document.querySelectorAll('.lineLink').forEach(function(l) { l.style.display = 'none'; });
-                }
-                document.querySelectorAll('.line').forEach(function(el) {
-                    var id = el.id || '';
-                    var n = id.indexOf('line-') === 0 ? id.slice(5) : '';
-                    // Prefer data-source-line (set by Calcpad.Core when the line came from
-                    // a macro/include expansion) so the arrow navigates straight to the
-                    // source line and skips the wrapped->unwrapped two-step. Loop
-                    // iterations past the first drop the id but keep data-source-line, so
-                    // key off the source line here. Error links keep the 'output' path.
-                    var src = el.getAttribute('data-source-line') || n;
-                    if (!src) return;
-                    var link = document.createElement('a');
-                    link.className = 'lineLink';
-                    link.href = '#0';
-                    link.setAttribute('data-text', src);
-                    link.title = 'Source line ' + src;
-                    link.textContent = '\\u2190';
-                    link.style.display = 'none';
-                    link.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        vscode.postMessage({ type: 'navigateToLine', line: parseInt(src, 10), lineType: 'source' });
-                    });
-                    el.appendChild(link);
-                    el.addEventListener('mouseenter', function() {
-                        hideAllLineLinks();
-                        link.style.display = 'inline-block';
-                    });
-                });
-                window.addEventListener('scroll', hideAllLineLinks);
+async function processWriteOutputs(apiBaseUrl: string, sourceFsPath: string): Promise<void> {
+    try {
+        const config = vscode.workspace.getConfiguration('calcpad');
+        const mode = config.get<string>('write.mode', 'localFile');
+        if (mode !== 'localFile') return;
 
-                // Error-summary chips: scroll the preview to the referenced output line.
-                document.querySelectorAll('.roundBox').forEach(function(box) {
-                    box.addEventListener('click', function() {
-                        var line = box.getAttribute('data-line');
-                        var target = line && document.getElementById('line-' + line);
-                        if (target) target.scrollIntoView({ block: 'start' });
-                    });
-                });
+        const listUrl = `${apiBaseUrl}/api/calcpad/exports?sourceFilePath=${encodeURIComponent(sourceFsPath)}`;
+        const listRes = await fetch(listUrl, { signal: AbortSignal.timeout(10000) });
+        if (!listRes.ok) return;
+        const entries = (await listRes.json()) as ExportEntryDto[];
+        if (!entries || entries.length === 0) return;
 
-                var scrollToLine = ${scrollTarget};
-                if (scrollToLine !== null) {
-                    var target = document.getElementById('line-' + scrollToLine);
-                    if (target) target.scrollIntoView({ block: 'center' });
-                }
+        const sourceDir = path.dirname(sourceFsPath);
+        for (const entry of entries) {
+            try {
+                const fileRes = await fetch(
+                    `${apiBaseUrl}/api/calcpad/export?sourceFilePath=${encodeURIComponent(sourceFsPath)}&filename=${encodeURIComponent(entry.filename)}`,
+                    { signal: AbortSignal.timeout(60000) }
+                );
+                if (!fileRes.ok) continue;
+                const buf = Buffer.from(await fileRes.arrayBuffer());
 
-                // Editor -> preview sync. The extension posts
-                // { type: 'scrollToSourceLine', line } (a source line) on cursor
-                // move (when auto-sync is on) or via the 'Focus Preview to Line'
-                // command. Match data-source-line first (wrapped view), then the
-                // code view's line-num anchors, falling back to the nearest
-                // preceding source line so blank/continuation lines still resolve.
-                var focusTimer = null;
-                function focusPreviewLine(line) {
-                    if (typeof line !== 'number' || isNaN(line)) return;
-                    var target = document.querySelector('[data-source-line="' + line + '"]');
-                    if (!target) {
-                        var anchor = document.querySelector('a.line-num[data-text="' + line + '"]');
-                        if (anchor) target = anchor.closest('.line-text') || anchor;
-                    }
-                    if (!target) {
-                        var best = null, bestSrc = -1;
-                        document.querySelectorAll('[data-source-line]').forEach(function(el) {
-                            var s = parseInt(el.getAttribute('data-source-line'), 10);
-                            if (!isNaN(s) && s <= line && s > bestSrc) { bestSrc = s; best = el; }
-                        });
-                        target = best;
-                    }
-                    if (!target) return;
-                    target.scrollIntoView({ block: 'center' });
-                    document.querySelectorAll('.cpd-line-focus').forEach(function(el) { el.classList.remove('cpd-line-focus'); });
-                    target.classList.add('cpd-line-focus');
-                    if (focusTimer) clearTimeout(focusTimer);
-                    focusTimer = setTimeout(function() { target.classList.remove('cpd-line-focus'); }, 1200);
-                }
-                window.addEventListener('message', function(e) {
-                    var d = e.data;
-                    if (d && d.type === 'scrollToSourceLine') focusPreviewLine(d.line);
-                });
-            });
-        </script>
-    `;
+                const targetPath = path.isAbsolute(entry.filename)
+                    ? entry.filename
+                    : path.resolve(sourceDir, entry.filename);
+
+                await vscode.workspace.fs.createDirectory(vscode.Uri.file(path.dirname(targetPath)));
+                await vscode.workspace.fs.writeFile(vscode.Uri.file(targetPath), buf);
+                outputChannel.appendLine(`#write: wrote ${buf.length} bytes to ${targetPath}`);
+            } catch (err) {
+                outputChannel.appendLine(`#write: failed to materialize ${entry.filename}: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        }
+    } catch (err) {
+        outputChannel.appendLine(`#write: processWriteOutputs failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
 }
 
-async function updatePreviewContent(panel: vscode.WebviewPanel, content: string, sourceFileUri: vscode.Uri, unwrapped: boolean = false, scrollToLine?: number) {
+async function updatePreviewContent(panel: vscode.WebviewPanel, content: string, sourceFileUri: vscode.Uri, unwrapped: boolean = false) {
     const mode = unwrapped ? 'unwrapped' : 'wrapped';
     outputChannel.appendLine(`Starting updatePreviewContent (${mode})...`);
     outputChannel.appendLine(`Content length: ${content.length} characters`);
@@ -610,25 +421,21 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
     // Update panel title with current file name
     const activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
-        const fileName = activeEditor.document.fileName.split('/').pop() || 'CalcpadCE';
-        panel.title = unwrapped ? `CalcpadCE Preview Unwrapped - ${fileName}` : `CalcpadCE Preview - ${fileName}`;
+        const fileName = activeEditor.document.fileName.split('/').pop() || 'CalcPad';
+        panel.title = unwrapped ? `CalcPad Preview Unwrapped - ${fileName}` : `CalcPad Preview - ${fileName}`;
     }
 
     // Check if content is empty
     if (!content || content.trim().length === 0) {
         outputChannel.appendLine('Content is empty - showing empty state');
-        const emptyTheme = getEffectivePreviewTheme();
-        const c = emptyTheme === 'light'
-            ? { fg: '#6e6e6e', bg: '#ffffff', link: '#0066cc' }
-            : { fg: '#858585', bg: '#1e1e1e', link: '#4FC1FF' };
         panel.webview.html = `
             <!DOCTYPE html>
             <html>
             <head>
                 <meta charset="UTF-8">
-                <title>CalcpadCE Preview${unwrapped ? ' Unwrapped' : ''}</title>
+                <title>CalcPad Preview${unwrapped ? ' Unwrapped' : ''}</title>
                 <style>
-                    body { color: ${c.fg}; background: ${c.bg}; padding: 20px; font-family: var(--vscode-font-family); }
+                    body { color: #858585; background: var(--vscode-editor-background); padding: 20px; font-family: var(--vscode-font-family); }
                     h3 { text-align: center; }
                     p { text-align: center; }
                     table { margin: 1em auto; border-collapse: collapse; text-align: left; font-size: 0.9em; }
@@ -636,12 +443,11 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
                     th { text-align: right; font-weight: normal; opacity: 0.7; }
                     td { font-family: var(--vscode-editor-font-family, monospace); }
                     h4 { text-align: center; margin-top: 1.5em; margin-bottom: 0.3em; }
-                    a { color: ${c.link}; }
                 </style>
             </head>
             <body>
                 <h3>Empty Document</h3>
-                <p>Start typing CalcpadCE code to see the preview.</p>
+                <p>Start typing CalcPad code to see the preview.</p>
                 <h4>Formatting Hotkeys</h4>
                 <table>
                     <tr><th>Bold</th><td>Ctrl+B</td></tr>
@@ -666,7 +472,6 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         return;
     }
 
-    const endPreviewLoading = showPreviewLoading(panel);
     try {
         outputChannel.appendLine('Getting settings...');
         const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
@@ -681,7 +486,14 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         outputChannel.appendLine(`Server URL: ${apiBaseUrl}`);
         outputChannel.appendLine(`Settings retrieved: ${JSON.stringify(settings)}`);
 
-        const endpoint = unwrapped ? '/api/calcpad/convert?unwrap=true' : '/api/calcpad/convert';
+        // Build client file cache for referenced files
+        const vsFileSystem = new VSCodeFileSystem();
+        const vsLogger = new VSCodeLogger(outputChannel);
+        const sourceDir = path.dirname(sourceFileUri.fsPath);
+        const clientFileCache = await buildClientFileCacheFromContent(content, sourceDir, vsFileSystem, vsLogger, '[Convert]');
+
+        // Select API endpoint based on unwrapped parameter
+        const endpoint = unwrapped ? '/api/calcpad/convert-unwrapped' : '/api/calcpad/convert';
         outputChannel.appendLine(`Making API call to ${endpoint}...`);
 
         const theme = getEffectivePreviewTheme();
@@ -693,6 +505,7 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
                 settings: settings,
                 theme: theme,
                 forceUnwrappedCode: unwrapped,
+                clientFileCache: clientFileCache,
                 sourceFilePath: sourceFileUri.fsPath
             }),
             signal: AbortSignal.timeout(10000)
@@ -702,14 +515,8 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         }
         outputChannel.appendLine('API call successful');
 
-        vueUiProvider?.updateConvertErrors(parseConvertErrorHeader(response));
-
         // Use the entire API response as the webview HTML
         const apiResponse = await response.text();
-
-        // Share the freshly-converted HTML with the Vue side panel so the
-        // Export tab can extract plot bytes without another server round-trip.
-        vueUiProvider?.setCachedHtml(apiResponse);
 
         // Log to dedicated HTML output channel (without stealing focus)
         calcpadOutputHtmlChannel.clear();
@@ -728,39 +535,38 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         // Inject JavaScript for error link navigation and console interception
         const errorNavigationScript = getErrorNavigationScript();
 
-        // Visible, styled vertical scrollbar for the preview
-        const scrollbarStyleScript = getScrollbarStyleScript();
-
-        // Hover line links + roundBox scroll + optional scroll-to-line target
-        const lineLinkScript = getLineLinkScript(scrollToLine);
-
         // Override VS Code's injected theme to match the selected preview theme
         const themeOverrideScript = getThemeOverrideScript(theme);
 
         // Sanitize server HTML to escape stray '<' that aren't part of valid tags
         const sanitizedResponse = sanitizeServerHtml(apiResponse);
 
-        // Inject console interception + error nav + scrollbar style at end of <head> so it runs before any user scripts in body
+        // Inject console interception + error nav at end of <head> so it runs before any user scripts in body
         const vsCodeApiInit = getVsCodeApiInitScript();
-        let htmlWithScript = sanitizedResponse.replace('</head>', vsCodeApiInit + errorNavigationScript + scrollbarStyleScript + '</head>');
-        // Inject image cache + theme override + line links before closing body tag
-        htmlWithScript = htmlWithScript.replace('</body>', imageCacheScript + themeOverrideScript + lineLinkScript + '</body>');
+        let htmlWithScript = sanitizedResponse.replace('</head>', vsCodeApiInit + errorNavigationScript + '</head>');
+        // Inject image cache + theme override before closing body tag
+        htmlWithScript = htmlWithScript.replace('</body>', imageCacheScript + themeOverrideScript + '</body>');
 
         panel.webview.html = htmlWithScript;
 
         outputChannel.appendLine('Webview HTML set directly');
 
+        // Materialize #write/#append outputs to disk if the user opted into localFile mode.
+        if (!unwrapped) {
+            void processWriteOutputs(apiBaseUrl, sourceFileUri.fsPath);
+        }
+
     } catch (error) {
         outputChannel.appendLine(`ERROR in updatePreviewContent: ${error instanceof Error ? error.message : 'Unknown error'}`);
         const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
         const errorApiBaseUrl = settingsManager.getServerUrl();
-        const endpoint = unwrapped ? 'convert?unwrap=true' : 'convert';
+        const endpoint = unwrapped ? 'convert-unwrapped' : 'convert';
         const errorHtml = `
             <!DOCTYPE html>
             <html>
             <head>
                 <meta charset="UTF-8">
-                <title>CalcpadCE Preview Error</title>
+                <title>CalcPad Preview Error</title>
             </head>
             <body>
                 <div style="color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 4px; margin: 20px;">
@@ -773,8 +579,116 @@ async function updatePreviewContent(panel: vscode.WebviewPanel, content: string,
         `;
 
         panel.webview.html = errorHtml;
-    } finally {
-        endPreviewLoading();
+    }
+}
+
+async function updateUiPreviewContent(panel: vscode.WebviewPanel, content: string, sourceFileUri: vscode.Uri) {
+    outputChannel.appendLine('Starting updateUiPreviewContent...');
+
+    if (!content || content.trim().length === 0) {
+        panel.webview.html = `<!DOCTYPE html><html><body><p>Empty document</p></body></html>`;
+        return;
+    }
+
+    try {
+        const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
+        const settings = await settingsManager.getApiSettings();
+        const apiBaseUrl = settingsManager.getServerUrl();
+
+        if (!apiBaseUrl) {
+            throw new Error('Server URL not configured');
+        }
+
+        // Build client file cache for referenced files
+        const vsFileSystem = new VSCodeFileSystem();
+        const vsLogger = new VSCodeLogger(outputChannel);
+        const sourceDir = path.dirname(sourceFileUri.fsPath);
+        const clientFileCache = await buildClientFileCacheFromContent(content, sourceDir, vsFileSystem, vsLogger, '[ConvertUI]');
+
+        const theme = getEffectivePreviewTheme();
+        const overrides = uiInputModel?.getOverrides() ?? {};
+
+        outputChannel.appendLine(`Making API call to /api/calcpad/convert-ui with ${Object.keys(overrides).length} overrides...`);
+
+        const response = await fetch(`${apiBaseUrl}/api/calcpad/convert-ui`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content: content,
+                settings: settings,
+                theme: theme,
+                forceUnwrappedCode: false,
+                clientFileCache: clientFileCache,
+                sourceFilePath: sourceFileUri.fsPath,
+                uiOverrides: overrides
+            }),
+            signal: AbortSignal.timeout(10000)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
+        }
+
+        const apiResponse = await response.text();
+        outputChannel.appendLine(`UI Preview HTML length: ${apiResponse.length}`);
+
+        // Build image cache
+        let imageCacheScript = '';
+        const activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor && !activeEditor.document.isUntitled) {
+            const documentDir = path.dirname(activeEditor.document.uri.fsPath);
+            const imageCache = await buildImageCache(apiResponse, documentDir);
+            imageCacheScript = getImageCacheScript(imageCache);
+        }
+
+        const errorNavigationScript = getErrorNavigationScript();
+        const themeOverrideScript = getThemeOverrideScript(theme);
+
+        // Use shared UI event script from calcpad-frontend
+        const uiEventScript = getUiEventScript('vscode.postMessage');
+
+        const sanitizedResponse = sanitizeServerHtml(apiResponse);
+        const vsCodeApiInit = getVsCodeApiInitScript();
+
+        // Conditionally inject datagrid CDN only when needed
+        const datagridCdn = htmlHasDatagrids(apiResponse) ? getDatagridCdnTags() : '';
+
+        // Inject "Save UI State" button
+        const saveUiButton = `<div id="calcpad-save-ui-bar" style="position:fixed;top:0;right:0;z-index:9999;padding:6px 10px;">
+<button onclick="vscode.postMessage({type:'saveUiState'})" style="
+    background:#0078d4;color:#fff;border:none;border-radius:4px;padding:4px 12px;
+    font-size:12px;cursor:pointer;opacity:0.85;
+" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.85'"
+>Save UI State</button></div>`;
+
+        let htmlWithScript = sanitizedResponse.replace('</head>', vsCodeApiInit + errorNavigationScript + datagridCdn + '</head>');
+        htmlWithScript = htmlWithScript.replace('</body>', saveUiButton + imageCacheScript + themeOverrideScript + uiEventScript + '</body>');
+
+        // Log the final HTML to the dedicated output channel for debugging
+        calcpadOutputHtmlChannel.clear();
+        calcpadOutputHtmlChannel.appendLine('=== UI PREVIEW HTML ===');
+        calcpadOutputHtmlChannel.appendLine(htmlWithScript);
+
+        panel.webview.html = htmlWithScript;
+        outputChannel.appendLine('UI Preview webview HTML set');
+        outputChannel.appendLine(`Datagrid CDN injected: ${datagridCdn.length > 0 ? 'yes' : 'no'}`);
+
+        // Materialize #write/#append outputs to disk if the user opted into localFile mode.
+        void processWriteOutputs(apiBaseUrl, sourceFileUri.fsPath);
+
+    } catch (error) {
+        outputChannel.appendLine(`ERROR in updateUiPreviewContent: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        const settingsManager = CalcpadSettingsManager.getInstance(extensionContext);
+        const errorApiBaseUrl = settingsManager.getServerUrl();
+        panel.webview.html = `
+            <!DOCTYPE html><html><head><meta charset="UTF-8"><title>CalcPad UI Preview Error</title></head>
+            <body>
+                <div style="color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 4px; margin: 20px;">
+                    <h3>UI Preview Error</h3>
+                    <p>${error instanceof Error ? error.message : 'Unknown error'}</p>
+                    <p>Server URL: ${errorApiBaseUrl}/api/calcpad/convert-ui</p>
+                </div>
+            </body></html>`;
     }
 }
 
@@ -795,14 +709,20 @@ async function generatePdfToFile(
     if (!apiBaseUrl) throw new Error('Server URL not configured');
 
     if (!documentContent || documentContent.trim().length === 0) {
-        throw new Error('Document is empty. Please add some CalcpadCE content first.');
+        throw new Error('Document is empty. Please add some CalcPad content first.');
     }
 
     const settings = await settingsManager.getApiSettings();
 
-    progress?.report({ increment: 20, message: 'Converting to HTML...' });
+    progress?.report({ increment: 10, message: 'Loading referenced files...' });
 
+    // Build client file cache for referenced files
+    const vsFileSystem = new VSCodeFileSystem();
+    const vsLogger = new VSCodeLogger(outputChannel);
     const sourceDir = path.dirname(sourceFileUri.fsPath);
+    const clientFileCache = await buildClientFileCacheFromContent(documentContent, sourceDir, vsFileSystem, vsLogger, '[PDF]');
+
+    progress?.report({ increment: 20, message: 'Converting to HTML...' });
 
     // Step 1: Convert calcpad content to HTML
     const htmlResponse = await fetch(`${apiBaseUrl}/api/calcpad/convert`, {
@@ -811,6 +731,7 @@ async function generatePdfToFile(
         body: JSON.stringify({
             content: documentContent,
             settings: settings,
+            clientFileCache: clientFileCache,
             sourceFilePath: sourceFileUri.fsPath,
             forPrint: true
         }),
@@ -858,7 +779,7 @@ async function generatePdfToFile(
 async function runPdfExportCommand(): Promise<void> {
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) {
-        vscode.window.showErrorMessage('No active CalcpadCE document found');
+        vscode.window.showErrorMessage('No active CalcPad document found');
         return;
     }
 
@@ -910,7 +831,7 @@ async function runPdfExportCommand(): Promise<void> {
 async function saveSourceHtml() {
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) {
-        vscode.window.showErrorMessage('No active CalcpadCE document found');
+        vscode.window.showErrorMessage('No active CalcPad document found');
         return;
     }
     try {
@@ -937,6 +858,10 @@ async function saveSourceHtml() {
         }, async () => {
             const settings = await settingsManager.getApiSettings();
             const documentContent = activeEditor.document.getText();
+            const vsFileSystem = new VSCodeFileSystem();
+            const vsLogger = new VSCodeLogger(outputChannel);
+            const sourceDir = path.dirname(activeEditor.document.uri.fsPath);
+            const clientFileCache = await buildClientFileCacheFromContent(documentContent, sourceDir, vsFileSystem, vsLogger, '[HTML]');
 
             const response = await fetch(`${apiBaseUrl}/api/calcpad/convert`, {
                 method: 'POST',
@@ -944,6 +869,7 @@ async function saveSourceHtml() {
                 body: JSON.stringify({
                     content: documentContent,
                     settings,
+                    clientFileCache,
                     sourceFilePath: activeEditor.document.uri.fsPath,
                     forPrint: false,
                 }),
@@ -977,7 +903,7 @@ async function saveSourceHtml() {
 async function saveDocx() {
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) {
-        vscode.window.showErrorMessage('No active CalcpadCE document found');
+        vscode.window.showErrorMessage('No active CalcPad document found');
         return;
     }
     try {
@@ -1004,6 +930,10 @@ async function saveDocx() {
         }, async () => {
             const settings = await settingsManager.getApiSettings();
             const documentContent = activeEditor.document.getText();
+            const vsFileSystem = new VSCodeFileSystem();
+            const vsLogger = new VSCodeLogger(outputChannel);
+            const sourceDir = path.dirname(activeEditor.document.uri.fsPath);
+            const clientFileCache = await buildClientFileCacheFromContent(documentContent, sourceDir, vsFileSystem, vsLogger, '[DOCX]');
 
             const response = await fetch(`${apiBaseUrl}/api/calcpad/docx`, {
                 method: 'POST',
@@ -1011,6 +941,7 @@ async function saveDocx() {
                 body: JSON.stringify({
                     content: documentContent,
                     settings,
+                    clientFileCache,
                     sourceFilePath: activeEditor.document.uri.fsPath,
                     forPrint: true,
                 }),
@@ -1037,70 +968,8 @@ async function saveDocx() {
     }
 }
 
-// Detects whether the document uses macros or includes. When it does, the wrapped
-// preview's line/error links point at *expanded output* lines, so we route the user
-// through the unwrapped view (mirrors WPF's `_highlighter.Defined.HasMacros`).
-function documentHasMacros(text: string): boolean {
-    return /^\s*#(def|include)\b/im.test(text);
-}
-
-// Jump the source editor to a 1-based line.
-function navigateEditorToLine(sourceEditor: vscode.TextEditor, line: number) {
-    const lineIndex = Math.max(0, line - 1);
-    outputChannel.appendLine(`Navigating to source line ${line}`);
-    const position = new vscode.Position(lineIndex, 0);
-    const selection = new vscode.Selection(position, position);
-    sourceEditor.selection = selection;
-    sourceEditor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
-    vscode.window.showTextDocument(sourceEditor.document, vscode.ViewColumn.One);
-}
-
-// Editor -> preview sync: tell any open preview panel(s) to scroll to a 1-based
-// source line. Both views match on data-source-line / line-num anchors, so the
-// same source line works for the wrapped and unwrapped panels.
-function postPreviewSourceLine(line: number) {
-    const msg = { type: 'scrollToSourceLine', line };
-    wrappedPanel?.webview.postMessage(msg);
-    unwrappedPanel?.webview.postMessage(msg);
-}
-
-function handlePreviewMessage(message: any, kind: 'regular' | 'unwrapped') {
-    switch (message.type) {
-        case 'navigateToLine': {
-            const sourceEditor = previewSourceEditor;
-            if (!sourceEditor || !message.line) break;
-            // An 'output' line comes from the true wrapped view; when the document has
-            // macros/includes that line only makes sense in the unwrapped view, so open
-            // it (below the wrapped one) scrolled there — the user then clicks a line
-            // number to reach the true source line. A 'source' line (code-view .line-num
-            // anchors, or a macro-free document) navigates the editor directly.
-            const isOutputLine = message.lineType === 'output';
-            if (kind === 'regular' && isOutputLine && documentHasMacros(sourceEditor.document.getText())) {
-                void showPreview('unwrapped', message.line);
-            } else {
-                navigateEditorToLine(sourceEditor, message.line);
-            }
-            break;
-        }
-        case 'consoleMessage': {
-            const timestamp = new Date().toISOString();
-            const level = message.level.toUpperCase();
-            calcpadWebviewConsoleChannel.appendLine(`[${timestamp}] [${level}] ${message.message}`);
-            break;
-        }
-        default:
-            break;
-    }
-}
-
-// Opens (or reveals) the wrapped or unwrapped preview. The unwrapped preview is
-// stacked directly below the wrapped one so the two-step navigation reads top→bottom.
-// `scrollToLine` (an output line) is baked into the rendered HTML so the unwrapped
-// view scrolls to it on load without a postMessage race.
-async function showPreview(kind: 'regular' | 'unwrapped', scrollToLine?: number) {
-    // When invoked from a preview line-link click the webview is focused, so there is
-    // no active *text* editor — fall back to the editor that spawned the preview.
-    const activeEditor = vscode.window.activeTextEditor ?? previewSourceEditor;
+async function createHtmlPreview(context: vscode.ExtensionContext) {
+    const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) {
         vscode.window.showErrorMessage('No active editor found');
         return;
@@ -1109,66 +978,227 @@ async function showPreview(kind: 'regular' | 'unwrapped', scrollToLine?: number)
     // Store the source editor for navigation
     previewSourceEditor = activeEditor;
 
-    const unwrapped = kind === 'unwrapped';
-    const existing = kind === 'regular' ? wrappedPanel : unwrappedPanel;
-
-    if (existing) {
-        existing.reveal(existing.viewColumn ?? vscode.ViewColumn.Beside, true);
-        await updatePreviewContent(existing, activeEditor.document.getText(), activeEditor.document.uri, unwrapped, scrollToLine);
+    if (activePreviewPanel) {
+        (activePreviewPanel as vscode.WebviewPanel).reveal(vscode.ViewColumn.Beside);
+        await updatePreviewContent(activePreviewPanel as vscode.WebviewPanel, activeEditor.document.getText(), activeEditor.document.uri);
         return;
     }
 
-    // Focus the wrapped panel first so `moveEditorToBelowGroup` moves the new
-    // unwrapped preview below the *wrapped* group. Without this reveal, when the
-    // click originates from the wrapped webview the "active" group is whatever
-    // ViewColumn.Beside just created — usually a column to the right of the
-    // wrapped preview — and the split lands below that instead of below wrapped.
-    if (unwrapped && wrappedPanel) {
-        wrappedPanel.reveal(wrappedPanel.viewColumn, false);
-    }
-
     const panel = vscode.window.createWebviewPanel(
-        unwrapped ? 'htmlPreviewUnwrapped' : 'htmlPreview',
-        unwrapped ? 'CalcpadCE Preview Unwrapped' : 'CalcpadCE Preview',
-        unwrapped && wrappedPanel ? vscode.ViewColumn.Active : vscode.ViewColumn.Beside,
+        'htmlPreview',
+        'CalcPad Preview',
+        vscode.ViewColumn.Beside,
         {
             enableScripts: true,
             enableFindWidget: true
         }
     );
 
-    if (kind === 'regular') {
-        wrappedPanel = panel;
-    } else {
-        unwrappedPanel = panel;
-        // Stack the unwrapped preview below the wrapped one when both are open.
-        if (wrappedPanel) {
-            await vscode.commands.executeCommand('workbench.action.moveEditorToBelowGroup');
-        }
-    }
+    activePreviewPanel = panel;
+    activePreviewType = 'regular';
 
     panel.onDidDispose(() => {
-        if (kind === 'regular') {
-            wrappedPanel = undefined;
-        } else {
-            unwrappedPanel = undefined;
-        }
-        if (!wrappedPanel && !unwrappedPanel) {
-            previewSourceEditor = undefined;
-        }
+        activePreviewPanel = undefined;
+        activePreviewType = undefined;
+        previewSourceEditor = undefined;
     });
 
-    panel.webview.onDidReceiveMessage(message => handlePreviewMessage(message, kind));
+    // Handle messages from webview
+    panel.webview.onDidReceiveMessage(
+        message => {
+            switch (message.type) {
+                case 'navigateToLine':
+                    const sourceEditor = previewSourceEditor;
+                    if (sourceEditor && message.line) {
+                        // data-text already contains the original source line (1-based)
+                        // Just convert from 1-based to 0-based indexing
+                        const lineIndex = Math.max(0, message.line - 1);
+                        outputChannel.appendLine(`Navigating to source line ${message.line}`);
 
-    await updatePreviewContent(panel, activeEditor.document.getText(), activeEditor.document.uri, unwrapped, scrollToLine);
+                        const position = new vscode.Position(lineIndex, 0);
+                        const selection = new vscode.Selection(position, position);
+                        sourceEditor.selection = selection;
+                        sourceEditor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
+                        vscode.window.showTextDocument(sourceEditor.document, vscode.ViewColumn.One);
+                    }
+                    break;
+                case 'consoleMessage':
+                    const timestamp = new Date().toISOString();
+                    const level = message.level.toUpperCase();
+                    calcpadWebviewConsoleChannel.appendLine(`[${timestamp}] [${level}] ${message.message}`);
+                    break;
+                default:
+                    break;
+            }
+        }
+    );
+
+    await updatePreviewContent(panel, activeEditor.document.getText(), activeEditor.document.uri);
+}
+
+async function createHtmlPreviewUnwrapped(context: vscode.ExtensionContext) {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+        vscode.window.showErrorMessage('No active editor found');
+        return;
+    }
+
+    // Store the source editor for navigation
+    previewSourceEditor = activeEditor;
+
+    const panel = vscode.window.createWebviewPanel(
+        'htmlPreviewUnwrapped',
+        'CalcPad Preview Unwrapped',
+        vscode.ViewColumn.Beside,
+        {
+            enableScripts: true,
+            enableFindWidget: true
+        }
+    );
+
+    // Update global references for unwrapped preview
+    activePreviewPanel = panel;
+    activePreviewType = 'unwrapped';
+
+    panel.onDidDispose(() => {
+        activePreviewPanel = undefined;
+        activePreviewType = undefined;
+        previewSourceEditor = undefined;
+    });
+
+    // Handle messages from webview
+    panel.webview.onDidReceiveMessage(
+        message => {
+            switch (message.type) {
+                case 'navigateToLine':
+                    const sourceEditor = previewSourceEditor;
+                    if (sourceEditor && message.line) {
+                        // data-text already contains the original source line (1-based)
+                        // Just convert from 1-based to 0-based indexing
+                        const lineIndex = Math.max(0, message.line - 1);
+                        outputChannel.appendLine(`Navigating to source line ${message.line}`);
+
+                        const position = new vscode.Position(lineIndex, 0);
+                        const selection = new vscode.Selection(position, position);
+                        sourceEditor.selection = selection;
+                        sourceEditor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
+                        vscode.window.showTextDocument(sourceEditor.document, vscode.ViewColumn.One);
+                    }
+                    break;
+                case 'consoleMessage':
+                    const timestamp = new Date().toISOString();
+                    const level = message.level.toUpperCase();
+                    calcpadWebviewConsoleChannel.appendLine(`[${timestamp}] [${level}] ${message.message}`);
+                    break;
+                default:
+                    break;
+            }
+        }
+    );
+
+    await updatePreviewContent(panel, activeEditor.document.getText(), activeEditor.document.uri, true);
+}
+
+async function createUiPreview(context: vscode.ExtensionContext) {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (!activeEditor) {
+        vscode.window.showErrorMessage('No active editor found');
+        return;
+    }
+
+    previewSourceEditor = activeEditor;
+    uiInputModel = new UiInputModel();
+    uiOverridesCommentLine = undefined;
+
+    // Load persisted UI overrides from file via definitions API
+    try {
+        const defs = await definitionsService.refreshDefinitions(activeEditor.document);
+        if (defs?.uiOverrides) {
+            uiInputModel.loadFromPersisted(defs.uiOverrides.overrides, defs.variables);
+            uiOverridesCommentLine = defs.uiOverrides.commentLine;
+            outputChannel.appendLine(`Loaded ${Object.keys(defs.uiOverrides.overrides).length} persisted UI overrides from line ${defs.uiOverrides.commentLine}`);
+        }
+    } catch (error) {
+        outputChannel.appendLine(`Failed to load persisted UI overrides: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    if (activePreviewPanel && activePreviewType === 'ui') {
+        (activePreviewPanel as vscode.WebviewPanel).reveal(vscode.ViewColumn.Beside);
+        await updateUiPreviewContent(activePreviewPanel as vscode.WebviewPanel, activeEditor.document.getText(), activeEditor.document.uri);
+        return;
+    }
+
+    const panel = vscode.window.createWebviewPanel(
+        'htmlPreviewUi',
+        'CalcPad UI Preview',
+        vscode.ViewColumn.Beside,
+        {
+            enableScripts: true,
+            enableFindWidget: true
+        }
+    );
+
+    activePreviewPanel = panel;
+    activePreviewType = 'ui';
+
+    panel.onDidDispose(() => {
+        activePreviewPanel = undefined;
+        activePreviewType = undefined;
+        previewSourceEditor = undefined;
+        uiInputModel = null;
+        uiOverridesCommentLine = undefined;
+    });
+
+    panel.webview.onDidReceiveMessage(
+        async message => {
+            switch (message.type) {
+                case 'uiValueChange': {
+                    outputChannel.appendLine(`UI value change: ${message.varName} = ${message.newValue}`);
+                    if (uiInputModel) {
+                        uiInputModel.setValue(message.varName, message.newValue, message.sourceLine);
+                    }
+                    // Re-run convert-ui with updated overrides
+                    const editor = previewSourceEditor;
+                    if (editor) {
+                        await updateUiPreviewContent(panel, editor.document.getText(), editor.document.uri);
+                    }
+                    break;
+                }
+                case 'navigateToLine': {
+                    const srcEditor = previewSourceEditor;
+                    if (srcEditor && message.line) {
+                        const lineIndex = Math.max(0, message.line - 1);
+                        const position = new vscode.Position(lineIndex, 0);
+                        const selection = new vscode.Selection(position, position);
+                        srcEditor.selection = selection;
+                        srcEditor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
+                        vscode.window.showTextDocument(srcEditor.document, vscode.ViewColumn.One);
+                    }
+                    break;
+                }
+                case 'saveUiState': {
+                    await saveUiStateToFile();
+                    break;
+                }
+                case 'consoleMessage': {
+                    const ts = new Date().toISOString();
+                    const lvl = message.level.toUpperCase();
+                    calcpadWebviewConsoleChannel.appendLine(`[${ts}] [${lvl}] ${message.message}`);
+                    break;
+                }
+            }
+        }
+    );
+
+    await updateUiPreviewContent(panel, activeEditor.document.getText(), activeEditor.document.uri);
 }
 
 function schedulePreviewUpdate() {
-    if (!wrappedPanel && !unwrappedPanel) return;
-
+    if (!activePreviewPanel) return;
+    
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor) return;
-
+    
     // Only update for .cpd files or plaintext files
     if (activeEditor.document.languageId !== 'calcpad' && activeEditor.document.languageId !== 'plaintext') {
         return;
@@ -1179,16 +1209,65 @@ function schedulePreviewUpdate() {
     }
 
     previewUpdateTimeout = setTimeout(async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) return;
-        previewSourceEditor = editor;
-        if (wrappedPanel) {
-            await updatePreviewContent(wrappedPanel, editor.document.getText(), editor.document.uri, false);
-        }
-        if (unwrappedPanel) {
-            await updatePreviewContent(unwrappedPanel, editor.document.getText(), editor.document.uri, true);
+        if (activePreviewPanel && activeEditor) {
+            // Update the source editor reference when updating preview
+            previewSourceEditor = activeEditor;
+            if (activePreviewType === 'ui') {
+                // Source changed — merge persisted overrides without discarding in-memory user changes
+                try {
+                    const defs = await definitionsService.refreshDefinitions(activeEditor.document);
+                    if (defs?.uiOverrides) {
+                        uiInputModel?.mergeFromPersisted(defs.uiOverrides.overrides, defs.variables);
+                        uiOverridesCommentLine = defs.uiOverrides.commentLine;
+                    }
+                } catch {
+                    // Keep existing in-memory overrides on error
+                }
+                await updateUiPreviewContent(activePreviewPanel as vscode.WebviewPanel, activeEditor.document.getText(), activeEditor.document.uri);
+            } else {
+                const unwrapped = activePreviewType === 'unwrapped';
+                await updatePreviewContent(activePreviewPanel as vscode.WebviewPanel, activeEditor.document.getText(), activeEditor.document.uri, unwrapped);
+            }
         }
     }, 500);
+}
+
+async function saveUiStateToFile() {
+    if (!uiInputModel || !previewSourceEditor) {
+        vscode.window.showWarningMessage('No active UI preview.');
+        return;
+    }
+
+    const overrides = uiInputModel.getOverrides();
+    if (Object.keys(overrides).length === 0) {
+        vscode.window.showInformationMessage('No UI overrides to save.');
+        return;
+    }
+
+    const editor = previewSourceEditor;
+    const content = editor.document.getText();
+    const newContent = updateUiOverridesInContent(content, overrides, uiOverridesCommentLine);
+
+    const fullRange = new vscode.Range(
+        editor.document.positionAt(0),
+        editor.document.positionAt(content.length)
+    );
+
+    const success = await editor.edit(editBuilder => {
+        editBuilder.replace(fullRange, newContent);
+    });
+
+    if (success) {
+        // Update the comment line reference after the edit
+        // If we inserted at line 0, the comment is now on line 0
+        if (uiOverridesCommentLine === undefined) {
+            uiOverridesCommentLine = 0;
+        }
+        outputChannel.appendLine(`Saved UI overrides to file (${Object.keys(overrides).length} overrides)`);
+        vscode.window.showInformationMessage(`Saved ${Object.keys(overrides).length} UI override(s) to file.`);
+    } else {
+        vscode.window.showErrorMessage('Failed to save UI overrides to file.');
+    }
 }
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -1199,15 +1278,15 @@ export async function activate(context: vscode.ExtensionContext) {
         extensionContext = context;
         
         // Create output channel for debugging
-        outputChannel = vscode.window.createOutputChannel('CalcpadCE Extension');
+        outputChannel = vscode.window.createOutputChannel('CalcPad Extension');
         outputChannel.appendLine('CalcPad extension activated');
 
         // Create dedicated output channels for HTML
-        calcpadOutputHtmlChannel = vscode.window.createOutputChannel('CalcpadCE Output HTML');
-        calcpadWebviewConsoleChannel = vscode.window.createOutputChannel('CalcpadCE Webview Console');
+        calcpadOutputHtmlChannel = vscode.window.createOutputChannel('Calcpad Output HTML');
+        calcpadWebviewConsoleChannel = vscode.window.createOutputChannel('Calcpad Webview Console');
 
         // Create debug channel for linter/highlighter
-        const serverDebugChannel = vscode.window.createOutputChannel('CalcpadCE Server Debug');
+        const serverDebugChannel = vscode.window.createOutputChannel('CalcPad Server Debug');
 
         outputChannel.appendLine('Initializing settings manager...');
         const settingsManager = CalcpadSettingsManager.getInstance(context);
@@ -1229,7 +1308,8 @@ export async function activate(context: vscode.ExtensionContext) {
             outputChannel.appendLine(`Bundled apphost exists: ${appHostExists}`);
 
             if (dllExists) {
-                const configuredDotnetPath = settingsManager.getExtra('dotnetPath', 'dotnet');
+                const config = vscode.workspace.getConfiguration('calcpad');
+                const configuredDotnetPath = config.get<string>('server.dotnetPath', 'dotnet');
                 const dotnetManager = new DotnetRuntimeManager(outputChannel);
                 const globalStorage = context.globalStorageUri.fsPath;
 
@@ -1267,7 +1347,7 @@ export async function activate(context: vscode.ExtensionContext) {
                         serverDebugChannel.appendLine('[ServerManager] Server crashed 3 times — stopping auto-restart');
                         serverDebugChannel.appendLine('[ServerManager] Last crash output:\n' + crashOutput);
                         vscode.window.showErrorMessage(
-                            'CalcpadCE server crashed repeatedly (possibly due to your file). Use the refresh button to restart.',
+                            'CalcPad server crashed repeatedly (possibly due to your file). Use the refresh button to restart.',
                             'Show Debug Output'
                         ).then(choice => {
                             if (choice === 'Show Debug Output') {
@@ -1282,7 +1362,6 @@ export async function activate(context: vscode.ExtensionContext) {
                         settingsManager.setLocalServerUrl(serverUrl);
                         apiClient.setBaseUrl(serverUrl);
                         outputChannel.appendLine(`Local server started at ${serverUrl}`);
-                        void refreshAllComponents();
                     }).catch((err) => {
                         const message = err instanceof Error ? err.message : String(err);
                         outputChannel.appendLine(`Failed to start local server: ${message}`);
@@ -1296,9 +1375,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
                         if (blocked) {
                             vscode.window.showErrorMessage(
-                                'CalcpadCE: Windows blocked Calcpad.Server.exe. ' +
+                                'CalcPad: Windows blocked Calcpad.Server.exe. ' +
                                 'Unblock the file (right-click → Properties → Unblock) ' +
-                                'then click the CalcpadCE refresh button to retry.',
+                                'then click the CalcPad refresh button to retry.',
                                 'Show Output'
                             ).then(choice => {
                                 if (choice === 'Show Output') {
@@ -1306,7 +1385,7 @@ export async function activate(context: vscode.ExtensionContext) {
                                 }
                             });
                         } else if (serverMode === 'local') {
-                            vscode.window.showErrorMessage(`CalcpadCE: Failed to start local server: ${message}`);
+                            vscode.window.showErrorMessage(`CalcPad: Failed to start local server: ${message}`);
                         } else {
                             // Auto mode. Falling back to remote only makes
                             // sense if the user actually configured a remote
@@ -1316,7 +1395,7 @@ export async function activate(context: vscode.ExtensionContext) {
                             const remoteUrl = settingsManager.getRemoteServerUrl();
                             if (!remoteUrl || remoteUrl.length === 0) {
                                 vscode.window.showErrorMessage(
-                                    `CalcpadCE: Bundled server failed to start and no remote URL is configured (${message}).`,
+                                    `CalcPad: Bundled server failed to start and no remote URL is configured (${message}).`,
                                     'Show Output',
                                 ).then(choice => {
                                     if (choice === 'Show Output') serverDebugChannel.show();
@@ -1331,7 +1410,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     outputChannel.appendLine(`Dotnet resolution failed: ${message}`);
                 });
             } else if (serverMode === 'local') {
-                vscode.window.showErrorMessage('CalcpadCE: Server mode is "local" but CalcpadServer.dll was not found in the extension.');
+                vscode.window.showErrorMessage('CalcPad: Server mode is "local" but CalcpadServer.dll was not found in the extension.');
             } else {
                 outputChannel.appendLine('No bundled DLL found, using remote API');
             }
@@ -1437,7 +1516,8 @@ export async function activate(context: vscode.ExtensionContext) {
         if (definitions) {
             outputChannel.appendLine('[processDocument] Found ' + definitions.macros.length + ' macros, ' + definitions.variables.length + ' variables, ' + definitions.functions.length + ' functions, ' + definitions.customUnits.length + ' custom units');
 
-            vueUiProvider?.updateVariables({
+            // Send definitions to Vue UI provider
+            vueUiProvider.updateVariables({
                 macros: definitions.macros.map(m => ({
                     name: m.name,
                     params: m.parameters.length > 0 ? m.parameters.join('; ') : undefined,
@@ -1452,18 +1532,12 @@ export async function activate(context: vscode.ExtensionContext) {
                 variables: definitions.variables.map(v => ({
                     name: v.name,
                     definition: v.expression,
-                    expression: v.expression,
-                    type: v.type,
                     source: v.source as 'local' | 'include',
-                    sourceFile: v.sourceFile,
-                    description: v.description
+                    sourceFile: v.sourceFile
                 })),
                 functions: definitions.functions.map(f => ({
                     name: f.name,
                     params: f.parameters.join('; '),
-                    definition: f.expression,
-                    expression: f.expression,
-                    returnType: f.returnType,
                     source: f.source as 'local' | 'include',
                     sourceFile: f.sourceFile,
                     description: f.description,
@@ -1474,10 +1548,8 @@ export async function activate(context: vscode.ExtensionContext) {
                 customUnits: definitions.customUnits.map(u => ({
                     name: u.name,
                     definition: u.expression,
-                    expression: u.expression,
                     source: u.source as 'local' | 'include',
-                    sourceFile: u.sourceFile,
-                    description: u.description
+                    sourceFile: u.sourceFile
                 }))
             });
         } else {
@@ -1515,132 +1587,47 @@ export async function activate(context: vscode.ExtensionContext) {
             await processDocument(activeEditor.document);
         }
 
-        // Refresh preview(s) if open
-        if (activeEditor && (wrappedPanel || unwrappedPanel)) {
-            if (wrappedPanel) {
-                await updatePreviewContent(wrappedPanel, activeEditor.document.getText(), activeEditor.document.uri, false);
-            }
-            if (unwrappedPanel) {
-                await updatePreviewContent(unwrappedPanel, activeEditor.document.getText(), activeEditor.document.uri, true);
-            }
+        // Refresh preview if open
+        if (activePreviewPanel && activeEditor) {
+            const unwrapped = activePreviewType === 'unwrapped';
+            await updatePreviewContent(activePreviewPanel as vscode.WebviewPanel, activeEditor.document.getText(), activeEditor.document.uri, unwrapped);
             outputChannel.appendLine('[Settings] Preview refreshed');
         }
 
         outputChannel.appendLine('[Settings] All components refreshed');
     }
 
-    vueUiProvider = new CalcpadVueUIProvider(context.extensionUri, context, settingsManager, insertManager);
-    vueUiProvider.getSourceEditor = () => vscode.window.activeTextEditor ?? previewSourceEditor;
-    vueUiProvider.getDefinitions = (uri: string) => definitionsService.getCachedDefinitions(uri);
-    vueUiProvider.onPreviewThemeChanged = async () => {
-        const activeEditor = vscode.window.activeTextEditor;
-        if (!activeEditor) return;
-        if (wrappedPanel) {
-            await updatePreviewContent(wrappedPanel, activeEditor.document.getText(), activeEditor.document.uri, false);
-        }
-        if (unwrappedPanel) {
-            await updatePreviewContent(unwrappedPanel, activeEditor.document.getText(), activeEditor.document.uri, true);
-        }
-    };
-    vueUiProvider.onSettingsChanged = async () => {
-        const activeEditor = vscode.window.activeTextEditor;
-        if (!activeEditor) return;
-        if (wrappedPanel) {
-            await updatePreviewContent(wrappedPanel, activeEditor.document.getText(), activeEditor.document.uri, false);
-        }
-        if (unwrappedPanel) {
-            await updatePreviewContent(unwrappedPanel, activeEditor.document.getText(), activeEditor.document.uri, true);
-        }
-    };
+    // Register webview provider for CalcPad Vue UI panel (NEW)
+    const vueUiProvider = new CalcpadVueUIProvider(context.extensionUri, context, settingsManager, insertManager);
     const vueUiProviderDisposable = vscode.window.registerWebviewViewProvider(
         CalcpadVueUIProvider.viewType,
         vueUiProvider
     );
 
+
+
     const disposable = vscode.commands.registerCommand('vscode-calcpad.activate', () => {
-        vscode.window.showInformationMessage('CalcpadCE activated!');
+        vscode.window.showInformationMessage('CalcPad activated!');
     });
 
     const previewCommand = vscode.commands.registerCommand('vscode-calcpad.previewHtml', () => {
-        showPreview('regular');
+        createHtmlPreview(context);
     });
 
     const previewUnwrappedCommand = vscode.commands.registerCommand('vscode-calcpad.previewUnwrapped', () => {
-        showPreview('unwrapped');
+        createHtmlPreviewUnwrapped(context);
     });
 
-    const focusPreviewToLineCommand = vscode.commands.registerCommand('vscode-calcpad.focusPreviewToLine', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) return;
-        const line = editor.selection.active.line + 1;
-        if (!wrappedPanel && !unwrappedPanel) {
-            await showPreview('regular');
-            // Wait for the webview to load its DOMContentLoaded listener before posting.
-            setTimeout(() => postPreviewSourceLine(line), 600);
-        } else {
-            postPreviewSourceLine(line);
-        }
+    const previewUiCommand = vscode.commands.registerCommand('vscode-calcpad.previewUi', () => {
+        createUiPreview(context);
+    });
+
+    const saveUiStateCommand = vscode.commands.registerCommand('calcpad.saveUiState', () => {
+        saveUiStateToFile();
     });
 
     const showInsertCommand = vscode.commands.registerCommand('vscode-calcpad.showInsert', () => {
         vscode.commands.executeCommand('workbench.view.extension.calcpad-ui');
-    });
-
-    const editMetadataPropertiesCommand = vscode.commands.registerCommand('vscode-calcpad.editMetadataProperties', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) return;
-        const doc = editor.document;
-        const curLine = editor.selection.active.line;
-        const curText = doc.lineAt(curLine).text;
-
-        const revealPanel = () => {
-            vscode.commands.executeCommand('workbench.view.extension.calcpad-ui');
-            // The webview may need a beat to resolve before it can switch tabs.
-            setTimeout(() => {
-                vueUiProvider?.focusTab('metadata');
-                updateMetadataContext(vscode.window.activeTextEditor);
-            }, 200);
-        };
-
-        const moveCursorTo = (line: number) => {
-            const pos = new vscode.Position(line, doc.lineAt(line).text.length);
-            editor.selection = new vscode.Selection(pos, pos);
-        };
-
-        // Already on a metadata comment — just open the editor for it.
-        if (findMetadataCommentBlock([curText], 0)) {
-            revealPanel();
-            return;
-        }
-
-        // A metadata comment already sits directly above — move onto it.
-        if (curLine > 0 && findMetadataCommentBlock([doc.lineAt(curLine - 1).text], 0)) {
-            moveCursorTo(curLine - 1);
-            revealPanel();
-            return;
-        }
-
-        // On a definition, the panel shows a virtual block from real highlighter
-        // results (correct params) and Apply creates the comment — no seeding, so
-        // definition line numbers stay valid.
-        const resolve = buildDefinitionResolver(
-            definitionsService.getCachedDefinitions(doc.uri.toString())
-            ?? { functions: [], macros: [], variables: [], customUnits: [] });
-        if (resolve(curLine)) {
-            revealPanel();
-            return;
-        }
-
-        // Otherwise seed an empty comment so settings/lint markers can be added on
-        // a non-definition line.
-        const indent = (curText.match(/^[ \t]*/)?.[0]) ?? '';
-        const newLineText = serializeMetadataComment({}, indent, '');
-        await editor.edit(edit => {
-            edit.insert(new vscode.Position(curLine, 0), newLineText + '\n');
-        });
-        // The inserted comment now occupies the original line index.
-        moveCursorTo(curLine);
-        revealPanel();
     });
 
 
@@ -1668,12 +1655,11 @@ export async function activate(context: vscode.ExtensionContext) {
     const webviewSourceUri = vscode.Uri.parse(`${webviewSourceScheme}:Webview Source.html`);
 
     const viewWebviewSourceCommand = vscode.commands.registerCommand('vscode-calcpad.viewWebviewSource', async () => {
-        const inspectPanel = (unwrappedPanel && unwrappedPanel.active ? unwrappedPanel : wrappedPanel) ?? unwrappedPanel;
-        if (!inspectPanel) {
-            vscode.window.showWarningMessage('No active CalcpadCE preview to inspect.');
+        if (!activePreviewPanel) {
+            vscode.window.showWarningMessage('No active CalcPad preview to inspect.');
             return;
         }
-        webviewSourceHtml = inspectPanel.webview.html;
+        webviewSourceHtml = (activePreviewPanel as vscode.WebviewPanel).webview.html;
         webviewSourceProvider.onDidChangeEmitter.fire(webviewSourceUri);
         const doc = await vscode.workspace.openTextDocument(webviewSourceUri);
         await vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside, true);
@@ -1686,19 +1672,11 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    const installJuliaMonoDisposable = vscode.commands.registerCommand(
-        'vscode-calcpad.installJuliaMono',
-        () => installJuliaMonoCommand(context)
-    );
-
-    // Fire-and-forget: prompts the user once, skipped if already installed.
-    void maybePromptInstall(context);
-
     const stopServerCommand = vscode.commands.registerCommand('calcpad.stopServer', async () => {
         outputChannel.appendLine('[Stop] Manual server stop triggered');
         if (!serverManager) {
             outputChannel.appendLine('[Stop] No serverManager available');
-            vscode.window.showInformationMessage('CalcpadCE server is not configured.');
+            vscode.window.showInformationMessage('CalcPad server is not configured.');
             return;
         }
         // Don't gate on `isRunning` — that flag only reflects whether *this*
@@ -1715,13 +1693,13 @@ export async function activate(context: vscode.ExtensionContext) {
             outputChannel.appendLine(`[Stop] Server stopped successfully (wasRunning=${wasRunning})`);
             vscode.window.showInformationMessage(
                 wasRunning
-                    ? 'CalcpadCE server stopped. Use the refresh button to restart.'
-                    : 'CalcpadCE server stopped via lock file. Use the refresh button to restart.',
+                    ? 'CalcPad server stopped. Use the refresh button to restart.'
+                    : 'CalcPad server stopped via lock file. Use the refresh button to restart.',
             );
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             outputChannel.appendLine(`[Stop] Server stop failed: ${msg}`);
-            vscode.window.showErrorMessage(`CalcpadCE: Failed to stop server: ${msg}`);
+            vscode.window.showErrorMessage(`CalcPad: Failed to stop server: ${msg}`);
         }
     });
 
@@ -1742,14 +1720,13 @@ export async function activate(context: vscode.ExtensionContext) {
                 outputChannel.appendLine(`[Refresh] Server restart failed: ${msg}`);
                 const blocked = /Windows blocked the executable|EACCES|EPERM/i.test(msg);
                 if (blocked) {
-                    const exePath = serverManager.getExecutablePath();
                     vscode.window.showErrorMessage(
-                        `CalcPad: Windows is still blocking Calcpad.Server.exe.\n${exePath}\n` +
+                        'CalcPad: Windows is still blocking Calcpad.Server.exe. ' +
                         'Right-click the file in Windows Explorer → Properties → check "Unblock", ' +
                         'then click refresh again.'
                     );
                 } else {
-                    vscode.window.showErrorMessage(`CalcpadCE: Server restart failed: ${msg}`);
+                    vscode.window.showErrorMessage(`CalcPad: Server restart failed: ${msg}`);
                 }
                 return;
             }
@@ -1767,11 +1744,17 @@ export async function activate(context: vscode.ExtensionContext) {
                 } catch (err) {
                     const msg = err instanceof Error ? err.message : String(err);
                     outputChannel.appendLine(`[Refresh] Server restart failed: ${msg}`);
-                    vscode.window.showErrorMessage(`CalcpadCE: Server restart failed: ${msg}`);
+                    vscode.window.showErrorMessage(`CalcPad: Server restart failed: ${msg}`);
                     return;
                 }
             }
         }
+
+        // Clear server-side caches (remote content + disk file cache)
+        const cacheCleared = await apiClient.refreshCache();
+        outputChannel.appendLine(cacheCleared
+            ? '[Refresh] Server cache cleared'
+            : '[Refresh] Failed to clear server cache');
 
         const activeEditor = vscode.window.activeTextEditor;
         if (activeEditor) {
@@ -1779,34 +1762,31 @@ export async function activate(context: vscode.ExtensionContext) {
             await processDocument(activeEditor.document);
             // Re-highlight (semantic tokens)
             semanticTokensProvider.refresh();
-            // Re-render preview panels. This is the manual "run" path used
-            // when auto-run is off.
-            schedulePreviewUpdate();
-            outputChannel.appendLine('[Refresh] Document re-linted, re-highlighted, and preview re-rendered');
+            outputChannel.appendLine('[Refresh] Document re-linted and re-highlighted');
         }
     });
 
     const prettifyDocumentCommand = vscode.commands.registerCommand('vscode-calcpad.prettifyDocument', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
-            vscode.window.showInformationMessage('CalcpadCE: open a .cpd file to prettify.');
+            vscode.window.showInformationMessage('CalcPad: open a .cpd file to prettify.');
             return;
         }
         if (editor.document.languageId !== 'calcpad' && editor.document.languageId !== 'plaintext') {
-            vscode.window.showInformationMessage('CalcpadCE: prettify is only available for CalcpadCE documents.');
+            vscode.window.showInformationMessage('CalcPad: prettify is only available for CalcPad documents.');
             return;
         }
 
-        const settingsManager = CalcpadSettingsManager.getInstance();
-        const indentStyle = settingsManager.getExtra('prettifyIndentStyle', 'tab');
-        const indentSize = settingsManager.getExtraNumber('prettifyIndentSize', 4);
-        const trim = settingsManager.getExtraBool('prettifyTrimTrailingWhitespace', true);
+        const config = vscode.workspace.getConfiguration('calcpad');
+        const indentStyle = config.get<string>('prettify.indentStyle', 'tab');
+        const indentSize = config.get<number>('prettify.indentSize', 4);
+        const trim = config.get<boolean>('prettify.trimTrailingWhitespace', true);
         const indentUnit = indentStyle === 'space' ? ' '.repeat(Math.max(1, indentSize)) : '\t';
 
         try {
             const response = await apiClient.prettify(editor.document.getText(), indentUnit, trim);
             if (!response) {
-                vscode.window.showErrorMessage('CalcpadCE: prettify request failed (no response from server).');
+                vscode.window.showErrorMessage('CalcPad: prettify request failed (no response from server).');
                 return;
             }
             const fullRange = new vscode.Range(
@@ -1815,12 +1795,12 @@ export async function activate(context: vscode.ExtensionContext) {
             );
             const ok = await editor.edit(eb => eb.replace(fullRange, response.content));
             if (!ok) {
-                vscode.window.showErrorMessage('CalcpadCE: prettify edit was rejected by the editor.');
+                vscode.window.showErrorMessage('CalcPad: prettify edit was rejected by the editor.');
             }
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             outputChannel.appendLine('[Prettify] Error: ' + msg);
-            vscode.window.showErrorMessage('CalcpadCE: prettify failed — ' + msg);
+            vscode.window.showErrorMessage('CalcPad: prettify failed — ' + msg);
         }
     });
 
@@ -1849,44 +1829,21 @@ export async function activate(context: vscode.ExtensionContext) {
             lintTimeout = setTimeout(() => {
                 processDocument(event.document).catch(e => outputChannel.appendLine('[processDocument] Error: ' + e));
             }, 500);
-            // Only schedule preview update when auto-run is on. Otherwise the
-            // preview updates only when the panel is (re)opened or the user
-            // runs `calcpad.refreshDocument`.
-            if (CalcpadSettingsManager.getInstance().getExtraBool('autoRun', true)) {
-                schedulePreviewUpdate();
-            }
+            // Only schedule preview update for CalcPad files
+            schedulePreviewUpdate();
         }
     });
 
     // Update preview and variables when active editor changes
     const onDidChangeActiveTextEditor = vscode.window.onDidChangeActiveTextEditor(editor => {
-        updateMetadataContext(editor);
         if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
-            // Update preview if any panel is open
-            if (wrappedPanel || unwrappedPanel) {
+            // Update preview if panel is open
+            if (activePreviewPanel) {
                 schedulePreviewUpdate();
             }
             // Update Variables tab
             processDocument(editor.document).catch(e => outputChannel.appendLine('[processDocument] Error: ' + e));
         }
-    });
-
-    // Auto-sync the preview to the cursor's source line (gated on the setting).
-    let cursorSyncTimeout: NodeJS.Timeout | undefined;
-    let metadataContextTimeout: NodeJS.Timeout | undefined;
-    const onDidChangeTextEditorSelection = vscode.window.onDidChangeTextEditorSelection(event => {
-        const doc = event.textEditor.document;
-        if (doc.languageId !== 'calcpad' && doc.languageId !== 'plaintext') return;
-
-        if (metadataContextTimeout) clearTimeout(metadataContextTimeout);
-        metadataContextTimeout = setTimeout(() => updateMetadataContext(event.textEditor), 150);
-
-        if (!wrappedPanel && !unwrappedPanel) return;
-        if (!CalcpadSettingsManager.getInstance().getExtraBool('previewCursorSync', false)) return;
-        if (cursorSyncTimeout) clearTimeout(cursorSyncTimeout);
-        cursorSyncTimeout = setTimeout(() => {
-            postPreviewSourceLine(event.selections[0].active.line + 1);
-        }, 150);
     });
 
     // Refresh all components when calcpad settings change
@@ -1906,10 +1863,9 @@ export async function activate(context: vscode.ExtensionContext) {
             disposable,
             previewCommand,
             previewUnwrappedCommand,
-            focusPreviewToLineCommand,
-            onDidChangeTextEditorSelection,
+            previewUiCommand,
+            saveUiStateCommand,
             showInsertCommand,
-            editMetadataPropertiesCommand,
             printToPdfCommand,
             saveSourceHtmlCommand,
             saveDocxCommand,
@@ -1919,7 +1875,7 @@ export async function activate(context: vscode.ExtensionContext) {
             exportToPdfCommand,
             prettifyDocumentCommand,
             vueUiProviderDisposable,
-            vueUiProvider,
+            vueUiProvider, // Add the provider itself for disposal
             linter,
             semanticTokensDisposable,
             outputChannel,
@@ -1943,8 +1899,7 @@ export async function activate(context: vscode.ExtensionContext) {
             hoverProviderDisposable,
             insertManager,
             viewWebviewSourceCommand,
-            webviewSourceRegistration,
-            installJuliaMonoDisposable
+            webviewSourceRegistration
         );
         
         outputChannel.appendLine('CalcPad extension activation completed successfully');
@@ -1955,7 +1910,7 @@ export async function activate(context: vscode.ExtensionContext) {
             outputChannel.appendLine(`FATAL ERROR during activation: ${error}`);
         }
         // Still try to show the error to user
-        vscode.window.showErrorMessage(`CalcpadCE extension failed to activate: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        vscode.window.showErrorMessage(`CalcPad extension failed to activate: ${error instanceof Error ? error.message : 'Unknown error'}`);
         throw error; // Re-throw to mark extension as failed
     }
 }

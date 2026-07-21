@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Calcpad.Core
 {
@@ -147,97 +147,97 @@ namespace Calcpad.Core
 
         private RealValue Sin(in RealValue value)
         {
-            CheckTrigFunctionUnits("sin", value.Units);
+            CheckFunctionUnits("sin", value.Units);
             return new(Complex.RealSin(FromAngleUnits(value)));
         }
 
         private RealValue Cos(in RealValue value)
         {
-            CheckTrigFunctionUnits("cos", value.Units);
+            CheckFunctionUnits("cos", value.Units);
             return new(Complex.RealCos(FromAngleUnits(value)));
         }
 
         private RealValue Tan(in RealValue value)
         {
-            CheckTrigFunctionUnits("tan", value.Units);
+            CheckFunctionUnits("tan", value.Units);
             return new(Math.Tan(FromAngleUnits(value)));
         }
 
         private RealValue Csc(in RealValue value)
         {
-            CheckTrigFunctionUnits("csc", value.Units);
+            CheckFunctionUnits("csc", value.Units);
             return new(1 / Math.Sin(FromAngleUnits(value)));
         }
 
         private RealValue Sec(in RealValue value)
         {
-            CheckTrigFunctionUnits("sec", value.Units);
+            CheckFunctionUnits("sec", value.Units);
             return new(1 / Math.Cos(FromAngleUnits(value)));
         }
 
         private RealValue Cot(in RealValue value)
         {
-            CheckTrigFunctionUnits("cot", value.Units);
+            CheckFunctionUnits("cot", value.Units);
             return new(1 / Math.Tan(FromAngleUnits(value)));
         }
 
         private static RealValue Sinh(in RealValue value) /* Hyperbolic sin */
         {
-            CheckTrigFunctionUnits("sinh", value.Units);
+            CheckFunctionUnits("sinh", value.Units);
             return new(Math.Sinh(value.D));
         }
 
         private static RealValue Cosh(in RealValue value)
         {
-            CheckTrigFunctionUnits("cosh", value.Units);
+            CheckFunctionUnits("cosh", value.Units);
             return new(Math.Cosh(value.D));
         }
 
         private static RealValue Tanh(in RealValue value)
         {
-            CheckTrigFunctionUnits("tanh", value.Units);
+            CheckFunctionUnits("tanh", value.Units);
             return new(Math.Tanh(value.D));
         }
 
         private static RealValue Csch(in RealValue value)
         {
-            CheckTrigFunctionUnits("csch", value.Units);
+            CheckFunctionUnits("csch", value.Units);
             return new(1 / Math.Sinh(value.D));
         }
 
         private static RealValue Sech(in RealValue value)
         {
-            CheckTrigFunctionUnits("sech", value.Units);
+            CheckFunctionUnits("sech", value.Units);
             return new(1 / Math.Cosh(value.D));
         }
 
         private static RealValue Coth(in RealValue value)
         {
-            CheckTrigFunctionUnits("coth", value.Units);
+            CheckFunctionUnits("coth", value.Units);
             return new(1 / Math.Tanh(value.D));
         }
 
         private RealValue Asin(in RealValue value)
         {
-            CheckTrigFunctionUnits("asin", value.Units);
+            CheckFunctionUnits("asin", value.Units);
             return ToAngleUnits(Math.Asin(value.D));
         }
 
         private RealValue Acos(in RealValue value)
         {
-            CheckTrigFunctionUnits("acos", value.Units);
+            CheckFunctionUnits("acos", value.Units);
             return ToAngleUnits(Math.Acos(value.D));
         }
 
         private RealValue Atan(in RealValue value)
         {
-            CheckTrigFunctionUnits("atan", value.Units);
+            CheckFunctionUnits("atan", value.Units);
             return ToAngleUnits(Math.Atan(value.D));
         }
 
         private RealValue Acsc(in RealValue value)
         {
-            CheckTrigFunctionUnits("acsc", value.Units);
+            CheckFunctionUnits("acsc", value.Units);
             return value.D == 0d ?
                 RealValue.PositiveInfinity :
                 ToAngleUnits(Math.Asin(1d / value.D));
@@ -245,7 +245,7 @@ namespace Calcpad.Core
 
         private RealValue Asec(in RealValue value)
         {
-            CheckTrigFunctionUnits("asec", value.Units);
+            CheckFunctionUnits("asec", value.Units);
             return value.D == 0d ?
                 RealValue.PositiveInfinity :
                 ToAngleUnits(Math.Acos(1d / value.D));
@@ -253,67 +253,67 @@ namespace Calcpad.Core
 
         private RealValue Acot(in RealValue value)
         {
-            CheckTrigFunctionUnits("acot", value.Units);
+            CheckFunctionUnits("acot", value.Units);
             return ToAngleUnits(Math.Atan(1d / value.D));
         }
 
         private static RealValue Asinh(in RealValue value)
         {
-            CheckTrigFunctionUnits("asinh", value.Units);
+            CheckFunctionUnits("asinh", value.Units);
             return new(Math.Asinh(value.D));
         }
 
         private static RealValue Acosh(in RealValue value)
         {
-            CheckTrigFunctionUnits("acosh", value.Units);
+            CheckFunctionUnits("acosh", value.Units);
             return new(Math.Acosh(value.D));
         }
 
         private static RealValue Atanh(in RealValue value)
         {
-            CheckTrigFunctionUnits("atanh", value.Units);
+            CheckFunctionUnits("atanh", value.Units);
             return new(Math.Atanh(value.D));
         }
 
         private static RealValue Acsch(in RealValue value)
         {
-            CheckTrigFunctionUnits("acsch", value.Units);
+            CheckFunctionUnits("acsch", value.Units);
             return new(Math.Asinh(1d / value.D));
         }
 
         private static RealValue Asech(in RealValue value)
         {
-            CheckTrigFunctionUnits("asech", value.Units);
+            CheckFunctionUnits("asech", value.Units);
             return new(Math.Acosh(1d / value.D));
         }
 
         private static RealValue Acoth(in RealValue value)
         {
-            CheckTrigFunctionUnits("acoth", value.Units);
+            CheckFunctionUnits("acoth", value.Units);
             return new(Math.Atanh(1 / value.D));
         }
 
         private static RealValue Log(in RealValue value)
         {
-            CheckTrigFunctionUnits("ln", value.Units);
+            CheckFunctionUnits("ln", value.Units);
             return new(Math.Log(value.D));
         }
 
         private static RealValue Log10(in RealValue value)
         {
-            CheckTrigFunctionUnits("log", value.Units);
+            CheckFunctionUnits("log", value.Units);
             return new(Math.Log10(value.D));
         }
 
         private static RealValue Log2(in RealValue value)
         {
-            CheckTrigFunctionUnits("log_2", value.Units);
+            CheckFunctionUnits("log_2", value.Units);
             return new(Math.Log2(value.D));
         }
 
         private static RealValue Exp(in RealValue value)
         {
-            CheckTrigFunctionUnits("exp", value.Units);
+            CheckFunctionUnits("exp", value.Units);
             return new(Math.Exp(value.D));
         }
 

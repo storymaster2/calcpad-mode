@@ -17,6 +17,20 @@ namespace Calcpad.Core
             internal Func<IValue> Function;
             internal bool IsReadOnly;
 
+            /// <summary>
+            /// Default value expressions parallel to parameters.
+            /// null entry = required parameter, string = default value expression.
+            /// Null array = all parameters are required.
+            /// </summary>
+            internal string[] DefaultExpressions { get; set; }
+
+            /// <summary>
+            /// Number of required parameters (those without defaults).
+            /// </summary>
+            internal int RequiredParameterCount =>
+                DefaultExpressions is null ? ParameterCount :
+                System.Linq.Enumerable.Count(DefaultExpressions, d => d is null);
+
             internal abstract void AddParameters(List<string> parameters);
             internal abstract void ClearCache();
             internal abstract void PurgeCache();

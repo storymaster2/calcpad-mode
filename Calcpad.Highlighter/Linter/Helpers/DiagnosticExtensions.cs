@@ -60,7 +60,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
                 Message = message,
                 Severity = severity
             };
-            result.AppendDiagnostic(diagnostic);
+            result.Diagnostics.Add(diagnostic);
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
                 Message = message,
                 Severity = severity
             };
-            result.AppendDiagnostic(diagnostic);
+            result.Diagnostics.Add(diagnostic);
         }
 
         /// <summary>

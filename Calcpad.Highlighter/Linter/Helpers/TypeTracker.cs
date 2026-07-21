@@ -16,7 +16,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
     public class TypeTracker
     {
         private readonly Dictionary<string, VariableInfo> _variables = new(StringComparer.Ordinal);
-        private readonly Dictionary<string, VariableInfo> _functions = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, VariableInfo> _functions = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, VariableInfo> _macros = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, VariableInfo> _customUnits = new(StringComparer.OrdinalIgnoreCase);
         private Dictionary<int, List<Token>> _tokensByLine;
@@ -37,6 +37,10 @@ namespace Calcpad.Highlighter.Linter.Helpers
 
         private static readonly Regex MatrixLiteralPattern = new(
             @"^\s*\[.+\|.+\]\s*$",
+            RegexOptions.Compiled);
+
+        private static readonly Regex StringLiteralPattern = new(
+            @"^\s*""[^""]*""\s*$",
             RegexOptions.Compiled);
 
         // Functions that return vectors - derived from SnippetRegistry
@@ -73,6 +77,16 @@ namespace Calcpad.Highlighter.Linter.Helpers
         {
             var newType = InferTypeFromExpression(expression, lineNumber);
 
+            // Variables ending with $ are string variables (#string) or string tables (#table).
+            // Distinguish by expression content when type couldn't be inferred from expression alone.
+            if (name.EndsWith("$") && newType == CalcpadType.Unknown)
+            {
+                if (IsTableExpression(expression))
+                    newType = CalcpadType.StringTable;
+                else
+                    newType = CalcpadType.StringVariable;
+            }
+
             // Check if variable already exists with a different type
             if (_variables.TryGetValue(name, out var existing))
             {
@@ -104,7 +118,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// <summary>
         /// Registers a function definition and infers its return type from the expression.
         /// </summary>
-        public VariableInfo RegisterFunction(string name, List<string> parameters, string expression, int lineNumber, int column = 0, string source = "local", bool isConst = false)
+        public VariableInfo RegisterFunction(string name, List<string> parameters, string expression, int lineNumber, int column = 0, string source = "local", bool isConst = false, List<string> defaults = null)
         {
             var returnType = InferTypeFromExpression(expression);
 
@@ -112,6 +126,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
             {
                 Name = name,
                 Parameters = parameters,
+                ParameterDefaults = defaults,
                 Expression = expression,
                 LineNumber = lineNumber,
                 Column = column,
@@ -129,7 +144,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// Registers a function definition with a command block.
         /// The return type is inferred from the last statement in the block.
         /// </summary>
-        public VariableInfo RegisterCommandBlockFunction(string name, List<string> parameters, List<string> statements, int lineNumber, int column = 0, string source = "local", bool isConst = false)
+        public VariableInfo RegisterCommandBlockFunction(string name, List<string> parameters, List<string> statements, int lineNumber, int column = 0, string source = "local", bool isConst = false, List<string> defaults = null)
         {
             // Infer return type from the last statement in the block
             var returnType = CalcpadType.Unknown;
@@ -143,6 +158,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
             {
                 Name = name,
                 Parameters = parameters,
+                ParameterDefaults = defaults,
                 Expression = string.Join("; ", statements ?? new List<string>()),
                 LineNumber = lineNumber,
                 Column = column,
@@ -195,12 +211,13 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// <summary>
         /// Registers an inline macro definition.
         /// </summary>
-        public VariableInfo RegisterInlineMacro(string name, List<string> parameters, string expression, int lineNumber, int column = 0, string source = "local")
+        public VariableInfo RegisterInlineMacro(string name, List<string> parameters, string expression, int lineNumber, int column = 0, string source = "local", List<string> defaults = null)
         {
             var info = new VariableInfo
             {
                 Name = name,
                 Parameters = parameters,
+                ParameterDefaults = defaults,
                 Expression = expression,
                 LineNumber = lineNumber,
                 Column = column,
@@ -215,12 +232,13 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// <summary>
         /// Registers a multiline macro definition.
         /// </summary>
-        public VariableInfo RegisterMultilineMacro(string name, List<string> parameters, int lineNumber, int column = 0, string source = "local")
+        public VariableInfo RegisterMultilineMacro(string name, List<string> parameters, int lineNumber, int column = 0, string source = "local", List<string> defaults = null)
         {
             var info = new VariableInfo
             {
                 Name = name,
                 Parameters = parameters,
+                ParameterDefaults = defaults,
                 LineNumber = lineNumber,
                 Column = column,
                 Source = source,
@@ -364,6 +382,10 @@ namespace Calcpad.Highlighter.Linter.Helpers
 
             var trimmed = expression.Trim();
 
+            // Check for string literal
+            if (StringLiteralPattern.IsMatch(trimmed))
+                return CalcpadType.StringVariable;
+
             // Check for matrix literal first (contains |)
             if (MatrixLiteralPattern.IsMatch(trimmed))
                 return CalcpadType.Matrix;
@@ -497,9 +519,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// </summary>
         private CalcpadType InferTypeFromOperandTypes(string expression)
         {
-            var atoms = new List<CalcpadType>();
-            var ops = new List<char>();
-            char pendingOp = '\0';
+            var highestType = CalcpadType.Unknown;
             int i = 0;
             int len = expression.Length;
 
@@ -507,47 +527,48 @@ namespace Calcpad.Highlighter.Linter.Helpers
             {
                 char c = expression[i];
 
-                if (CalcpadCharacterHelpers.IsIdentifierStartCharWithUnderscore(c))
-                {
-                    int start = i++;
-                    while (i < len && CalcpadCharacterHelpers.IsIdentifierChar(expression[i]))
-                        i++;
-
-                    var name = expression.Substring(start, i - start);
-
-                    CalcpadType atom;
-                    if (i < len && expression[i] == '(')
-                    {
-                        atom = GetFunctionCallReturnType(name);
-                        // Skip balanced parentheses so arguments aren't examined as top-level operands
-                        i = SkipBalancedParentheses(expression, i);
-                    }
-                    else
-                    {
-                        atom = _variables.TryGetValue(name, out var info) ? info.Type : CalcpadType.Unknown;
-                    }
-                    atoms.Add(atom);
-                    ops.Add(pendingOp);
-                    pendingOp = '\0';
-                }
-                else if (char.IsDigit(c))
+                // Skip non-identifier-start characters (operators, digits, whitespace, brackets)
+                if (!CalcpadCharacterHelpers.IsIdentifierStartCharWithUnderscore(c))
                 {
                     i++;
-                    while (i < len && (char.IsDigit(expression[i]) || expression[i] == '.'))
-                        i++;
-                    atoms.Add(CalcpadType.Value);
-                    ops.Add(pendingOp);
-                    pendingOp = '\0';
+                    continue;
+                }
+
+                // Found start of identifier - collect it
+                int start = i;
+                i++;
+                while (i < len && CalcpadCharacterHelpers.IsIdentifierChar(expression[i]))
+                    i++;
+
+                var name = expression.Substring(start, i - start);
+
+                // Check if followed by '(' - function call
+                if (i < len && expression[i] == '(')
+                {
+                    // Determine return type from the function, then skip its arguments
+                    var returnType = GetFunctionCallReturnType(name);
+                    if (returnType == CalcpadType.Matrix)
+                        return CalcpadType.Matrix;
+                    if (returnType == CalcpadType.Vector && highestType != CalcpadType.Matrix)
+                        highestType = CalcpadType.Vector;
+
+                    // Skip balanced parentheses so arguments aren't examined as top-level operands
+                    i = SkipBalancedParentheses(expression, i);
                 }
                 else
                 {
-                    if ((c == '+' || c == '-' || c == '*' || c == '/' || c == '^') && pendingOp == '\0')
-                        pendingOp = c;
-                    i++;
+                    // Variable reference
+                    if (_variables.TryGetValue(name, out var info))
+                    {
+                        if (info.Type == CalcpadType.Matrix)
+                            return CalcpadType.Matrix;
+                        if (info.Type == CalcpadType.Vector)
+                            highestType = CalcpadType.Vector;
+                    }
                 }
             }
 
-            return FoldOperandTypes(atoms, ops);
+            return highestType;
         }
 
         /// <summary>
@@ -575,9 +596,7 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// </summary>
         private CalcpadType InferTypeFromOperandTokens(List<Token> tokens)
         {
-            var atoms = new List<CalcpadType>();
-            var ops = new List<char>();
-            char pendingOp = '\0';
+            var highestType = CalcpadType.Unknown;
             int depth = 0;
 
             for (int i = 0; i < tokens.Count; i++)
@@ -594,23 +613,21 @@ namespace Calcpad.Highlighter.Linter.Helpers
                 if (depth > 0)
                     continue;
 
-                // Record the binary operator between operands ('.' is element access, handled below).
-                if (token.Type == TokenType.Operator)
+                if (token.Type == TokenType.Function || token.Type == TokenType.StringFunction)
                 {
-                    if (token.Text != "." && pendingOp == '\0')
-                        pendingOp = token.Text[0];
+                    var returnType = GetFunctionCallReturnType(token.Text);
+                    if (returnType == CalcpadType.Matrix) return CalcpadType.Matrix;
+                    if (returnType == CalcpadType.Vector && highestType != CalcpadType.Matrix)
+                        highestType = CalcpadType.Vector;
                     continue;
                 }
 
-                CalcpadType atom;
-                if (token.Type == TokenType.Function)
+                if (token.Type == TokenType.Variable || token.Type == TokenType.StringVariable ||
+                    token.Type == TokenType.LocalVariable)
                 {
-                    atom = GetFunctionCallReturnType(token.Text);
-                }
-                else if (token.Type == TokenType.Variable || token.Type == TokenType.LocalVariable)
-                {
-                    // Element access (v.1, v.i) yields a scalar — consume the index token.
-                    // Bracket-form indices like v.(expr) and M.(1;2) are handled by depth tracking.
+                    // Element access (v.1, v.i) yields a scalar — skip the base variable's
+                    // type and consume the index token. Bracket-form indices like v.(expr)
+                    // and M.(1;2) are handled by the depth tracking above.
                     if (i + 1 < tokens.Count &&
                         tokens[i + 1].Type == TokenType.Operator &&
                         tokens[i + 1].Text == ".")
@@ -626,71 +643,19 @@ namespace Calcpad.Highlighter.Linter.Helpers
                                 i++;
                             }
                         }
-                        atom = CalcpadType.Value;
+                        continue;
                     }
-                    else
+
+                    if (_variables.TryGetValue(token.Text, out var info))
                     {
-                        atom = _variables.TryGetValue(token.Text, out var info) ? info.Type : CalcpadType.Unknown;
+                        if (info.Type == CalcpadType.Matrix) return CalcpadType.Matrix;
+                        if (info.Type == CalcpadType.Vector && highestType != CalcpadType.Matrix)
+                            highestType = CalcpadType.Vector;
                     }
                 }
-                else if (token.Type == TokenType.Const)
-                {
-                    atom = CalcpadType.Value;
-                }
-                else
-                {
-                    continue;
-                }
-
-                atoms.Add(atom);
-                ops.Add(pendingOp);
-                pendingOp = '\0';
             }
 
-            return FoldOperandTypes(atoms, ops);
-        }
-
-        /// <summary>
-        /// Folds a sequence of operand types into the resulting type. Multiplicative chains are
-        /// collapsed first so that Core's matrix·vector = vector rule is respected; remaining
-        /// (additive) terms follow "matrix dominates, then vector".
-        /// </summary>
-        private static CalcpadType FoldOperandTypes(List<CalcpadType> atoms, List<char> ops)
-        {
-            if (atoms.Count == 0)
-                return CalcpadType.Unknown;
-
-            var terms = new List<CalcpadType> { atoms[0] };
-            for (int i = 1; i < atoms.Count; i++)
-            {
-                if (ops[i] == '*')
-                    terms[^1] = CombineMultiply(terms[^1], atoms[i]);
-                else
-                    terms.Add(atoms[i]);
-            }
-
-            var result = CalcpadType.Unknown;
-            foreach (var t in terms)
-            {
-                if (t == CalcpadType.Matrix) return CalcpadType.Matrix;
-                if (t == CalcpadType.Vector) result = CalcpadType.Vector;
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Type of a multiplicative product. Core unwraps a matrix·vector product to a vector
-        /// (IValue.EvaluateOperator); every other combination keeps the dominant type.
-        /// </summary>
-        private static CalcpadType CombineMultiply(CalcpadType left, CalcpadType right)
-        {
-            if (left == CalcpadType.Matrix && right == CalcpadType.Vector)
-                return CalcpadType.Vector;
-            if (left == CalcpadType.Matrix || right == CalcpadType.Matrix)
-                return CalcpadType.Matrix;
-            if (left == CalcpadType.Vector || right == CalcpadType.Vector)
-                return CalcpadType.Vector;
-            return left != CalcpadType.Unknown ? left : right;
+            return highestType;
         }
 
         /// <summary>
@@ -755,6 +720,27 @@ namespace Calcpad.Highlighter.Linter.Helpers
                 return identifier;
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Checks if an expression represents a string table value.
+        /// Matches table$(...), split$(...), or table literal ['...' | '...'] patterns.
+        /// </summary>
+        private static bool IsTableExpression(string expression)
+        {
+            if (string.IsNullOrWhiteSpace(expression))
+                return false;
+
+            var trimmed = expression.TrimStart();
+            if (trimmed.StartsWith("table$(", StringComparison.OrdinalIgnoreCase) ||
+                trimmed.StartsWith("split$(", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Table literal: starts with [ and contains | (string table rows)
+            if (trimmed.StartsWith("[") && trimmed.Contains('|') && trimmed.Contains('\''))
+                return true;
+
+            return false;
         }
 
         /// <summary>

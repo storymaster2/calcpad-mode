@@ -2,11 +2,21 @@
 // Based on API_SCHEMA.md
 
 // ============================================
+// Client File Cache Types
+// ============================================
+
+// Simple dictionary mapping filename -> base64-encoded content.
+// Files larger than 1 MB are not cached — Core reads them from disk instead.
+export type ClientFileCache = Record<string, string>;
+
+// ============================================
 // Lint API Types
 // ============================================
 
 export interface LintRequest {
     content: string;
+    includeFiles?: Record<string, string>;
+    clientFileCache?: ClientFileCache;
     sourceFilePath?: string;
 }
 
@@ -50,6 +60,8 @@ export interface PrettifyResponse {
 export interface HighlightRequest {
     content: string;
     includeText?: boolean;
+    includeFiles?: Record<string, string>;
+    clientFileCache?: ClientFileCache;
     sourceFilePath?: string;
 }
 
@@ -167,10 +179,16 @@ export enum CalcpadTokenType {
     /** Format specifiers (e.g., :f2, :e3) */
     Format = 27,
 
-    // [Future Reserved] 28-30 used to hold StringVariable, StringFunction, StringTable
-    FutureReserved28 = 28,
-    FutureReserved29 = 29,
-    FutureReserved30 = 30
+    // ===== String Types =====
+
+    /** String variable references (defined via #string, ending with $) */
+    StringVariable = 28,
+
+    /** Built-in string function calls (e.g., len$, trim$, concat$) */
+    StringFunction = 29,
+
+    /** String table variable references (defined via #table, ending with $) */
+    StringTable = 30
 }
 
 // ============================================
@@ -179,7 +197,14 @@ export enum CalcpadTokenType {
 
 export interface DefinitionsRequest {
     content: string;
+    includeFiles?: Record<string, string>;
+    clientFileCache?: ClientFileCache;
     sourceFilePath?: string;
+}
+
+export interface PersistedUiOverrides {
+    overrides: Record<string, string>;
+    commentLine: number;  // 0-based line number of the HTML comment block
 }
 
 export interface DefinitionsResponse {
@@ -187,6 +212,7 @@ export interface DefinitionsResponse {
     functions: FunctionDefinition[];
     variables: VariableDefinition[];
     customUnits: CustomUnitDefinition[];
+    uiOverrides?: PersistedUiOverrides;
 }
 
 export interface MacroDefinition {
@@ -238,7 +264,16 @@ export interface CustomUnitDefinition {
     lineNumber: number;  // Zero-based line number
     source: string;
     sourceFile?: string;
-    description?: string;
+}
+
+// ============================================
+// Find References API Types
+// ============================================
+
+export interface FindReferencesResponse {
+    variables: Record<string, SymbolLocation[]>;
+    functions: Record<string, SymbolLocation[]>;
+    macros: Record<string, SymbolLocation[]>;
 }
 
 export interface SymbolLocation {
@@ -251,22 +286,14 @@ export interface SymbolLocation {
 }
 
 // ============================================
-// Symbol-at-position API Types
+// Export API Types (#write/#append output)
 // ============================================
 
-export type SymbolKind = 'variable' | 'function' | 'macro';
-
-export interface SymbolAtPositionRequest {
-    content: string;
-    line: number;       // 0-based, in original source
-    column: number;     // 0-based
-    sourceFilePath?: string;
-}
-
-export interface SymbolAtPositionResponse {
-    symbolName: string;
-    kind: SymbolKind;
-    locations: SymbolLocation[];
+/** One file captured by #write/#append during a convert run. */
+export interface ExportMeta {
+    filename: string;
+    contentType: string;
+    size: number;
 }
 
 // Type IDs for variables and function return types
@@ -275,29 +302,11 @@ export enum CalcpadTypeId {
     Value = 1,
     Vector = 2,
     Matrix = 3,
-    FutureReserved4 = 4,
+    StringVariable = 4,
     Various = 5,
     Function = 6,
     InlineMacro = 7,
     MultilineMacro = 8,
     CustomUnit = 9,
-    FutureReserved10 = 10
-}
-
-// ============================================
-// Convert Errors (returned via X-Calcpad-Errors response header)
-// ============================================
-
-export type CalcpadErrorSource = 'Macro' | 'Expression';
-
-export interface CalcpadError {
-    sourceLine: number;
-    outputLine: number;
-    message: string;
-    source: CalcpadErrorSource;
-}
-
-export interface ConvertResult {
-    html: string;
-    errors: CalcpadError[];
+    StringTable = 10
 }

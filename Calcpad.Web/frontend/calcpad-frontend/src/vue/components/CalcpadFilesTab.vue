@@ -1,407 +1,725 @@
 <template>
   <div class="files-tab">
-    <div v-if="!openedFolder" class="files-empty">
-      <p class="files-empty-message">No folder open.</p>
-      <button class="files-open-btn" @click="$emit('open-folder-request')">Open Folder</button>
-    </div>
-    <template v-else>
-      <div class="files-header">
-        <button class="files-icon-btn files-close-btn" @click="$emit('close-folder')" title="Close Folder">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.647 3.646.708.708L8 8.707z"/></svg>
-        </button>
-        <span class="files-folder-name" :title="openedFolder">{{ folderBasename }}</span>
-        <div class="files-header-actions">
-          <button class="files-icon-btn" @click="collapseAll" title="Collapse All">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M4 9h11v1H4z"/></svg>
+    <div class="files-container p-3">
+      <!-- Authentication Section -->
+      <div v-if="!isAuthenticated" class="auth-section">
+        <div class="login-form">
+          <h3>Login to CalcPad S3</h3>
+          <div class="form-group mb-3">
+            <label>Username</label>
+            <input
+              v-model="loginForm.username"
+              type="text"
+              class="input"
+              placeholder="Enter username"
+              @keyup.enter="login"
+            />
+          </div>
+          <div class="form-group mb-3">
+            <label>Password</label>
+            <input
+              v-model="loginForm.password"
+              type="password"
+              class="input"
+              placeholder="Enter password"
+              @keyup.enter="login"
+            />
+          </div>
+          <button @click="login" :disabled="loading" class="btn">
+            {{ loading ? 'Logging in...' : 'Login' }}
           </button>
-          <button class="files-change-btn" @click="$emit('open-folder-request')" title="Open a different folder">
-            Change Folder
-          </button>
+          <div v-if="error" class="error mt-2">{{ error }}</div>
         </div>
       </div>
-      <label class="files-show-all">
-        <input type="checkbox" v-model="showAll" />
-        <span>Show all files</span>
-      </label>
-      <div class="file-tree" @contextmenu.prevent>
-        <FileTreeNode
-          v-for="node in filteredRoots"
-          :key="node.path"
-          :node="node"
-          :expanded-paths="expandedPaths"
-          @toggle="handleToggle"
-          @open-file="(p) => $emit('open-file', p)"
-          @context-menu="handleContextMenu"
-        />
+
+      <!-- Main Interface -->
+      <div v-else class="files-interface">
+        <!-- Header with user info -->
+        <div class="files-header mb-3">
+          <div class="user-info">
+            <span>Welcome, {{ currentUser?.username }}</span>
+            <span class="role-badge">{{ getRoleName(currentUser?.role ?? 0) }}</span>
+          </div>
+          <div class="header-actions">
+            <button v-if="canUpload" @click="showUploadModal = true" class="btn">
+              Upload File
+            </button>
+            <button @click="logout" class="btn btn-secondary">
+              Logout
+            </button>
+          </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="search-filters mb-3">
+          <div class="search-container">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search files..."
+              class="input"
+            />
+          </div>
+          <div class="filter-actions">
+            <button @click="showTagFilterModal = true" class="btn btn-secondary">
+              Filter by Tags
+            </button>
+            <button @click="refreshFiles" class="btn btn-secondary">
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Files Grid -->
+        <div v-if="loading" class="loading">Loading files...</div>
+        <div v-else-if="filteredFiles.length === 0" class="no-files">
+          No files found
+        </div>
+        <div v-else class="files-grid">
+          <div
+            v-for="file in filteredFiles"
+            :key="file.fileName"
+            class="file-card"
+            @click="selectFile(file)"
+          >
+            <div class="file-icon">📄</div>
+            <div class="file-info">
+              <div class="file-name">{{ file.fileName }}</div>
+              <div class="file-meta">
+                <span>{{ formatFileSize(file.size) }}</span>
+                <span>{{ formatDate(file.lastModified) }}</span>
+              </div>
+              <div v-if="file.tags && file.tags.length > 0" class="file-tags">
+                <span
+                  v-for="tag in file.tags"
+                  :key="tag"
+                  class="tag"
+                >
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+            <div class="file-actions">
+              <button @click.stop="downloadFile(file)" class="btn-icon" title="Download">
+                ⬇️
+              </button>
+              <button v-if="canUpload" @click.stop="editFileTags(file)" class="btn-icon" title="Edit Tags">
+                🏷️
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </template>
-    <!-- Custom right-click menu. Rendered outside .files-tab so it can be
-         positioned absolutely without being clipped by the sidebar's overflow.
-         @mousedown.stop keeps the document-level closer from firing before the
-         button's click handler runs. -->
-    <div
-      v-if="contextMenu"
-      class="tree-context-menu"
-      :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
-      @mousedown.stop
-      @click.stop
-    >
-      <button class="tree-context-item" @click="onOpenContainingFolder">
-        Open Containing Folder
-      </button>
-      <button class="tree-context-item" @click="onCopyFullPath">
-        Copy Full Path
-      </button>
-      <button class="tree-context-item" @click="onCopyRelativePath">
-        Copy Relative Path
-      </button>
+
+      <!-- Upload Modal -->
+      <div v-if="showUploadModal" class="modal-overlay" @click="closeModals">
+        <div class="modal" @click.stop>
+          <div class="modal-header">
+            <h3>Upload File</h3>
+            <button @click="closeModals" class="close-btn">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group mb-3">
+              <label>Select File</label>
+              <input
+                type="file"
+                @change="handleFileSelect"
+                class="input"
+              />
+            </div>
+            <div class="form-group mb-3">
+              <label>Tags (comma separated)</label>
+              <input
+                v-model="uploadTagsInput"
+                type="text"
+                class="input"
+                placeholder="tag1, tag2, tag3"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button @click="uploadFile" :disabled="!selectedUploadFile || uploading" class="btn">
+              {{ uploading ? 'Uploading...' : 'Upload' }}
+            </button>
+            <button @click="closeModals" class="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tag Filter Modal -->
+      <div v-if="showTagFilterModal" class="modal-overlay" @click="closeModals">
+        <div class="modal" @click.stop>
+          <div class="modal-header">
+            <h3>Filter by Tags</h3>
+            <button @click="closeModals" class="close-btn">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="tags-list">
+              <label v-for="tag in availableTags" :key="tag" class="tag-checkbox">
+                <input
+                  type="checkbox"
+                  :value="tag"
+                  v-model="selectedTagFilters"
+                />
+                {{ tag }}
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button @click="applyTagFilter" class="btn">Apply Filter</button>
+            <button @click="clearTagFilter" class="btn btn-secondary">Clear</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
-import type { FileNode } from '../types'
-import FileTreeNode from './FileTreeNode.vue'
-import type { ContextMenuPayload } from './FileTreeNode.vue'
+import { ref, computed, onMounted } from 'vue'
+import { postMessage } from '../services/messaging'
+import type { S3File, S3User } from '../types'
 
-interface Props {
-  openedFolder: string | null
-  treeRoots: FileNode[]
-}
+// State
+const isAuthenticated = ref(false)
+const currentUser = ref<S3User | null>(null)
+const authToken = ref<string | null>(null)
+const loading = ref(false)
+const error = ref<string | null>(null)
+const uploading = ref(false)
 
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  'open-folder-request': []
-  'open-file': [path: string]
-  'expand-folder': [path: string]
-  'open-containing-folder': [path: string]
-  'close-folder': []
-}>()
-
-const expandedPaths = ref<string[]>([])
-const showAll = ref(false)
-
-// Extension filter: only .cpd files are surfaced by default. Folders are
-// always kept so the user can drill in.
-const isCalcpadFile = (name: string): boolean => {
-  const dot = name.lastIndexOf('.')
-  if (dot < 0) return false
-  return name.substring(dot + 1).toLowerCase() === 'cpd'
-}
-
-// Structural sharing: return the original array when no children were
-// filtered out and no directory needed to be re-cloned. Big win on large
-// trees — Vue can skip re-rendering entire branches when their reference
-// identity is unchanged.
-const filterNodes = (nodes: FileNode[]): FileNode[] => {
-  let out: FileNode[] | null = null
-  for (let i = 0; i < nodes.length; i++) {
-    const n = nodes[i]
-    if (n.isDirectory) {
-      const original = n.children
-      const filtered = original ? filterNodes(original) : original
-      if (filtered === original) {
-        if (out) out.push(n)
-      } else {
-        if (!out) out = nodes.slice(0, i)
-        out.push({ ...n, children: filtered })
-      }
-    } else if (isCalcpadFile(n.name)) {
-      if (out) out.push(n)
-    } else {
-      if (!out) out = nodes.slice(0, i)
-      // drop it
-    }
-  }
-  return out ?? nodes
-}
-
-const filteredRoots = computed(() =>
-  showAll.value ? props.treeRoots : filterNodes(props.treeRoots)
-)
-
-// Reset expansion state whenever the workspace root changes.
-watch(() => props.openedFolder, () => {
-  expandedPaths.value = []
+// Forms
+const loginForm = ref({
+  username: '',
+  password: ''
 })
 
-const folderBasename = computed(() => {
-  if (!props.openedFolder) return ''
-  const normalized = props.openedFolder.replace(/\\/g, '/').replace(/\/+$/, '')
-  const idx = normalized.lastIndexOf('/')
-  return idx >= 0 ? normalized.substring(idx + 1) : normalized
+// Files
+const files = ref<S3File[]>([])
+const searchQuery = ref('')
+const selectedTagFilters = ref<string[]>([])
+
+// Modals
+const showUploadModal = ref(false)
+const showTagFilterModal = ref(false)
+
+// Upload
+const selectedUploadFile = ref<File | null>(null)
+const uploadTagsInput = ref('')
+
+// API configuration
+const apiBaseUrl = ref('')
+
+// Computed
+const canUpload = computed(() => (currentUser.value?.role ?? 0) >= 2)
+const isAdmin = computed(() => (currentUser.value?.role ?? 0) === 3)
+
+const filteredFiles = computed(() => {
+  let filtered = files.value
+
+  // Search filter
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(file =>
+      file.fileName.toLowerCase().includes(query)
+    )
+  }
+
+  // Tag filter
+  if (selectedTagFilters.value.length > 0) {
+    filtered = filtered.filter(file => {
+      if (!file.tags || file.tags.length === 0) return false
+      return selectedTagFilters.value.some(tag => file.tags?.includes(tag) ?? false)
+    })
+  }
+
+  return filtered
 })
 
-const findNode = (nodes: FileNode[], targetPath: string): FileNode | null => {
-  for (const n of nodes) {
-    if (n.path === targetPath) return n
-    if (n.children) {
-      const found = findNode(n.children, targetPath)
-      if (found) return found
+const availableTags = computed(() => {
+  const tags = new Set<string>()
+  files.value.forEach(file => {
+    if (file.tags) {
+      file.tags.forEach((tag: string) => tags.add(tag))
     }
+  })
+  return Array.from(tags).sort()
+})
+
+// Methods
+const login = async () => {
+  loading.value = true
+  error.value = null
+
+  // Send login request to host
+  postMessage({
+    type: 's3Login',
+    credentials: loginForm.value
+  })
+}
+
+const logout = () => {
+  isAuthenticated.value = false
+  currentUser.value = null
+  authToken.value = null
+  files.value = []
+  localStorage.removeItem('calcpad_s3_token')
+}
+
+const loadFiles = async () => {
+  if (!authToken.value) return
+
+  loading.value = true
+  postMessage({
+    type: 'debug',
+    message: `[Vue] Loading files with token: ${authToken.value ? `${authToken.value.substring(0, 20)}...` : 'EMPTY'}`
+  })
+  postMessage({
+    type: 's3ListFiles',
+    token: authToken.value
+  })
+}
+
+const refreshFiles = () => {
+  loadFiles()
+}
+
+const downloadFile = async (file: S3File) => {
+  if (!authToken.value) return
+
+  postMessage({
+    type: 's3DownloadFile',
+    fileName: file.fileName,
+    token: authToken.value
+  })
+}
+
+const handleFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  selectedUploadFile.value = target.files?.[0] || null
+}
+
+const uploadFile = async () => {
+  if (!selectedUploadFile.value || !authToken.value) return
+
+  uploading.value = true
+
+  // Convert file to base64 for message passing
+  const reader = new FileReader()
+  reader.onload = () => {
+    const base64Data = reader.result as string
+    const tags = uploadTagsInput.value.trim() ?
+      uploadTagsInput.value.split(',').map(t => t.trim()).filter(t => t) : []
+
+    postMessage({
+      type: 's3UploadFile',
+      fileName: selectedUploadFile.value!.name,
+      fileData: base64Data,
+      tags: tags,
+      token: authToken.value
+    })
   }
-  return null
+  reader.readAsDataURL(selectedUploadFile.value)
 }
 
-const handleToggle = (path: string, isExpanding: boolean) => {
-  if (isExpanding) {
-    if (!expandedPaths.value.includes(path)) {
-      expandedPaths.value = [...expandedPaths.value, path]
-    }
-    const node = findNode(props.treeRoots, path)
-    if (node && !node.loaded) {
-      emit('expand-folder', path)
-    }
-  } else {
-    expandedPaths.value = expandedPaths.value.filter(p => p !== path)
+const selectFile = (file: any) => {
+  // Handle file selection if needed
+}
+
+const editFileTags = (file: any) => {
+  // TODO: Implement tag editing modal
+}
+
+const closeModals = () => {
+  showUploadModal.value = false
+  showTagFilterModal.value = false
+  selectedUploadFile.value = null
+  uploadTagsInput.value = ''
+}
+
+const applyTagFilter = () => {
+  closeModals()
+}
+
+const clearTagFilter = () => {
+  selectedTagFilters.value = []
+  closeModals()
+}
+
+const getRoleName = (role: number) => {
+  switch (role) {
+    case 1: return 'Viewer'
+    case 2: return 'Contributor'
+    case 3: return 'Admin'
+    default: return 'Unknown'
   }
 }
 
-const collapseAll = () => {
-  expandedPaths.value = []
+const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-// ---- Context menu ----
-
-interface ContextMenuState {
-  node: FileNode
-  x: number
-  y: number
-}
-const contextMenu = ref<ContextMenuState | null>(null)
-
-const handleContextMenu = (payload: ContextMenuPayload) => {
-  contextMenu.value = { node: payload.node, x: payload.x, y: payload.y }
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString()
 }
 
-const closeContextMenu = () => {
-  contextMenu.value = null
-}
-
-const onDocumentInteraction = (e: MouseEvent | KeyboardEvent) => {
-  if (!contextMenu.value) return
-  if (e instanceof KeyboardEvent && e.key !== 'Escape') return
-  closeContextMenu()
-}
-
+// Initialize
 onMounted(() => {
-  document.addEventListener('mousedown', onDocumentInteraction)
-  document.addEventListener('keydown', onDocumentInteraction)
+  // Check for stored token
+  const storedToken = localStorage.getItem('calcpad_s3_token')
+  if (storedToken) {
+    authToken.value = storedToken
+    // TODO: Verify token and load user info
+  }
+
+  // Request S3 config from host settings
+  postMessage({ type: 'getS3Config' })
 })
 
-onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', onDocumentInteraction)
-  document.removeEventListener('keydown', onDocumentInteraction)
+// Listen for messages from host
+window.addEventListener('message', (event) => {
+  const message = event.data
+
+  switch (message.type) {
+    case 's3ConfigResponse':
+      if (message.apiUrl) {
+        apiBaseUrl.value = message.apiUrl
+      } else {
+        error.value = 'S3 API URL not configured. Please set the S3 API URL in settings.'
+      }
+      break
+
+    case 's3LoginResponse':
+      loading.value = false
+      if (message.success) {
+        authToken.value = message.token
+        currentUser.value = message.user
+        isAuthenticated.value = true
+        localStorage.setItem('calcpad_s3_token', message.token)
+        loadFiles()
+      } else {
+        error.value = message.error || 'Login failed'
+      }
+      break
+
+    case 's3FilesResponse':
+      loading.value = false
+      postMessage({
+        type: 'debug',
+        message: `[Vue] Received s3FilesResponse: success=${message.success}, files=${JSON.stringify(message.files)}`
+      })
+      if (message.success) {
+        files.value = message.files || []
+        postMessage({
+          type: 'debug',
+          message: `[Vue] Updated files array with ${files.value.length} files`
+        })
+        error.value = null
+      } else {
+        error.value = message.error || 'Failed to load files'
+        postMessage({
+          type: 'debug',
+          message: `[Vue] Files load failed: ${error.value}`
+        })
+      }
+      break
+
+    case 's3UploadResponse':
+      uploading.value = false
+      if (message.success) {
+        closeModals()
+        loadFiles()
+        error.value = null
+      } else {
+        error.value = message.error || 'Upload failed'
+      }
+      break
+
+    case 's3DownloadResponse':
+      if (message.success && message.fileData) {
+        // Create blob and trigger download
+        const byteCharacters = atob(message.fileData.split(',')[1])
+        const byteNumbers = new Array(byteCharacters.length)
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i)
+        }
+        const byteArray = new Uint8Array(byteNumbers)
+        const blob = new Blob([byteArray])
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = message.fileName
+        a.click()
+        window.URL.revokeObjectURL(url)
+      } else {
+        error.value = message.error || 'Download failed'
+      }
+      break
+
+    case 's3Error':
+      loading.value = false
+      uploading.value = false
+      error.value = message.error || 'S3 operation failed'
+      break
+  }
 })
-
-const relativePathFor = (fullPath: string): string => {
-  if (!props.openedFolder) return fullPath
-  const rootNorm = props.openedFolder.replace(/[\\/]+$/, '')
-  const rootWithSep = rootNorm + (rootNorm.includes('\\') ? '\\' : '/')
-  if (fullPath.startsWith(rootWithSep)) {
-    return fullPath.substring(rootWithSep.length)
-  }
-  if (fullPath === rootNorm) return ''
-  return fullPath
-}
-
-const writeClipboard = async (text: string) => {
-  try {
-    await navigator.clipboard.writeText(text)
-  } catch {
-    // Fallback: legacy execCommand path. The webview should support the
-    // Clipboard API in Tauri, so this is a safety net only.
-    const ta = document.createElement('textarea')
-    ta.value = text
-    ta.style.position = 'fixed'
-    ta.style.left = '-9999px'
-    document.body.appendChild(ta)
-    ta.select()
-    try { document.execCommand('copy') } catch { /* ignore */ }
-    document.body.removeChild(ta)
-  }
-}
-
-const onOpenContainingFolder = () => {
-  const menu = contextMenu.value
-  if (!menu) return
-  emit('open-containing-folder', menu.node.path)
-  closeContextMenu()
-}
-
-const onCopyFullPath = async () => {
-  const menu = contextMenu.value
-  if (!menu) return
-  await writeClipboard(menu.node.path)
-  closeContextMenu()
-}
-
-const onCopyRelativePath = async () => {
-  const menu = contextMenu.value
-  if (!menu) return
-  await writeClipboard(relativePathFor(menu.node.path))
-  closeContextMenu()
-}
 </script>
 
 <style scoped>
 .files-tab {
-  padding: 4px 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.files-empty {
-  padding: 16px;
+.files-container {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.auth-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.login-form {
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-widget-border);
+  border-radius: 4px;
+  padding: 20px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.login-form h3 {
+  margin-bottom: 16px;
   text-align: center;
-  color: var(--vscode-descriptionForeground);
-}
-
-.files-empty-message {
-  margin: 0 0 12px 0;
-  font-size: 12px;
-}
-
-.files-open-btn {
-  padding: 6px 14px;
-  background: var(--vscode-button-background);
-  color: var(--vscode-button-foreground);
-  border: none;
-  border-radius: 2px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.files-open-btn:hover {
-  background: var(--vscode-button-hoverBackground);
+  color: var(--vscode-foreground);
 }
 
 .files-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 4px 8px;
-  gap: 6px;
-  border-bottom: 1px solid var(--vscode-widget-border);
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--vscode-sideBarSectionHeader-foreground, var(--vscode-foreground));
-  background: var(--vscode-sideBarSectionHeader-background, var(--vscode-editor-background));
-  /* Pin header while the tree scrolls. */
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  align-items: center;
+  padding: 12px;
+  background: var(--vscode-sideBar-background);
+  border: 1px solid var(--vscode-widget-border);
+  border-radius: 4px;
 }
 
-.files-folder-name {
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-badge {
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 10px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.search-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-container {
+  flex: 1;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.file-card {
+  background: var(--vscode-list-inactiveSelectionBackground);
+  border: 1px solid var(--vscode-widget-border);
+  border-radius: 4px;
+  padding: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-card:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.file-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.file-info {
   flex: 1;
   min-width: 0;
 }
 
-.files-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
+.file-name {
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 4px;
+  word-break: break-word;
 }
 
-.files-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  background: transparent;
-  color: var(--vscode-icon-foreground, var(--vscode-foreground));
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  opacity: 0.85;
-}
-
-.files-icon-btn:hover {
-  background: var(--vscode-toolbar-hoverBackground, rgba(90, 93, 94, 0.31));
-  opacity: 1;
-}
-
-.files-close-btn {
-  margin-right: 2px;
-  flex-shrink: 0;
-}
-
-.files-change-btn {
-  background: transparent;
-  color: var(--vscode-textLink-foreground);
-  border: none;
-  cursor: pointer;
-  font-size: 11px;
-  padding: 2px 6px;
-  text-transform: none;
-}
-
-.files-change-btn:hover {
-  text-decoration: underline;
-}
-
-.files-show-all {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
+.file-meta {
   font-size: 11px;
   color: var(--vscode-descriptionForeground);
-  cursor: pointer;
-  user-select: none;
-  /* Stick right below the header — z-index just under so the header still
-     covers it if the sticky offsets ever overlap. */
-  position: sticky;
-  top: 24px;
-  z-index: 1;
-  background: var(--vscode-editor-background);
-  border-bottom: 1px solid var(--vscode-widget-border);
+  margin-bottom: 4px;
 }
 
-.files-show-all input {
-  margin: 0;
-  cursor: pointer;
+.file-meta span {
+  margin-right: 12px;
 }
 
-.file-tree {
-  padding: 4px 0;
+.file-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
-.tree-context-menu {
-  position: fixed;
-  z-index: 1000;
-  min-width: 180px;
-  padding: 4px 0;
-  background: var(--vscode-menu-background, var(--vscode-editor-background));
-  color: var(--vscode-menu-foreground, var(--vscode-foreground));
-  border: 1px solid var(--vscode-menu-border, var(--vscode-widget-border));
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+.tag {
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  font-size: 9px;
+  padding: 2px 4px;
+  border-radius: 2px;
 }
 
-.tree-context-item {
-  display: block;
-  width: 100%;
-  padding: 5px 14px;
-  text-align: left;
-  background: transparent;
-  color: inherit;
+.file-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  background: none;
   border: none;
   cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
+  padding: 4px;
+  border-radius: 2px;
+  font-size: 14px;
 }
 
-.tree-context-item:hover {
-  background: var(--vscode-menu-selectionBackground, var(--vscode-list-hoverBackground));
-  color: var(--vscode-menu-selectionForeground, inherit);
+.btn-icon:hover {
+  background: var(--vscode-button-hoverBackground);
 }
+
+.btn-secondary {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+.btn-secondary:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-widget-border);
+  border-radius: 4px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--vscode-widget-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--vscode-foreground);
+}
+
+.modal-body {
+  padding: 16px;
+}
+
+.modal-footer {
+  padding: 16px;
+  border-top: 1px solid var(--vscode-widget-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.tags-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tag-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.loading,
+.no-files {
+  text-align: center;
+  color: var(--vscode-descriptionForeground);
+  padding: 40px 20px;
+  font-style: italic;
+}
+
+.error {
+  color: var(--vscode-errorForeground);
+  font-size: 12px;
+}
+
+.mt-2 { margin-top: 8px; }
+.mb-3 { margin-bottom: 12px; }
 </style>

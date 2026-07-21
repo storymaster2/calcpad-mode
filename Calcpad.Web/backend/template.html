@@ -205,37 +205,6 @@
                 border-bottom: solid 1pt black;
             }
 
-        .block {
-            display: inline-block;
-            vertical-align: middle;
-            padding-left: 4pt;
-            margin-left: -1pt;
-            border-left: solid 1pt #80b0e8;
-            background: linear-gradient(to right, rgba(0, 192, 255, 0.06), rgba(0, 192, 255, 0.03));
-        }
-
-            .block .block {
-                background: linear-gradient(to right, rgba(0, 192, 255, 0.04), rgba(0, 192, 255, 0.02));
-            }
-
-        .dvcs:has(.block):not(.block *) {
-            display: inline-block;
-            border-left: solid 1pt #80b0e8;
-            padding-left: 0;
-            margin-left: 3pt;
-        }
-
-            .dvcs:has(.block):not(.block *)::before {
-                content: " 🞀";
-                font-size: 9pt;
-                color: #90c4f0;
-                margin-left: -4.5pt;
-            }
-
-        .arr {
-            color: #90c4f0;
-        }
-
         .r0, .r1, .r2, .r3,
         .o0, .o1, .o2, .o3,
         .b1, .b2, .b3,
@@ -650,15 +619,6 @@
             overflow-x: hidden;
         }
 
-        body:has(.errorHeader) {
-            padding-top: 2.2em;
-        }
-
-        body:has(.errorHeader) [id^="line-"],
-        body:has(.errorHeader) [id^="err-"] {
-            scroll-margin-top: 2.2em;
-        }
-
         .roundBox {
             background-color: #fee;
             color: crimson;
@@ -718,11 +678,6 @@
             white-space: pre-wrap;
         }
 
-        .line-text.err-line {
-            background-color: #FEE;
-            cursor: help;
-        }
-
         .line-num {
             color: #888;
             text-decoration: none;
@@ -738,7 +693,7 @@
             background-color: transparent;
         }
 
-        /* Syntax highlighting colors */
+        /* Syntax highlighting colors matching Calcpad.Wpf */
         .code .comment {
             color: #228B22; /* ForestGreen - text comments */
         }
@@ -789,6 +744,70 @@
             background-color: #FFE1E1; /* Light red background */
         }
 
+        /* UI input fields (#UI keyword) */
+        .calcpad-ui-input {
+            font-family: 'Georgia Pro', 'Century Schoolbook', 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            background-color: lightyellow;
+            border: 0.5pt solid #CCC;
+            border-radius: 0.35em;
+            text-align: right;
+            padding: 0.2em 0.4em;
+            box-shadow: 0.06em 0.06em 0.5em #ddd;
+            min-width: 3em;
+        }
+
+        .calcpad-ui-input:focus {
+            box-shadow: 0.1em 0.1em 1em #ccc;
+            outline: 2px solid #06d;
+        }
+
+        .calcpad-ui-datagrid {
+            margin: 0.5em 0;
+            max-width: 100%;
+        }
+
+        /* UI dropdown select (#UI dropdown) */
+        .calcpad-ui-dropdown {
+            font-family: 'Georgia Pro', 'Century Schoolbook', 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            background-color: lightyellow;
+            border: 0.5pt solid #CCC;
+            border-radius: 0.35em;
+            padding: 0.2em 0.4em;
+            box-shadow: 0.06em 0.06em 0.5em #ddd;
+            cursor: pointer;
+        }
+
+        .calcpad-ui-dropdown:focus {
+            box-shadow: 0.1em 0.1em 1em #ccc;
+            outline: 2px solid #06d;
+        }
+
+        /* UI radio button group (#UI radio) */
+        .calcpad-ui-radio {
+            display: inline-flex;
+            gap: 0.8em;
+            align-items: center;
+        }
+
+        .calcpad-ui-radio-label {
+            font-family: 'Georgia Pro', 'Century Schoolbook', 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25em;
+        }
+
+        /* UI checkbox (#UI checkbox) */
+        .calcpad-ui-checkbox {
+            width: 1.1em;
+            height: 1.1em;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+
         /* Dark theme styles */
         .dark-theme {
             background-color: #1e1e1e;
@@ -816,10 +835,6 @@
             background-color: #3d2426; /* Dark red background */
         }
 
-        .dark-theme .line-text.err-line {
-            background-color: #3d2426;
-        }
-
         .dark-theme .ok {
             color: #b5cea8; /* Light green for success */
             background-color: #2d3f2d; /* Dark green background */
@@ -836,6 +851,36 @@
 
         .dark-theme .errorHeader {
             background-color: #8b1538; /* Dark red for error header */
+        }
+
+        .dark-theme .calcpad-ui-input {
+            background-color: #2a2a2a;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        .dark-theme .calcpad-ui-input:focus {
+            outline-color: #569cd6;
+            box-shadow: 0.1em 0.1em 1em #333;
+        }
+
+        .dark-theme .calcpad-ui-dropdown {
+            background-color: #2a2a2a;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        .dark-theme .calcpad-ui-dropdown:focus {
+            outline-color: #569cd6;
+            box-shadow: 0.1em 0.1em 1em #333;
+        }
+
+        .dark-theme .calcpad-ui-radio-label {
+            color: #d4d4d4;
+        }
+
+        .dark-theme .calcpad-ui-checkbox {
+            accent-color: #569cd6;
         }
 
         .dark-theme .roundBox {
@@ -911,13 +956,6 @@
             color: #569cd6; /* Light blue on hover in dark mode */
         }
     </style>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".dvcs:has(.block) > :first-child").forEach(function (el) {
-                el.innerHTML = "&hairsp;";
-            });
-        });
-    </script>
 </head>
 <body>
     {{CONTENT}}

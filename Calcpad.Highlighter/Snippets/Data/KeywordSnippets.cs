@@ -21,28 +21,28 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#if condition\n\texpression\n#end if",
+                Insert = "#if §\n\t§\n#end if",
                 Description = "Simple If...End If block",
                 Label = "#if...#end if",
                 Category = "Program Flow Control"
             },
             new SnippetItem
             {
-                Insert = "#if condition\n\texpression\n#else\n\texpression\n#end if",
+                Insert = "#if §\n\t§\n#else\n\t§\n#end if",
                 Description = "If...Else...End If block",
                 Label = "#if...#else...#end if",
                 Category = "Program Flow Control"
             },
             new SnippetItem
             {
-                Insert = "#if condition\n\texpression\n#else if condition\n\texpression\n#else\n\texpression\n#end if",
+                Insert = "#if §\n\t§\n#else if §\n\t§\n#else\n\t§\n#end if",
                 Description = "If...Else If...Else...End If block",
                 Label = "#if...#else if...#end if",
                 Category = "Program Flow Control"
             },
             new SnippetItem
             {
-                Insert = "#else if condition",
+                Insert = "#else if §",
                 Description = "Else If clause",
                 Category = "Program Flow Control",
                 KeywordType = "ControlBlockKeyword"
@@ -88,21 +88,21 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#repeat count\n\texpression\n#loop",
+                Insert = "#repeat §\n\t§\n#loop",
                 Description = "Repeat loop (fixed number of iterations)",
                 Label = "#repeat...#loop",
                 Category = "Iteration Blocks"
             },
             new SnippetItem
             {
-                Insert = "#for i = 1 : n\n\texpression\n#loop",
+                Insert = "#for § = § : §\n\t§\n#loop",
                 Description = "For loop with counter",
                 Label = "#for...#loop",
                 Category = "Iteration Blocks"
             },
             new SnippetItem
             {
-                Insert = "#while condition\n\texpression\n#loop",
+                Insert = "#while §\n\t§\n#loop",
                 Description = "While loop with condition",
                 Label = "#while...#loop",
                 Category = "Iteration Blocks"
@@ -134,7 +134,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             // ============================================
             new SnippetItem
             {
-                Insert = "#include filename",
+                Insert = "#include §",
                 Description = "Include external file (module). Path is relative to the current file or the library path.",
                 Category = "Modules and Macros",
                 KeywordType = "Keyword"
@@ -162,28 +162,28 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#def name$ = expression",
+                Insert = "#def §$ = §",
                 Description = "Inline string variable definition",
                 Label = "#def var$ = ...",
                 Category = "Modules and Macros"
             },
             new SnippetItem
             {
-                Insert = "#def name$\n\texpression\n#end def",
+                Insert = "#def §$\n\t§\n#end def",
                 Description = "Multiline string variable definition",
                 Label = "#def var$...#end def",
                 Category = "Modules and Macros"
             },
             new SnippetItem
             {
-                Insert = "#def name$(param$) = expression",
+                Insert = "#def §$(§) = §",
                 Description = "Inline macro with parameters",
                 Label = "#def macro$(params) = ...",
                 Category = "Modules and Macros"
             },
             new SnippetItem
             {
-                Insert = "#def name$(param$)\n\texpression\n#end def",
+                Insert = "#def §$(§)\n\t§\n#end def",
                 Description = "Multiline macro with parameters",
                 Label = "#def macro$(params)...#end def",
                 Category = "Modules and Macros"
@@ -195,13 +195,28 @@ namespace Calcpad.Highlighter.Snippets.Data
                 Category = "Modules and Macros",
                 KeywordType = "EndKeyword"
             },
+            new SnippetItem
+            {
+                Insert = "#string §$ = §",
+                Description = "Define a string variable",
+                Label = "#string var$ = ...",
+                Category = "Modules and Macros",
+                KeywordType = "Keyword"
+            },
+            new SnippetItem
+            {
+                Insert = "#string §$ = [§]",
+                Description = "Define a string table variable (RHS shape decides string vs table)",
+                Label = "#string var$ = [...]",
+                Category = "Modules and Macros"
+            },
 
             // ============================================
             // EXTERNAL DATA
             // ============================================
             new SnippetItem
             {
-                Insert = "#read M from filename",
+                Insert = "#read § from §",
                 Description = "Read matrix from text/CSV or Excel file",
                 Label = "#read M from file",
                 Category = "External Data",
@@ -209,7 +224,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#read M from filename.csv@R1C1:R2C2 TYPE=R SEP=','",
+                Insert = "#read § from §@R§C§:R§C§ TYPE=§ SEP='§'",
                 Description = "Read matrix from a CSV/text file with all options. " +
                     "@R1C1:R2C2 = cell range (row, column). " +
                     "TYPE: R=Raw (default), D=Diagonal, C=Column, L=Lower triangular, U=Upper triangular, S=Symmetric, V=Vector. " +
@@ -219,7 +234,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#read M from filename.xlsx@Sheet1!A1:B2 TYPE=R",
+                Insert = "#read § from §@§!§:§ TYPE=§",
                 Description = "Read matrix from an Excel file (.xlsx/.xlsm) with all options. " +
                     "@Sheet!A1:B2 = sheet name and cell range. " +
                     "TYPE: R=Raw (default), D=Diagonal, C=Column, L=Lower triangular, U=Upper triangular, S=Symmetric, V=Vector.",
@@ -228,7 +243,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#write M to filename",
+                Insert = "#write § to §",
                 Description = "Write matrix to text/CSV or Excel file",
                 Label = "#write M to file",
                 Category = "External Data",
@@ -236,7 +251,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#write M to filename.csv@R1C1:R2C2 TYPE=N SEP=','",
+                Insert = "#write § to §@R§C§:R§C§ TYPE=§ SEP='§'",
                 Description = "Write matrix to a CSV/text file with all options. " +
                     "@R1C1:R2C2 = cell range (row, column). " +
                     "TYPE: Y=Compact (transpose special matrix types), N=Normal (default). " +
@@ -246,7 +261,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#write M to filename.xlsx@Sheet1!A1:B2 TYPE=N",
+                Insert = "#write § to §@§!§:§ TYPE=§",
                 Description = "Write matrix to an Excel file (.xlsx/.xlsm) with all options. " +
                     "@Sheet!A1:B2 = sheet name and cell range. " +
                     "TYPE: Y=Compact (transpose special matrix types), N=Normal (default).",
@@ -255,7 +270,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#append M to filename",
+                Insert = "#append § to §",
                 Description = "Append matrix to text/CSV or Excel file",
                 Label = "#append M to file",
                 Category = "External Data",
@@ -263,7 +278,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#append M to filename.csv@R1C1:R2C2 TYPE=N SEP=','",
+                Insert = "#append § to §@R§C§:R§C§ TYPE=§ SEP='§'",
                 Description = "Append matrix to a CSV/text file with all options. " +
                     "@R1C1:R2C2 = cell range (row, column). " +
                     "TYPE: Y=Compact (transpose special matrix types), N=Normal (default). " +
@@ -273,7 +288,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#append M to filename.xlsx@Sheet1!A1:B2 TYPE=N",
+                Insert = "#append § to §@§!§:§ TYPE=§",
                 Description = "Append matrix to an Excel file (.xlsx/.xlsm) with all options. " +
                     "@Sheet!A1:B2 = sheet name and cell range. " +
                     "TYPE: Y=Compact (transpose special matrix types), N=Normal (default).",
@@ -293,14 +308,14 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#const name = value",
+                Insert = "#const § = §",
                 Description = "Define a constant variable",
                 Label = "#const var = ...",
                 Category = "Read Only"
             },
             new SnippetItem
             {
-                Insert = "#const f(x) = expression",
+                Insert = "#const §(§) = §",
                 Description = "Define a constant function",
                 Label = "#const f(x) = ...",
                 Category = "Read Only"
@@ -381,7 +396,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#round digits",
+                Insert = "#round §",
                 Description = "Round output to n digits after decimal point",
                 Category = "Output Control",
                 KeywordType = "Keyword"
@@ -395,7 +410,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#format spec",
+                Insert = "#format §",
                 Description = "Specify custom format string",
                 Category = "Output Control",
                 KeywordType = "Keyword"
@@ -499,6 +514,108 @@ namespace Calcpad.Highlighter.Snippets.Data
                 Category = "Angle Units",
                 KeywordType = "Keyword"
             },
+
+            // ============================================
+            // UI INPUTS
+            // ============================================
+            new SnippetItem
+            {
+                Insert = "#UI",
+                Description = "Define a UI input field",
+                Category = "UI Inputs",
+                KeywordType = "Keyword"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"entry\"} §",
+                Description = "Entry input field",
+                Label = "#UI entry",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"entry\", \"style\": \"§\"} §",
+                Description = "Entry input field with custom CSS style",
+                Label = "#UI entry with style",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"datagrid\", \"rows\": §, \"columns\": §} § = [§]",
+                Description = "Datagrid input for vector/matrix data",
+                Label = "#UI datagrid",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI § = [§]",
+                Description = "Auto-detected vector/matrix input (type inferred from expression)",
+                Label = "#UI auto vector/matrix",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"dropdown\", \"keys\": [\"§\", \"§\"], \"values\": [\"§\", \"§\"]} § = §",
+                Description = "Dropdown select input with display keys and substitution values",
+                Label = "#UI dropdown",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"radio\", \"keys\": [\"§\", \"§\"], \"values\": [\"§\", \"§\"]} § = §",
+                Description = "Radio button group with display keys and substitution values",
+                Label = "#UI radio",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"checkbox\"} § = 1",
+                Description = "Checkbox input (toggles between 0 and 1)",
+                Label = "#UI checkbox",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI §$ = '§'",
+                Description = "String entry input (auto-detected string mode; variable name ends with $)",
+                Label = "#UI string entry",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"entry\", \"mode\": \"string\"} §$ = '§'",
+                Description = "String entry input with explicit string mode",
+                Label = "#UI string entry (explicit)",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"dropdown\", \"mode\": \"string\", \"keys\": [\"§\", \"§\"], \"values\": [\"§\", \"§\"]} §$ = '§'",
+                Description = "String dropdown with text values",
+                Label = "#UI string dropdown",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"radio\", \"mode\": \"string\", \"keys\": [\"§\", \"§\"], \"values\": [\"§\", \"§\"]} §$ = '§'",
+                Description = "String radio group with text values",
+                Label = "#UI string radio",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"checkbox\", \"mode\": \"string\"} §$ = 'false'",
+                Description = "String checkbox (stores 'true' or 'false')",
+                Label = "#UI string checkbox",
+                Category = "UI Inputs"
+            },
+            new SnippetItem
+            {
+                Insert = "#UI {\"type\": \"datagrid\", \"mode\": \"string\"} §$ = [§]",
+                Description = "String datagrid (editable table of text cells, stored as a table variable)",
+                Label = "#UI string datagrid",
+                Category = "UI Inputs"
+            }
         ];
     }
 }

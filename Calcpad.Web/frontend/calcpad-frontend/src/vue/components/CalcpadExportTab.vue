@@ -1,91 +1,111 @@
 <template>
   <div class="export-tab">
     <div class="export-container p-3">
-      <div class="header-actions">
-        <button
-          class="btn"
-          @click="$emit('saveHtml')"
-          :title="'Save the rendered HTML for the current document'"
-        >
-          Save HTML…
-        </button>
-        <button
-          class="btn"
-          @click="$emit('saveDocx')"
-          :title="'Export the current document as a Word .docx file'"
-        >
-          Save Word…
-        </button>
+      <div class="export-header">
+        <div class="export-summary">
+          <span v-if="exports.length === 0">No exports captured yet.</span>
+          <span v-else>{{ exports.length }} file{{ exports.length === 1 ? '' : 's' }} from #write/#append</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" @click="$emit('refresh')" :title="'Re-fetch the export list'">
+            Refresh
+          </button>
+          <button
+            class="btn"
+            @click="$emit('saveHtml')"
+            :title="'Save the rendered HTML for the current document'"
+          >
+            Save HTML…
+          </button>
+          <button
+            class="btn"
+            @click="$emit('saveDocx')"
+            :title="'Export the current document as a Word .docx file'"
+          >
+            Save Word…
+          </button>
+          <button
+            v-if="exports.length > 1"
+            class="btn"
+            @click="$emit('downloadZip')"
+            :title="'Download all exports as a ZIP archive'"
+          >
+            Download all (.zip)
+          </button>
+        </div>
       </div>
 
-      <div class="plots-section">
-        <div class="plots-header">
-          <h3>Plots</h3>
-          <div class="plots-actions">
-            <button
-              class="btn"
-              :disabled="loading"
-              @click="$emit('refreshPlots')"
-              title="Re-run the current document and list its plots"
-            >
-              {{ loading ? 'Loading…' : 'Refresh' }}
-            </button>
-            <button
-              class="btn"
-              :disabled="loading || plots.length === 0"
-              @click="$emit('savePlotsZip')"
-              title="Download every plot as a single ZIP archive"
-            >
-              Download all (ZIP)
-            </button>
-          </div>
-        </div>
-
-        <p v-if="!loading && plots.length === 0" class="empty">
-          No plots in the current document.
-        </p>
-
-        <ul v-if="plots.length > 0" class="plots-list">
-          <li v-for="p in plots" :key="p.index" class="plot-item">
-            <img class="thumb" :src="p.dataUri" :alt="`Plot ${p.index + 1}`" />
-            <div class="plot-meta">
-              <div class="plot-name">Plot {{ p.index + 1 }}.{{ p.ext }}</div>
-              <div class="plot-size">{{ formatSize(p.sizeBytes) }}</div>
+      <div v-if="exports.length === 0" class="empty-state">
+        Run a calculation that uses
+        <code>#write</code> or <code>#append</code> to populate this tab.
+      </div>
+      <div v-else class="export-list">
+        <div
+          v-for="entry in exports"
+          :key="entry.filename"
+          class="export-row"
+        >
+          <span class="file-icon">{{ iconFor(entry) }}</span>
+          <div class="export-meta">
+            <div class="export-name" :title="entry.filename">{{ entry.filename }}</div>
+            <div class="export-sub">
+              <span class="export-type">{{ shortType(entry.contentType) }}</span>
+              <span class="export-size">{{ formatSize(entry.size) }}</span>
             </div>
-            <button
-              class="btn"
-              @click="$emit('savePlot', p.index)"
-              title="Download this plot as an image file"
-            >
-              Save…
-            </button>
-          </li>
-        </ul>
+          </div>
+          <button
+            class="btn btn-download"
+            @click="$emit('download', entry.filename)"
+            :title="'Download ' + entry.filename"
+          >
+            Download
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-export interface PlotSummary {
-  index: number
-  ext: 'png' | 'svg'
-  dataUri: string
-  sizeBytes: number
+import type { ExportMeta } from '../../types/api'
+
+interface Props {
+  exports?: ExportMeta[]
 }
 
-defineProps<{
-  plots: PlotSummary[]
-  loading: boolean
-}>()
+const props = withDefaults(defineProps<Props>(), {
+  exports: () => []
+})
 
 defineEmits<{
+  download: [filename: string]
+  downloadZip: []
+  refresh: []
   saveHtml: []
   saveDocx: []
-  refreshPlots: []
-  savePlot: [index: number]
-  savePlotsZip: []
 }>()
+
+void props // silence unused warning when template-only access
+
+function iconFor(entry: ExportMeta): string {
+  const lower = entry.filename.toLowerCase()
+  if (lower.endsWith('.csv')) return '📊'
+  if (lower.endsWith('.xlsx') || lower.endsWith('.xlsm') || lower.endsWith('.xls')) return '📈'
+  if (lower.endsWith('.json')) return '🧾'
+  if (lower.endsWith('.xml') || lower.endsWith('.html') || lower.endsWith('.htm')) return '📄'
+  return '📝'
+}
+
+function shortType(contentType: string): string {
+  if (!contentType) return ''
+  if (contentType === 'text/csv') return 'CSV'
+  if (contentType.includes('spreadsheetml')) return 'Excel'
+  if (contentType === 'text/plain') return 'Text'
+  if (contentType === 'application/json') return 'JSON'
+  if (contentType === 'application/xml') return 'XML'
+  if (contentType === 'text/html') return 'HTML'
+  return contentType
+}
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -106,86 +126,23 @@ function formatSize(bytes: number): string {
   flex: 1;
 }
 
-.header-actions {
+.export-header {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
-.plots-section {
-  margin-top: 16px;
-}
-
-.plots-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.plots-header h3 {
-  margin: 0;
+.export-summary {
   font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.8;
+  color: var(--vscode-descriptionForeground);
 }
 
-.plots-actions {
+.header-actions {
   display: flex;
   gap: 6px;
-}
-
-.empty {
-  margin: 4px 0;
-  font-size: 11px;
-  opacity: 0.7;
-}
-
-.plots-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.plot-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px;
-  border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.3));
-  border-radius: 2px;
-}
-
-.thumb {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  background: var(--vscode-editor-background, #fff);
-  border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.2));
-}
-
-.plot-meta {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.plot-name {
-  font-size: 11px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.plot-size {
-  font-size: 10px;
-  opacity: 0.7;
 }
 
 .btn {
@@ -198,12 +155,85 @@ function formatSize(bytes: number): string {
   cursor: pointer;
 }
 
-.btn:hover:not(:disabled) {
+.btn:hover {
   background: var(--vscode-button-hoverBackground);
 }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: default;
+.btn-secondary {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+.btn-secondary:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.btn-download {
+  flex-shrink: 0;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--vscode-descriptionForeground);
+  padding: 20px;
+  font-style: italic;
+}
+
+.empty-state code {
+  background: var(--vscode-textCodeBlock-background);
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.export-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.export-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  background: var(--vscode-list-hoverBackground, transparent);
+}
+
+.export-row:hover {
+  background: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground);
+}
+
+.file-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.export-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.export-name {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.export-sub {
+  display: flex;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.export-type {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 </style>

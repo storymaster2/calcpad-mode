@@ -1,27 +1,26 @@
 import * as monaco from 'monaco-editor';
-import {
-    formatBuiltinSnippetCompletion,
-    formatCustomUnitCompletion,
-    formatFunctionCompletion,
-    formatMacroCompletion,
-    formatVariableCompletion,
-} from 'calcpad-frontend/text/completion-format';
-import type { CompletionData, CompletionKind } from 'calcpad-frontend/text/completion-format';
-import { getActiveDocumentKey, type EditorBridge } from './bridge';
+import { CalcpadSnippetService } from 'calcpad-frontend/services/snippets';
+import type { InsertItem } from 'calcpad-frontend/types/snippets';
 
 /**
- * Register a CompletionItemProvider that surfaces:
- *   1. User-defined macros, functions, variables, and custom units (including
- *      those pulled in via #include) from the cached definitions for the
- *      active document.
- *   2. Built-in snippets (functions, commands, units, constants, etc.) from
- *      the snippet service.
+ * Register a CompletionItemProvider that suggests snippets from the CalcPad server.
+ * Returns a disposable to unregister the provider.
  */
-export function registerCompletionProvider(bridge: EditorBridge): monaco.IDisposable {
+export function registerCompletionProvider(
+    snippetService: CalcpadSnippetService
+): monaco.IDisposable {
     const provider: monaco.languages.CompletionItemProvider = {
         triggerCharacters: ['#', '$', '.'],
 
         provideCompletionItems(model, position) {
+            // Only snippets that define a keyword (function, command, unit, constant,
+            // operator, setting, control keyword). UI-only entries like HTML tags,
+            // markdown syntax, symbols, and block templates are excluded.
+            const items = snippetService.getAllItems().filter(item => !!item.keywordType);
+            if (!items || items.length === 0) {
+                return { suggestions: [] };
+            }
+
             const word = model.getWordUntilPosition(position);
             const range: monaco.IRange = {
                 startLineNumber: position.lineNumber,
@@ -30,50 +29,20 @@ export function registerCompletionProvider(bridge: EditorBridge): monaco.IDispos
                 endColumn: word.endColumn,
             };
 
-            const suggestions: monaco.languages.CompletionItem[] = [];
-
-            const defs = bridge.definitions.getCachedDefinitions(getActiveDocumentKey());
-            if (defs) {
-                for (const macro of defs.macros) suggestions.push(toMonaco(formatMacroCompletion(macro), range));
-                for (const func of defs.functions) suggestions.push(toMonaco(formatFunctionCompletion(func), range));
-                for (const variable of defs.variables) suggestions.push(toMonaco(formatVariableCompletion(variable), range));
-                for (const unit of defs.customUnits) suggestions.push(toMonaco(formatCustomUnitCompletion(unit), range));
-            }
-
-            // Only snippets that define a keyword (function, command, unit, constant,
-            // operator, setting, control keyword). UI-only entries like HTML tags,
-            // markdown syntax, symbols, and block templates are excluded.
-            for (const item of bridge.snippets.getAllItems()) {
-                if (!item.keywordType) continue;
-                suggestions.push(toMonaco(formatBuiltinSnippetCompletion(item), range));
-            }
+            const suggestions: monaco.languages.CompletionItem[] = items.map(
+                (item: InsertItem) => ({
+                    label: item.label || item.tag,
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: item.tag,
+                    detail: item.categoryPath,
+                    documentation: item.description,
+                    range,
+                })
+            );
 
             return { suggestions };
         },
     };
 
     return monaco.languages.registerCompletionItemProvider('calcpad', provider);
-}
-
-const KIND_MAP: Record<CompletionKind, monaco.languages.CompletionItemKind> = {
-    macro: monaco.languages.CompletionItemKind.Class,
-    function: monaco.languages.CompletionItemKind.Function,
-    variable: monaco.languages.CompletionItemKind.Variable,
-    unit: monaco.languages.CompletionItemKind.Unit,
-    snippet: monaco.languages.CompletionItemKind.Snippet,
-};
-
-function toMonaco(data: CompletionData, range: monaco.IRange): monaco.languages.CompletionItem {
-    return {
-        label: data.label,
-        kind: KIND_MAP[data.kind],
-        insertText: data.insertText,
-        insertTextRules: data.isSnippet
-            ? monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-            : undefined,
-        detail: data.detail,
-        documentation: { value: data.documentation },
-        sortText: data.sortText,
-        range,
-    };
 }

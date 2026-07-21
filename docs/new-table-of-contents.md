@@ -1,12 +1,12 @@
 # Table of Contents
 
-> Calcpad.Web only (web editor, desktop app, and VS Code extension). Not available in the standalone WPF desktop application for Windows.
+> Available in **Calcpad.Web** (web editor and VS Code extension). The features in all `new-*.md` documents apply to Calcpad.Web only — not to the WPF desktop application.
 
-Calcpad.Web can build a navigable table of contents from your document's headings, with links that jump straight to each section.
+Calcpad.Web documents can generate a navigable table of contents from the document headings, with automatic ID assignment and nested rendering.
 
-## Writing headings
+## Heading comment syntax
 
-Write a heading as a comment line that starts with `'` followed by one to six `#` characters — just like Markdown:
+Markdown-style heading comments use a leading `'` plus one to six `#` characters:
 
 ```text
 '# Section 1
@@ -17,11 +17,19 @@ Write a heading as a comment line that starts with `'` followed by one to six `#
 '# Section 2
 ```
 
-These become `<h1>`–`<h6>` headings in your report. Every heading automatically gets a unique link target, so you can link to any section — the table of contents uses these targets to jump around the document.
+These render as `<h1>`–`<h6>` HTML headings in the output.
 
-## Building the list
+## Automatic ID generation
 
-Add a small script block to your document to generate the nested list. Point it at the container where the list should appear:
+`toc.js` walks all `<h1>`–`<h6>` elements on page load. For each heading without an `id`:
+
+1. Snake-cases the heading text (lowercase, spaces → underscores)
+2. Detects collisions and appends `_<n>` when necessary
+3. Assigns the generated ID to the element
+
+## Nested list rendering
+
+Call `makeList({ target, parent })` from a `<script>` block to build a nested `<ul>` tree matching the heading levels:
 
 ```js
 window.addEventListener('load', () => {
@@ -29,15 +37,10 @@ window.addEventListener('load', () => {
 });
 ```
 
-- `target` — the element the list is placed into (here, an element with `id="toc"`)
-- `parent` — the region whose headings are collected (here, the report's `article`)
-
-Deeper headings become nested sub-lists, and each entry is a link that scrolls to its section.
+- Deeper heading levels become nested `<ul>` elements
+- Same or shallower levels pop the stack to the correct parent
+- Each entry becomes `<li><a href="#heading_id">Heading Text</a></li>`
 
 ## Example
 
-The demo file [Calcpad.Cli/Examples/Demos/toc.cpd](../Calcpad.Cli/Examples/Demos/toc.cpd) shows the whole pattern, including turning on Markdown comments with `#md on`, a bit of custom CSS, and the script block above.
-
-## See also
-
-- [Reporting](reporting.md) · [Writing Math](writing-math.md)
+[Calcpad.Cli/Examples/Demos/toc.cpd](../Calcpad.Cli/Examples/Demos/toc.cpd) demonstrates the full pattern including `#md on`, custom CSS, and the JS invocation.

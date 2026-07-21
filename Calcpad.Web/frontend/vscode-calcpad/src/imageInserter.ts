@@ -1,15 +1,18 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import {
-    IMAGE_EXTENSIONS,
-    IMAGE_MIME_TYPES,
-    buildImageCommentLine,
-} from 'calcpad-frontend';
 
 type ImageStorageMode = 'base64' | 'imagesFolder' | 'customPath';
 
+const IMAGE_MIME_TYPES = [
+    'image/png',
+    'image/jpeg',
+    'image/gif',
+    'image/webp',
+    'image/svg+xml'
+];
+
 const IMAGE_FILE_FILTERS: Record<string, string[]> = {
-    'Images': [...IMAGE_EXTENSIONS],
+    'Images': ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg']
 };
 
 /**
@@ -71,32 +74,15 @@ export class ImageInserter {
             return;
         }
 
-        // The image already exists on disk — reference it in place rather than
-        // prompting how to store it. The storage-mode prompt is only for pasted
-        // in-memory images (see processAndInsertImage).
         const fileUri = fileUris[0];
-        const srcValue = this.referenceForImagePath(fileUri, editor.document);
+        const imageData = await vscode.workspace.fs.readFile(fileUri);
+        const ext = path.extname(fileUri.fsPath).toLowerCase().replace('.', '');
+        const mimeType = this.getMimeTypeFromExtension(ext);
+        const filename = path.basename(fileUri.fsPath);
 
-        this.outputChannel.appendLine(`[IMAGE INSERT] Selected file: ${fileUri.fsPath} -> ${srcValue}`);
+        this.outputChannel.appendLine(`[IMAGE INSERT] Selected file: ${fileUri.fsPath} (${mimeType})`);
 
-        await this.insertImageComment(editor, srcValue);
-    }
-
-    /**
-     * Build the img src for an on-disk image: relative to the document when the
-     * image is inside the document's folder tree, otherwise an absolute path
-     * (an untitled document has no folder to be relative to).
-     */
-    private referenceForImagePath(fileUri: vscode.Uri, document: vscode.TextDocument): string {
-        if (document.isUntitled) {
-            return fileUri.fsPath.replace(/\\/g, '/');
-        }
-        const docDir = path.dirname(document.uri.fsPath);
-        const relative = path.relative(docDir, fileUri.fsPath);
-        if (!relative.startsWith('..') && !path.isAbsolute(relative)) {
-            return relative.replace(/\\/g, '/');
-        }
-        return fileUri.fsPath.replace(/\\/g, '/');
+        await this.processAndInsertImage(imageData, mimeType, editor, filename);
     }
 
     /**
@@ -265,7 +251,7 @@ export class ImageInserter {
      * Format: '<img src="...">
      */
     private async insertImageComment(editor: vscode.TextEditor, srcValue: string): Promise<void> {
-        const commentLine = buildImageCommentLine(srcValue);
+        const commentLine = `'<img src="${srcValue}">`;
         const position = editor.selection.active;
 
         await editor.edit(editBuilder => {
@@ -305,6 +291,20 @@ export class ImageInserter {
         }
     }
 
+    /**
+     * Get MIME type from file extension
+     */
+    private getMimeTypeFromExtension(ext: string): string {
+        const mimeMap: Record<string, string> = {
+            'png': 'image/png',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'svg': 'image/svg+xml'
+        };
+        return mimeMap[ext] || 'image/png';
+    }
 }
 
 /**

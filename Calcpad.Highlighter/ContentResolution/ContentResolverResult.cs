@@ -8,6 +8,12 @@ namespace Calcpad.Highlighter.ContentResolution
     {
         public string Name { get; set; }
         public List<string> Params { get; set; }
+
+        /// <summary>
+        /// Default values parallel to Params. null entry = required parameter, string = optional with default.
+        /// </summary>
+        public List<string> Defaults { get; set; }
+
         public List<string> Content { get; set; }
         public int LineNumber { get; set; }
         public string Source { get; set; } // "local" | "include"
@@ -54,6 +60,12 @@ namespace Calcpad.Highlighter.ContentResolution
         /// </summary>
         public CommandBlockInfo CommandBlock { get; set; }
 
+        /// <summary>
+        /// Default values parallel to Params. null entry = required parameter, string = default value expr.
+        /// Null list = all parameters are required.
+        /// </summary>
+        public List<string> Defaults { get; set; }
+
         /// <summary>User-provided description from a metadata comment on the preceding line.</summary>
         public string Description { get; set; }
 
@@ -62,9 +74,6 @@ namespace Calcpad.Highlighter.ContentResolution
 
         /// <summary>User-provided descriptions per parameter.</summary>
         public List<string> ParamDescriptions { get; set; }
-
-        /// <summary>User-declared return type from a metadata comment (value/vector/matrix/any).</summary>
-        public string ReturnType { get; set; }
     }
 
     /// <summary>
@@ -119,9 +128,6 @@ namespace Calcpad.Highlighter.ContentResolution
         public int LineNumber { get; set; }
         public string Source { get; set; }
         public string SourceFile { get; set; }
-
-        /// <summary>User-provided description from a metadata comment on the preceding line.</summary>
-        public string Description { get; set; }
     }
 
     public class DuplicateMacro
@@ -135,6 +141,11 @@ namespace Calcpad.Highlighter.ContentResolution
     {
         public int LineNumber { get; set; }
         public int ParamCount { get; set; }
+
+        /// <summary>Number of required parameters (those without defaults).</summary>
+        public int RequiredParamCount { get; set; }
+
+        /// <summary>Ordered parameter names, used for keyword argument validation.</summary>
         public List<string> ParamNames { get; set; } = new();
     }
 
@@ -142,6 +153,11 @@ namespace Calcpad.Highlighter.ContentResolution
     {
         public int LineNumber { get; set; }
         public int ParamCount { get; set; }
+
+        /// <summary>Number of required parameters (those without defaults).</summary>
+        public int RequiredParamCount { get; set; }
+
+        /// <summary>Ordered parameter names, used for keyword argument validation.</summary>
         public List<string> ParamNames { get; set; } = new();
     }
 
@@ -309,7 +325,7 @@ namespace Calcpad.Highlighter.ContentResolution
         /// Functions that use command blocks ($Inline, $Block, $While).
         /// Key is function name, value is the command block info.
         /// </summary>
-        public Dictionary<string, CommandBlockInfo> CommandBlockFunctions { get; set; } = new(System.StringComparer.Ordinal);
+        public Dictionary<string, CommandBlockInfo> CommandBlockFunctions { get; set; } = new(System.StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Subsequent = assignments to already-defined variables/functions (name, line, column)
@@ -347,7 +363,7 @@ namespace Calcpad.Highlighter.ContentResolution
         /// Positions are mapped to original source lines with include file info.
         /// Used for go-to-definition and find-all-occurrences features.
         /// </summary>
-        public Dictionary<string, List<SymbolLocation>> FunctionIndex { get; set; } = new(System.StringComparer.Ordinal);
+        public Dictionary<string, List<SymbolLocation>> FunctionIndex { get; set; } = new(System.StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Index of all macro occurrences (definitions and call sites) grouped by name.

@@ -1,12 +1,16 @@
 import * as vscode from 'vscode';
-import { CalcpadApiClient, SymbolAtPositionResponse } from 'calcpad-frontend';
+import * as path from 'path';
+import {
+    CalcpadApiClient,
+    FindReferencesResponse,
+    SymbolLocation,
+    buildClientFileCacheFromContent,
+} from 'calcpad-frontend';
 import { VSCodeLogger, VSCodeFileSystem } from './adapters';
-import { resolveSymbolLocation } from './calcpadLocationResolver';
 
 /**
  * Provides "Go to Definition" functionality for CalcPad functions, macros, and variables.
- * Asks the server which symbol is at the cursor (`symbol-at-position`) and
- * jumps to its first assignment location.
+ * Uses the find-references endpoint to locate the definition (isAssignment === true).
  */
 export class CalcpadDefinitionProvider implements vscode.DefinitionProvider {
     private apiClient: CalcpadApiClient;
@@ -26,17 +30,24 @@ export class CalcpadDefinitionProvider implements vscode.DefinitionProvider {
         position: vscode.Position,
         token: vscode.CancellationToken
     ): Promise<vscode.Definition | null> {
-        const sym = await this.fetchSymbol(document, position);
-        if (!sym) {
-            this.outputChannel.appendLine('[Definition] No symbol at cursor position');
+        const refs = await this.fetchReferences(document);
+        if (!refs) {
+            this.outputChannel.appendLine('[Definition] Failed to fetch references');
             return null;
         }
 
-        this.outputChannel.appendLine('[Definition] Looking for definition of: ' + sym.symbolName);
+        const hit = findSymbolAtPosition(position, refs);
+        if (!hit) {
+            this.outputChannel.appendLine('[Definition] No symbol found at cursor position');
+            return null;
+        }
 
-        const definition = sym.locations.find(loc => loc.isAssignment);
+        this.outputChannel.appendLine('[Definition] Looking for definition of: ' + hit.name);
+
+        // Find the definition (first assignment location)
+        const definition = hit.locations.find(loc => loc.isAssignment);
         if (!definition) {
-            this.outputChannel.appendLine('[Definition] No definition (assignment) found for: ' + sym.symbolName);
+            this.outputChannel.appendLine('[Definition] No definition (assignment) found for: ' + hit.name);
             return null;
         }
 
@@ -45,20 +56,45 @@ export class CalcpadDefinitionProvider implements vscode.DefinitionProvider {
             (definition.sourceFile ? ` in ${definition.sourceFile}` : '')
         );
 
-        return resolveSymbolLocation(document, definition, this.fileSystem, this.outputChannel, '[Definition]');
+        return this.createLocation(document, definition);
     }
 
-    private async fetchSymbol(document: vscode.TextDocument, position: vscode.Position): Promise<SymbolAtPositionResponse | null> {
+    private async createLocation(
+        document: vscode.TextDocument,
+        loc: SymbolLocation
+    ): Promise<vscode.Location> {
+        const line = Math.max(0, loc.line);
+
+        if (loc.sourceFile && loc.source !== 'local') {
+            const pattern = '**/' + loc.sourceFile;
+            const foundFiles = await vscode.workspace.findFiles(pattern, '**/node_modules/**', 1);
+
+            if (foundFiles.length > 0) {
+                const targetUri = foundFiles[0];
+                this.outputChannel.appendLine('[Definition] Found source file: ' + targetUri.fsPath);
+                return new vscode.Location(targetUri, new vscode.Position(line, loc.column));
+            } else {
+                this.outputChannel.appendLine('[Definition] Source file not found in workspace: ' + loc.sourceFile);
+            }
+        }
+
+        return new vscode.Location(
+            document.uri,
+            new vscode.Position(line, loc.column)
+        );
+    }
+
+    private async fetchReferences(document: vscode.TextDocument): Promise<FindReferencesResponse | null> {
+        const content = document.getText();
         try {
-            return await this.apiClient.symbolAtPosition(
-                document.getText(),
-                position.line,
-                position.character,
-                document.uri.fsPath,
+            const sourceDir = path.dirname(document.uri.fsPath);
+            const clientFileCache = await buildClientFileCacheFromContent(
+                content, sourceDir, this.fileSystem, this.logger
             );
+            return await this.apiClient.findReferences(content, clientFileCache);
         } catch (error) {
             this.outputChannel.appendLine(
-                '[Definition] Error resolving symbol: ' + (error instanceof Error ? error.message : 'Unknown error')
+                '[Definition] Error fetching references: ' + (error instanceof Error ? error.message : 'Unknown error')
             );
             return null;
         }
@@ -74,4 +110,45 @@ export class CalcpadDefinitionProvider implements vscode.DefinitionProvider {
             provider
         );
     }
+}
+
+interface SymbolHit {
+    name: string;
+    locations: SymbolLocation[];
+    hitLocation: SymbolLocation;
+}
+
+/**
+ * Find which symbol the cursor is on by checking actual token positions
+ * from the server response.
+ */
+function findSymbolAtPosition(position: vscode.Position, refs: FindReferencesResponse): SymbolHit | null {
+    const line = position.line;
+    const col = position.character;
+
+    for (const [name, locations] of Object.entries(refs.variables)) {
+        for (const loc of locations) {
+            if (loc.source === 'local' && loc.line === line && col >= loc.column && col < loc.column + loc.length) {
+                return { name, locations, hitLocation: loc };
+            }
+        }
+    }
+
+    for (const [name, locations] of Object.entries(refs.functions)) {
+        for (const loc of locations) {
+            if (loc.source === 'local' && loc.line === line && col >= loc.column && col < loc.column + loc.length) {
+                return { name, locations, hitLocation: loc };
+            }
+        }
+    }
+
+    for (const [name, locations] of Object.entries(refs.macros)) {
+        for (const loc of locations) {
+            if (loc.source === 'local' && loc.line === line && col >= loc.column && col < loc.column + loc.length) {
+                return { name, locations, hitLocation: loc };
+            }
+        }
+    }
+
+    return null;
 }

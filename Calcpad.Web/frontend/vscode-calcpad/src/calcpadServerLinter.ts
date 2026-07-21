@@ -4,9 +4,9 @@ import {
     CalcpadLintService,
     CalcpadApiClient,
     LintDiagnostic,
+    buildClientFileCacheFromContent,
 } from 'calcpad-frontend';
-import { VSCodeLogger } from './adapters';
-import { CalcpadSettingsManager } from './calcpadSettings';
+import { VSCodeLogger, VSCodeFileSystem } from './adapters';
 
 /**
  * VS Code wrapper around CalcpadLintService from calcpad-frontend.
@@ -17,10 +17,12 @@ export class CalcpadServerLinter {
     private diagnosticCollection: vscode.DiagnosticCollection;
     private lintService: CalcpadLintService;
     private logger: VSCodeLogger;
+    private fileSystem: VSCodeFileSystem;
 
     constructor(apiClient: CalcpadApiClient, debugChannel: vscode.OutputChannel) {
         this.diagnosticCollection = vscode.languages.createDiagnosticCollection('calcpad');
         this.logger = new VSCodeLogger(debugChannel);
+        this.fileSystem = new VSCodeFileSystem();
         this.lintService = new CalcpadLintService(apiClient, this.logger);
     }
 
@@ -33,8 +35,13 @@ export class CalcpadServerLinter {
         const content = document.getText();
 
         try {
+            const sourceDir = path.dirname(document.uri.fsPath);
+            const clientFileCache = await buildClientFileCacheFromContent(
+                content, sourceDir, this.fileSystem, this.logger
+            );
+
             const sourceFilePath = document.uri.fsPath;
-            const lintResponse = await this.lintService.lintContent(content, sourceFilePath);
+            const lintResponse = await this.lintService.lintContent(content, clientFileCache, sourceFilePath);
 
             if (lintResponse) {
                 const diagnostics = this.convertToDiagnostics(lintResponse.diagnostics);
@@ -51,7 +58,8 @@ export class CalcpadServerLinter {
     }
 
     private getMinimumSeverity(): vscode.DiagnosticSeverity {
-        const level = CalcpadSettingsManager.getInstance().getExtra('linterMinSeverity', 'information');
+        const config = vscode.workspace.getConfiguration('calcpad');
+        const level = config.get<string>('linter.minimumSeverity', 'information');
         switch (level) {
             case 'error': return vscode.DiagnosticSeverity.Error;
             case 'warning': return vscode.DiagnosticSeverity.Warning;

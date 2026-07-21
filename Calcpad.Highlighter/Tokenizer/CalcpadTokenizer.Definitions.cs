@@ -17,7 +17,7 @@ namespace Calcpad.Highlighter.Tokenizer
         // Expression capture state
         private bool _lintCapturingExpression;
         private int _lintExpressionStartColumn;
-        private ReadOnlyMemory<char> _lintDefLineText;
+        private string _lintDefLineText;
         private int _lintDefLine;
 
         // Pending definition info (set when = confirms a definition)
@@ -55,7 +55,7 @@ namespace Calcpad.Highlighter.Tokenizer
         {
             _lintCapturingExpression = false;
             _lintExpressionStartColumn = 0;
-            _lintDefLineText = default;
+            _lintDefLineText = null;
             _lintDefLine = -1;
             _lintDefName = null;
             _lintDefNameLine = -1;
@@ -79,14 +79,7 @@ namespace Calcpad.Highlighter.Tokenizer
             // While capturing expression, no lint-specific processing needed
             // (the expression is extracted from line text at finalization)
             if (_lintCapturingExpression)
-            {
-                // A comment delimiter (' or ") ends the current code region. Finalize the
-                // pending definition now so a subsequent definition after the comment closes
-                // (e.g. A(x) = ...' text 'A_1(x) = ...) can be captured as its own definition.
-                if (type >= TokenType.Comment && type <= TokenType.Svg)
-                    EmitPendingDefinitionLint();
                 return;
-            }
 
             switch (type)
             {
@@ -102,6 +95,11 @@ namespace Calcpad.Highlighter.Tokenizer
                     // Capture #read variable name
                     if (_lintExpectingReadVariable && _lintPendingReadVariableName == null)
                         _lintPendingReadVariableName = text;
+                    break;
+
+                case TokenType.StringVariable:
+                case TokenType.StringTable:
+                    // String/table variables are tracked like regular variables for lint purposes
                     break;
 
                 case TokenType.LocalVariable:
@@ -177,7 +175,7 @@ namespace Calcpad.Highlighter.Tokenizer
 
             _lintCapturingExpression = true;
             _lintExpressionStartColumn = _state.TokenStartColumn + 1; // Column after "="
-            _lintDefLineText = _state.Text;  // ReadOnlyMemory<char> — no allocation
+            _lintDefLineText = _state.Text;
             _lintDefLine = _state.Line;
             _lintPendingIsConst = false;
             _lintPendingFunctionParams.Clear();
@@ -188,13 +186,76 @@ namespace Calcpad.Highlighter.Tokenizer
         /// </summary>
         private void FinalizeLineLint()
         {
-            bool producedDefinition = EmitPendingDefinitionLint();
+            bool producedDefinition = false;
+
+            // Finalize expression capture
+            if (_lintCapturingExpression && _lintDefName != null)
+            {
+                var expression = ExtractExpressionFromLine(_lintDefLineText, _lintExpressionStartColumn);
+                var sourceInfo = GetSourceInfo(_lintDefNameLine);
+
+                if (_lintDefIsCustomUnit)
+                {
+                    _result.CustomUnitDefinitions.Add(new CustomUnitDefinition
+                    {
+                        Name = _lintDefName,
+                        Definition = expression,
+                        LineNumber = _lintDefNameLine,
+                        Source = sourceInfo.Source,
+                        SourceFile = sourceInfo.SourceFile
+                    });
+                    producedDefinition = true;
+                }
+                else if (_lintDefIsFunction)
+                {
+                    var funcParams = _lintDefFunctionParams ?? new List<string>();
+                    var funcDef = new FunctionDefinition
+                    {
+                        Name = _lintDefName,
+                        Params = funcParams,
+                        Defaults = ExtractFunctionParamDefaults(_lintDefLineText, funcParams),
+                        LineNumber = _lintDefNameLine,
+                        Source = sourceInfo.Source,
+                        SourceFile = sourceInfo.SourceFile,
+                        Expression = expression,
+                        IsConst = _lintDefIsConst,
+                        Description = _lintPendingMetadata?.Description,
+                        ParamTypes = _lintPendingMetadata?.ParamTypes,
+                        ParamDescriptions = _lintPendingMetadata?.ParamDescriptions
+                    };
+
+                    // Detect command block pattern in expression
+                    var commandBlock = DetectCommandBlock(expression, funcDef);
+                    if (commandBlock != null)
+                    {
+                        funcDef.CommandBlock = commandBlock;
+                        _result.CommandBlockFunctions[_lintDefName] = commandBlock;
+                    }
+
+                    _result.FunctionDefinitions.Add(funcDef);
+                    producedDefinition = true;
+                }
+                else
+                {
+                    _result.VariableDefinitions.Add(new VariableDefinition
+                    {
+                        Name = _lintDefName,
+                        Definition = expression,
+                        LineNumber = _lintDefNameLine,
+                        Source = sourceInfo.Source,
+                        SourceFile = sourceInfo.SourceFile,
+                        IsConst = _lintDefIsConst,
+                        Description = _lintPendingMetadata?.Description
+                    });
+                    producedDefinition = true;
+                }
+            }
 
             // Finalize #read variable (no = on the line, so not captured by expression)
             if (_lintPendingReadVariableName != null)
             {
                 // Check if TYPE=V (vector) or default (matrix)
-                var lineText = _state.Text.Span;
+                var lineText = _state.Text;
                 var isVector = lineText.Contains("TYPE=V", StringComparison.OrdinalIgnoreCase);
                 var definition = isVector ? "#read vector" : "#read matrix";
                 var sourceInfo = GetSourceInfo(_state.Line);
@@ -221,87 +282,13 @@ namespace Calcpad.Highlighter.Tokenizer
             // Check if the current line is a metadata comment for the next definition
             if (!producedDefinition)
             {
-                var textSpan = _state.Text.Span;
-                if (DefinitionMetadata.TryParse(textSpan, out var metadata))
+                if (DefinitionMetadata.TryParse(_state.Text, out var metadata))
                     _lintPendingMetadata = metadata;
-                else if (!textSpan.IsWhiteSpace())
+                else if (!string.IsNullOrWhiteSpace(_state.Text))
                     _lintPendingMetadata = null; // Non-blank, non-metadata line clears pending
             }
 
             // Reset all lint line state
-            _lintPendingIsConst = false;
-            _lintExpectingReadVariable = false;
-            _lintPendingReadVariableName = null;
-        }
-
-        /// <summary>
-        /// Emits the currently captured definition (if any) to the result and clears the
-        /// capture state so a subsequent definition on the same line can be captured.
-        /// Called at comment boundaries (' or ") and at end of line. Returns true if a
-        /// definition was emitted.
-        /// </summary>
-        private bool EmitPendingDefinitionLint()
-        {
-            if (!_lintCapturingExpression || _lintDefName == null)
-                return false;
-
-            var expression = ExtractExpressionFromLine(_lintDefLineText.Span, _lintExpressionStartColumn);
-            var sourceInfo = GetSourceInfo(_lintDefNameLine);
-
-            if (_lintDefIsCustomUnit)
-            {
-                _result.CustomUnitDefinitions.Add(new CustomUnitDefinition
-                {
-                    Name = _lintDefName,
-                    Definition = expression,
-                    LineNumber = _lintDefNameLine,
-                    Source = sourceInfo.Source,
-                    SourceFile = sourceInfo.SourceFile,
-                    Description = _lintPendingMetadata?.Description
-                });
-            }
-            else if (_lintDefIsFunction)
-            {
-                var funcParams = _lintDefFunctionParams ?? new List<string>();
-                var funcDef = new FunctionDefinition
-                {
-                    Name = _lintDefName,
-                    Params = funcParams,
-                    LineNumber = _lintDefNameLine,
-                    Source = sourceInfo.Source,
-                    SourceFile = sourceInfo.SourceFile,
-                    Expression = expression,
-                    IsConst = _lintDefIsConst,
-                    Description = _lintPendingMetadata?.Description,
-                    ParamTypes = _lintPendingMetadata?.ParamTypes,
-                    ParamDescriptions = _lintPendingMetadata?.ParamDescriptions,
-                    ReturnType = _lintPendingMetadata?.ReturnType
-                };
-
-                // Detect command block pattern in expression
-                var commandBlock = DetectCommandBlock(expression, funcDef);
-                if (commandBlock != null)
-                {
-                    funcDef.CommandBlock = commandBlock;
-                    _result.CommandBlockFunctions[_lintDefName] = commandBlock;
-                }
-
-                _result.FunctionDefinitions.Add(funcDef);
-            }
-            else
-            {
-                _result.VariableDefinitions.Add(new VariableDefinition
-                {
-                    Name = _lintDefName,
-                    Definition = expression,
-                    LineNumber = _lintDefNameLine,
-                    Source = sourceInfo.Source,
-                    SourceFile = sourceInfo.SourceFile,
-                    IsConst = _lintDefIsConst,
-                    Description = _lintPendingMetadata?.Description
-                });
-            }
-
             _lintCapturingExpression = false;
             _lintDefName = null;
             _lintDefNameLine = -1;
@@ -309,19 +296,79 @@ namespace Calcpad.Highlighter.Tokenizer
             _lintDefIsCustomUnit = false;
             _lintDefFunctionParams = null;
             _lintDefIsConst = false;
-            return true;
+            _lintPendingIsConst = false;
+            _lintExpectingReadVariable = false;
+            _lintPendingReadVariableName = null;
+        }
+
+        /// <summary>
+        /// Parses the (params) section of a function definition line to extract default values.
+        /// Returns a list parallel to paramNames: null = required, string = default value expression.
+        /// Returns null if no parameters have defaults.
+        /// </summary>
+        private static List<string> ExtractFunctionParamDefaults(string line, List<string> paramNames)
+        {
+            if (paramNames == null || paramNames.Count == 0 || string.IsNullOrEmpty(line))
+                return null;
+
+            int openIdx = line.IndexOf('(');
+            if (openIdx < 0) return null;
+
+            // Find matching close paren
+            int depth = 1, closeIdx = -1;
+            for (int i = openIdx + 1; i < line.Length && depth > 0; i++)
+            {
+                if (line[i] == '(') depth++;
+                else if (line[i] == ')') { depth--; if (depth == 0) { closeIdx = i; break; } }
+            }
+            if (closeIdx < 0) return null;
+
+            var paramsSpan = line.AsSpan(openIdx + 1, closeIdx - openIdx - 1);
+            var defaults = new List<string>(paramNames.Count);
+            bool hasDefaults = false;
+
+            // Split by ';' at depth 0, then check each segment for '=' at depth 0
+            int segStart = 0, d = 0;
+            void AddSeg(ReadOnlySpan<char> seg)
+            {
+                seg = seg.Trim();
+                int eqIdx = -1, dd = 0;
+                for (int j = 0; j < seg.Length; j++)
+                {
+                    if (seg[j] == '(') dd++;
+                    else if (seg[j] == ')') dd--;
+                    else if (seg[j] == '=' && dd == 0) { eqIdx = j; break; }
+                }
+                if (eqIdx < 0)
+                    defaults.Add(null);
+                else
+                {
+                    defaults.Add(seg[(eqIdx + 1)..].Trim().ToString());
+                    hasDefaults = true;
+                }
+            }
+            for (int i = 0; i < paramsSpan.Length; i++)
+            {
+                char c = paramsSpan[i];
+                if (c == '(') d++;
+                else if (c == ')') d--;
+                else if (c == ';' && d == 0) { AddSeg(paramsSpan[segStart..i]); segStart = i + 1; }
+            }
+            AddSeg(paramsSpan[segStart..]);
+
+            return hasDefaults ? defaults : null;
         }
 
         /// <summary>
         /// Extracts the expression text from a line, starting after the = sign.
         /// Stops at the first comment delimiter (' or ") or end of line.
         /// </summary>
-        private static string ExtractExpressionFromLine(ReadOnlySpan<char> lineText, int startColumn)
+        private static string ExtractExpressionFromLine(string lineText, int startColumn)
         {
             if (startColumn >= lineText.Length)
                 return string.Empty;
 
-            var afterEquals = lineText[startColumn..];
+            var afterEquals = lineText.AsSpan(startColumn);
             var result = new StringBuilder(afterEquals.Length);
 
             for (int i = 0; i < afterEquals.Length; i++)

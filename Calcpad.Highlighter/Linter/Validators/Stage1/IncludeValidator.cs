@@ -45,6 +45,9 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage1
                         "#include requires a file path", LineStage.Stage1);
                     continue;
                 }
+
+                // Check for URL/API syntax (allowed: <https://...> or <service:endpoint>)
+                // File paths can contain spaces without quotes - Calcpad handles this
             }
         }
     }

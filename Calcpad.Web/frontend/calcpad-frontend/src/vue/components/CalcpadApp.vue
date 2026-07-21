@@ -1,41 +1,11 @@
 <template>
-  <!-- @contextmenu.prevent on the whole panel: on Linux, the WebKitGTK
-       hosting can segfault when the native context menu tries to render inside
-       the embedded webview. Blocking the default menu everywhere is safer than
-       relying on children to opt in. -->
-  <div class="calcpad-vue-ui" @contextmenu.prevent>
-    <!-- Activity icons: only shown when the host app enables extra tabs (desktop).
-         VS Code webview keeps a single Calcpad view. -->
-    <div v-if="versionConfig.isDesktop" class="activity-icons" role="tablist">
-      <button
-        v-for="view in views"
-        :key="view.id"
-        :class="['activity-icon', { active: activeView === view.id }]"
-        :title="view.label"
-        :aria-label="view.label"
-        :aria-selected="activeView === view.id"
-        role="tab"
-        @click="switchView(view.id)"
-        v-html="view.icon"
-      ></button>
-    </div>
-
-    <CalcpadFilesTab
-      v-if="versionConfig.isDesktop && activeView === 'files'"
-      :opened-folder="openedFolder"
-      :tree-roots="fileTreeRoots"
-      @open-folder-request="handleOpenFolderRequest"
-      @open-file="handleOpenFile"
-      @expand-folder="handleExpandFolder"
-      @open-containing-folder="handleOpenContainingFolder"
-      @close-folder="handleCloseFolder"
-    />
-
-    <div v-show="!versionConfig.isDesktop || activeView === 'calcpad'" class="calcpad-view">
+  <div class="calcpad-vue-ui">
     <div class="tab-container">
+      <!-- TODO: Remove v-show condition after Files feature is fully developed -->
       <button
         v-for="tab in tabs"
         :key="tab.id"
+        v-show="tab.id !== 'files'"
         :class="['tab', { active: activeTab === tab.id }]"
         @click="switchTab(tab.id)"
       >
@@ -65,44 +35,29 @@
         :initial-enable-quick-typing="enableQuickTyping"
         :initial-comment-format="commentFormat"
         :initial-enable-formatting-hotkeys="enableFormattingHotkeys"
-        :initial-enable-preview-cursor-sync="enablePreviewCursorSync"
-        :initial-enable-auto-run="enableAutoRun"
         :initial-dark-background="darkBackground"
         :initial-linter-min-severity="linterMinSeverity"
-        :initial-max-output-lines="maxOutputLines"
-        :version-config="versionConfig"
         :initial-library-path="libraryPath"
-        :initial-active-config="activeConfig"
-        :initial-available-configs="availableConfigs"
-        :initial-editor-font-family="editorFontFamily"
-        :initial-available-fonts="availableFonts"
-        :app-version="appVersion"
         @update-settings="handleUpdateSettings"
         @update-preview-theme="handleUpdatePreviewTheme"
         @update-color-theme="handleUpdateColorTheme"
         @update-quick-typing="handleUpdateQuickTyping"
         @update-comment-format="handleUpdateCommentFormat"
         @update-formatting-hotkeys="handleUpdateFormattingHotkeys"
-        @update-preview-cursor-sync="handleUpdatePreviewCursorSync"
-        @update-auto-run="handleUpdateAutoRun"
         @update-dark-background="handleUpdateDarkBackground"
         @update-linter-min-severity="handleUpdateLinterMinSeverity"
-        @update-max-output-lines="handleUpdateMaxOutputLines"
         @update-library-path="handleUpdateLibraryPath"
         @reset-settings="handleResetSettings"
-        @save-named-config="handleSaveNamedConfig"
-        @switch-config="handleSwitchConfig"
-        @open-settings-folder="handleOpenSettingsFolder"
         @open-logs-folder="handleOpenLogsFolder"
-        @open-fonts-folder="handleOpenFontsFolder"
-        @refresh-fonts="handleRefreshFonts"
-        @update-editor-font-family="handleUpdateEditorFontFamily"
       />
       <CalcpadVariablesTab
         v-else-if="activeTab === 'variables'"
         :variables-data="variablesData"
         :loading="variablesLoading"
         @insert-text="handleInsertText"
+      />
+      <CalcpadFilesTab
+        v-else-if="activeTab === 'files'"
       />
       <CalcpadPdfTab
         v-else-if="activeTab === 'pdf'"
@@ -123,75 +78,31 @@
       />
       <CalcpadExportTab
         v-else-if="activeTab === 'export'"
-        :plots="plots"
-        :loading="plotsLoading"
+        :exports="exportEntries"
+        @download="handleDownloadExport"
+        @download-zip="handleDownloadExportZip"
+        @refresh="requestExports"
         @save-html="handleSaveSourceHtml"
         @save-docx="handleSaveDocx"
-        @refresh-plots="handleRefreshPlots"
-        @save-plot="handleSavePlot"
-        @save-plots-zip="handleSavePlotsZip"
       />
-      <CalcpadErrorsTab
-        v-else-if="activeTab === 'errors'"
-        :errors="convertErrors"
-        @go-to-line="handleGoToLine"
-      />
-      <CalcpadMetadataTab
-        v-else-if="activeTab === 'metadata'"
-        :block="metadataBlock"
-        @apply="handleApplyMetadata"
-      />
-    </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import CalcpadInsertTab from './CalcpadInsertTab.vue'
 import CalcpadTocTab from './CalcpadTocTab.vue'
 import CalcpadSettingsTab from './CalcpadSettingsTab.vue'
 import CalcpadVariablesTab from './CalcpadVariablesTab.vue'
+import CalcpadFilesTab from './CalcpadFilesTab.vue'
 import CalcpadPdfTab from './CalcpadPdfTab.vue'
 import CalcpadFormattingTab from './CalcpadFormattingTab.vue'
 import CalcpadExportTab from './CalcpadExportTab.vue'
-import CalcpadFilesTab from './CalcpadFilesTab.vue'
-import CalcpadErrorsTab from './CalcpadErrorsTab.vue'
-import CalcpadMetadataTab from './CalcpadMetadataTab.vue'
 import { postMessage } from '../services/messaging'
-import type { MetadataCommentBlock, MetadataCommentData } from '../../text/metadata-comment'
-import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading, ThemeInfo, FileNode, VersionConfig } from '../types'
-import { DEFAULT_VERSION_CONFIG } from '../types'
-import type { CalcpadError } from '../../types/api'
+import type { Tab, InsertItem, Settings, VariablesData, PdfSettings, TocHeading, ThemeInfo } from '../types'
+import type { ExportMeta } from '../../types/api'
 import { DEFAULT_PDF_SETTINGS } from '../types'
-
-// Props
-interface Props {
-  versionConfig?: VersionConfig
-  appVersion?: string
-}
-const props = withDefaults(defineProps<Props>(), {
-  versionConfig: () => ({ ...DEFAULT_VERSION_CONFIG }),
-  appVersion: '',
-})
-
-// Views: string-identified so future views can be added by extending this list.
-// Icons are inline SVGs so no external asset dependencies.
-interface ViewDef { id: string; label: string; icon: string }
-const FOLDER_ICON = '<svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 3H7.71l-.85-.85L6.51 2h-5l-.5.5v11l.5.5h13l.5-.5v-10L14.5 3zm-.5 10H2V3h4.29l.85.85.35.15H14v9z"/></svg>'
-// CalcpadCE brand logo (from docs/media/logo.svg): blue starburst with yellow
-// diagonal + central hole. Kept in its native colors so the branding stays
-// recognizable in the activity bar.
-const CALCPAD_ICON = '<svg width="20" height="20" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cp-icon-gradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#23A9F2"/><stop offset="100%" stop-color="#006DB0"/></linearGradient><mask id="cp-icon-hole"><rect width="100" height="100" fill="white"/><circle cx="50" cy="50" r="9" fill="black"/></mask></defs><path d="M 50 20 L 80 50" stroke="#FFC107" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M 17 17 Q 50 42 83 17 Q 58 50 83 83 Q 50 58 17 83 Q 42 50 17 17 Z" mask="url(#cp-icon-hole)" fill="url(#cp-icon-gradient)" stroke="url(#cp-icon-gradient)" stroke-width="3" stroke-linejoin="round"/><path d="M 80 50 L 50 80" stroke="#FFC107" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-const views: ViewDef[] = [
-  { id: 'files', label: 'Files', icon: FOLDER_ICON },
-  { id: 'calcpad', label: 'CalcpadCE', icon: CALCPAD_ICON }
-]
-const activeView = ref<string>('calcpad')
-
-// Files view state
-const openedFolder = ref<string | null>(null)
-const fileTreeRoots = ref<FileNode[]>([])
 
 // State
 const activeTab = ref('insert')
@@ -203,16 +114,9 @@ const availableThemes = ref<ThemeInfo[]>([])
 const enableQuickTyping = ref(true)
 const commentFormat = ref('auto')
 const enableFormattingHotkeys = ref(true)
-const enablePreviewCursorSync = ref(false)
-const enableAutoRun = ref(true)
 const darkBackground = ref('#1e1e1e')
 const linterMinSeverity = ref('information')
-const maxOutputLines = ref(1000)
 const libraryPath = ref('')
-const activeConfig = ref('default')
-const availableConfigs = ref<string[]>(['default'])
-const editorFontFamily = ref('JuliaMono')
-const availableFonts = ref<string[]>([])
 const variablesData = ref<VariablesData>({
   macros: [],
   variables: [],
@@ -227,82 +131,20 @@ const prettifyIndentStyle = ref<'tab' | 'space'>('tab')
 const prettifyIndentSize = ref(4)
 const prettifyTrimTrailing = ref(true)
 
-const metadataBlock = ref<MetadataCommentBlock | null>(null)
+const tabs: Tab[] = [
+  { id: 'insert', label: 'Insert' },
+  { id: 'toc', label: 'TOC' },
+  { id: 'settings', label: 'Settings' },
+  { id: 'variables', label: 'Variables' },
+  { id: 'files', label: 'Files' },
+  { id: 'pdf', label: 'PDF' },
+  { id: 'formatting', label: 'Formatting' },
+  { id: 'export', label: 'Export' }
+]
 
-const tabs = computed<Tab[]>(() => {
-  const base: Tab[] = [
-    { id: 'insert', label: 'Insert' },
-    { id: 'toc', label: 'TOC' },
-    { id: 'settings', label: 'Settings' },
-    { id: 'variables', label: 'Variables' },
-    { id: 'pdf', label: 'PDF' },
-    { id: 'formatting', label: 'Formatting' },
-    { id: 'export', label: 'Export' },
-    { id: 'errors', label: 'Errors' }
-  ]
-  // The metadata comment editor is driven by editor cursor tracking, available
-  // in the VS Code webview and the desktop app (both host a real editor).
-  if (props.versionConfig.isVSCode || props.versionConfig.isDesktop) {
-    base.push({ id: 'metadata', label: 'Metadata' })
-  }
-  return base
-})
-
-const convertErrors = ref<CalcpadError[]>([])
-
-interface PlotSummary { index: number; ext: 'png' | 'svg'; dataUri: string; sizeBytes: number }
-const plots = ref<PlotSummary[]>([])
-const plotsLoading = ref(false)
+const exportEntries = ref<ExportMeta[]>([])
 
 // Methods
-const switchView = (viewId: string) => {
-  activeView.value = viewId
-  if (viewId === 'files' && !openedFolder.value) {
-    // Ask host if a previously-opened folder is still around
-    postMessage({ type: 'getOpenedFolder' })
-  }
-}
-
-const handleOpenFolderRequest = () => {
-  postMessage({ type: 'openFolder' })
-}
-
-const handleOpenFile = (path: string) => {
-  postMessage({ type: 'openFileByPath', path })
-}
-
-const handleExpandFolder = (path: string) => {
-  postMessage({ type: 'readDirectory', path })
-}
-
-const handleOpenContainingFolder = (path: string) => {
-  postMessage({ type: 'openContainingFolder', path })
-}
-
-const handleCloseFolder = () => {
-  openedFolder.value = null
-  fileTreeRoots.value = []
-  postMessage({ type: 'closeFolder' })
-}
-
-// Insert children into the tree at the given directory path.
-const setDirectoryChildren = (parentPath: string, children: FileNode[]) => {
-  const norm = (p: string) => p.replace(/\\/g, '/').replace(/\/+$/, '')
-  const target = norm(parentPath)
-  const walk = (nodes: FileNode[]): boolean => {
-    for (const node of nodes) {
-      if (norm(node.path) === target) {
-        node.children = children
-        node.loaded = true
-        return true
-      }
-      if (node.children && walk(node.children)) return true
-    }
-    return false
-  }
-  walk(fileTreeRoots.value)
-}
-
 const switchTab = (tabId: string) => {
   activeTab.value = tabId
 
@@ -323,17 +165,22 @@ const switchTab = (tabId: string) => {
     postMessage({ type: 'getPrettifySettings' })
   }
 
-  // Refresh the metadata comment at the cursor when opening the Metadata tab
-  if (tabId === 'metadata') {
-    postMessage({ type: 'getMetadataContext' })
+  // Request export list when switching to Export tab
+  if (tabId === 'export') {
+    requestExports()
   }
+}
 
-  // Fetch the current document's plots the first time the Export tab is opened.
-  // Users can refresh manually after that.
-  if (tabId === 'export' && plots.value.length === 0 && !plotsLoading.value) {
-    plotsLoading.value = true
-    postMessage({ type: 'getPlots' })
-  }
+const requestExports = () => {
+  postMessage({ type: 'getExports' })
+}
+
+const handleDownloadExport = (filename: string) => {
+  postMessage({ type: 'downloadExport', filename })
+}
+
+const handleDownloadExportZip = () => {
+  postMessage({ type: 'downloadExportZip' })
 }
 
 const handleSaveSourceHtml = () => {
@@ -342,19 +189,6 @@ const handleSaveSourceHtml = () => {
 
 const handleSaveDocx = () => {
   postMessage({ type: 'saveDocx' })
-}
-
-const handleRefreshPlots = () => {
-  plotsLoading.value = true
-  postMessage({ type: 'getPlots' })
-}
-
-const handleSavePlot = (index: number) => {
-  postMessage({ type: 'savePlot', index })
-}
-
-const handleSavePlotsZip = () => {
-  postMessage({ type: 'savePlotsZip' })
 }
 
 const handleInsertText = (text: string) => {
@@ -401,16 +235,6 @@ const handleUpdateFormattingHotkeys = (enabled: boolean) => {
   postMessage({ type: 'updateFormattingHotkeys', enabled })
 }
 
-const handleUpdatePreviewCursorSync = (enabled: boolean) => {
-  enablePreviewCursorSync.value = enabled
-  postMessage({ type: 'updatePreviewCursorSync', enabled })
-}
-
-const handleUpdateAutoRun = (enabled: boolean) => {
-  enableAutoRun.value = enabled
-  postMessage({ type: 'updateAutoRun', enabled })
-}
-
 const handleUpdateDarkBackground = (color: string) => {
   darkBackground.value = color
   postMessage({ type: 'updateDarkBackground', color })
@@ -419,11 +243,6 @@ const handleUpdateDarkBackground = (color: string) => {
 const handleUpdateLinterMinSeverity = (severity: string) => {
   linterMinSeverity.value = severity
   postMessage({ type: 'updateLinterMinSeverity', severity })
-}
-
-const handleUpdateMaxOutputLines = (value: number) => {
-  maxOutputLines.value = value
-  postMessage({ type: 'updateMaxOutputLines', value })
 }
 
 const handleUpdateLibraryPath = (path: string) => {
@@ -437,35 +256,10 @@ const handleResetSettings = () => {
   })
 }
 
-const handleSaveNamedConfig = (name: string) => {
-  postMessage({ type: 'saveNamedConfig', name })
-}
-
-const handleSwitchConfig = (name: string) => {
-  postMessage({ type: 'switchConfig', name })
-}
-
-const handleOpenSettingsFolder = () => {
-  postMessage({ type: 'openSettingsFolder' })
-}
-
 const handleOpenLogsFolder = () => {
   postMessage({
     type: 'openLogsFolder'
   })
-}
-
-const handleOpenFontsFolder = () => {
-  postMessage({ type: 'openFontsFolder' })
-}
-
-const handleRefreshFonts = () => {
-  postMessage({ type: 'refreshFonts' })
-}
-
-const handleUpdateEditorFontFamily = (family: string) => {
-  editorFontFamily.value = family
-  postMessage({ type: 'updateEditorFontFamily', family })
 }
 
 const handleUpdatePdfSettings = (settings: PdfSettings) => {
@@ -513,18 +307,6 @@ const handleUpdatePrettifyTrim = (enabled: boolean) => {
   postMessage({ type: 'updatePrettifyTrim', value: enabled })
 }
 
-const handleApplyMetadata = (data: MetadataCommentData) => {
-  if (!metadataBlock.value) return
-  postMessage({
-    type: 'updateMetadata',
-    line: metadataBlock.value.line,
-    indent: metadataBlock.value.indent,
-    trailingQuote: metadataBlock.value.trailingQuote,
-    isNew: metadataBlock.value.isNew,
-    data
-  })
-}
-
 // Message handler
 const handleMessage = (event: MessageEvent) => {
   const message = event.data
@@ -540,28 +322,9 @@ const handleMessage = (event: MessageEvent) => {
       availableThemes.value = message.availableThemes || []
       commentFormat.value = message.commentFormat || 'auto'
       enableFormattingHotkeys.value = message.enableFormattingHotkeys !== false
-      if (typeof message.enableQuickTyping === 'boolean') enableQuickTyping.value = message.enableQuickTyping
-      if (typeof message.enablePreviewCursorSync === 'boolean') enablePreviewCursorSync.value = message.enablePreviewCursorSync
-      if (typeof message.enableAutoRun === 'boolean') enableAutoRun.value = message.enableAutoRun
       darkBackground.value = message.darkBackground || '#1e1e1e'
       linterMinSeverity.value = message.linterMinSeverity || 'information'
-      if (typeof message.maxOutputLines === 'number' && message.maxOutputLines >= 10) {
-        maxOutputLines.value = message.maxOutputLines
-      }
       libraryPath.value = message.libraryPath || ''
-      if (message.activeConfig) activeConfig.value = message.activeConfig
-      if (Array.isArray(message.availableConfigs)) availableConfigs.value = message.availableConfigs
-      if (typeof message.editorFontFamily === 'string') editorFontFamily.value = message.editorFontFamily
-      if (Array.isArray(message.availableFonts)) availableFonts.value = message.availableFonts
-      break
-    case 'editorFontFamilyChanged':
-      if (typeof message.family === 'string') editorFontFamily.value = message.family
-      break
-    case 'availableFontsChanged':
-      if (Array.isArray(message.availableFonts)) availableFonts.value = message.availableFonts
-      break
-    case 'saveNamedConfigError':
-      window.alert(message.message || 'Failed to save settings.')
       break
     case 'settingsReset':
       settings.value = message.settings
@@ -574,9 +337,6 @@ const handleMessage = (event: MessageEvent) => {
       tocHeadings.value = message.headings || []
       tocLoading.value = false
       break
-    case 'updateConvertErrors':
-      convertErrors.value = message.errors || []
-      break
     case 'pdfSettingsResponse':
       pdfSettings.value = message.settings
       break
@@ -588,27 +348,11 @@ const handleMessage = (event: MessageEvent) => {
       prettifyIndentSize.value = typeof message.indentSize === 'number' ? message.indentSize : 4
       prettifyTrimTrailing.value = message.trimTrailingWhitespace !== false
       break
-    case 'folderOpened':
-      openedFolder.value = message.path || null
-      fileTreeRoots.value = message.entries || []
-      break
-    case 'folderContents':
-      setDirectoryChildren(message.path, message.entries || [])
-      break
-    case 'plotsResponse':
-      plots.value = Array.isArray(message.plots) ? message.plots : []
-      plotsLoading.value = false
-      break
-    case 'metadataContext':
-      metadataBlock.value = message.block ?? null
-      break
-    case 'focusTab':
-      if (typeof message.tab === 'string') switchTab(message.tab)
+    case 'exportsResponse':
+      exportEntries.value = message.exports || []
       break
   }
 }
-
-defineExpose({ switchTab, switchView })
 
 // Initialize
 onMounted(() => {
@@ -619,10 +363,6 @@ onMounted(() => {
   postMessage({ type: 'getInsertData' })
   postMessage({ type: 'getSettings' })
   postMessage({ type: 'getPdfSettings' })
-
-  if (props.versionConfig.isDesktop) {
-    postMessage({ type: 'getOpenedFolder' })
-  }
 
   // Debug message
   postMessage({
@@ -637,59 +377,13 @@ onMounted(() => {
   /* Natural document flow inside the parent (#vue-sidebar in calcpad-desktop,
    * <body> in the VS Code webview). Avoids flex-column edge cases where a
    * wrapped .tab-container can render on top of .tab-content because the
-   * column's fixed height was computed before the wrap layout pass.
-   * min-height (not height) so the box grows to the full content height:
-   * a fixed 100% would cap it at one viewport, and the sticky .activity-icons
-   * bar would un-stick once its containing block scrolled past. */
-  min-height: 100%;
+   * column's fixed height was computed before the wrap layout pass. */
+  height: 100%;
   display: block;
   font-family: var(--vscode-font-family);
   font-size: var(--vscode-font-size);
   color: var(--vscode-foreground);
   background: var(--vscode-editor-background);
-}
-
-.activity-icons {
-  display: flex;
-  gap: 0;
-  padding: 4px 4px;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  border-bottom: 1px solid var(--vscode-widget-border);
-  background: var(--vscode-activityBar-background, var(--vscode-editor-background));
-}
-
-.activity-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--vscode-activityBar-inactiveForeground, var(--vscode-foreground));
-  cursor: pointer;
-  border-radius: 3px;
-  position: relative;
-  opacity: 0.75;
-  transition: background 0.15s ease, opacity 0.15s ease, color 0.15s ease;
-}
-
-.activity-icon:hover {
-  background: var(--vscode-toolbar-hoverBackground, rgba(90, 93, 94, 0.31));
-  opacity: 1;
-}
-
-.activity-icon.active {
-  color: var(--vscode-activityBar-foreground, var(--vscode-foreground));
-  background: var(--vscode-list-activeSelectionBackground, var(--vscode-toolbar-activeBackground, rgba(90, 93, 94, 0.5)));
-  opacity: 1;
-}
-
-.activity-icon :deep(svg) {
-  display: block;
 }
 
 .tab-container {

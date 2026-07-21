@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Calcpad.Core;
-using Calcpad.Highlighter.HtmlComment;
 using Calcpad.Highlighter.Tokenizer;
 
 namespace Calcpad.Server.Services
@@ -64,9 +63,6 @@ namespace Calcpad.Server.Services
                 if (block.Status != HtmlCommentParseStatus.Success || !block.Data.HasValue)
                     continue;
 
-                if (block.Data.Value.ValueKind != JsonValueKind.Object)
-                    continue;
-
                 if (!block.Data.Value.TryGetProperty("settings", out var settingsElement))
                     continue;
 
@@ -86,8 +82,11 @@ namespace Calcpad.Server.Services
 
             var result = new Settings
             {
-                Units           = base_.Units,
-                IsUs            = base_.IsUs,
+                Units          = base_.Units,
+                ClientFileCache = base_.ClientFileCache,
+                SourceFilePath = base_.SourceFilePath,
+                EnableUi       = base_.EnableUi,
+                UiOverrides    = base_.UiOverrides,
                 Math = new MathSettings
                 {
                     Decimals                = math.Decimals,
@@ -155,11 +154,6 @@ namespace Calcpad.Server.Services
                     case "units":
                         if (prop.Value.ValueKind == JsonValueKind.String)
                             result.Units = prop.Value.GetString() ?? result.Units;
-                        break;
-
-                    case "isus":
-                        if (prop.Value.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                            result.IsUs = prop.Value.GetBoolean();
                         break;
 
                     case "vectorgraphics":

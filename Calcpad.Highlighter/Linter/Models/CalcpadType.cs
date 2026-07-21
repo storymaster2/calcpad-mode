@@ -46,6 +46,16 @@ namespace Calcpad.Highlighter.Linter.Models
         MultilineMacro,
 
         /// <summary>
+        /// String variable (name$ = "string")
+        /// </summary>
+        StringVariable,
+
+        /// <summary>
+        /// String table variable (2D string array, name$ defined via #table)
+        /// </summary>
+        StringTable,
+
+        /// <summary>
         /// Variable type changed during execution - less strict linting applies
         /// </summary>
         Various

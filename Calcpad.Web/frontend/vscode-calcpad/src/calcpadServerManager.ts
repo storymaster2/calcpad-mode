@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { execSync } from 'child_process';
-import { BaseServerManager } from './baseServerManager';
+import { CalcpadServerManager as BaseServerManager } from 'calcpad-frontend';
 import { VSCodeLogger } from './adapters';
 
 const SKIASHARP_VERSION = '3.119.1';
@@ -41,7 +41,8 @@ interface ExternalManagedDep {
 
 // Mapping derived from Calcpad.Server.deps.json — that's the authoritative
 // source for which package each DLL ships in (DocumentFormat.OpenXml splits
-// across two packages, etc.). Re-derive after any backend csproj change:
+// across two packages, EntityFrameworkCore.Abstractions/Sqlite stay bundled
+// because they're small, etc.). Re-derive after any backend csproj change:
 //
 //   node -e "const d=require('./Calcpad.Server.deps.json').targets;
 //            for (const t of Object.values(d)) for (const [id,info] of Object.entries(t))
@@ -51,6 +52,10 @@ const EXTERNAL_MANAGED_DEPS: ExternalManagedDep[] = [
     { nugetPackage: 'DocumentFormat.OpenXml.Framework', version: '3.3.0', dlls: ['DocumentFormat.OpenXml.Framework.dll'] },
     { nugetPackage: 'PuppeteerSharp', version: '21.1.1', dlls: ['PuppeteerSharp.dll'] },
     { nugetPackage: 'WebDriverBiDi', version: '0.0.43', dlls: ['WebDriverBiDi.dll'] },
+    { nugetPackage: 'Microsoft.EntityFrameworkCore', version: '10.0.0', dlls: ['Microsoft.EntityFrameworkCore.dll'] },
+    { nugetPackage: 'Microsoft.EntityFrameworkCore.Relational', version: '10.0.0', dlls: ['Microsoft.EntityFrameworkCore.Relational.dll'] },
+    { nugetPackage: 'AWSSDK.Core', version: '3.7.401', dlls: ['AWSSDK.Core.dll'] },
+    { nugetPackage: 'AWSSDK.S3', version: '3.7.412', dlls: ['AWSSDK.S3.dll'] },
     {
         // PDFsharp meta-package ships all 9 PdfSharp.* DLLs under one nupkg —
         // single download fans out into every PdfSharp file we strip.
@@ -148,7 +153,7 @@ export class CalcpadServerManager extends BaseServerManager implements vscode.Di
 
     /**
      * Ensure the chunky managed NuGet DLLs (DocumentFormat.OpenXml, PuppeteerSharp,
-     * PDFsharp …) that we strip from the VSIX before packaging
+     * EF Core, AWSSDK, PDFsharp …) that we strip from the VSIX before packaging
      * are present in bin/. Same pattern as ensureNativeLibs — download once,
      * cache permanently in bin/, never re-fetch.
      */
@@ -168,7 +173,7 @@ export class CalcpadServerManager extends BaseServerManager implements vscode.Di
 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: 'CalcpadCE: Downloading server libraries...',
+            title: 'CalcPad: Downloading server libraries...',
             cancellable: false
         }, async (progress) => {
             for (let i = 0; i < missing.length; i++) {
@@ -337,7 +342,7 @@ export class CalcpadServerManager extends BaseServerManager implements vscode.Di
 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: 'CalcpadCE: Downloading native libraries...',
+            title: 'CalcPad: Downloading native libraries...',
             cancellable: false
         }, async (progress) => {
             await this.downloadNativeLib(info, binDir, progress);

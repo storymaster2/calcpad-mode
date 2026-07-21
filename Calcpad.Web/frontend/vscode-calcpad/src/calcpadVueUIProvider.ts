@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { parseHeadings, DEFAULT_PDF_SETTINGS, extractPlotsFromHtml, buildZip, serializeMetadataComment, findMetadataCommentBlock, analyzeMetadataLine, computeMetadataBlock, buildDefinitionResolver } from 'calcpad-frontend';
-import type { CalcpadError, ExtractedPlot, MetadataCommentBlock, MetadataCommentData, DefinitionResolver, DefinitionsResponse } from 'calcpad-frontend';
+import { parseHeadings, DEFAULT_PDF_SETTINGS } from 'calcpad-frontend';
 import { CalcpadSettingsManager } from './calcpadSettings';
 import { CalcpadInsertManager } from './calcpadInsertManager';
 
@@ -11,18 +10,6 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 
     private _view?: vscode.WebviewView;
     private _outputChannel: vscode.OutputChannel;
-    private _cachedPlots: ExtractedPlot[] = [];
-    private _cachedHtml: string = '';
-    /**
-     * Extension supplies a getter that combines `activeTextEditor` with the
-     * remembered preview-source editor so plot fetching still works when the
-     * preview panel is focused (which nulls out `activeTextEditor`).
-     */
-    public getSourceEditor?: () => vscode.TextEditor | undefined;
-    public onPreviewThemeChanged?: () => void | Promise<void>;
-    public onSettingsChanged?: () => void | Promise<void>;
-    /** Real highlighter definitions for a document URI, used to resolve metadata context. */
-    public getDefinitions?: (documentUri: string) => DefinitionsResponse | undefined;
 
     constructor(
         private readonly _extensionUri: vscode.Uri,
@@ -30,7 +17,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         private readonly _settingsManager: CalcpadSettingsManager,
         private readonly _insertManager: CalcpadInsertManager
     ) {
-        this._outputChannel = vscode.window.createOutputChannel('CalcpadCE Vue');
+        this._outputChannel = vscode.window.createOutputChannel('CalcPad Vue');
         this._outputChannel.appendLine('CalcPad Vue UI Provider initialized');
 
         // Register callback to refresh UI when snippets are loaded from server
@@ -78,49 +65,48 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     break;
 
                 case 'getSettings':
-                    await this._settingsManager.ready;
-                    webviewView.webview.postMessage(await this._buildSettingsResponse());
+                    const settings = this._settingsManager.getSettings();
+                    const config = vscode.workspace.getConfiguration('calcpad');
+                    const previewTheme = config.get<string>('previewTheme', 'system');
+                    const commentFormat = config.get<string>('commentFormat', 'auto');
+                    const enableFormattingHotkeys = config.get<boolean>('enableFormattingHotkeys', true);
+                    const darkBackground = config.get<string>('darkBackground', '#1e1e1e');
+                    const linterMinSeverity = config.get<string>('linter.minimumSeverity', 'information');
+                    const libraryPath = config.get<string>('libraryPath', '');
+
+                    const colorTheme = vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', '');
+                    const availableThemes = this._getInstalledThemes();
+
+                    webviewView.webview.postMessage({
+                        type: 'settingsResponse',
+                        settings: settings,
+                        previewTheme: previewTheme,
+                        colorTheme: colorTheme,
+                        availableThemes: availableThemes,
+                        commentFormat: commentFormat,
+                        enableFormattingHotkeys: enableFormattingHotkeys,
+                        darkBackground: darkBackground,
+                        linterMinSeverity: linterMinSeverity,
+                        libraryPath: libraryPath
+                    });
                     break;
 
                 case 'updateSettings':
                     this._settingsManager.updateSettings(data.settings);
-                    void this.onSettingsChanged?.();
                     break;
 
                 case 'resetSettings':
-                    await this._settingsManager.resetSettings();
+                    this._settingsManager.resetSettings();
+                    const resetSettings = this._settingsManager.getSettings();
                     webviewView.webview.postMessage({
                         type: 'settingsReset',
-                        settings: this._settingsManager.getSettings(),
+                        settings: resetSettings
                     });
-                    webviewView.webview.postMessage(await this._buildSettingsResponse());
-                    break;
-
-                case 'saveNamedConfig': {
-                    const result = await this._settingsManager.savePreset(data.name);
-                    if (!result.ok) {
-                        webviewView.webview.postMessage({
-                            type: 'saveNamedConfigError',
-                            message: result.message,
-                        });
-                    } else {
-                        webviewView.webview.postMessage(await this._buildSettingsResponse());
-                    }
-                    break;
-                }
-
-                case 'switchConfig':
-                    await this._settingsManager.loadPreset(data.name);
-                    webviewView.webview.postMessage(await this._buildSettingsResponse());
-                    break;
-
-                case 'openSettingsFolder':
-                    await this._settingsManager.openSettingsFolder();
                     break;
 
                 case 'updatePreviewTheme':
-                    this._settingsManager.setExtra('previewTheme', data.theme);
-                    void this.onPreviewThemeChanged?.();
+                    const previewConfig = vscode.workspace.getConfiguration('calcpad');
+                    await previewConfig.update('previewTheme', data.theme, vscode.ConfigurationTarget.Global);
                     break;
 
                 case 'updateColorTheme':
@@ -128,52 +114,61 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     break;
 
                 case 'updateCommentFormat':
-                    this._settingsManager.setExtra('commentFormat', data.format);
+                    const commentFormatConfig = vscode.workspace.getConfiguration('calcpad');
+                    await commentFormatConfig.update('commentFormat', data.format, vscode.ConfigurationTarget.Global);
                     break;
 
                 case 'updateFormattingHotkeys':
-                    this._settingsManager.setExtra('formattingHotkeys', data.enabled);
-                    break;
-
-                case 'updateQuickTyping':
-                    this._settingsManager.setExtra('quickTyping', data.enabled);
-                    break;
-
-                case 'updatePreviewCursorSync':
-                    this._settingsManager.setExtra('previewCursorSync', data.enabled);
-                    break;
-
-                case 'updateAutoRun':
-                    this._settingsManager.setExtra('autoRun', data.enabled);
+                    const formattingHotkeysConfig = vscode.workspace.getConfiguration('calcpad');
+                    await formattingHotkeysConfig.update('enableFormattingHotkeys', data.enabled, vscode.ConfigurationTarget.Global);
                     break;
 
                 case 'updateDarkBackground':
-                    this._settingsManager.setExtra('darkBackground', data.color);
+                    const darkBgConfig = vscode.workspace.getConfiguration('calcpad');
+                    await darkBgConfig.update('darkBackground', data.color, vscode.ConfigurationTarget.Global);
                     break;
 
                 case 'updateLinterMinSeverity':
-                    this._settingsManager.setExtra('linterMinSeverity', data.severity);
+                    const linterConfig = vscode.workspace.getConfiguration('calcpad');
+                    await linterConfig.update('linter.minimumSeverity', data.severity, vscode.ConfigurationTarget.Global);
                     break;
 
                 case 'updateLibraryPath':
-                    this._settingsManager.setExtra('libraryPath', data.path);
+                    const libraryPathConfig = vscode.workspace.getConfiguration('calcpad');
+                    await libraryPathConfig.update('libraryPath', data.path, vscode.ConfigurationTarget.Global);
                     break;
 
-                case 'updatePdfSettings': {
-                    const current = this._settingsManager.getExtraObject<Record<string, unknown>>('pdfSettings', {});
-                    this._settingsManager.setExtra('pdfSettings', { ...current, ...data.settings });
-                    break;
-                }
 
-                case 'resetPdfSettings': {
-                    this._settingsManager.setExtra('pdfSettings', {});
+                case 'updatePdfSettings':
+                    const pdfConfig = vscode.workspace.getConfiguration('calcpad');
+                    for (const [key, value] of Object.entries(data.settings)) {
+                        await pdfConfig.update(`pdf.${key}`, value, vscode.ConfigurationTarget.Global);
+                    }
+                    break;
+
+                case 'resetPdfSettings':
+                    const pdfConfigReset = vscode.workspace.getConfiguration('calcpad');
+                    const pdfKeys = [
+                        'format', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight',
+                        'documentTitle', 'dateTimeFormat'
+                    ];
+
+                    for (const key of pdfKeys) {
+                        await pdfConfigReset.update(`pdf.${key}`, undefined, vscode.ConfigurationTarget.Global);
+                    }
+
+                    // Send back the reset settings
                     const resetPdfSettings = { ...DEFAULT_PDF_SETTINGS };
+
                     webviewView.webview.postMessage({
                         type: 'pdfSettingsReset',
-                        settings: resetPdfSettings,
+                        settings: resetPdfSettings
                     });
                     break;
-                }
+
+                case 'openS3Config':
+                    vscode.commands.executeCommand('workbench.action.openSettings', 'calcpad.s3');
+                    break;
 
                 case 'openLogsFolder': {
                     // Resolve the same logs directory the server manager uses.
@@ -192,15 +187,32 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     break;
                 }
 
-                case 'getPdfSettings': {
-                    const stored = this._settingsManager.getExtraObject<Partial<typeof DEFAULT_PDF_SETTINGS>>('pdfSettings', {});
-                    const pdfSettings = { ...DEFAULT_PDF_SETTINGS, ...stored };
+                case 'getS3Config':
+                    const s3Config = vscode.workspace.getConfiguration('calcpad');
+                    const s3ApiUrl = s3Config.get<string>('s3.apiUrl', '');
                     webviewView.webview.postMessage({
-                        type: 'pdfSettingsResponse',
-                        settings: pdfSettings,
+                        type: 's3ConfigResponse',
+                        apiUrl: s3ApiUrl
                     });
                     break;
-                }
+
+                case 'getPdfSettings':
+                    const pdfConfigGet = vscode.workspace.getConfiguration('calcpad');
+                    const pdfSettings = {
+                        format: pdfConfigGet.get<string>('pdf.format', DEFAULT_PDF_SETTINGS.format),
+                        marginTop: pdfConfigGet.get<string>('pdf.marginTop', DEFAULT_PDF_SETTINGS.marginTop),
+                        marginBottom: pdfConfigGet.get<string>('pdf.marginBottom', DEFAULT_PDF_SETTINGS.marginBottom),
+                        marginLeft: pdfConfigGet.get<string>('pdf.marginLeft', DEFAULT_PDF_SETTINGS.marginLeft),
+                        marginRight: pdfConfigGet.get<string>('pdf.marginRight', DEFAULT_PDF_SETTINGS.marginRight),
+                        documentTitle: pdfConfigGet.get<string>('pdf.documentTitle', DEFAULT_PDF_SETTINGS.documentTitle),
+                        dateTimeFormat: pdfConfigGet.get<string>('pdf.dateTimeFormat', DEFAULT_PDF_SETTINGS.dateTimeFormat)
+                    };
+
+                    webviewView.webview.postMessage({
+                        type: 'pdfSettingsResponse',
+                        settings: pdfSettings
+                    });
+                    break;
 
                 case 'generatePdf':
                     vscode.commands.executeCommand('vscode-calcpad.printToPdf');
@@ -214,28 +226,32 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     vscode.commands.executeCommand('vscode-calcpad.saveDocx');
                     break;
 
-                case 'getPlots':
-                    await this._handleGetPlots();
-                    break;
-
-                case 'savePlot':
-                    await this._handleSavePlot(data.index);
-                    break;
-
-                case 'savePlotsZip':
-                    await this._handleSavePlotsZip();
-                    break;
-
                 case 'getInsertData':
                     this._sendInitialData();
                     break;
 
                 case 'getVariables':
                     // Trigger a refresh of variables from the current document
-                    const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
+                    const editor = vscode.window.activeTextEditor;
                     if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
                         vscode.commands.executeCommand('calcpad.refreshVariables');
                     }
+                    break;
+
+                case 's3Login':
+                    this.handleS3Login(data.credentials, webviewView.webview);
+                    break;
+
+                case 's3ListFiles':
+                    this.handleS3ListFiles(data.token, webviewView.webview);
+                    break;
+
+                case 's3DownloadFile':
+                    this.handleS3DownloadFile(data.fileName, data.token, webviewView.webview);
+                    break;
+
+                case 's3UploadFile':
+                    this.handleS3UploadFile(data.fileName, data.fileData, data.tags, data.token, webviewView.webview);
                     break;
 
                 case 'getHeadings':
@@ -281,33 +297,44 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
                     break;
 
                 case 'getPrettifySettings': {
+                    const cfg = vscode.workspace.getConfiguration('calcpad');
                     webviewView.webview.postMessage({
                         type: 'prettifySettingsResponse',
-                        indentStyle: this._settingsManager.getExtra('prettifyIndentStyle', 'tab'),
-                        indentSize: this._settingsManager.getExtraNumber('prettifyIndentSize', 4),
-                        trimTrailingWhitespace: this._settingsManager.getExtraBool('prettifyTrimTrailingWhitespace', true),
+                        indentStyle: cfg.get<string>('prettify.indentStyle', 'tab'),
+                        indentSize: cfg.get<number>('prettify.indentSize', 4),
+                        trimTrailingWhitespace: cfg.get<boolean>('prettify.trimTrailingWhitespace', true)
                     });
                     break;
                 }
 
-                case 'updatePrettifyIndentStyle':
-                    this._settingsManager.setExtra('prettifyIndentStyle', data.value);
+                case 'updatePrettifyIndentStyle': {
+                    const cfg = vscode.workspace.getConfiguration('calcpad');
+                    await cfg.update('prettify.indentStyle', data.value, vscode.ConfigurationTarget.Global);
+                    break;
+                }
+
+                case 'updatePrettifyIndentSize': {
+                    const cfg = vscode.workspace.getConfiguration('calcpad');
+                    await cfg.update('prettify.indentSize', data.value, vscode.ConfigurationTarget.Global);
+                    break;
+                }
+
+                case 'updatePrettifyTrim': {
+                    const cfg = vscode.workspace.getConfiguration('calcpad');
+                    await cfg.update('prettify.trimTrailingWhitespace', data.value, vscode.ConfigurationTarget.Global);
+                    break;
+                }
+
+                case 'getExports':
+                    await this._sendExports(webviewView.webview);
                     break;
 
-                case 'updatePrettifyIndentSize':
-                    this._settingsManager.setExtra('prettifyIndentSize', data.value);
+                case 'downloadExport':
+                    await this._downloadExportToWorkspace(data.filename);
                     break;
 
-                case 'updatePrettifyTrim':
-                    this._settingsManager.setExtra('prettifyTrimTrailingWhitespace', data.value);
-                    break;
-
-                case 'getMetadataContext':
-                    this.updateMetadataContext(this._computeMetadataBlock());
-                    break;
-
-                case 'updateMetadata':
-                    await this._handleUpdateMetadata(data);
+                case 'downloadExportZip':
+                    await this._downloadExportZipToWorkspace();
                     break;
 
                 case 'debug':
@@ -327,7 +354,7 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         // Debounced refresh of headings when the document content changes
         let tocTimer: ReturnType<typeof setTimeout> | undefined;
         vscode.workspace.onDidChangeTextDocument((e) => {
-            const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
+            const editor = vscode.window.activeTextEditor;
             if (editor && e.document === editor.document) {
                 if (tocTimer) clearTimeout(tocTimer);
                 tocTimer = setTimeout(() => this._sendHeadings(), 800);
@@ -372,114 +399,89 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         });
     }
 
-    /**
-     * Build the payload used by `settingsResponse` messages. Single source of
-     * truth for the getSettings/resetSettings/saveNamedConfig/switchConfig
-     * handlers so their payloads can't drift out of sync.
-     */
-    private async _buildSettingsResponse(): Promise<Record<string, unknown>> {
-        const sm = this._settingsManager;
-        return {
-            type: 'settingsResponse',
-            settings: sm.getSettings(),
-            previewTheme: sm.getExtra('previewTheme', 'system'),
-            colorTheme: vscode.workspace.getConfiguration('workbench').get<string>('colorTheme', ''),
-            availableThemes: this._getInstalledThemes(),
-            commentFormat: sm.getExtra('commentFormat', 'auto'),
-            enableFormattingHotkeys: sm.getExtraBool('formattingHotkeys', true),
-            enableQuickTyping: sm.getExtraBool('quickTyping', true),
-            enablePreviewCursorSync: sm.getExtraBool('previewCursorSync', false),
-            enableAutoRun: sm.getExtraBool('autoRun', true),
-            darkBackground: sm.getExtra('darkBackground', '#1e1e1e'),
-            linterMinSeverity: sm.getExtra('linterMinSeverity', 'information'),
-            libraryPath: sm.getExtra('libraryPath', ''),
-            activeConfig: sm.getActivePresetName(),
-            availableConfigs: await sm.listPresets(),
-        };
-    }
-
-    public setCachedHtml(html: string): void {
-        this._cachedHtml = html;
-        this._cachedPlots = extractPlotsFromHtml(html);
-        if (this._view) {
-            this._view.webview.postMessage({
-                type: 'plotsResponse',
-                plots: this._cachedPlots.map(p => ({
-                    index: p.index,
-                    ext: p.ext,
-                    dataUri: p.dataUri,
-                    sizeBytes: p.bytes.length,
-                })),
-            });
-        }
-    }
-
-    private async _handleGetPlots(): Promise<void> {
-        if (!this._view) return;
-        if (this._cachedHtml) {
-            this._cachedPlots = extractPlotsFromHtml(this._cachedHtml);
-        } else {
-            this._cachedPlots = [];
-        }
-        this._view.webview.postMessage({
-            type: 'plotsResponse',
-            plots: this._cachedPlots.map(p => ({
-                index: p.index,
-                ext: p.ext,
-                dataUri: p.dataUri,
-                sizeBytes: p.bytes.length,
-            })),
-        });
-    }
-
-    private async _handleSavePlot(index: number): Promise<void> {
-        const plot = this._cachedPlots[index];
-        if (!plot) return;
-        const defaultName = `plot-${index + 1}.${plot.ext}`;
-        const defaultDir = this._defaultSaveDir();
-        const saveUri = await vscode.window.showSaveDialog({
-            defaultUri: vscode.Uri.file(path.join(defaultDir, defaultName)),
-            filters: { [plot.ext.toUpperCase()]: [plot.ext] },
-        });
-        if (!saveUri) return;
-        await vscode.workspace.fs.writeFile(saveUri, plot.bytes);
-    }
-
-    private async _handleSavePlotsZip(): Promise<void> {
-        if (this._cachedPlots.length === 0) return;
-        const zipBytes = buildZip(
-            this._cachedPlots.map(p => ({
-                name: `plot-${p.index + 1}.${p.ext}`,
-                bytes: p.bytes,
-            })),
-        );
-        const defaultDir = this._defaultSaveDir();
-        const saveUri = await vscode.window.showSaveDialog({
-            defaultUri: vscode.Uri.file(path.join(defaultDir, 'calcpad-plots.zip')),
-            filters: { 'ZIP Archive': ['zip'] },
-        });
-        if (!saveUri) return;
-        await vscode.workspace.fs.writeFile(saveUri, zipBytes);
-    }
-
-    private _defaultSaveDir(): string {
-        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
-        if (editor && !editor.document.isUntitled) {
-            return path.dirname(editor.document.uri.fsPath);
-        }
-        const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-        return folder ?? '';
-    }
-
     private _sendHeadings() {
         if (!this._view) return;
 
-        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
+        const editor = vscode.window.activeTextEditor;
         if (editor && (editor.document.languageId === 'calcpad' || editor.document.languageId === 'plaintext')) {
             const headings = parseHeadings(editor.document.getText());
             this._view.webview.postMessage({ type: 'updateHeadings', headings });
         } else {
             this._view.webview.postMessage({ type: 'updateHeadings', headings: [] });
+        }
+    }
+
+    private _activeSourceFilePath(): string | undefined {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) return undefined;
+        if (editor.document.isUntitled) return undefined;
+        return editor.document.uri.fsPath;
+    }
+
+    private async _sendExports(webview: vscode.Webview): Promise<void> {
+        const apiBaseUrl = this._settingsManager.getServerUrl();
+        const sourceFilePath = this._activeSourceFilePath();
+        try {
+            const url = `${apiBaseUrl}/api/calcpad/exports${sourceFilePath ? '?sourceFilePath=' + encodeURIComponent(sourceFilePath) : ''}`;
+            const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+            const exports = res.ok ? await res.json() : [];
+            webview.postMessage({ type: 'exportsResponse', exports });
+        } catch (err) {
+            this._outputChannel.appendLine(`[Vue UI] Failed to list exports: ${err instanceof Error ? err.message : String(err)}`);
+            webview.postMessage({ type: 'exportsResponse', exports: [] });
+        }
+    }
+
+    private async _downloadExportToWorkspace(filename: string): Promise<void> {
+        if (!filename) return;
+        const apiBaseUrl = this._settingsManager.getServerUrl();
+        const sourceFilePath = this._activeSourceFilePath();
+        const params = new URLSearchParams();
+        if (sourceFilePath) params.set('sourceFilePath', sourceFilePath);
+        params.set('filename', filename);
+
+        try {
+            const res = await fetch(`${apiBaseUrl}/api/calcpad/export?${params.toString()}`, { signal: AbortSignal.timeout(60000) });
+            if (!res.ok) {
+                vscode.window.showErrorMessage(`Failed to download ${filename}: ${res.status}`);
+                return;
+            }
+            const buf = Buffer.from(await res.arrayBuffer());
+            const target = await vscode.window.showSaveDialog({
+                defaultUri: vscode.Uri.file(sourceFilePath ? path.resolve(path.dirname(sourceFilePath), filename) : filename),
+                saveLabel: 'Save export'
+            });
+            if (!target) return;
+            await vscode.workspace.fs.writeFile(target, buf);
+            vscode.window.showInformationMessage(`Saved ${filename}`);
+        } catch (err) {
+            vscode.window.showErrorMessage(`Download failed: ${err instanceof Error ? err.message : String(err)}`);
+        }
+    }
+
+    private async _downloadExportZipToWorkspace(): Promise<void> {
+        const apiBaseUrl = this._settingsManager.getServerUrl();
+        const sourceFilePath = this._activeSourceFilePath();
+        try {
+            const res = await fetch(
+                `${apiBaseUrl}/api/calcpad/exports.zip${sourceFilePath ? '?sourceFilePath=' + encodeURIComponent(sourceFilePath) : ''}`,
+                { signal: AbortSignal.timeout(60000) }
+            );
+            if (!res.ok) {
+                vscode.window.showErrorMessage(`Failed to download exports: ${res.status}`);
+                return;
+            }
+            const buf = Buffer.from(await res.arrayBuffer());
+            const target = await vscode.window.showSaveDialog({
+                defaultUri: vscode.Uri.file(sourceFilePath ? path.resolve(path.dirname(sourceFilePath), 'calcpad-exports.zip') : 'calcpad-exports.zip'),
+                saveLabel: 'Save exports ZIP',
+                filters: { 'ZIP archives': ['zip'] }
+            });
+            if (!target) return;
+            await vscode.workspace.fs.writeFile(target, buf);
+            vscode.window.showInformationMessage('Saved calcpad-exports.zip');
+        } catch (err) {
+            vscode.window.showErrorMessage(`Download failed: ${err instanceof Error ? err.message : String(err)}`);
         }
     }
 
@@ -493,72 +495,198 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
         }
     }
 
-    public updateConvertErrors(errors: CalcpadError[]) {
-        this._view?.webview.postMessage({ type: 'updateConvertErrors', errors });
-    }
-
-    /** Push the metadata comment (or null) the cursor currently sits in to the panel. */
-    public updateMetadataContext(block: MetadataCommentBlock | null) {
-        this._view?.webview.postMessage({ type: 'metadataContext', block });
-    }
-
-    /** Detect the single-line metadata comment at the source editor's cursor. */
-    private _computeMetadataBlock(): MetadataCommentBlock | null {
-        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
-        if (!editor || (editor.document.languageId !== 'calcpad' && editor.document.languageId !== 'plaintext')) {
-            return null;
-        }
-        const lines = editor.document.getText().split(/\r?\n/);
-        const line = editor.selection.active.line;
-        return computeMetadataBlock(lines, line, this._definitionResolver(editor.document.uri.toString()));
-    }
-
-    /** Definition resolver over a document's real highlighter results. */
-    private _definitionResolver(documentUri: string): DefinitionResolver {
-        const defs = this.getDefinitions?.(documentUri);
-        return buildDefinitionResolver(defs ?? { functions: [], macros: [], variables: [], customUnits: [] });
-    }
-
-    /** Ask the panel to switch to a given tab id. */
-    public focusTab(tab: string) {
-        this._view?.webview.postMessage({ type: 'focusTab', tab });
-    }
-
-    /**
-     * Rewrite the metadata comment line the panel edited. The panel sends the
-     * 0-based line, its original indentation and trailing quote, and the new
-     * data object; we serialize and replace the whole line.
-     */
-    private async _handleUpdateMetadata(data: {
-        line: number;
-        indent?: string;
-        trailingQuote?: string;
-        data: MetadataCommentData;
-        isNew?: boolean;
-    }): Promise<void> {
-        const editor = this.getSourceEditor?.() ?? vscode.window.activeTextEditor;
-        if (!editor || typeof data.line !== 'number') return;
-        if (data.line < 0 || data.line >= editor.document.lineCount) return;
-
-        const newText = serializeMetadataComment(data.data, data.indent ?? '', data.trailingQuote ?? '');
-        await editor.edit(editBuilder => {
-            if (data.isNew) {
-                editBuilder.insert(new vscode.Position(data.line, 0), newText + '\n');
-            } else {
-                editBuilder.replace(editor.document.lineAt(data.line).range, newText);
-            }
-        });
-
-        // Re-emit context for the persisted comment so a repeated Apply edits it
-        // in place instead of inserting a duplicate.
-        const lines = editor.document.getText().split(/\r?\n/);
-        const block = findMetadataCommentBlock(lines, data.line);
-        if (block) block.context = analyzeMetadataLine(lines, data.line, this._definitionResolver(editor.document.uri.toString()));
-        this.updateMetadataContext(block);
-    }
-
     public dispose() {
         this._outputChannel.dispose();
+    }
+
+    private async handleS3Login(credentials: { username: string, password: string }, webview: vscode.Webview) {
+        try {
+            const config = vscode.workspace.getConfiguration('calcpad');
+            const apiUrl = config.get<string>('s3.apiUrl', 'http://localhost:5000');
+
+            this._outputChannel.appendLine(`[S3] Attempting login to: ${apiUrl}/api/auth/login`);
+            this._outputChannel.appendLine(`[S3] Username: ${credentials.username}`);
+
+            const response = await fetch(`${apiUrl}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credentials)
+            });
+
+            this._outputChannel.appendLine(`[S3] Login response status: ${response.status}`);
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(errorBody || `HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            this._outputChannel.appendLine(`[S3] Login response data: ${JSON.stringify(data, null, 2)}`);
+
+            const jwt = data.token;
+            this._outputChannel.appendLine(`[S3] Extracted JWT: ${jwt ? `${jwt.substring(0, 20)}...` : 'EMPTY'}`);
+
+            webview.postMessage({
+                type: 's3LoginResponse',
+                success: true,
+                token: data.token,
+                user: data.user
+            });
+        } catch (error: unknown) {
+            this._outputChannel.appendLine(`[S3] Login error: ${error}`);
+            if (error instanceof Error) {
+                this._outputChannel.appendLine(`[S3] Login error message: ${error.message}`);
+                this._outputChannel.appendLine(`[S3] Login error stack: ${error.stack}`);
+            }
+            webview.postMessage({
+                type: 's3LoginResponse',
+                success: false,
+                error: 'Connection error. Make sure the S3 API is running.'
+            });
+        }
+    }
+
+    private async handleS3ListFiles(token: string, webview: vscode.Webview) {
+        try {
+            const config = vscode.workspace.getConfiguration('calcpad');
+            const apiUrl = config.get<string>('s3.apiUrl', 'http://localhost:5000');
+
+            this._outputChannel.appendLine(`[S3] Requesting file list from: ${apiUrl}/api/blobstorage/list-with-metadata`);
+            this._outputChannel.appendLine(`[S3] Using token: ${token ? `${token.substring(0, 20)}...` : 'EMPTY'}`);
+
+            const response = await fetch(`${apiUrl}/api/blobstorage/list-with-metadata`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            this._outputChannel.appendLine(`[S3] Response status: ${response.status}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            this._outputChannel.appendLine(`[S3] Response data: ${JSON.stringify(data, null, 2)}`);
+
+            const files = data.files || data || [];
+            this._outputChannel.appendLine(`[S3] Extracted files array: ${JSON.stringify(files, null, 2)}`);
+            this._outputChannel.appendLine(`[S3] Number of files found: ${Array.isArray(files) ? files.length : 'Not an array'}`);
+
+            webview.postMessage({
+                type: 's3FilesResponse',
+                success: true,
+                files: files
+            });
+        } catch (error: unknown) {
+            this._outputChannel.appendLine(`[S3] List Files error: ${error}`);
+            if (error instanceof Error) {
+                this._outputChannel.appendLine(`[S3] Error message: ${error.message}`);
+                this._outputChannel.appendLine(`[S3] Error stack: ${error.stack}`);
+            }
+            webview.postMessage({
+                type: 's3FilesResponse',
+                success: false,
+                error: 'Failed to connect to S3 API'
+            });
+        }
+    }
+
+    private async handleS3DownloadFile(fileName: string, token: string, webview: vscode.Webview) {
+        try {
+            const config = vscode.workspace.getConfiguration('calcpad');
+            const apiUrl = config.get<string>('s3.apiUrl', 'http://localhost:5000');
+
+            this._outputChannel.appendLine(`[S3] Downloading file: ${fileName}`);
+            this._outputChannel.appendLine(`[S3] Download URL: ${apiUrl}/api/blobstorage/download/${fileName}`);
+
+            const response = await fetch(`${apiUrl}/api/blobstorage/download/${fileName}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            this._outputChannel.appendLine(`[S3] Download response status: ${response.status}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            this._outputChannel.appendLine(`[S3] Download response size: ${arrayBuffer.byteLength} bytes`);
+
+            const base64 = Buffer.from(arrayBuffer).toString('base64');
+
+            webview.postMessage({
+                type: 's3DownloadResponse',
+                success: true,
+                fileName: fileName,
+                fileData: `data:application/octet-stream;base64,${base64}`
+            });
+        } catch (error: unknown) {
+            this._outputChannel.appendLine(`[S3] Download error: ${error}`);
+            if (error instanceof Error) {
+                this._outputChannel.appendLine(`[S3] Download error message: ${error.message}`);
+            }
+            webview.postMessage({
+                type: 's3DownloadResponse',
+                success: false,
+                error: 'Download failed'
+            });
+        }
+    }
+
+    private async handleS3UploadFile(fileName: string, fileData: string, tags: string[], token: string, webview: vscode.Webview) {
+        try {
+            const config = vscode.workspace.getConfiguration('calcpad');
+            const apiUrl = config.get<string>('s3.apiUrl', 'http://localhost:5000');
+
+            this._outputChannel.appendLine(`[S3] Uploading file: ${fileName}`);
+            this._outputChannel.appendLine(`[S3] Upload URL: ${apiUrl}/api/blobstorage/upload`);
+            this._outputChannel.appendLine(`[S3] Tags: ${JSON.stringify(tags)}`);
+
+            // Convert base64 data URL to buffer
+            const base64Data = fileData.split(',')[1];
+            const buffer = Buffer.from(base64Data, 'base64');
+
+            this._outputChannel.appendLine(`[S3] File size: ${buffer.length} bytes`);
+
+            // Use native FormData (available in Node.js 18+)
+            const formData = new FormData();
+
+            // Create a Blob for the file
+            const fileBlob = new Blob([buffer], { type: 'application/octet-stream' });
+            formData.append('file', fileBlob, fileName);
+
+            if (tags.length > 0) {
+                formData.append('tags', JSON.stringify(tags));
+            }
+
+            const response = await fetch(`${apiUrl}/api/blobstorage/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            this._outputChannel.appendLine(`[S3] Upload response status: ${response.status}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            this._outputChannel.appendLine(`[S3] Upload successful for: ${fileName}`);
+
+            webview.postMessage({
+                type: 's3UploadResponse',
+                success: true
+            });
+        } catch (error: unknown) {
+            this._outputChannel.appendLine(`[S3] Upload error: ${error}`);
+            if (error instanceof Error) {
+                this._outputChannel.appendLine(`[S3] Upload error message: ${error.message}`);
+            }
+            webview.postMessage({
+                type: 's3UploadResponse',
+                success: false,
+                error: 'Upload failed'
+            });
+        }
     }
 
     private _getHtmlForWebview(webview: vscode.Webview) {
@@ -576,15 +704,15 @@ export class CalcpadVueUIProvider implements vscode.WebviewViewProvider {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="${styleUri}" rel="stylesheet">
-    <title>CalcpadCE Vue UI</title>
+    <title>CalcPad Vue UI</title>
 </head>
 <body>
     <div id="app">
         <div style="padding: 20px; text-align: center; color: #666; font-size: 12px;">
-            Loading Vue.js CalcpadCE UI...
+            Loading Vue.js CalcPad UI...
             <br><small>If this message persists, check the developer console for errors</small>
         </div>
     </div>

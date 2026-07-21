@@ -82,7 +82,7 @@ namespace Calcpad.Highlighter.Linter.Constants
         private static FrozenSet<string> _controlBlockStarters;
         private static FrozenSet<string> _controlBlockEnders;
         private static FrozenSet<string> _commandsExcludingCommandBlocks;
-        private static (string Name, string NameWithBrace)[] _commandsWithBrace;
+        private static FrozenSet<string> _stringFunctions;
 
         /// <summary>
         /// Valid hash keywords without the # prefix (case-insensitive).
@@ -181,22 +181,30 @@ namespace Calcpad.Highlighter.Linter.Constants
         }
 
         /// <summary>
-        /// Same set as <see cref="CommandsExcludingCommandBlocks"/>, but as an array of
-        /// (Name, NameWithBrace) pairs. NameWithBrace is the name + "{" precomputed,
-        /// avoiding per-line string concatenation when searching for command tokens.
+        /// Built-in string function names ending with $ (case-insensitive).
+        /// Derived from Functions set by filtering names ending with $.
         /// </summary>
-        public static (string Name, string NameWithBrace)[] CommandsWithBrace
+        public static FrozenSet<string> StringFunctions
         {
             get
             {
-                if (_commandsWithBrace != null) return _commandsWithBrace;
+                if (_stringFunctions != null) return _stringFunctions;
 
-                _commandsWithBrace = CommandsExcludingCommandBlocks
-                    .Select(c => (c, c + "{"))
-                    .ToArray();
-                return _commandsWithBrace;
+                _stringFunctions = Functions
+                    .Where(f => f.EndsWith("$"))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                    .ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+                return _stringFunctions;
             }
         }
+
+        /// <summary>
+        /// String functions that return numeric values instead of strings.
+        /// </summary>
+        public static readonly FrozenSet<string> NumericResultStringFunctions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "len$", "val$", "compare$", "instr$", "find$"
+        }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         #endregion
 
@@ -224,18 +232,6 @@ namespace Calcpad.Highlighter.Linter.Constants
             "#rad", "#deg", "#gra",
             "#html", "#cpd", "#markdown"
         }.ToFrozenSet(System.StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// Special variable names that configure the engine when assigned (plot dimensions,
-        /// solver precision, etc.). Core reads them via GetSettingsVariable with a case-sensitive
-        /// lookup, so assigning one has an effect even when it is never referenced afterwards.
-        /// </summary>
-        public static readonly FrozenSet<string> SettingsVariables = new HashSet<string>(System.StringComparer.Ordinal)
-        {
-            "PlotWidth", "PlotHeight", "PlotStep", "PlotSVG", "PlotAdaptive",
-            "PlotSmooth", "PlotShadows", "PlotLightDir", "PlotPalette",
-            "Precision", "Tol", "ReturnAngleUnits", "Units"
-        }.ToFrozenSet(System.StringComparer.Ordinal);
 
         /// <summary>
         /// First words of multi-word keywords (else, end).

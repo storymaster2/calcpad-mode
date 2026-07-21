@@ -96,7 +96,7 @@ export function buildBuiltinDocMarkdown(item: InsertItem): vscode.MarkdownString
 
     // Element-wise note (useful context for vector/matrix-capable scalar functions)
     if (item.isElementWise) {
-        md.appendMarkdown('*Accepts a scalar, vector, or matrix — applied element-wise, returning the same shape.*\n\n');
+        md.appendMarkdown('*Operates element-wise on vectors and matrices.*\n\n');
     }
 
     // Example

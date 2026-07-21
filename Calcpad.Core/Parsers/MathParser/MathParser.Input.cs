@@ -97,6 +97,7 @@ namespace Calcpad.Core
                 var isInput = false;
                 var isSubscript = false;
                 var bracketCounter = 0;
+                var parenDepth = 0;
                 var tokenLiteral = new TextSpan(expression);
                 var unitsLiteral = new TextSpan(expression);
                 var textSpan = new TextSpan(expression);
@@ -140,24 +141,19 @@ namespace Calcpad.Core
                             if (c == '.' && tt == TokenTypes.Variable)
                             {
                                 var s = tokenLiteral.ToString();
-                                t = MakeVectorOrMatrixToken(s);
-                                if (t is not null)
-                                {
-                                    if (_isComplex)
-                                        throw Exceptions.ComplexVectorsAndMatricesNotSupported();
+                                t = MakeVectorOrMatrixToken(s) ?? new VariableToken(s, null) { Type = TokenTypes.Array };
+                                if (_isComplex && (t.Type == TokenTypes.Vector || t.Type == TokenTypes.Matrix))
+                                    throw Exceptions.ComplexVectorsAndMatricesNotSupported();
 
-                                    tokens.Enqueue(t);
-                                    tokenLiteral.Reset(i);
-                                    tt = t.Type switch
-                                    {
-                                        TokenTypes.Vector => TokenTypes.VectorIndex,
-                                        TokenTypes.Matrix => TokenTypes.MatrixIndex,
-                                        _ => TokenTypes.ArrayIndex
-                                    };
-                                    tokens.Enqueue(new Token(s, tt));
-                                }
-                                else
-                                    tokenLiteral.Expand();
+                                tokens.Enqueue(t);
+                                tokenLiteral.Reset(i);
+                                tt = t.Type switch
+                                {
+                                    TokenTypes.Vector => TokenTypes.VectorIndex,
+                                    TokenTypes.Matrix => TokenTypes.MatrixIndex,
+                                    _ => TokenTypes.ArrayIndex
+                                };
+                                tokens.Enqueue(new Token(s, tt));
                             }
                             else
                                 tokenLiteral.Expand();
@@ -319,9 +315,14 @@ namespace Calcpad.Core
                             }
                             else
                             {
+                                if (tt == TokenTypes.BracketLeft)
+                                    parenDepth++;
+                                else if (tt == TokenTypes.BracketRight)
+                                    parenDepth--;
+
                                 if (tt == TokenTypes.Operator)
                                 {
-                                    if (c == '=' || c == '←')
+                                    if ((c == '=' || c == '←') && parenDepth == 0)
                                     {
                                         if (!allowAssignment || _parser._assignmentIndex > 0)
                                             throw Exceptions.ImproperAssignment();

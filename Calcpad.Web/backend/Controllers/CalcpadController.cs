@@ -2,6 +2,7 @@ using Calcpad.Server.Services;
 using Calcpad.Server.Models.Pdf;
 using Microsoft.AspNetCore.Mvc;
 using Calcpad.Core;
+using ServerAuthSettings = Calcpad.Server.Services.AuthSettings;
 using Calcpad.Highlighter.ContentResolution;
 using Calcpad.Highlighter.Linter;
 using Calcpad.Highlighter.Linter.Models;
@@ -28,8 +29,24 @@ namespace Calcpad.Server.Controllers
             _pdfService = pdfService;
         }
 
+        /// <summary>
+        /// Decodes a base64-encoded client file cache dictionary into raw bytes.
+        /// Frontend sends base64 strings over JSON; this converts at the boundary.
+        /// </summary>
+        private static Dictionary<string, byte[]> DecodeClientFileCache(Dictionary<string, string>? base64Cache)
+        {
+            var result = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+            if (base64Cache == null) return result;
+            foreach (var kvp in base64Cache)
+            {
+                try { result[kvp.Key] = Convert.FromBase64String(kvp.Value); }
+                catch (FormatException) { /* skip malformed entries */ }
+            }
+            return result;
+        }
+
         [HttpPost("convert")]
-        public IActionResult ConvertToHtml([FromBody] CalcpadRequest request, [FromQuery] bool unwrap = false)
+        public async Task<IActionResult> ConvertToHtml([FromBody] CalcpadRequest request)
         {
             try
             {
@@ -38,19 +55,15 @@ namespace Calcpad.Server.Controllers
                     return BadRequest("Content is required");
                 }
 
-                var forceUnwrapped = unwrap || request.ForceUnwrappedCode;
-                var (htmlResult, _, errors) = _calcpadService.Convert(request.Content, request.Settings, forceUnwrapped, request.Theme, request.SourceFilePath, request.ForPrint);
-                if (unwrap)
+                var ctx = new WebFetchContext
                 {
-                    htmlResult = ProcessDataTextLinks(htmlResult);
-                }
+                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
+                    AuthSettings = request.AuthSettings,
+                    ApiTimeoutMs = request.ApiTimeoutMs,
+                    SourceFilePath = request.SourceFilePath
+                };
+                var htmlResult = await _calcpadService.ConvertAsync(request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, ctx, request.ForPrint);
 
-                var errorsJson = System.Text.Json.JsonSerializer.Serialize(errors, new System.Text.Json.JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                    Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() },
-                });
-                Response.Headers["X-Calcpad-Errors"] = Uri.EscapeDataString(errorsJson);
                 return Content(htmlResult, "text/html");
             }
             catch (Exception ex)
@@ -60,20 +73,87 @@ namespace Calcpad.Server.Controllers
             }
         }
 
-        private static HighlightResponse MapTokensToResponse(IEnumerable<Token> tokens, bool includeText)
+        [HttpPost("convert-unwrapped")]
+        public async Task<IActionResult> ConvertToUnwrappedHtml([FromBody] CalcpadRequest request)
         {
-            return new HighlightResponse
+            try
             {
-                Tokens = tokens.Select(t => new HighlightToken
+                if (string.IsNullOrWhiteSpace(request.Content))
                 {
-                    Line = t.Line,
-                    Column = t.Column,
-                    Length = t.Length,
-                    Type = t.Type.ToString(),
-                    TypeId = (int)t.Type,
-                    Text = includeText ? t.Text : null
-                }).ToList()
-            };
+                    return BadRequest("Content is required");
+                }
+
+                var ctx = new WebFetchContext
+                {
+                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
+                    AuthSettings = request.AuthSettings,
+                    ApiTimeoutMs = request.ApiTimeoutMs,
+                    SourceFilePath = request.SourceFilePath
+                };
+                var result = await _calcpadService.ConvertAsync(request.Content, request.Settings, forceUnwrappedCode: true, request.Theme, ctx, request.ForPrint);
+
+                // Process data-text links to make them functional
+                var processedResult = ProcessDataTextLinks(result);
+
+                return Content(processedResult, "text/html");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error processing Calcpad content: {ex.Message}");
+            }
+        }
+
+        [HttpPost("convert-ui")]
+        public async Task<IActionResult> ConvertWithUi([FromBody] CalcpadUiRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Content))
+                {
+                    return BadRequest("Content is required");
+                }
+
+                var ctx = new WebFetchContext
+                {
+                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
+                    AuthSettings = request.AuthSettings,
+                    ApiTimeoutMs = request.ApiTimeoutMs,
+                    SourceFilePath = request.SourceFilePath
+                };
+
+                // Ensure EnableUi is set and pass overrides through Settings
+                var settings = request.Settings ?? new Settings();
+                settings.EnableUi = true;
+                settings.UiOverrides = request.UiOverrides;
+
+                var htmlResult = await _calcpadService.ConvertAsync(request.Content, settings, request.ForceUnwrappedCode, request.Theme, ctx, request.ForPrint);
+
+                return Content(htmlResult, "text/html");
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogError("Convert-UI request failed", ex);
+                return StatusCode(500, $"Error processing Calcpad UI content: {ex.Message}");
+            }
+        }
+
+        [HttpPost("debug-raw-code")]
+        public async Task<IActionResult> GetRawCode([FromBody] CalcpadRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Content))
+                {
+                    return BadRequest("Content is required");
+                }
+
+                var rawCode = await _calcpadService.GetRawCodeFromMacroParser(request.Content);
+                return Content(rawCode, "text/plain");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error processing Calcpad content: {ex.Message}");
+            }
         }
 
         private string ProcessDataTextLinks(string html)
@@ -203,15 +283,24 @@ namespace Calcpad.Server.Controllers
                 if (string.IsNullOrWhiteSpace(request.Content))
                     return BadRequest(new { error = "Content is required" });
 
+                var ctx = new WebFetchContext
+                {
+                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
+                    AuthSettings = request.AuthSettings,
+                    ApiTimeoutMs = request.ApiTimeoutMs,
+                    SourceFilePath = request.SourceFilePath
+                };
                 // forPrint=true so the HTML is the printable / unwrapped form,
-                // matching what the OpenXmlWriter expects. captureOpenXml=true tells
-                // the parser to emit OMML so equations render as native Word math
-                // instead of empty <m:oMath/>.
-                var (html, openXmlExpressions, _) = _calcpadService.Convert(
-                    request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, request.SourceFilePath, forPrint: true, captureOpenXml: true);
+                // matching what the OpenXmlWriter expects.
+                var html = await _calcpadService.ConvertAsync(
+                    request.Content, request.Settings, request.ForceUnwrappedCode, request.Theme, ctx, forPrint: true);
 
                 using var ms = new MemoryStream();
-                var writer = new OpenXmlWriter(openXmlExpressions.ToList());
+                // Calcpad's plot/inline-expression list isn't surfaced through
+                // CalcpadService yet; pass an empty list so equations render
+                // as text (still well-formed). Plot images embedded in HTML
+                // are picked up by OpenXmlWriter's image processor as normal.
+                var writer = new OpenXmlWriter(new List<string>());
                 writer.Convert(html, ms);
                 var bytes = ms.ToArray();
 
@@ -225,6 +314,107 @@ namespace Calcpad.Server.Controllers
             {
                 FileLogger.LogError("DOCX generation failed", ex);
                 return StatusCode(500, new { error = "DOCX generation failed", message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Lists files captured by #write/#append for the most recent convert run
+        /// against the given source file path.
+        /// </summary>
+        [HttpGet("exports")]
+        public IActionResult ListExports([FromQuery] string? sourceFilePath)
+        {
+            var entries = _calcpadService.ListExports(sourceFilePath);
+            return Ok(entries);
+        }
+
+        /// <summary>
+        /// Returns the bytes of a single file captured by #write/#append.
+        /// </summary>
+        [HttpGet("export")]
+        public IActionResult GetExport([FromQuery] string? sourceFilePath, [FromQuery] string? filename)
+        {
+            if (string.IsNullOrWhiteSpace(filename))
+                return BadRequest(new { error = "filename is required" });
+
+            // Defense in depth: never accept paths attempting to traverse.
+            if (filename.Contains("..", StringComparison.Ordinal) ||
+                filename.Contains('/') || filename.Contains('\\'))
+                return BadRequest(new { error = "Invalid filename" });
+
+            if (!_calcpadService.TryGetExport(sourceFilePath, filename, out var bytes, out var contentType))
+                return NotFound();
+
+            return File(bytes, contentType, filename);
+        }
+
+        /// <summary>
+        /// Returns all #write/#append outputs for the given source file as a single ZIP.
+        /// </summary>
+        [HttpGet("exports.zip")]
+        public IActionResult GetExportsZip([FromQuery] string? sourceFilePath)
+        {
+            if (!_calcpadService.TryGetExportZip(sourceFilePath, out var zipBytes))
+                return NotFound();
+
+            return File(zipBytes, "application/zip", "calcpad-exports.zip");
+        }
+
+        /// <summary>
+        /// Clears the server-side remote content cache.
+        /// If keys are provided, only those entries are removed. Otherwise, the entire cache is cleared.
+        /// </summary>
+        [HttpPost("refresh-cache")]
+        public IActionResult RefreshCache([FromBody] RefreshCacheRequest request)
+        {
+            if (request?.Keys != null && request.Keys.Count > 0)
+            {
+                foreach (var key in request.Keys)
+                    CalcpadService.RemoveFromRemoteContentCache(key);
+                FileLogger.LogInfo($"Remote content cache: {request.Keys.Count} entries removed");
+            }
+            else if (!string.IsNullOrEmpty(request?.Key))
+            {
+                CalcpadService.RemoveFromRemoteContentCache(request.Key);
+                FileLogger.LogInfo($"Remote content cache entry removed: {request.Key}");
+            }
+            else
+            {
+                CalcpadService.ClearRemoteContentCache();
+                FileLogger.LogInfo("Remote content cache cleared");
+            }
+            return Ok(new { status = "ok" });
+        }
+
+        [HttpPost("resolve-content")]
+        public async Task<IActionResult> ResolveContent([FromBody] ContentResolverRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Content))
+                    return BadRequest("Content is required");
+
+                FileLogger.LogInfo("Content resolution request received",
+                    $"Length: {request.Content.Length}, Staged: {request.Staged}");
+
+                // Pre-fetch remote content (URLs and API routes) into the cache
+                var ctx = new WebFetchContext
+                {
+                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
+                    AuthSettings = request.AuthSettings,
+                    ApiTimeoutMs = request.ApiTimeoutMs
+                };
+                await CalcpadService.PreFetchRemoteContentAsync(request.Content, ctx);
+
+                var resolver = new ContentResolver();
+                var result = resolver.GetStagedContent(request.Content, request.IncludeFiles, ctx.ClientFileCache, request.SourceFilePath);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogError("Content resolution failed", ex);
+                return StatusCode(500, $"Error resolving content: {ex.Message}");
             }
         }
 
@@ -244,12 +434,12 @@ namespace Calcpad.Server.Controllers
 
                 var tokenizer = new CalcpadTokenizer();
 
-                // Run content resolution to collect macro info from includes (resolver reads
-                // referenced files from disk via SourceFilePath when no in-memory cache is supplied).
-                if (!string.IsNullOrEmpty(request.SourceFilePath))
+                // Run content resolution to collect macro info from includes
+                if (request.IncludeFiles != null || request.ClientFileCache != null)
                 {
+                    var clientCache = DecodeClientFileCache(request.ClientFileCache);
                     var resolver = new ContentResolver();
-                    var staged = resolver.GetStagedContent(request.Content, sourceFilePath: request.SourceFilePath);
+                    var staged = resolver.GetStagedContent(request.Content, request.IncludeFiles, clientCache, request.SourceFilePath);
                     tokenizer.SetMacroCommentParameters(
                         staged.Stage2.MacroCommentParameters,
                         staged.Stage2.MacroParameterOrder,
@@ -257,7 +447,22 @@ namespace Calcpad.Server.Controllers
                 }
 
                 var result = tokenizer.Tokenize(request.Content);
-                return Ok(MapTokensToResponse(result.Tokens, request.IncludeText));
+
+                // Convert to response format
+                var response = new HighlightResponse
+                {
+                    Tokens = result.Tokens.Select(t => new HighlightToken
+                    {
+                        Line = t.Line,
+                        Column = t.Column,
+                        Length = t.Length,
+                        Type = t.Type.ToString(),
+                        TypeId = (int)t.Type,
+                        Text = request.IncludeText ? t.Text : null
+                    }).ToList()
+                };
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -279,7 +484,21 @@ namespace Calcpad.Server.Controllers
 
                 var tokenizer = new CalcpadTokenizer();
                 var result = tokenizer.TokenizeSingleLine(request.Line, request.LineNumber);
-                return Ok(MapTokensToResponse(result.Tokens, request.IncludeText));
+
+                var response = new HighlightResponse
+                {
+                    Tokens = result.Tokens.Select(t => new HighlightToken
+                    {
+                        Line = t.Line,
+                        Column = t.Column,
+                        Length = t.Length,
+                        Type = t.Type.ToString(),
+                        TypeId = (int)t.Type,
+                        Text = request.IncludeText ? t.Text : null
+                    }).ToList()
+                };
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -292,7 +511,7 @@ namespace Calcpad.Server.Controllers
         /// Lint Calcpad source code and return diagnostics (errors and warnings).
         /// </summary>
         [HttpPost("lint")]
-        public IActionResult LintContent([FromBody] LintRequest request)
+        public async Task<IActionResult> LintContent([FromBody] LintRequest request)
         {
             try
             {
@@ -301,10 +520,20 @@ namespace Calcpad.Server.Controllers
 
                 FileLogger.LogInfo("Lint request received", "Length: " + request.Content.Length);
 
+                // Pre-fetch remote content (URLs and API routes) into the cache
+                var ctx = new WebFetchContext
+                {
+                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
+                    AuthSettings = request.AuthSettings,
+                    ApiTimeoutMs = request.ApiTimeoutMs
+                };
+                await CalcpadService.PreFetchRemoteContentAsync(request.Content, ctx);
+
                 var resolver = new ContentResolver();
                 var linter = new CalcpadLinter();
 
-                var staged = resolver.GetStagedContent(request.Content, sourceFilePath: request.SourceFilePath);
+                // Resolve content with includes and client file cache
+                var staged = resolver.GetStagedContent(request.Content, request.IncludeFiles, ctx.ClientFileCache, request.SourceFilePath);
 
                 // Extract LintIgnore regions from raw source, then lint with suppression
                 var ignoreRegions = _lintIgnoreRegionParser.ExtractRegions(request.Content);
@@ -342,7 +571,7 @@ namespace Calcpad.Server.Controllers
         /// Returns type information, parameters, return types, and source locations.
         /// </summary>
         [HttpPost("definitions")]
-        public IActionResult GetDefinitions([FromBody] DefinitionsRequest request)
+        public async Task<IActionResult> GetDefinitions([FromBody] DefinitionsRequest request)
         {
             try
             {
@@ -351,10 +580,57 @@ namespace Calcpad.Server.Controllers
 
                 FileLogger.LogInfo("Definitions request received", "Length: " + request.Content.Length);
 
+                // Pre-fetch remote content (URLs and API routes) into the cache
+                var ctx = new WebFetchContext
+                {
+                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
+                    AuthSettings = request.AuthSettings,
+                    ApiTimeoutMs = request.ApiTimeoutMs
+                };
+                await CalcpadService.PreFetchRemoteContentAsync(request.Content, ctx);
+
                 var resolver = new ContentResolver();
-                var staged = resolver.GetStagedContent(request.Content, sourceFilePath: request.SourceFilePath);
+                var staged = resolver.GetStagedContent(request.Content, request.IncludeFiles, ctx.ClientFileCache, request.SourceFilePath);
 
                 var typeTracker = staged.Stage3.TypeTracker;
+
+                // Extract persisted uiOverrides from HTML comment blocks
+                PersistedUiOverridesDto? persistedUiOverrides = null;
+                try
+                {
+                    var commentTokenizer = new CalcpadTokenizer();
+                    var commentTokens = commentTokenizer.Tokenize(request.Content);
+                    var commentParser = new HtmlCommentParser();
+                    var commentBlocks = commentParser.Parse(commentTokens);
+
+                    foreach (var block in commentBlocks)
+                    {
+                        if (block.Status != HtmlCommentParseStatus.Success || !block.Data.HasValue)
+                            continue;
+                        if (!block.Data.Value.TryGetProperty("uiOverrides", out var overridesElement))
+                            continue;
+                        if (overridesElement.ValueKind != System.Text.Json.JsonValueKind.Object)
+                            continue;
+
+                        var overrides = new Dictionary<string, string>();
+                        foreach (var prop in overridesElement.EnumerateObject())
+                        {
+                            if (prop.Value.ValueKind == System.Text.Json.JsonValueKind.String)
+                                overrides[prop.Name] = prop.Value.GetString() ?? "";
+                        }
+
+                        persistedUiOverrides = new PersistedUiOverridesDto
+                        {
+                            Overrides = overrides,
+                            CommentLine = block.StartLine
+                        };
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    FileLogger.LogWarning("Failed to extract persisted uiOverrides", ex.Message);
+                }
 
                 var response = new DefinitionsResponse
                 {
@@ -369,7 +645,8 @@ namespace Calcpad.Server.Controllers
                         SourceFile = m.SourceFile,
                         Description = m.Description,
                         ParamTypes = m.ParamTypes,
-                        ParamDescriptions = m.ParamDescriptions
+                        ParamDescriptions = m.ParamDescriptions,
+                        Defaults = m.Defaults
                     }).ToList(),
 
                     Functions = staged.Stage3.FunctionsWithParams.Select(f =>
@@ -390,7 +667,8 @@ namespace Calcpad.Server.Controllers
                             SourceFile = f.SourceFile,
                             Description = f.Description,
                             ParamTypes = f.ParamTypes,
-                            ParamDescriptions = f.ParamDescriptions
+                            ParamDescriptions = f.ParamDescriptions,
+                            Defaults = f.Defaults
                         };
                     }).ToList(),
 
@@ -416,9 +694,10 @@ namespace Calcpad.Server.Controllers
                         Expression = u.Definition,
                         LineNumber = u.LineNumber,
                         Source = u.Source ?? "local",
-                        SourceFile = u.SourceFile,
-                        Description = u.Description
-                    }).ToList()
+                        SourceFile = u.SourceFile
+                    }).ToList(),
+
+                    UiOverrides = persistedUiOverrides
                 };
 
                 return Ok(response);
@@ -431,24 +710,31 @@ namespace Calcpad.Server.Controllers
         }
 
         /// <summary>
-        /// Resolve a cursor position to the user-defined symbol under it and
-        /// return all of that symbol's occurrences. Single round-trip that
-        /// powers go-to-definition, find-all-references, and rename across
-        /// every editor integration — the matching heuristic lives here so
-        /// the clients don't each re-implement it.
+        /// Get all variable occurrence locations (definitions, reassignments, and usages) for go-to-definition
+        /// and find-all-references features. Returns a dictionary mapping variable name to all its occurrences,
+        /// with original source line positions and include file info.
         /// </summary>
-        [HttpPost("symbol-at-position")]
-        public IActionResult SymbolAtPosition([FromBody] SymbolAtPositionRequest request)
+        [HttpPost("find-references")]
+        public async Task<IActionResult> FindReferences([FromBody] DefinitionsRequest request)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(request.Content))
                     return BadRequest("Content is required");
 
+                FileLogger.LogInfo("Find references request received", "Length: " + request.Content.Length);
+
+                // Pre-fetch remote content (URLs and API routes) into the cache
+                var ctx = new WebFetchContext
+                {
+                    ClientFileCache = DecodeClientFileCache(request.ClientFileCache),
+                    AuthSettings = request.AuthSettings,
+                    ApiTimeoutMs = request.ApiTimeoutMs
+                };
+                await CalcpadService.PreFetchRemoteContentAsync(request.Content, ctx);
+
                 var resolver = new ContentResolver();
-                var staged = resolver.GetStagedContent(request.Content, sourceFilePath: request.SourceFilePath);
-                var hit = SymbolResolver.ResolveSymbolAt(staged.Stage3, request.Line, request.Column);
-                if (hit == null) return Ok(null);
+                var staged = resolver.GetStagedContent(request.Content, request.IncludeFiles, ctx.ClientFileCache, request.SourceFilePath);
 
                 SymbolLocationDto ToDto(Calcpad.Highlighter.ContentResolution.SymbolLocation loc) => new SymbolLocationDto
                 {
@@ -460,18 +746,22 @@ namespace Calcpad.Server.Controllers
                     IsAssignment = loc.IsAssignment
                 };
 
-                var response = new SymbolAtPositionResponse
+                Dictionary<string, List<SymbolLocationDto>> MapIndex(Dictionary<string, List<Calcpad.Highlighter.ContentResolution.SymbolLocation>> src)
+                    => src.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(ToDto).ToList());
+
+                var response = new FindReferencesResponse
                 {
-                    SymbolName = hit.Name,
-                    Kind = hit.Kind.ToString().ToLowerInvariant(),
-                    Locations = hit.Locations.Select(ToDto).ToList()
+                    Variables = MapIndex(staged.Stage3.VariableIndex),
+                    Functions = MapIndex(staged.Stage3.FunctionIndex),
+                    Macros = MapIndex(staged.Stage3.MacroIndex)
                 };
+
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                FileLogger.LogError("Symbol-at-position request failed", ex);
-                return StatusCode(500, "Error resolving symbol: " + ex.Message);
+                FileLogger.LogError("Find references request failed", ex);
+                return StatusCode(500, "Error finding references: " + ex.Message);
             }
         }
 
@@ -655,6 +945,15 @@ namespace Calcpad.Server.Controllers
         public string Content { get; set; } = string.Empty;
     }
 
+    public class RefreshCacheRequest
+    {
+        /// <summary>Specific cache key (URL or API route) to invalidate. If null/empty, clears entire cache.</summary>
+        public string? Key { get; set; }
+
+        /// <summary>List of cache keys to invalidate. Takes precedence over Key if provided.</summary>
+        public List<string>? Keys { get; set; }
+    }
+
     public class CalcpadRequest
     {
         public string Content { get; set; } = string.Empty;
@@ -670,8 +969,58 @@ namespace Calcpad.Server.Controllers
         public bool ForPrint { get; set; } = false;
 
         /// <summary>
-        /// Full path of the source file on disk. Used to resolve relative
-        /// #include and #read paths against the parent file's directory.
+        /// Client-side file cache with base64-encoded file contents.
+        /// Key is the filename, value is the file content encoded as base64.
+        /// Used to resolve #include and #read directives from client-cached files.
+        /// </summary>
+        public Dictionary<string, string>? ClientFileCache { get; set; }
+
+        /// <summary>
+        /// Authentication settings for API routing (JWT token and routing config).
+        /// Used by the server-side Router to fetch remote files for #include and #read.
+        /// </summary>
+        public ServerAuthSettings? AuthSettings { get; set; }
+
+        /// <summary>
+        /// Timeout in milliseconds for API calls (used by #include, #read, etc.).
+        /// Default is 10000ms (10 seconds).
+        /// </summary>
+        public int ApiTimeoutMs { get; set; } = 10000;
+
+        /// <summary>
+        /// Full path of the source file on the client. Used to resolve relative
+        /// #include and #read paths so they match the client's cache keys.
+        /// </summary>
+        public string? SourceFilePath { get; set; }
+    }
+
+    public class CalcpadUiRequest : CalcpadRequest
+    {
+        /// <summary>
+        /// Maps variable names to override values for UI input fields.
+        /// When a user changes an input value in the preview, the frontend
+        /// sends the updated values here to re-run the calculation.
+        /// </summary>
+        public Dictionary<string, string>? UiOverrides { get; set; }
+    }
+
+    public class ContentResolverRequest
+    {
+        public string Content { get; set; } = string.Empty;
+        public ServerAuthSettings? AuthSettings { get; set; }
+        public int ApiTimeoutMs { get; set; } = 10000;
+        public bool Staged { get; set; } = false;
+        public Dictionary<string, string>? IncludeFiles { get; set; }
+
+        /// <summary>
+        /// Client-side file cache with base64-encoded file contents.
+        /// Key is the filename, value is the file content encoded as base64.
+        /// Used to resolve #include and #read directives from client-cached files.
+        /// </summary>
+        public Dictionary<string, string>? ClientFileCache { get; set; }
+
+        /// <summary>
+        /// Full path of the source file on the client.
         /// </summary>
         public string? SourceFilePath { get; set; }
     }
@@ -684,8 +1033,17 @@ namespace Calcpad.Server.Controllers
         /// <summary>Whether to include the token text in the response (default: false to reduce payload size)</summary>
         public bool IncludeText { get; set; } = false;
 
+        /// <summary>Optional dictionary of include file contents (filename -> content)</summary>
+        public Dictionary<string, string>? IncludeFiles { get; set; }
+
         /// <summary>
-        /// Full path of the source file on disk.
+        /// Client-side file cache with base64-encoded file contents.
+        /// Used to resolve #include directives from client-cached files.
+        /// </summary>
+        public Dictionary<string, string>? ClientFileCache { get; set; }
+
+        /// <summary>
+        /// Full path of the source file on the client.
         /// </summary>
         public string? SourceFilePath { get; set; }
     }
@@ -739,8 +1097,24 @@ namespace Calcpad.Server.Controllers
         /// <summary>The Calcpad source code to lint</summary>
         public string Content { get; set; } = string.Empty;
 
+        /// <summary>Optional dictionary of include file contents (filename -> content)</summary>
+        public Dictionary<string, string>? IncludeFiles { get; set; }
+
         /// <summary>
-        /// Full path of the source file on disk.
+        /// Client-side file cache with base64-encoded file contents.
+        /// Key is the filename, value is the file content encoded as base64.
+        /// Used to resolve #include and #read directives from client-cached files.
+        /// </summary>
+        public Dictionary<string, string>? ClientFileCache { get; set; }
+
+        /// <summary>Authentication settings for API routing (JWT token and routing config).</summary>
+        public ServerAuthSettings? AuthSettings { get; set; }
+
+        /// <summary>Timeout in milliseconds for remote fetches. Default is 10000ms.</summary>
+        public int ApiTimeoutMs { get; set; } = 10000;
+
+        /// <summary>
+        /// Full path of the source file on the client.
         /// </summary>
         public string? SourceFilePath { get; set; }
     }
@@ -789,7 +1163,23 @@ namespace Calcpad.Server.Controllers
         /// <summary>The Calcpad source code to analyze</summary>
         public string Content { get; set; } = string.Empty;
 
-        /// <summary>Full path of the source file on disk.</summary>
+        /// <summary>Optional dictionary of include file contents (filename -> content)</summary>
+        public Dictionary<string, string>? IncludeFiles { get; set; }
+
+        /// <summary>
+        /// Client-side file cache with base64-encoded file contents.
+        /// Key is the filename, value is the file content encoded as base64.
+        /// Used to resolve #include and #read directives from client-cached files.
+        /// </summary>
+        public Dictionary<string, string>? ClientFileCache { get; set; }
+
+        /// <summary>Authentication settings for API routing (JWT token and routing config).</summary>
+        public ServerAuthSettings? AuthSettings { get; set; }
+
+        /// <summary>Timeout in milliseconds for remote fetches. Default is 10000ms.</summary>
+        public int ApiTimeoutMs { get; set; } = 10000;
+
+        /// <summary>Full path of the source file on the client.</summary>
         public string? SourceFilePath { get; set; }
     }
 
@@ -806,6 +1196,18 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>All custom unit definitions</summary>
         public List<CustomUnitDefinitionDto> CustomUnits { get; set; } = new();
+
+        /// <summary>Persisted UI overrides extracted from an HTML comment block, if present</summary>
+        public PersistedUiOverridesDto? UiOverrides { get; set; }
+    }
+
+    public class PersistedUiOverridesDto
+    {
+        /// <summary>Variable name to override value mapping</summary>
+        public Dictionary<string, string> Overrides { get; set; } = new();
+
+        /// <summary>Zero-based line number of the HTML comment block containing the overrides</summary>
+        public int CommentLine { get; set; }
     }
 
     public class MacroDefinitionDto
@@ -839,6 +1241,9 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>User-provided descriptions per parameter</summary>
         public List<string>? ParamDescriptions { get; set; }
+
+        /// <summary>Default values parallel to Parameters. null = required, string = default expression.</summary>
+        public List<string?>? Defaults { get; set; }
     }
 
     public class FunctionDefinitionDto
@@ -854,13 +1259,13 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>
         /// Inferred return type name.
-        /// Values: Unknown, Value, Vector, Matrix, CustomUnit, Function, InlineMacro, MultilineMacro, Various
+        /// Values: Unknown, Value, Vector, Matrix, StringVariable, Various, Function, InlineMacro, MultilineMacro, CustomUnit
         /// </summary>
         public string ReturnType { get; set; } = "Unknown";
 
         /// <summary>
         /// Return type ID for efficient frontend processing.
-        /// 0=Unknown, 1=Value, 2=Vector, 3=Matrix, 4=CustomUnit, 5=Function, 6=InlineMacro, 7=MultilineMacro, 8=Various
+        /// 0=Unknown, 1=Value, 2=Vector, 3=Matrix, 4=StringVariable, 5=Various, 6=Function, 7=InlineMacro, 8=MultilineMacro, 9=CustomUnit
         /// </summary>
         public int ReturnTypeId { get; set; }
 
@@ -890,6 +1295,9 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>User-provided descriptions per parameter</summary>
         public List<string>? ParamDescriptions { get; set; }
+
+        /// <summary>Default values parallel to Parameters. null = required, string = default expression.</summary>
+        public List<string?>? Defaults { get; set; }
     }
 
     public class VariableDefinitionDto
@@ -902,13 +1310,13 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>
         /// Inferred type name.
-        /// Values: Unknown, Value, Vector, Matrix, Various
+        /// Values: Unknown, Value, Vector, Matrix, StringVariable, Various
         /// </summary>
         public string Type { get; set; } = "Unknown";
 
         /// <summary>
         /// Type ID for efficient frontend processing.
-        /// 0=Unknown, 1=Value, 2=Vector, 3=Matrix, 8=Various
+        /// 0=Unknown, 1=Value, 2=Vector, 3=Matrix, 4=StringVariable, 5=Various
         /// </summary>
         public int TypeId { get; set; }
 
@@ -941,36 +1349,25 @@ namespace Calcpad.Server.Controllers
 
         /// <summary>Source file path if from include, null otherwise</summary>
         public string? SourceFile { get; set; }
-
-        /// <summary>User-provided description from a metadata comment</summary>
-        public string? Description { get; set; }
     }
 
-    public class SymbolAtPositionRequest
+    public class FindReferencesResponse
     {
-        /// <summary>The Calcpad source code to analyze</summary>
-        public string Content { get; set; } = string.Empty;
+        /// <summary>
+        /// Maps variable name to all its occurrences (definitions, reassignments, and usages).
+        /// Each occurrence has original source line/column, source file info, and whether it's an assignment.
+        /// </summary>
+        public Dictionary<string, List<SymbolLocationDto>> Variables { get; set; } = new();
 
-        /// <summary>Zero-based line of the cursor in the original source</summary>
-        public int Line { get; set; }
+        /// <summary>
+        /// Maps user-defined function name to all its occurrences (definition and call sites).
+        /// </summary>
+        public Dictionary<string, List<SymbolLocationDto>> Functions { get; set; } = new();
 
-        /// <summary>Zero-based column of the cursor in the original source</summary>
-        public int Column { get; set; }
-
-        /// <summary>Full path of the source file on disk (used to resolve #include).</summary>
-        public string? SourceFilePath { get; set; }
-    }
-
-    public class SymbolAtPositionResponse
-    {
-        /// <summary>The resolved symbol's name</summary>
-        public string SymbolName { get; set; } = string.Empty;
-
-        /// <summary>"variable" | "function" | "macro"</summary>
-        public string Kind { get; set; } = "variable";
-
-        /// <summary>Every occurrence of the symbol (definition, reassignments, usages).</summary>
-        public List<SymbolLocationDto> Locations { get; set; } = new();
+        /// <summary>
+        /// Maps macro name to all its occurrences (definition and call sites).
+        /// </summary>
+        public Dictionary<string, List<SymbolLocationDto>> Macros { get; set; } = new();
     }
 
     public class SymbolLocationDto

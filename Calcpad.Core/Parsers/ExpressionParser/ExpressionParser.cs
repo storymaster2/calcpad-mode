@@ -2,6 +2,7 @@
 using Markdig.Renderers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -11,6 +12,8 @@ namespace Calcpad.Core
 {
     public partial class ExpressionParser
     {
+        private enum ParseMode { Cpd, Html, Markdown }
+
         private const int MaxHtmlLines = 200000;
         private int _errorCount;
         private int _isVal;
@@ -23,25 +26,22 @@ namespace Calcpad.Core
         private bool _isPausedByUser;
         private int _pauseCharCount;
         private bool _isMarkdownOn;
+        private ParseMode _parseMode;
         private MathParser _parser;
         private readonly StringBuilder _sb = new(10000);
         private Queue<int> _errors;
-        private int _errIndex;
-        private Dictionary<int, int> _firstErrIndexByLine;
-        private List<CalcpadError> _errorList;
         private LineInfo[] _lineCache;
         private static bool[] IsLineExtension = new bool[128];
 
         public Settings Settings { get; set; } = new();
-        public string SourceFilePath { get; set; }
         public string HtmlResult { get; private set; }
-        public IReadOnlyList<CalcpadError> Errors => _errorList;
         public static bool IsUs
         {
             get => Unit.IsUs;
             set => Unit.IsUs = value;
         }
         public bool IsPaused => _startLine > 0;
+        private bool IsNonCpdMode => _parseMode != ParseMode.Cpd;
         public bool Debug { get; set; }
         public bool ShowWarnings { get; set; } = true;
         public readonly List<string> OpenXmlExpressions = new(100);
@@ -55,23 +55,16 @@ namespace Calcpad.Core
         public void Cancel() => _parser?.Cancel();
         public void Pause() => _isPausedByUser = true;
 
-        private string HtmlId
-        {
-            get
-            {
-                if (!Debug) return string.Empty;
-                var isFirstPass = _loops.Count == 0 || _loops.Peek().IsFirstPass;
-                var idAttribute = isFirstPass ? $" id=\"line-{_currentLine + 1}\"" : string.Empty;
-                return $"{idAttribute} data-source-line=\"{_parser.Line}\" class=\"line\"";
-            }
-        }
+        private string HtmlId =>
+            Debug && (_loops.Count == 0 || _loops.Peek().Iteration == 1) ?
+            $" id=\"line-{_currentLine + 1}\" class=\"line\"" :
+            string.Empty;
 
         public void Parse(string sourceCode, bool calculate = true, bool getXml = true) =>
             Parse(sourceCode.AsSpan(), calculate, getXml);
 
         private void Parse(ReadOnlySpan<char> code, bool calculate, bool getXml)
         {
-            Unit.IsUs = Settings.IsUs;
             var lines = new List<int> { 0 };
             var len = code.Length;
             for (int i = 0; i < len; ++i)
@@ -98,13 +91,10 @@ namespace Calcpad.Core
                         ParseKeywordContinue();
                         continue;
                     }
-                    if (currentLineCache.IsCached && keyword == Keyword.None)
+                    if (!IsNonCpdMode && currentLineCache.IsCached && keyword == Keyword.None)
                     {
                         if (IsEnabled())
                         {
-                            _parser.Line = currentLineCache.SourceLine != 0
-                                ? currentLineCache.SourceLine
-                                : _currentLine + 1;
                             _condition.SetCondition(-1);
                             _parser.IsCalculation = _isVal != -1;
                             ParseLine(currentLineCache.Tokens, Keyword.None);
@@ -157,47 +147,62 @@ namespace Calcpad.Core
                     _parser.IsConst = false;
                     var result = ParseKeyword(textSpan, ref keyword);
                     if (keyword != currentLineCache.Keyword)
-                        _lineCache[lineCache] = new(currentLineCache.Tokens, keyword, _parser.Line);
+                        _lineCache[lineCache] = new(currentLineCache.Tokens, keyword);
 
                     if (result == KeywordResult.Continue)
                         continue;
                     else if (result == KeywordResult.Break)
                         break;
 
-                    _parser.IsCalculation = _isVal != -1;
-                    if ((textSpan[0] != '$' || !ParsePlot(textSpan)) &&
-                        ParseCondition(textSpan, keyword))
-                    {
-                        List<Token> tokens;
-                        if (_lineCache[_currentLine].IsCached)
-                            tokens = _lineCache[_currentLine].Tokens;
-                        else
-                        {
-                            var skipChars = keyword == Keyword.Const ? 7 : _condition.KeywordLength;
-                            tokens = GetTokens(textSpan[skipChars..]);
-                            if (_isMarkdownOn)
-                                ParseMarkdown(tokens);
+                    // Handle table element assignment at the line level
+                    if (_calculate && _condition.IsSatisfied && TryParseTableElementAssignment(textSpan))
+                        continue;
 
-                            _lineCache[_currentLine] = new(tokens, keyword, _parser.Line);
+                    // Handle string variable reassignment at the line level (like keywords)
+                    if (_calculate && _condition.IsSatisfied && TryParseStringReassignment(textSpan))
+                        continue;
+
+                    if (IsNonCpdMode)
+                    {
+                        if (ParseCondition(textSpan, keyword))
+                            ParseNonCpdModeLine(textSpan, keyword);
+                    }
+                    else
+                    {
+                        _parser.IsCalculation = _isVal != -1;
+                        if ((textSpan[0] != '$' || !ParsePlot(textSpan)) &&
+                            ParseCondition(textSpan, keyword))
+                        {
+                            List<Token> tokens;
+                            if (_lineCache[_currentLine].IsCached)
+                                tokens = _lineCache[_currentLine].Tokens;
+                            else
+                            {
+                                var skipChars = keyword == Keyword.Ui ? _uiSkipChars :
+                                    keyword == Keyword.Const ? 7 : _condition.KeywordLength;
+                                tokens = GetTokens(textSpan[skipChars..]);
+                                if (_isMarkdownOn)
+                                    ParseMarkdown(tokens);
+
+                                _lineCache[_currentLine] = new(tokens, keyword);
+                            }
+                            _parser.HasInputFields = false;
+                            ParseLine(tokens, keyword);
+                            // If the line has input fields, the line cach is cleared, to allow #input to work
+                            if (_parser.HasInputFields)
+                                _lineCache[_currentLine] = new(null, keyword);
                         }
-                        _parser.HasInputFields = false;
-                        ParseLine(tokens, keyword);
-                        // If the line has input fields, the line cach is cleared, to allow #input to work
-                        if (_parser.HasInputFields)
-                            _lineCache[_currentLine] = new(null, keyword);
                     }
                 }
                 ApplyUnits(_sb, _calculate);
                 if (_currentLine == lineCount && (_calculate || !IsPaused))
                 {
-                    var ifNotClosed = _condition.Id > 0 && !_condition.IsLoop;
-                    var loopNotClosed = _loops.Count != 0;
-                    if (ifNotClosed)
+                    if (_condition.Id > 0 && !_condition.IsLoop)
                         _sb.Append(ErrHtml(Messages.if_block_not_closed_Missing_end_if, _currentLine));
-                    if (loopNotClosed)
+                    if (_loops.Count != 0)
                         _sb.Append(ErrHtml(Messages.Iteration_block_not_closed_Missing_loop, _currentLine));
-                    var msg = ifNotClosed ? Messages.if_block_not_closed_Missing_end_if : Messages.Iteration_block_not_closed_Missing_loop;
-                    RecordError(_currentLine, msg, Debug && (ifNotClosed || loopNotClosed));
+                    if (Debug && (_condition.Id > 0 || _loops.Count != 0))
+                        _errors.Enqueue(_currentLine);
                 }
             }
             catch (MathParserException ex)
@@ -206,9 +211,9 @@ namespace Calcpad.Core
             }
             catch (Exception ex)
             {
-                var msg = string.Format(Messages.Unexpected_error_0_Please_check_the_expression_consistency, ex.Message);
-                _sb.Append(ErrHtml(msg, _currentLine));
-                RecordError(_currentLine, msg, Debug);
+                _sb.Append(ErrHtml(string.Format(Messages.Unexpected_error_0_Please_check_the_expression_consistency, ex.Message), _currentLine));
+                if (Debug)
+                    _errors.Enqueue(_currentLine);
             }
             finally
             {
@@ -384,6 +389,8 @@ namespace Calcpad.Core
                         if (_isVal != 1)
                         {
                             htmlId = HtmlId;
+                            if (_pendingUi != null && Settings.EnableUi)
+                                htmlId += GetUiAttributes(_currentLine);
                             AppendHtmlLineStart(lineType, isIndent);
                         }
                         if (lineType == TokenTypes.Html && !string.IsNullOrEmpty(htmlId))
@@ -392,9 +399,23 @@ namespace Calcpad.Core
                         if (kwdLength > 0)
                             _sb.Append(_condition.ToHtml());
 
+                        var sbLenBefore = _sb.Length;
                         ParseTokens(tokens, true, getXml);
-                        if (_isVal != 1)
+                        if (_sb.Length == sbLenBefore && _isVal != 1)
+                        {
+                            // Nothing was output — roll back the opening tag
+                            _sb.Length = htmlId is not null ? sbLenBefore - htmlId.Length - 3 : sbLenBefore;
+                            --_htmlLines;
+                        }
+                        else if (_isVal != 1)
                             AppendHtmlLineEnd(lineType, keyword == Keyword.If);
+
+                        // Append datagrid div AFTER the </p> so it's a sibling, not nested inside
+                        if (_pendingUi != null && Settings.EnableUi && _pendingUi.Type == "datagrid")
+                        {
+                            _sb.AppendLine(InjectUiDatagrid(string.Empty, _currentLine));
+                            ResetUiState();
+                        }
                     }
                 }
                 else
@@ -440,9 +461,6 @@ namespace Calcpad.Core
             _errorCount = 0;
             _calculate = calculate;
             _errors = new();
-            _errIndex = 0;
-            _firstErrIndexByLine = new();
-            _errorList = new();
             if (!_calculate)
                 _startLine = 0;
 
@@ -458,11 +476,17 @@ namespace Calcpad.Core
                 _sb.Clear();
                 _condition = new();
                 _loops.Clear();
+                _stringVariables.Clear();
+                _stringVariablesDirty = false;
+                _tableVariables.Clear();
+                _tableVariablesDirty = false;
                 _isVal = 0;
                 _parser.SetVariable("Units", new RealValue(UnitsFactor()));
                 _previousKeyword = Keyword.None;
                 _isMarkdownOn = false;
+                _parseMode = ParseMode.Cpd;
                 OpenXmlExpressions.Clear();
+                ResetUiState();
             }
             else
             {
@@ -486,7 +510,7 @@ namespace Calcpad.Core
             if (_startLine > 0)
                 _sb.Append(Messages.Paused_Press_F5_to_continue);
 
-            if (Debug && _errors.Count != 0)
+            if (Debug && lineCount > 30 && _errors.Count != 0)
                 AppendErrors();
 
             HtmlResult = _sb.ToString();
@@ -496,6 +520,97 @@ namespace Calcpad.Core
                 _parser.ClearCache();
                 _parser = null;
             }
+        }
+
+        private void ParseNonCpdModeLine(ReadOnlySpan<char> textSpan, Keyword keyword)
+        {
+            var kwdLength = _condition.KeywordLength;
+            var content = kwdLength > 0 && kwdLength < textSpan.Length
+                ? textSpan[kwdLength..].ToString()
+                : kwdLength > 0 ? string.Empty : textSpan.ToString();
+
+            // Expand string variables and functions
+            if (_calculate)
+            {
+                if (_stringVariables.Count > 0)
+                    content = ExpandStringVariables(content);
+                if (content.Contains("$("))
+                    content = EvaluateStringFunctionsInExpression(content);
+            }
+
+            // Handle condition checking (#if with string tests)
+            if (_condition.IsUnchecked)
+            {
+                if (_calculate)
+                {
+                    var condExpr = content;
+                    if (_stringVariables.Count > 0 || _tableVariables.Count > 0 || condExpr.Contains("$("))
+                        condExpr = PreProcessExpression(condExpr);
+                    _parser.Parse(condExpr);
+                    _parser.Calculate();
+                    _condition.Check(_parser.Result);
+                }
+                else
+                    _condition.Check();
+                return;
+            }
+
+            // Output
+            var isOutput = _isVisible &&
+                (!_calculate || kwdLength == 0) &&
+                _htmlLines < MaxHtmlLines;
+
+            if (!isOutput)
+                return;
+
+            ++_htmlLines;
+            if (_htmlLines == MaxHtmlLines)
+            {
+                AppendError(content, string.Format(
+                    Messages.The_output_is_longer_than_0_lines_The_rest_will_be_skipped, MaxHtmlLines), _currentLine);
+                return;
+            }
+
+            // In Markdown mode, process content through Markdig
+            if (_parseMode == ParseMode.Markdown)
+                content = RenderMarkdown(content);
+
+            var trimmed = content.TrimStart();
+            var isHtmlContent = trimmed.Length > 0 && trimmed[0] == '<';
+            bool isIndent = keyword == Keyword.Else_If || keyword == Keyword.End_If;
+
+            if (isIndent)
+                _sb.Append("</div>");
+
+            string htmlId = HtmlId;
+            if (_pendingUi != null && Settings.EnableUi)
+                htmlId += GetUiAttributes(_currentLine);
+
+            if (kwdLength > 0)
+                _sb.Append(_condition.ToHtml());
+
+            if (isHtmlContent || _parseMode == ParseMode.Html)
+                _sb.Append(InsertAttribute(content, htmlId));
+            else
+                _sb.Append($"<p{htmlId}>{content}</p>");
+
+            if (keyword == Keyword.If)
+                _sb.Append("<div class=\"indent\">");
+
+            _sb.AppendLine();
+
+            // Handle UI datagrid if pending
+            if (_pendingUi != null && Settings.EnableUi && _pendingUi.Type == "datagrid")
+            {
+                _sb.AppendLine(InjectUiDatagrid(string.Empty, _currentLine));
+                ResetUiState();
+            }
+        }
+
+        private static string RenderMarkdown(string content)
+        {
+            var pipeline = new MarkdownPipelineBuilder().UseEmphasisExtras().UseListExtras().Build();
+            return Markdown.ToHtml(content, pipeline);
         }
 
         private void AppendErrors()
@@ -508,15 +623,11 @@ namespace Calcpad.Core
             var prevLine = 0;
             while (_errors.Count != 0 && count < 20)
             {
-                var srcLine = _errors.Dequeue();
-                var errLine = srcLine + 1;
+                var errLine = _errors.Dequeue() + 1;
                 if (errLine != prevLine)
                 {
                     ++count;
-                    var errAttr = _firstErrIndexByLine.TryGetValue(srcLine, out var idx)
-                        ? $" data-error=\"err-{idx}\""
-                        : string.Empty;
-                    _sb.Append($" <span class=\"roundBox\" data-line=\"{errLine}\"{errAttr}>{errLine}</span>");
+                    _sb.Append($" <span class=\"roundBox\" data-line=\"{errLine}\">{errLine}</span>");
                 }
                 prevLine = errLine;
             }
@@ -524,12 +635,15 @@ namespace Calcpad.Core
                 _sb.Append(" ...");
 
             _sb.Append("</div>");
+            _sb.AppendLine("<style>body {padding-top:1em;}</style>");
             _errors.Clear();
         }
 
         private void ParseTokens(List<Token> tokens, bool isOutput, bool getXml)
         {
             var isLoop = _loops.Count > 0 && _calculate && _isVal > -1;
+            _stringVariablesDirty = false;
+            _tableVariablesDirty = false;
             for (int i = 0, count = tokens.Count; i < count; ++i)
             {
                 var token = tokens[i];
@@ -537,10 +651,69 @@ namespace Calcpad.Core
                 {
                     try
                     {
+                        var expressionText = token.Value;
+
+                        // Check if expression is a bare table variable reference
+                        if (_tableVariables.Count > 0 && IsTableVariableReference(expressionText))
+                        {
+                            if (isOutput && _calculate)
+                                _sb.Append(RenderTableAsHtml(_tableVariables[expressionText.Trim()]));
+                            continue;
+                        }
+
+                        // Check if expression is a bare string variable reference
+                        if (_stringVariables.Count > 0 && IsStringVariableReference(expressionText))
+                        {
+                            if (isOutput && _calculate)
+                                _sb.Append(HttpUtility.HtmlEncode(_stringVariables[expressionText.Trim()]));
+                            continue;
+                        }
+
+                        // Pre-process: expand string functions and variables before MathParser
+                        var hadStringFunctions = expressionText.Contains("$(");
+                        if (_stringVariables.Count > 0 || _tableVariables.Count > 0 || hadStringFunctions)
+                            expressionText = PreProcessExpression(expressionText);
+
+                        // If the expression was entirely a string function and the result
+                        // is not a valid math expression, output it directly as text
+                        if (hadStringFunctions && !expressionText.Contains("$(") &&
+                            IsStringResult(token.Value, expressionText))
+                        {
+                            if (isOutput && _calculate)
+                                _sb.Append(HttpUtility.HtmlEncode(expressionText));
+                            continue;
+                        }
+
                         var cacheID = token.CacheID;
+
+                        // Invalidate cache if string/table variables changed and expression references them
+                        if (cacheID >= 0 && _stringVariablesDirty && ExpressionReferencesStringVariable(token.Value))
+                            cacheID = -1;
+                        if (cacheID >= 0 && _tableVariablesDirty && ExpressionReferencesTableVariable(token.Value))
+                            cacheID = -1;
                         if (cacheID < 0)
                         {
-                            _parser.Parse(token.Value);
+                            if (_pendingUi != null && Settings.EnableUi)
+                            {
+                                // When explicit rows/columns are given, replace the RHS bracket
+                                // literal with a zero matrix of that size before any other handling.
+                                if (_pendingUi.Type == "datagrid")
+                                    expressionText = ResizeDatagridMatrixToFit(expressionText);
+
+                                // Capture matrix/vector values for datagrid before override
+                                if (_pendingUi.Type == "datagrid")
+                                    CaptureDatagridValues(expressionText);
+
+                                var overridden = ApplyUiOverride(expressionText.AsSpan());
+                                if (overridden != null)
+                                {
+                                    expressionText = overridden;
+                                    // Re-capture values from the overridden expression
+                                    if (_pendingUi.Type == "datagrid")
+                                        CaptureDatagridValues(expressionText);
+                                }
+                            }
+                            _parser.Parse(expressionText);
                             if (isLoop)
                                 tokens[i].CacheID = _parser.WriteEquationToCache(isOutput);
                         }
@@ -559,6 +732,19 @@ namespace Calcpad.Core
                             else
                             {
                                 var html = _parser.ToHtml();
+                                if (_pendingUi != null && Settings.EnableUi)
+                                {
+                                    if (_pendingUi.Type == "datagrid")
+                                    {
+                                        // Strip matrix/vector output, keep only "v ="
+                                        html = StripDatagridRhs(html);
+                                    }
+                                    else
+                                    {
+                                        html = InjectUiInput(html, _currentLine);
+                                        ResetUiState();
+                                    }
+                                }
                                 if (getXml && Settings.Math.FormatEquations)
                                 {
                                     var xml = _parser.ToXml();
@@ -580,14 +766,21 @@ namespace Calcpad.Core
                             errText = HttpUtility.HtmlEncode(token.Value);
                         errText = string.Format(Messages.Error_in_0_on_line_1_2, errText, LineHtml(_currentLine), ex.Message);
                         _sb.Append($"<span class=\"err\"{Id(_currentLine)}>{errText}</span>");
-                        RecordError(_currentLine, ex.Message, Debug);
+                        if (Debug)
+                            _errors.Enqueue(_currentLine);
 
                         if (++_errorCount == 40)
                             throw new MathParserException(Messages.Too_many_errors);
                     }
                 }
                 else if (isOutput)
-                    _sb.Append(token.Value);
+                {
+                    // Expand string variables in text tokens too
+                    var text = token.Value;
+                    if (_stringVariables.Count > 0 && _calculate)
+                        text = ExpandStringVariables(text);
+                    _sb.Append(text);
+                }
             }
         }
 
@@ -595,33 +788,14 @@ namespace Calcpad.Core
         {
             string s = lineContent.Replace("<", "&lt;").Replace(">", "&gt;");
             _sb.Append(ErrHtml(string.Format(Messages.Error_in_0_on_line_1_2, s, LineHtml(line), text), line));
-            RecordError(line, text, Debug);
-        }
 
-        private void RecordError(int line, string message, bool enabled)
-        {
-            if (!enabled) return;
-            _errors.Enqueue(line);
-            var sourceLine = _parser?.Line > 0 ? _parser.Line : line + 1;
-            _errorList.Add(new CalcpadError
-            {
-                SourceLine = sourceLine,
-                OutputLine = line + 1,
-                Message = message,
-                Source = CalcpadErrorSource.Expression,
-            });
+            if (Debug)
+                _errors.Enqueue(line);
         }
 
         private static string LineHtml(int line) => $"[<a href=\"#0\" data-text=\"{line + 1}\">{line + 1}</a>]";
-        private string ErrHtml(string text, int line) => $"<p class=\"err\"{Id(line)}>{text}</p>";
-        private string Id(int line)
-        {
-            if (!Debug) return string.Empty;
-            ++_errIndex;
-            if (!_firstErrIndexByLine.ContainsKey(line))
-                _firstErrIndexByLine[line] = _errIndex;
-            return $" id=\"err-{_errIndex}\" data-source-line=\"{line + 1}\"";
-        }
+        private string ErrHtml(string text, int line) => $"<p class=\"err\"{Id(line)}\">{text}</p>";
+        private string Id(int line) => Debug ? $" id=\"line-{line + 1}\"" : string.Empty;
 
         private static string InsertAttribute(ReadOnlySpan<char> s, string attr)
         {

@@ -49,6 +49,11 @@ namespace Calcpad.Core
             Append,
             Phasor,
             Complex,
+            String,
+            Ui,
+            Html,
+            Cpd,
+            Markdown,
             SkipLine
         }
         private enum KeywordResult
@@ -99,13 +104,19 @@ namespace Calcpad.Core
 
             Span<char> lower = stackalloc char[n];
             s.Slice(1, n).ToLowerInvariant(lower);
+            Keyword best = Keyword.None;
+            int bestLen = 0;
             for (int j = 0; j < ind.Count; ++j)
             {
                 var k = ind[j];
-                if (lower.StartsWith(KeywordNames[k]))
-                    return KeywordValues[k];
+                var kwLen = KeywordNames[k].Length;
+                if (kwLen > bestLen && lower.StartsWith(KeywordNames[k]))
+                {
+                    best = KeywordValues[k];
+                    bestLen = kwLen;
+                }
             }
-            return Keyword.None;
+            return best;
         }
 
         KeywordResult ParseKeyword(ReadOnlySpan<char> s, ref Keyword keyword)
@@ -117,6 +128,13 @@ namespace Calcpad.Core
 
             if (keyword == Keyword.None)
                 return KeywordResult.None;
+
+            if (IsNonCpdMode && IsBlockedInNonCpdMode(keyword))
+            {
+                var modeName = _parseMode == ParseMode.Html ? "#HTML" : "#markdown";
+                AppendError(s.ToString(), $"Keyword is not available in {modeName} mode.", _currentLine);
+                return KeywordResult.Continue;
+            }
 
             switch (keyword)
             {
@@ -212,6 +230,19 @@ namespace Calcpad.Core
                     break;
                 case Keyword.Complex:
                     _parser.Phasor = false;
+                    break;
+                case Keyword.String:
+                    return ParseKeywordString(s);
+                case Keyword.Ui:
+                    return ParseKeywordUi(s);
+                case Keyword.Html:
+                    _parseMode = ParseMode.Html;
+                    break;
+                case Keyword.Cpd:
+                    _parseMode = ParseMode.Cpd;
+                    break;
+                case Keyword.Markdown:
+                    _parseMode = ParseMode.Markdown;
                     break;
                 default:
                     if (keyword != Keyword.Global && keyword != Keyword.Local)
@@ -628,23 +659,150 @@ namespace Calcpad.Core
                 _isMarkdownOn = true;
         }
 
+        /// <summary>
+        /// #string handles both scalar strings and string tables. The storage kind is
+        /// inferred from the RHS (bracket literal or a table-producing function such as
+        /// table$(...), split$(...), etc.) — mirroring how the numeric parser routes
+        /// scalar vs. vector/matrix assignments without a separate keyword.
+        /// </summary>
+        private KeywordResult ParseKeywordString(ReadOnlySpan<char> s)
+        {
+            const int keywordLength = 7; // "#string"
+            var content = s.Length > keywordLength ? s[keywordLength..].Trim() : [];
+            if (content.IsEmpty)
+            {
+                AppendError(s.ToString(), "Expected string variable declaration after #string.", _currentLine);
+                return KeywordResult.Continue;
+            }
+
+            var eqPos = content.IndexOf('=');
+            if (eqPos < 0)
+            {
+                AppendError(s.ToString(), "Expected '=' in string variable declaration.", _currentLine);
+                return KeywordResult.Continue;
+            }
+
+            var varName = content[..eqPos].Trim().ToString();
+            if (varName.Length < 2 || varName[^1] != '$')
+            {
+                AppendError(s.ToString(), "String variable name must end with '$'.", _currentLine);
+                return KeywordResult.Continue;
+            }
+
+            var rhs = content[(eqPos + 1)..].Trim();
+
+            if (_calculate && _condition.IsSatisfied)
+            {
+                if (IsTableRhs(rhs))
+                {
+                    _tableVariables[varName] = EvaluateTableExpression(rhs);
+                    _stringVariables.Remove(varName);
+                    _tableVariablesDirty = true;
+                }
+                else
+                {
+                    _stringVariables[varName] = EvaluateStringExpression(rhs);
+                    _tableVariables.Remove(varName);
+                    _stringVariablesDirty = true;
+                }
+            }
+
+            if (_isVisible && !_calculate)
+            {
+                _sb.Append($"<p{HtmlId}><span class=\"cond\">#string</span> {System.Web.HttpUtility.HtmlEncode(varName)} = {System.Web.HttpUtility.HtmlEncode(rhs.ToString())}</p>");
+            }
+
+            return KeywordResult.Continue;
+        }
+
+        /// <summary>
+        /// Detects a string-table RHS: a bracket literal of string cells, or one of the
+        /// table-returning string functions. Called from #string and from #UI's string
+        /// branch to decide whether to route the assignment to _tableVariables.
+        /// </summary>
+        private bool IsTableRhs(ReadOnlySpan<char> rhs)
+        {
+            if (rhs.Length >= 2 && rhs[0] == '[' && rhs[^1] == ']')
+                return true;
+
+            // Table-producing string functions
+            ReadOnlySpan<string> tableFuncs =
+            [
+                "table$(", "split$(", "augmentT$(", "stackT$(",
+                "rowT$(", "colT$(", "extractRowsT$(", "extractColsT$(",
+                "subTable$(", "transposeT$("
+            ];
+            foreach (var fn in tableFuncs)
+            {
+                if (rhs.StartsWith(fn, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            // string$(matrix-or-vector) / string$(matrix-or-vector; flag) — convert to table.
+            // Quick literal check first, then peek at the inner expression's result type.
+            if (rhs.StartsWith("string$(", StringComparison.OrdinalIgnoreCase) && rhs[^1] == ')')
+            {
+                var inner = rhs[8..^1].ToString();
+                var args = ParseStringFunctionArgs(inner);
+                if (args.Length >= 1)
+                {
+                    var firstArg = args[0].Trim();
+                    if (firstArg.Length >= 2 && firstArg[0] == '[' && firstArg[^1] == ']')
+                        return true;
+
+                    try
+                    {
+                        _parser.Parse(firstArg);
+                        _parser.Calculate();
+                        var typeName = _parser.ResultTypeName;
+                        if (typeName == "matrix" || typeName == "vector")
+                            return true;
+                    }
+                    catch
+                    {
+                        // Fall through — treat as scalar/string when inner can't be evaluated here.
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private void ParseKeywordRead(ReadOnlySpan<char> s)
         {
             if (_calculate)
             {
                 if (_condition.IsSatisfied)
                 {
-                    var sourceDir = !string.IsNullOrEmpty(SourceFilePath)
-                        ? System.IO.Path.GetDirectoryName(SourceFilePath) : null;
+                    var sourceDir = !string.IsNullOrEmpty(Settings.SourceFilePath)
+                        ? System.IO.Path.GetDirectoryName(Settings.SourceFilePath) : null;
                     var options = new ReadWriteOptions(s, 0, sourceDir);
                     if (options.Name.IsEmpty)
                         return;
 
-                    var data = DataExchange.Read(options);
-                    if (options.Type == 'V')
-                        _parser.SetVector(options.Name, data, options.IsHp);
+                    if (options.Type == 'X')
+                    {
+                        var varName = options.Name.ToString();
+                        var content = DataExchange.ReadString(options, Settings.ClientFileCache);
+                        _stringVariables[varName] = content;
+                        _tableVariables.Remove(varName);
+                        _stringVariablesDirty = true;
+                    }
                     else
-                        _parser.SetMatrix(options.Name, data, options.Type, options.IsHp);
+                    {
+                        var data = DataExchange.Read(options, Settings.ClientFileCache);
+                        if (options.Type == 'T')
+                        {
+                            var varName = options.Name.ToString();
+                            _tableVariables[varName] = JaggedToRectangular(data);
+                            _stringVariables.Remove(varName);
+                            _tableVariablesDirty = true;
+                        }
+                        else if (options.Type == 'V')
+                            _parser.SetVector(options.Name, data, options.IsHp);
+                        else
+                            _parser.SetMatrix(options.Name, data, options.Type, options.IsHp);
+                    }
 
                     if (_isVisible)
                         ReportDataExchageResult(options, "read from");
@@ -660,14 +818,34 @@ namespace Calcpad.Core
             {
                 if (_condition.IsSatisfied)
                 {
-                    var sourceDir = !string.IsNullOrEmpty(SourceFilePath)
-                        ? System.IO.Path.GetDirectoryName(SourceFilePath) : null;
+                    var sourceDir = !string.IsNullOrEmpty(Settings.SourceFilePath)
+                        ? System.IO.Path.GetDirectoryName(Settings.SourceFilePath) : null;
                     var options = new ReadWriteOptions(s, keyword - Keyword.Read, sourceDir);
                     if (options.Name.IsEmpty)
                         return;
 
-                    var m = _parser.GetMatrix(options.Name.ToString(), options.Type);
-                    DataExchange.Write(options, m);
+                    if (options.Type == 'X')
+                    {
+                        var varName = options.Name.ToString();
+                        if (!_stringVariables.TryGetValue(varName, out var content))
+                            throw new MathParserException($"String variable \"{varName}\" does not exist.");
+                        DataExchange.WriteString(options, content, Settings.WriteCache);
+                    }
+                    else
+                    {
+                        string[][] m;
+                        if (options.Type == 'T')
+                        {
+                            var varName = options.Name.ToString();
+                            if (!_tableVariables.TryGetValue(varName, out var table))
+                                throw new MathParserException($"Table variable \"{varName}\" does not exist.");
+                            m = RectangularToJagged(table);
+                        }
+                        else
+                            m = _parser.GetMatrix(options.Name.ToString(), options.Type);
+
+                        DataExchange.Write(options, m, Settings.WriteCache);
+                    }
                     if (_isVisible)
                         ReportDataExchageResult(options, keyword == Keyword.Write ? "written to" : "appended to");
                 }
@@ -676,11 +854,55 @@ namespace Calcpad.Core
                 _sb.Append($"<p><span{HtmlId} class=\"cond\">#write</span> {s[6..]}</p>");
         }
 
+        private static string[,] JaggedToRectangular(string[][] jagged)
+        {
+            int rows = jagged.Length;
+            int cols = 0;
+            for (int i = 0; i < rows; i++)
+                if (jagged[i] != null && jagged[i].Length > cols)
+                    cols = jagged[i].Length;
+
+            var result = new string[rows, cols];
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < (jagged[i]?.Length ?? 0); j++)
+                    result[i, j] = jagged[i][j];
+
+            return result;
+        }
+
+        private static string[][] RectangularToJagged(string[,] rect)
+        {
+            int rows = rect.GetLength(0);
+            int cols = rect.GetLength(1);
+            var result = new string[rows][];
+            for (int i = 0; i < rows; i++)
+            {
+                result[i] = new string[cols];
+                for (int j = 0; j < cols; j++)
+                    result[i][j] = rect[i, j] ?? string.Empty;
+            }
+            return result;
+        }
+
+        private static bool IsBlockedInNonCpdMode(Keyword keyword) => keyword switch
+        {
+            Keyword.Val or Keyword.Equ or Keyword.Noc or
+            Keyword.NoSub or Keyword.NoVar or Keyword.VarSub or
+            Keyword.Const or Keyword.Split or Keyword.Wrap or
+            Keyword.Deg or Keyword.Rad or Keyword.Gra or
+            Keyword.Round or Keyword.Format or
+            Keyword.For or Keyword.While or Keyword.Repeat or
+            Keyword.Loop or Keyword.Break or Keyword.Continue or
+            Keyword.Phasor or Keyword.Complex or
+            Keyword.Pause or Keyword.Input => true,
+            _ => false
+        };
+
         private void ReportDataExchageResult(ReadWriteOptions options, string command)
         {
             var url = $"file:///{options.FullPath.Replace('\\', '/')}";
             _sb.Append($"<p{HtmlId}>")
-               .Append($"Matrix <span class=\"eq\">{new HtmlWriter(Settings.Math, false).FormatVariable(options.Name.ToString(), string.Empty, true)}</span>")
+               .Append($"{(options.Type == 'X' ? "String" : options.Type == 'T' ? "Table" : "Matrix")} <span class=\"eq\">{new HtmlWriter(Settings.Math, false).FormatVariable(options.Name.ToString(), string.Empty, true)}</span>")
                .Append($" was successfully {command} <a href=\"{url}\">{options.Path}.{options.Ext}</a>");
             if (options.IsExcel)
             {

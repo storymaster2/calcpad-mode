@@ -128,10 +128,15 @@ namespace Calcpad.Highlighter.Tokenizer.Models
         /// <summary>Format specifiers (e.g., :f2, :e3)</summary>
         Format = 27,
 
-        // [Future Reserved] 28-30 previously held StringVariable, StringFunction, StringTable.
-        // Kept as reserved ordinals to avoid renumbering serialized values.
-        FutureReserved28 = 28,
-        FutureReserved29 = 29,
-        FutureReserved30 = 30
+        // ===== String Types =====
+
+        /// <summary>String variable references (defined via #string, ending with $)</summary>
+        StringVariable = 28,
+
+        /// <summary>Built-in string function calls (e.g., len$, trim$, concat$)</summary>
+        StringFunction = 29,
+
+        /// <summary>String table variable references (defined via #table, ending with $)</summary>
+        StringTable = 30
     }
 }

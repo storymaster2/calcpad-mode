@@ -10,8 +10,6 @@
 *.userosscache
 *.sln.docstates
 Crashes
-## From local git diff runs using git diff branch1 branch2 -- > changes.diff
-changes.diff
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -308,7 +306,6 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-.venv/
 
 # Cake - Uncomment if you are using it
 # tools/**
@@ -365,6 +362,19 @@ dist/
 **/.nyc_output/
 **/coverage/
 
+# Neutralino desktop build artifacts
+Calcpad.Web/frontend/calcpad-desktop/extensions/server/*
+!Calcpad.Web/frontend/calcpad-desktop/extensions/server/.gitkeep
+Calcpad.Web/frontend/calcpad-desktop/resources/
+Calcpad.Web/frontend/calcpad-desktop/.tmp/
+Calcpad.Web/frontend/calcpad-desktop/bin/
+
+# Arch / pacman packaging build artifacts (keep PKGBUILD + helpers)
+Calcpad.Web/frontend/calcpad-desktop/packaging/arch/pkg/
+Calcpad.Web/frontend/calcpad-desktop/packaging/arch/src/
+Calcpad.Web/frontend/calcpad-desktop/packaging/arch/*.pkg.tar.*
+Calcpad.Web/frontend/calcpad-desktop/packaging/arch/*.log
+
 # MathJax bundle (downloaded during CI build)
 docs/javascripts/mathjax/
 
@@ -377,12 +387,3 @@ package-lock.json
 
 # Installer output
 Calcpad.Wpf/Installer/Output/
-
-# Fetched at build time by build/wkhtmltopdf.targets
-wkhtmltopdf.exe
-
-# Node
-*.node
-
-# Claude
-**.claude/settings.local.json

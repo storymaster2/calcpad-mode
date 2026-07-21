@@ -1,201 +1,251 @@
-#!/usr/bin/env bash
-#
-# Build the CalcpadCE desktop app (Tauri + embedded ASP.NET Core sidecar).
-#
-# Steps:
-#   1. Publish Calcpad.Server for the target RID via sync-bundled-server.mjs.
-#   2. Rename the published apphost to Tauri's target-triple suffix so
-#      `bundle.externalBin` finds it (see src-tauri/tauri.conf.json).
-#   3. Delegate the actual frontend build + bundling to `tauri build`, which
-#      invokes vite and produces installers (msi/nsis on Windows, dmg on
-#      macOS, deb/AppImage on Linux) into src-tauri/target/release/bundle/.
-#
-# Usage:
-#   ./build-desktop.sh [--rid=<rid>] [--target=<triple>] [--bundles=<list>]
-#     --rid: dotnet publish RID (default: host)
-#     --target: cargo target triple for `tauri build --target` (default: host)
-#     --bundles: comma-separated tauri bundle types, e.g. deb,appimage,dmg
-#                (default: all formats configured for the platform)
+#!/bin/bash
 
-set -euo pipefail
+# Build script for CalcPad Desktop (Neutralino + .NET server)
+# Detects OS/arch, builds the .NET server with correct SkiaSharp/Playwright
+# assets, finds system browser, and packages via Neutralino CLI.
 
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-REPO_ROOT=$(cd "$SCRIPT_DIR/../../.." && pwd)
-SYNC_SCRIPT="$REPO_ROOT/Calcpad.Web/frontend/vscode-calcpad/scripts/sync-bundled-server.mjs"
-BINARIES_DIR="$SCRIPT_DIR/src-tauri/binaries"
+set -e
 
-DOTNET_RID=""
-CARGO_TARGET=""
-BUNDLES=""
-for arg in "$@"; do
-    case "$arg" in
-        --rid=*)     DOTNET_RID="${arg#*=}" ;;
-        --target=*)  CARGO_TARGET="${arg#*=}" ;;
-        --bundles=*) BUNDLES="${arg#*=}" ;;
-        *)           echo "Unknown option: $arg" >&2; exit 1 ;;
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+info()  { echo -e "${BLUE}[INFO]${NC}  $*"; }
+warn()  { echo -e "${YELLOW}[WARN]${NC}  $*"; }
+ok()    { echo -e "${GREEN}[OK]${NC}    $*"; }
+err()   { echo -e "${RED}[ERR]${NC}   $*"; }
+
+# ─── Resolve paths ───────────────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DESKTOP_DIR="$SCRIPT_DIR"
+FRONTEND_DIR="$(dirname "$DESKTOP_DIR")"
+BACKEND_DIR="$FRONTEND_DIR/../backend"
+REPO_ROOT="$(cd "$FRONTEND_DIR/../.." && pwd)"
+EXTENSIONS_DIR="$DESKTOP_DIR/extensions/server"
+
+# ─── Detect OS and Architecture ─────────────────────────────────────────────
+detect_platform() {
+    local os arch
+
+    case "$(uname -s)" in
+        Linux*)  os="linux" ;;
+        Darwin*) os="osx" ;;
+        MINGW*|MSYS*|CYGWIN*) os="win" ;;
+        *)
+            err "Unsupported OS: $(uname -s)"
+            exit 1
+            ;;
     esac
-done
 
-detect_host_triple() {
-    local uname_s uname_m
-    uname_s=$(uname -s)
-    uname_m=$(uname -m)
-    case "$uname_s" in
-        Linux*)
-            case "$uname_m" in
-                x86_64)  echo "x86_64-unknown-linux-gnu" ;;
-                aarch64) echo "aarch64-unknown-linux-gnu" ;;
-                *) echo "unsupported Linux arch: $uname_m" >&2; return 1 ;;
-            esac ;;
-        Darwin*)
-            case "$uname_m" in
-                x86_64) echo "x86_64-apple-darwin" ;;
-                arm64)  echo "aarch64-apple-darwin" ;;
-                *) echo "unsupported macOS arch: $uname_m" >&2; return 1 ;;
-            esac ;;
-        MINGW*|MSYS*|CYGWIN*)
-            echo "x86_64-pc-windows-msvc" ;;
-        *) echo "unsupported OS: $uname_s" >&2; return 1 ;;
+    case "$(uname -m)" in
+        x86_64|amd64)  arch="x64" ;;
+        aarch64|arm64) arch="arm64" ;;
+        *)
+            err "Unsupported architecture: $(uname -m)"
+            exit 1
+            ;;
     esac
+
+    DOTNET_RID="${os}-${arch}"
+    PLATFORM_OS="$os"
+    PLATFORM_ARCH="$arch"
+
+    info "Detected platform: ${DOTNET_RID}"
 }
 
-triple_to_rid() {
-    case "$1" in
-        x86_64-unknown-linux-gnu)   echo "linux-x64" ;;
-        aarch64-unknown-linux-gnu)  echo "linux-arm64" ;;
-        x86_64-apple-darwin)        echo "osx-x64" ;;
-        aarch64-apple-darwin)       echo "osx-arm64" ;;
-        x86_64-pc-windows-msvc)     echo "win-x64" ;;
-        aarch64-pc-windows-msvc)    echo "win-arm64" ;;
-        *) echo "unsupported target triple: $1" >&2; return 1 ;;
+# ─── Find system browser for Playwright ─────────────────────────────────────
+find_browser() {
+    local candidates=()
+
+    case "$PLATFORM_OS" in
+        linux)
+            candidates=(
+                chromium
+                chromium-browser
+                google-chrome-stable
+                google-chrome
+                microsoft-edge-stable
+                microsoft-edge
+            )
+            ;;
+        osx)
+            candidates=(
+                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+                "/Applications/Chromium.app/Contents/MacOS/Chromium"
+                "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
+            )
+            # Also check brew-installed chromium
+            if command -v chromium &>/dev/null; then
+                BROWSER_PATH="$(command -v chromium)"
+                return 0
+            fi
+            ;;
+        win)
+            # On Windows (MSYS/Git Bash), check common install paths
+            candidates=(
+                "/c/Program Files/Google/Chrome/Application/chrome.exe"
+                "/c/Program Files (x86)/Google/Chrome/Application/chrome.exe"
+                "/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+                "/c/Program Files/Microsoft/Edge/Application/msedge.exe"
+            )
+            ;;
     esac
-}
 
-HOST_TRIPLE=$(detect_host_triple)
-[[ -z "$CARGO_TARGET" ]] && CARGO_TARGET="$HOST_TRIPLE"
-[[ -z "$DOTNET_RID"   ]] && DOTNET_RID=$(triple_to_rid "$CARGO_TARGET")
+    for candidate in "${candidates[@]}"; do
+        if [[ "$candidate" == /* ]]; then
+            # Absolute path
+            if [ -x "$candidate" ]; then
+                BROWSER_PATH="$candidate"
+                return 0
+            fi
+        else
+            # Command name — resolve via PATH
+            local resolved
+            resolved="$(command -v "$candidate" 2>/dev/null || true)"
+            if [ -n "$resolved" ]; then
+                BROWSER_PATH="$resolved"
+                return 0
+            fi
+        fi
+    done
 
-echo ">> Cargo target: $CARGO_TARGET"
-echo ">> .NET RID:     $DOTNET_RID"
-
-mkdir -p "$BINARIES_DIR"
-node "$SYNC_SCRIPT" \
-    --target="$BINARIES_DIR" \
-    --rid="$DOTNET_RID" \
-    --configuration=Release \
-    --keep-skia-natives
-
-# Tauri looks up sidecars by `<name>-<target-triple>[.exe]`.
-if [[ "$CARGO_TARGET" == *windows* ]]; then
-    SRC_EXE="$BINARIES_DIR/Calcpad.Server.exe"
-    DEST_EXE="$BINARIES_DIR/calcpad-server-$CARGO_TARGET.exe"
-else
-    SRC_EXE="$BINARIES_DIR/Calcpad.Server"
-    DEST_EXE="$BINARIES_DIR/calcpad-server-$CARGO_TARGET"
-fi
-if [[ ! -f "$SRC_EXE" ]]; then
-    echo "!! Expected published apphost at $SRC_EXE" >&2
-    exit 1
-fi
-cp "$SRC_EXE" "$DEST_EXE"
-chmod +x "$DEST_EXE"
-echo ">> Sidecar staged at $DEST_EXE"
-
-# .NET ships libcoreclrtraceptprovider.so for optional LTTng tracing. It pulls
-# liblttng-ust.so.0, which linuxdeploy fails to resolve on distros that ship
-# lttng-ust 2.13+ (Arch/CachyOS have .so.1 only). Runtime doesn't need it.
-# Also purge the copy tauri staged into target/ on a prior build — cargo's
-# incremental step won't re-stage resources, so a stale copy would survive.
-if [[ "$CARGO_TARGET" == *linux* ]]; then
-    rm -f "$BINARIES_DIR/libcoreclrtraceptprovider.so"
-    if [[ -d "$SCRIPT_DIR/src-tauri/target" ]]; then
-        find "$SCRIPT_DIR/src-tauri/target" -name libcoreclrtraceptprovider.so -delete 2>/dev/null || true
-    fi
-fi
-
-cd "$SCRIPT_DIR"
-
-# NO_STRIP: linuxdeploy's bundled `strip` (binutils ~2.34) can't parse the
-# SHT_RELR (`.relr.dyn`) sections modern glibc/Arch libraries ship, and aborts
-# with "unknown type [0x13]". Skip stripping — the AppImage stays a bit larger
-# but bundles successfully.
-if [[ "$CARGO_TARGET" == *linux* ]]; then
-    export NO_STRIP=true
-fi
-
-if [[ -n "$BUNDLES" ]]; then
-    IFS=',' read -ra BUNDLE_LIST <<< "$BUNDLES"
-    npx tauri build --config src-tauri/tauri.linux.conf.json --target "$CARGO_TARGET" --bundles "${BUNDLE_LIST[@]}"
-    BUNDLED_APPIMAGE=false
-    for b in "${BUNDLE_LIST[@]}"; do [[ "$b" == "appimage" ]] && BUNDLED_APPIMAGE=true; done
-else
-    npx tauri build --config src-tauri/tauri.linux.conf.json --target "$CARGO_TARGET"
-    BUNDLED_APPIMAGE=true
-fi
-
-# linuxdeploy-plugin-gtk hardcodes GTK_THEME to Adwaita:{light|dark} based on
-# a `gsettings get org.gnome.desktop.interface gtk-theme` grep for "dark".
-# That misses GNOME 42+ (which signals dark via color-scheme=prefer-dark while
-# gtk-theme stays "Adwaita") and returns empty on non-GNOME desktops, so the
-# menu bar ends up permanently light. Swap in a smarter hook that consults
-# color-scheme, KDE settings, and freedesktop portals, then repack.
-if [[ "$CARGO_TARGET" == *linux* && "$BUNDLED_APPIMAGE" == "true" ]]; then
-    APPIMAGE_DIR="$SCRIPT_DIR/src-tauri/target/$CARGO_TARGET/release/bundle/appimage"
-    APPDIR=$(find "$APPIMAGE_DIR" -maxdepth 1 -type d -name '*.AppDir' | head -n1)
-    APPIMG=$(find "$APPIMAGE_DIR" -maxdepth 1 -type f -name '*.AppImage' | head -n1)
-    if [[ -n "$APPDIR" && -n "$APPIMG" && -f "$APPDIR/apprun-hooks/linuxdeploy-plugin-gtk.sh" ]]; then
-        echo ">> Patching AppImage GTK theme detection"
-        cat > "$APPDIR/apprun-hooks/linuxdeploy-plugin-gtk.sh" <<'HOOK_EOF'
-#! /usr/bin/env bash
-# Replaces the default linuxdeploy GTK hook. Picks Adwaita:dark whenever any
-# common signal says the user prefers dark mode, otherwise Adwaita:light.
-detect_dark() {
-    [[ "$GTK_THEME" == *dark* || "$GTK_THEME" == *:dark ]] && return 0
-    if command -v gsettings >/dev/null 2>&1; then
-        local cs gt
-        cs=$(gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null)
-        [[ "$cs" == *prefer-dark* ]] && return 0
-        gt=$(gsettings get org.gnome.desktop.interface gtk-theme 2>/dev/null)
-        [[ "$gt" == *[Dd]ark* ]] && return 0
-    fi
-    local kde="${XDG_CONFIG_HOME:-$HOME/.config}/kdeglobals"
-    if [[ -f "$kde" ]] && grep -qiE '^ColorScheme=.*Dark' "$kde"; then
-        return 0
-    fi
-    if command -v busctl >/dev/null 2>&1; then
-        local portal
-        portal=$(busctl --user --json=short call org.freedesktop.portal.Desktop \
-            /org/freedesktop/portal/desktop org.freedesktop.portal.Settings Read \
-            ss org.freedesktop.appearance color-scheme 2>/dev/null)
-        [[ "$portal" == *'"u"'*'"1"'* || "$portal" == *'variant":"u","data":1'* ]] && return 0
-    fi
+    BROWSER_PATH=""
     return 1
 }
 
-if detect_dark; then GTK_THEME_VARIANT="dark"; else GTK_THEME_VARIANT="light"; fi
-APPIMAGE_GTK_THEME="${APPIMAGE_GTK_THEME:-"Adwaita:$GTK_THEME_VARIANT"}"
+# ─── Build .NET server ──────────────────────────────────────────────────────
+# Delegates to the shared sync-bundled-server.mjs script (which lives in
+# vscode-calcpad/scripts/) so the desktop and the VS Code extension stay in
+# lock-step on dependency layout, deps.json freshness, executable bits, and
+# pdb stripping. Runs the script with --keep-skia-natives because the
+# desktop ships standalone — there's no runtime download path for the
+# SkiaSharp natives that vscode-calcpad downloads on first activation.
+build_server() {
+    info "Building Calcpad.Server for ${DOTNET_RID}..."
 
-export APPDIR="${APPDIR:-"$(dirname "$(realpath "$0")")"}"
-export GTK_DATA_PREFIX="$APPDIR"
-export GTK_THEME="$APPIMAGE_GTK_THEME"
-export GDK_BACKEND=x11
-export XDG_DATA_DIRS="$APPDIR/usr/share:/usr/share:$XDG_DATA_DIRS"
-export GSETTINGS_SCHEMA_DIR="$APPDIR/usr/share/glib-2.0/schemas"
-export GTK_EXE_PREFIX="$APPDIR/usr"
-export GTK_PATH="$APPDIR/usr/lib/gtk-3.0:/usr/lib64/gtk-3.0:/usr/lib/x86_64-linux-gnu/gtk-3.0"
-export GTK_IM_MODULE_FILE="$APPDIR/usr/lib/gtk-3.0/3.0.0/immodules.cache"
-export GDK_PIXBUF_MODULE_FILE="$APPDIR/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
-export GIO_EXTRA_MODULES="$APPDIR/usr/lib/gio/modules"
-HOOK_EOF
-        rm -f "$APPIMG"
-        (cd "$APPIMAGE_DIR" && \
-            ARCH=x86_64 NO_STRIP=true \
-            "$HOME/.cache/tauri/linuxdeploy-plugin-appimage.AppImage" \
-            --appimage-extract-and-run --appdir "$APPDIR")
-        REPACKED=$(find "$APPIMAGE_DIR" -maxdepth 1 -type f -name '*.AppImage' | head -n1)
-        if [[ -n "$REPACKED" && "$REPACKED" != "$APPIMG" ]]; then
-            mv "$REPACKED" "$APPIMG"
-        fi
-        echo ">> AppImage repacked with patched GTK hook"
+    if ! command -v dotnet &>/dev/null; then
+        err "dotnet CLI not found. Install .NET 10 SDK: https://dotnet.microsoft.com/download"
+        exit 1
     fi
-fi
+    if ! command -v node &>/dev/null; then
+        err "node not found. Install Node.js to run the shared sync-bundled-server.mjs script."
+        exit 1
+    fi
+
+    local sync_script="$FRONTEND_DIR/vscode-calcpad/scripts/sync-bundled-server.mjs"
+    if [ ! -f "$sync_script" ]; then
+        err "Shared sync script not found at $sync_script"
+        exit 1
+    fi
+
+    local dotnet_version
+    dotnet_version="$(dotnet --version 2>/dev/null || echo 'unknown')"
+    info "Using dotnet ${dotnet_version}"
+
+    # Skip Playwright browser download — we use the system browser
+    export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+    info "Publishing self-contained build via shared sync script..."
+    node "$sync_script" \
+        --target="$EXTENSIONS_DIR" \
+        --rid="$DOTNET_RID" \
+        --configuration=Release \
+        --keep-skia-natives
+
+    # Verify the executable
+    local exe_name="Calcpad.Server"
+    if [ "$PLATFORM_OS" = "win" ]; then
+        exe_name="Calcpad.Server.exe"
+    fi
+
+    if [ -f "$EXTENSIONS_DIR/$exe_name" ]; then
+        local size
+        size="$(du -sh "$EXTENSIONS_DIR" | cut -f1)"
+        ok "Server built: ${EXTENSIONS_DIR}/${exe_name} (${size})"
+    else
+        err "Build failed — ${exe_name} not found in ${EXTENSIONS_DIR}"
+        exit 1
+    fi
+}
+
+# ─── Server launcher (no wrapper script needed) ────────────────────────────
+# The .NET server is invoked directly by Neutralino on every platform —
+# `Calcpad.Server[.exe]` is a self-contained apphost. All the behaviour
+# that used to live in the bash/cmd wrapper now lives in Program.cs:
+#
+#   - Browser detection: PdfGeneratorService.ResolveBrowserPathAsync
+#     searches the user's PATH when BROWSER_PATH is not set.
+#   - Stderr/stdout logging: FileLogger writes to logs/CalcpadServer-*.log
+#     and crash records to logs/last-crash.txt.
+#   - Random free port: Program.cs adds `--urls http://127.0.0.1:0` when
+#     no --urls flag and no CALCPAD_PORT env var was given.
+#   - Port-file publishing: Program.cs writes the bound URL to
+#     `.calcpad-server.port` next to the binary by default.
+#   - EOF watchdog: Program.cs exits when stdin closes (default-on for
+#     piped-stdin launches; opt out with CALCPAD_DETACHED=1).
+#
+# This means Neutralino's commandWindows / commandDarwin / commandLinux
+# all point at the apphost directly — see neutralino.config.json. The
+# only consumer that opts out is the VS Code extension's
+# server-manager.ts, which exports CALCPAD_DETACHED=1 because it shares
+# one server across multiple windows via the lock-file mechanism.
+
+# ─── Print summary ──────────────────────────────────────────────────────────
+print_summary() {
+    echo ""
+    echo -e "${GREEN}═══════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}  CalcPad Desktop build complete${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "  Platform:     ${BLUE}${DOTNET_RID}${NC}"
+    echo -e "  Server:       ${BLUE}${EXTENSIONS_DIR}/Calcpad.Server${NC}"
+
+    if [ -n "$BROWSER_PATH" ]; then
+        echo -e "  Browser:      ${GREEN}${BROWSER_PATH}${NC}"
+    else
+        echo -e "  Browser:      ${YELLOW}Not found — PDF export will not work${NC}"
+        echo -e "                ${YELLOW}Install chromium or set BROWSER_PATH${NC}"
+    fi
+
+    echo ""
+    echo -e "  ${BLUE}Next steps:${NC}"
+    echo -e "    Dev mode:   cd $(basename "$DESKTOP_DIR") && npm run dev"
+    echo -e "    Build:      cd $(basename "$DESKTOP_DIR") && npx neu build"
+    echo ""
+}
+
+# ─── Main ────────────────────────────────────────────────────────────────────
+main() {
+    echo -e "${BLUE}╔══════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║     CalcPad Desktop Build Script             ║${NC}"
+    echo -e "${BLUE}╚══════════════════════════════════════════════╝${NC}"
+    echo ""
+
+    detect_platform
+
+    # Find browser
+    if find_browser; then
+        ok "Found browser: ${BROWSER_PATH}"
+    else
+        warn "No Chromium/Chrome/Edge found on PATH"
+        warn "PDF generation will be unavailable until BROWSER_PATH is set"
+    fi
+
+    # Clean previous server build
+    if [ -d "$EXTENSIONS_DIR" ]; then
+        info "Cleaning previous server build..."
+        # Keep .gitkeep
+        find "$EXTENSIONS_DIR" -mindepth 1 ! -name '.gitkeep' -exec rm -rf {} + 2>/dev/null || true
+    fi
+    mkdir -p "$EXTENSIONS_DIR"
+
+    # Build (no separate launcher step — see comment block above)
+    build_server
+
+    print_summary
+}
+
+main "$@"

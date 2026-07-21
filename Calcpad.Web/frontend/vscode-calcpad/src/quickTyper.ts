@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { findQuickTypeReplacement } from 'calcpad-frontend';
 import type { CalcpadInsertManager } from './calcpadInsertManager';
-import { CalcpadSettingsManager } from './calcpadSettings';
 
 /**
  * Handles automatic replacement of quick typing shortcuts with Unicode symbols.
@@ -36,7 +35,8 @@ export class QuickTyper {
         document: vscode.TextDocument,
         change: vscode.TextDocumentContentChangeEvent
     ): Promise<void> {
-        const enableQuickTyping = CalcpadSettingsManager.getInstance().getExtraBool('quickTyping', true);
+        const config = vscode.workspace.getConfiguration('calcpad');
+        const enableQuickTyping = config.get<boolean>('enableQuickTyping', true);
         if (!enableQuickTyping) {
             return;
         }

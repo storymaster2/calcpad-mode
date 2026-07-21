@@ -87,12 +87,16 @@ export const calcpadLanguageConfiguration: monaco.languages.LanguageConfiguratio
     brackets: [
         ['(', ')'],
         ['{', '}'],
-        ['[', ']'],
+        ['|', '|'],
+        ['⌈', '⌉'],
+        ['⌊', '⌋'],
     ],
     autoClosingPairs: [
         { open: '(', close: ')' },
         { open: '{', close: '}' },
-        { open: '[', close: ']' },
+        { open: '|', close: '|' },
+        { open: '⌈', close: '⌉' },
+        { open: '⌊', close: '⌋' },
         { open: '"', close: '"' },
     ],
     surroundingPairs: [

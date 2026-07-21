@@ -26,22 +26,14 @@ namespace Calcpad.Highlighter.ContentResolution
             var macroExpansions = new Dictionary<int, MacroExpansionInfo>();
 
             // Build macro map from stage2 definitions (skip duplicates, use first definition)
-            var macros = new Dictionary<string, (List<string> Params, List<string> Content)>(StringComparer.OrdinalIgnoreCase);
+            var macros = new Dictionary<string, (List<string> Params, List<string> Defaults, List<string> Content)>(StringComparer.OrdinalIgnoreCase);
             foreach (var macroDef in stage2.MacroDefinitions)
             {
                 if (!macros.ContainsKey(macroDef.Name))
                 {
-                    macros[macroDef.Name] = (macroDef.Params, macroDef.Content);
+                    macros[macroDef.Name] = (macroDef.Params, macroDef.Defaults, macroDef.Content);
                 }
             }
-
-            // Pre-sort macros by name length descending so longer names match first
-            // (e.g. "string$" before "ng$" in "gstring$"). Done once here instead of
-            // per ExpandMacros call.
-            var sortedMacros = macros
-                .OrderByDescending(m => m.Key.Length)
-                .Select(m => (Name: m.Key, m.Value.Params, m.Value.Content))
-                .ToList();
 
             // Process lines: skip macro definitions, expand macro calls
             bool inMultilineMacro = false;
@@ -79,21 +71,16 @@ namespace Calcpad.Highlighter.ContentResolution
                 // Regular line - expand macro calls, tracking which macros were expanded
                 var originalLine = line;
                 var expandedMacroNames = new List<string>();
-                var expandedLine = ExpandMacros(line, sortedMacros, expandedMacroNames);
+                var expandedLine = ExpandMacros(line, macros, expandedMacroNames);
                 var isFromMacroExpansion = expandedLine != originalLine;
 
-                // Handle multiline expansions (macro content can have multiple lines).
-                // Macro content is built by JoinLines with '\n' only and macro body lines
-                // never carry '\r' (the tokenizer's per-line slicing strips line endings),
-                // so LineEnumerator's full \r\n/\r/\n handling yields identical segments
-                // to Split('\n') here — without the string[] allocation.
-                var expandedSpan = expandedLine.AsSpan();
-                int totalContentLines = expandedSpan.Count('\n') + 1;
+                // Handle multiline expansions (macro content can have multiple lines)
+                var expandedSubLines = expandedLine.Split('\n');
+                var totalContentLines = expandedSubLines.Length;
 
-                int subIdx = 0;
-                foreach (var lineSpan in new LineEnumerator(expandedSpan))
+                for (int subIdx = 0; subIdx < totalContentLines; subIdx++)
                 {
-                    lines.Add(lineSpan.ToString());
+                    lines.Add(expandedSubLines[subIdx]);
                     sourceMap[lines.Count - 1] = i;
                     if (isFromMacroExpansion)
                     {
@@ -106,7 +93,6 @@ namespace Calcpad.Highlighter.ContentResolution
                             TotalContentLines = totalContentLines
                         };
                     }
-                    subIdx++;
                 }
             }
 
@@ -128,25 +114,31 @@ namespace Calcpad.Highlighter.ContentResolution
 
             // All definitions come from tokenizer Lint mode
             var variablesWithDefs = tokenizerResult.VariableDefinitions;
-            // Some built-ins implicitly define a variable as a side effect (the arg extremum
-            // of $Inf/$Sup, the row-permutation vector 'ind' of lu(...)). Emit them as real
-            // definitions so they surface in autocomplete and the variables tab too, not just
-            // the undefined-variable check.
-            CollectImplicitSolverVariables(tokenizerResult, variablesWithDefs);
-            CollectLuIndexVariable(tokenizerResult, variablesWithDefs);
             var variables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var v in variablesWithDefs) variables.Add(v.Name);
             // Also include variables from basic tracking (e.g., inside command blocks)
             foreach (var name in tokenizerResult.DefinedVariables.Keys) variables.Add(name);
 
             var functionsWithParams = tokenizerResult.FunctionDefinitions;
-            var functions = new Dictionary<string, FunctionInfo>(StringComparer.Ordinal);
+            var functions = new Dictionary<string, FunctionInfo>(StringComparer.OrdinalIgnoreCase);
             foreach (var f in functionsWithParams)
             {
+                int requiredCount;
+                if (f.Defaults != null)
+                {
+                    requiredCount = 0;
+                    foreach (var d in f.Defaults)
+                        if (d is null) requiredCount++;
+                }
+                else
+                {
+                    requiredCount = f.Params?.Count ?? 0;
+                }
                 functions[f.Name] = new FunctionInfo
                 {
                     LineNumber = f.LineNumber,
                     ParamCount = f.Params?.Count ?? 0,
+                    RequiredParamCount = requiredCount,
                     ParamNames = f.Params ?? new List<string>()
                 };
             }
@@ -179,27 +171,6 @@ namespace Calcpad.Highlighter.ContentResolution
                 stage2.MacroDefinitions, macroExpansions, stage2.Lines,
                 sourceMap, filteredIncludeMap, stage2.SourceMap, stage1.SourceMap,
                 stage2.IncludeMap, stage1.LineContinuationSegments);
-
-            // The definition lists carry Stage3 line numbers (post macro-expansion /
-            // include filtering). Consumers that key by original editor lines — the
-            // definitions API and the metadata panel — need original lines, so remap
-            // them here, after the Stage3-internal indexes (which rely on Stage3 lines)
-            // have been built.
-            int MapDefLineToOriginal(int stage3Line)
-            {
-                if (filteredIncludeMap.TryGetValue(stage3Line, out var info) &&
-                    info.Source == "include" && info.OriginalLine >= 0)
-                    return info.OriginalLine;
-                var stage2Line = sourceMap.TryGetValue(stage3Line, out var s2) ? s2 : stage3Line;
-                var stage1Line = stage2.SourceMap.TryGetValue(stage2Line, out var s1) ? s1 : stage2Line;
-                var (originalLine, _) = MapColumnThroughContinuation(
-                    stage1Line, 0, stage1.LineContinuationSegments, stage1.SourceMap);
-                return originalLine;
-            }
-
-            foreach (var f in functionsWithParams) f.LineNumber = MapDefLineToOriginal(f.LineNumber);
-            foreach (var v in variablesWithDefs) v.LineNumber = MapDefLineToOriginal(v.LineNumber);
-            foreach (var u in customUnits) u.LineNumber = MapDefLineToOriginal(u.LineNumber);
 
             return new Stage3Result
             {
@@ -237,8 +208,7 @@ namespace Calcpad.Highlighter.ContentResolution
             // Register custom units first (they can be used in expressions)
             foreach (var unit in customUnits)
             {
-                var unitInfo = typeTracker.RegisterCustomUnit(unit.Name, unit.Definition, unit.LineNumber, 0, unit.Source);
-                unitInfo.Description = unit.Description;
+                typeTracker.RegisterCustomUnit(unit.Name, unit.Definition, unit.LineNumber, 0, unit.Source);
             }
 
             // Register functions
@@ -255,22 +225,18 @@ namespace Calcpad.Highlighter.ContentResolution
                         func.LineNumber,
                         0,
                         func.Source,
-                        func.IsConst);
+                        func.IsConst,
+                        func.Defaults);
                 }
                 else
                 {
                     // Normal function - use the expression for return type inference
-                    info = typeTracker.RegisterFunction(func.Name, func.Params, func.Expression ?? "", func.LineNumber, 0, func.Source, func.IsConst);
+                    info = typeTracker.RegisterFunction(func.Name, func.Params, func.Expression ?? "", func.LineNumber, 0, func.Source, func.IsConst, func.Defaults);
                 }
                 // Copy metadata from definition comment
                 info.Description = func.Description;
                 info.ParamTypes = func.ParamTypes;
                 info.ParamDescriptions = func.ParamDescriptions;
-
-                // A declared return type in the metadata comment overrides inference.
-                var declaredReturn = DefinitionMetadata.ParseFunctionReturnType(func.ReturnType);
-                if (declaredReturn.HasValue)
-                    info.ReturnType = declaredReturn.Value;
             }
 
             // Register macros
@@ -280,11 +246,11 @@ namespace Calcpad.Highlighter.ContentResolution
                 VariableInfo info;
                 if (isInline)
                 {
-                    info = typeTracker.RegisterInlineMacro(macro.Name, macro.Params ?? new List<string>(), macro.Content[0], macro.LineNumber, 0, macro.Source);
+                    info = typeTracker.RegisterInlineMacro(macro.Name, macro.Params ?? new List<string>(), macro.Content[0], macro.LineNumber, 0, macro.Source, macro.Defaults);
                 }
                 else
                 {
-                    info = typeTracker.RegisterMultilineMacro(macro.Name, macro.Params ?? new List<string>(), macro.LineNumber, 0, macro.Source);
+                    info = typeTracker.RegisterMultilineMacro(macro.Name, macro.Params ?? new List<string>(), macro.LineNumber, 0, macro.Source, macro.Defaults);
                 }
                 // Copy metadata from definition comment
                 info.Description = macro.Description;
@@ -348,7 +314,7 @@ namespace Calcpad.Highlighter.ContentResolution
                 {
                     var token = tokens[t];
 
-                    if (firstVar == null && token.Type == TokenType.Variable)
+                    if (firstVar == null && (token.Type == TokenType.Variable || token.Type == TokenType.StringVariable || token.Type == TokenType.StringTable))
                         firstVar = token;
 
                     if (token.Type != TokenType.Operator || token.Text != "=")
@@ -386,7 +352,7 @@ namespace Calcpad.Highlighter.ContentResolution
             // Second pass: collect all Variable tokens that are NOT assignment targets
             foreach (var token in tokenizerResult.Tokens)
             {
-                if (token.Type != TokenType.Variable)
+                if (token.Type != TokenType.Variable && token.Type != TokenType.StringVariable && token.Type != TokenType.StringTable)
                     continue;
 
                 if (assignmentPositions.Contains((token.Line, token.Column)))
@@ -396,90 +362,6 @@ namespace Calcpad.Highlighter.ContentResolution
             }
 
             return (assignments, usages);
-        }
-
-        /// <summary>
-        /// Registers the variables that $Inf and $Sup implicitly define: for a solver whose
-        /// counter is <c>k</c>, the argument extremum is exposed as <c>k_inf</c> / <c>k_sup</c>
-        /// (see MathParser.SolveBlock). These are global, so they must resolve as defined and
-        /// appear in autocomplete / the variables tab. A brace stack tracks the enclosing command
-        /// per '@', so nested solvers (e.g. $inf{$inf{f(x;y) @ x = ..} @ y = ..} yielding both
-        /// x_inf and y_inf) attribute each counter to the correct command.
-        /// </summary>
-        private static void CollectImplicitSolverVariables(
-            TokenizerResult tokenizerResult, List<VariableDefinition> variablesWithDefs)
-        {
-            var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var v in variablesWithDefs) existing.Add(v.Name);
-
-            var scopeSuffixes = new Stack<string>();
-            string pendingSuffix = null;
-            var afterAt = false;
-            foreach (var token in tokenizerResult.Tokens)
-            {
-                if (token.Type == TokenType.Command)
-                {
-                    pendingSuffix = token.Text.Equals("$Inf", StringComparison.OrdinalIgnoreCase) ? "_inf"
-                                  : token.Text.Equals("$Sup", StringComparison.OrdinalIgnoreCase) ? "_sup"
-                                  : null;
-                }
-                else if (token.Type == TokenType.Bracket && token.Text == "{")
-                {
-                    scopeSuffixes.Push(pendingSuffix);
-                    pendingSuffix = null;
-                    afterAt = false;
-                }
-                else if (token.Type == TokenType.Bracket && token.Text == "}")
-                {
-                    if (scopeSuffixes.Count > 0) scopeSuffixes.Pop();
-                    afterAt = false;
-                }
-                else if (token.Type == TokenType.Operator && token.Text == "@")
-                {
-                    afterAt = scopeSuffixes.Count > 0 && scopeSuffixes.Peek() != null;
-                }
-                else if (afterAt && (token.Type == TokenType.Variable || token.Type == TokenType.LocalVariable))
-                {
-                    var name = token.Text + scopeSuffixes.Peek();
-                    afterAt = false;
-                    if (existing.Add(name))
-                        variablesWithDefs.Add(new VariableDefinition
-                        {
-                            Name = name,
-                            Definition = scopeSuffixes.Peek() == "_sup" ? "$Sup argument (maximizer)" : "$Inf argument (minimizer)",
-                            LineNumber = token.Line,
-                            Source = "local"
-                        });
-                }
-            }
-        }
-
-        /// <summary>
-        /// lu(...) writes the row-permutation vector into a global variable named <c>ind</c>
-        /// (see MathParser.Compiler/Evaluator). Register it as defined at the first lu call so
-        /// later references resolve and it appears in autocomplete / the variables tab.
-        /// </summary>
-        private static void CollectLuIndexVariable(
-            TokenizerResult tokenizerResult, List<VariableDefinition> variablesWithDefs)
-        {
-            foreach (var v in variablesWithDefs)
-                if (v.Name.Equals("ind", StringComparison.OrdinalIgnoreCase))
-                    return;
-
-            foreach (var token in tokenizerResult.Tokens)
-            {
-                if (token.Type == TokenType.Function && token.Text.Equals("lu", StringComparison.OrdinalIgnoreCase))
-                {
-                    variablesWithDefs.Add(new VariableDefinition
-                    {
-                        Name = "ind",
-                        Definition = "lu(...) row-permutation index vector",
-                        LineNumber = token.Line,
-                        Source = "local"
-                    });
-                    return;
-                }
-            }
         }
 
         /// <summary>
@@ -592,7 +474,7 @@ namespace Calcpad.Highlighter.ContentResolution
             Dictionary<int, int> stage1ToOriginalMap,
             Dictionary<int, List<LineContinuationSegment>> lineContinuationSegments)
         {
-            var index = new Dictionary<string, List<SymbolLocation>>(StringComparer.Ordinal);
+            var index = new Dictionary<string, List<SymbolLocation>>(StringComparer.OrdinalIgnoreCase);
 
             if (userDefinedFunctions.Count == 0)
                 return index;
@@ -612,19 +494,15 @@ namespace Calcpad.Highlighter.ContentResolution
                 return ("local", null, -1);
             }
 
-            // Track definition lines per function so we can mark the defining token as
-            // IsAssignment=true. The definition token isn't necessarily at column 0 — a
-            // leading comment (e.g. 'text'a(x) = x) shifts it right — so match on the
-            // name and line and take the first occurrence (recursive self-calls stay usages).
-            var definitionLines = new HashSet<(string Name, int Line)>();
+            // Track definition positions so we can mark them as IsAssignment=true
+            var definitionPositions = new HashSet<(int Line, int Column)>();
             foreach (var funcDef in tokenizerResult.FunctionDefinitions)
             {
                 if (userDefinedFunctions.ContainsKey(funcDef.Name))
                 {
-                    definitionLines.Add((funcDef.Name, funcDef.LineNumber));
+                    definitionPositions.Add((funcDef.LineNumber, 0));
                 }
             }
-            var markedDefinitions = new HashSet<(string Name, int Line)>();
 
             // Scan all Function tokens, only index user-defined functions
             foreach (var token in tokenizerResult.Tokens)
@@ -646,8 +524,7 @@ namespace Calcpad.Highlighter.ContentResolution
                 {
                     (originalLine, adjustedColumn) = MapPositionToOriginal(token.Line, token.Column);
                 }
-                var isDefinition = definitionLines.Contains((token.Text, token.Line))
-                    && markedDefinitions.Add((token.Text, token.Line));
+                var isDefinition = definitionPositions.Contains((token.Line, token.Column));
 
                 if (!index.TryGetValue(token.Text, out var locations))
                 {
@@ -712,7 +589,8 @@ namespace Calcpad.Highlighter.ContentResolution
                 var mergedColumn = 0;
                 if (macroDef.LineNumber >= 0 && macroDef.LineNumber < stage2Lines.Count)
                 {
-                    var nameIdx = FindMacroNameColumn(stage2Lines[macroDef.LineNumber], macroDef.Name);
+                    var defLine = stage2Lines[macroDef.LineNumber];
+                    var nameIdx = defLine.AsSpan().IndexOf(macroDef.Name.AsSpan(), StringComparison.OrdinalIgnoreCase);
                     if (nameIdx >= 0) mergedColumn = nameIdx;
                 }
 
@@ -759,18 +637,16 @@ namespace Calcpad.Highlighter.ContentResolution
                     if (!seenCallSites.Add((macroName, stage2Line)))
                         continue; // Already tracked this call site
 
-                    // Locate the macro name on the call line, requiring a proper name
-                    // boundary. expansion.MacroNames includes macros pulled in by nested/
-                    // recursive expansion (e.g. doubleCheck$'s body calls double$), which
-                    // are not literally on this line — skip those rather than recording a
-                    // bogus column-0 location that would shadow the real call.
-                    if (stage2Line < 0 || stage2Line >= stage2Lines.Count)
-                        continue;
-                    var mergedColumn = FindMacroNameColumn(stage2Lines[stage2Line], macroName);
-                    if (mergedColumn < 0)
-                        continue;
-
                     var (source, sourceFile, includeOriginalLine) = GetStage2SourceInfo(stage2Line);
+
+                    // Find column of macro call in the merged Stage 2 line
+                    var mergedColumn = 0;
+                    if (stage2Line >= 0 && stage2Line < stage2Lines.Count)
+                    {
+                        var callLine = stage2Lines[stage2Line];
+                        var nameIdx = callLine.AsSpan().IndexOf(macroName.AsSpan(), StringComparison.OrdinalIgnoreCase);
+                        if (nameIdx >= 0) mergedColumn = nameIdx;
+                    }
 
                     int originalLine, adjustedColumn;
                     if (source == "include" && includeOriginalLine >= 0)
@@ -923,27 +799,6 @@ namespace Calcpad.Highlighter.ContentResolution
         }
 
         /// <summary>
-        /// Finds the column of a macro-name occurrence in a line, requiring that the
-        /// character before it is not a macro-name letter. This prevents a shorter
-        /// macro name from matching inside a longer one (e.g. "check$" must not match
-        /// inside "doubleCheck$"). Returns -1 when the name does not appear as a
-        /// standalone macro reference.
-        /// </summary>
-        private static int FindMacroNameColumn(string line, string macroName)
-        {
-            int from = 0;
-            while (from <= line.Length - macroName.Length)
-            {
-                int idx = line.IndexOf(macroName, from, StringComparison.OrdinalIgnoreCase);
-                if (idx < 0) return -1;
-                if (idx == 0 || !CalcpadCharacterHelpers.IsMacroLetter(line[idx - 1], 1))
-                    return idx;
-                from = idx + 1;
-            }
-            return -1;
-        }
-
-        /// <summary>
         /// Maps a column position in a merged stage1 line back to the correct original line and adjusted column,
         /// using LineContinuationSegments. If the stage1 line has no continuation segments, falls back to the
         /// simple stage1→original map with the raw column.
@@ -990,10 +845,14 @@ namespace Calcpad.Highlighter.ContentResolution
         /// For example, with macros "string$" and "ng$", "gstring$" should expand "string$", not "ng$".
         /// Optionally tracks which macros were expanded for source mapping.
         /// </summary>
-        private string ExpandMacros(string line, List<(string Name, List<string> Params, List<string> Content)> sortedMacros, List<string> expandedMacroNames = null, HashSet<string> currentlyExpanding = null)
+        private string ExpandMacros(string line, Dictionary<string, (List<string> Params, List<string> Defaults, List<string> Content)> macros, List<string> expandedMacroNames = null)
         {
-            if (sortedMacros.Count == 0 || !line.AsSpan().Contains('$'))
+            if (macros.Count == 0 || !line.AsSpan().Contains('$'))
                 return line;
+
+            // Sort macros by name length descending so longer names are matched first
+            // This ensures "string$" is matched before "ng$" in "gstring$"
+            var sortedMacros = macros.OrderByDescending(m => m.Key.Length).ToList();
 
             var result = new System.Text.StringBuilder(line.Length * 2);
             var textBuffer = new System.Text.StringBuilder();
@@ -1010,20 +869,16 @@ namespace Calcpad.Highlighter.ContentResolution
 
                     // Try to find the longest matching macro name that ends at this position
                     // Compare StringBuilder chars directly to avoid textBuffer.ToString() allocation
-                    (string Name, List<string> Params, List<string> Content)? matchedMacro = null;
+                    (string macroName, (List<string> Params, List<string> Defaults, List<string> Content) macro)? matchedMacro = null;
                     int macroStartInBuffer = -1;
 
-                    foreach (var entry in sortedMacros)
+                    foreach (var kvp in sortedMacros)
                     {
-                        var name = entry.Name;
-                        // Skip macros currently being expanded on the call stack to break
-                        // self-referential (#def a$ = a$) and mutual (a$↔b$) cycles.
-                        if (currentlyExpanding != null && currentlyExpanding.Contains(name))
-                            continue;
+                        var name = kvp.Key;
                         if (textBuffer.Length >= name.Length &&
                             StringBuilderEndsWith(textBuffer, name))
                         {
-                            matchedMacro = entry;
+                            matchedMacro = (name, kvp.Value);
                             macroStartInBuffer = textBuffer.Length - name.Length;
                             break; // First match is the longest due to sorted order
                         }
@@ -1031,8 +886,7 @@ namespace Calcpad.Highlighter.ContentResolution
 
                     if (matchedMacro.HasValue)
                     {
-                        var macro = matchedMacro.Value;
-                        var macroName = macro.Name;
+                        var (macroName, macro) = matchedMacro.Value;
 
                         // Output text before the macro name
                         if (macroStartInBuffer > 0)
@@ -1045,7 +899,8 @@ namespace Calcpad.Highlighter.ContentResolution
                         int pos = i + 1;
 
                         // Skip whitespace
-                        ParsingHelpers.SkipWhitespace(line, ref pos);
+                        while (pos < line.Length && char.IsWhiteSpace(line[pos]))
+                            pos++;
 
                         List<string> argList;
                         int replacementEnd;
@@ -1054,14 +909,22 @@ namespace Calcpad.Highlighter.ContentResolution
                         if (pos < line.Length && line[pos] == '(')
                         {
                             var argsStart = pos + 1;
-                            var closePos = ParsingHelpers.FindMatchingClose(line, pos, '(', ')');
-
-                            if (closePos >= 0)
+                            var depth = 1;
+                            pos++;
+                            while (pos < line.Length && depth > 0)
                             {
-                                var argsStr = line.Substring(argsStart, closePos - argsStart);
+                                if (line[pos] == '(') depth++;
+                                else if (line[pos] == ')') depth--;
+                                pos++;
+                            }
+
+                            if (depth == 0)
+                            {
+                                var argsEnd = pos - 1;
+                                var argsStr = line.Substring(argsStart, argsEnd - argsStart);
                                 // Use ParseMacroParameters for macro calls - only parentheses count for nesting
                                 argList = ParameterParser.ParseMacroParameters(argsStr);
-                                replacementEnd = closePos + 1;
+                                replacementEnd = pos;
                             }
                             else
                             {
@@ -1078,16 +941,14 @@ namespace Calcpad.Highlighter.ContentResolution
                             replacementEnd = i + 1;
                         }
 
-                        // Resolve positional arguments against macro params
-                        var resolvedArgs = ResolveMacroArgs(macro.Params, argList);
+                        // Resolve keyword args and fill defaults
+                        var resolvedArgs = ResolveMacroArgs(macro.Params, macro.Defaults, argList);
                         if (resolvedArgs != null)
                         {
                             expandedMacroNames?.Add(macroName);
-                            string macroContent;
+                            var macroContent = JoinLines(macro.Content);
 
-                            // Substitute parameters - sort by length descending to handle nested
-                            // param names (e.g. "ab" before "a"). Use a single StringBuilder so
-                            // chained Replace calls don't allocate a new string per parameter.
+                            // Substitute parameters - sort by length descending to handle nested param names
                             if (macro.Params.Count > 0)
                             {
                                 var sortedParams = macro.Params
@@ -1095,32 +956,14 @@ namespace Calcpad.Highlighter.ContentResolution
                                     .OrderByDescending(x => x.Param.Length)
                                     .ToList();
 
-                                var contentBuilder = new System.Text.StringBuilder();
-                                AppendJoinedLines(contentBuilder, macro.Content);
                                 foreach (var (param, arg) in sortedParams)
                                 {
-                                    contentBuilder.Replace(param, arg);
+                                    macroContent = macroContent.Replace(param, arg);
                                 }
-                                macroContent = contentBuilder.ToString();
-                            }
-                            else
-                            {
-                                macroContent = JoinLines(macro.Content);
                             }
 
-                            // Recursively expand any macros in the result (nested expansions also tracked).
-                            // Track this macro in the cycle set so any recursive reference to itself
-                            // (direct or transitive) is matched against the guard above.
-                            currentlyExpanding ??= new HashSet<string>(StringComparer.Ordinal);
-                            currentlyExpanding.Add(macroName);
-                            try
-                            {
-                                macroContent = ExpandMacros(macroContent, sortedMacros, expandedMacroNames, currentlyExpanding);
-                            }
-                            finally
-                            {
-                                currentlyExpanding.Remove(macroName);
-                            }
+                            // Recursively expand any macros in the result (nested expansions also tracked)
+                            macroContent = ExpandMacros(macroContent, macros, expandedMacroNames);
 
                             result.Append(macroContent);
                             i = replacementEnd;
@@ -1168,23 +1011,83 @@ namespace Calcpad.Highlighter.ContentResolution
         }
 
         /// <summary>
-        /// Resolves positional arguments against macro parameters.
+        /// Resolves positional and keyword arguments against macro parameters with optional defaults.
         /// Returns a resolved argument array parallel to params, or null if the call is invalid.
         /// </summary>
-        private static List<string> ResolveMacroArgs(List<string> paramNames, List<string> argList)
+        private static List<string> ResolveMacroArgs(List<string> paramNames, List<string> defaults, List<string> argList)
         {
             if (paramNames == null || paramNames.Count == 0)
                 return argList.Count == 0 ? new List<string>() : null;
 
-            // Treat a single empty-string arg as "no args" — corresponds to macro$()
-            var effectiveArgs = (argList.Count == 1 && argList[0].Trim().Length == 0)
-                ? new List<string>()
-                : argList;
+            // Separate positional and keyword arguments
+            var positional = new List<string>();
+            var keywords = new Dictionary<string, string>(StringComparer.Ordinal);
 
-            if (effectiveArgs.Count != paramNames.Count)
+            foreach (var rawArg in argList)
+            {
+                var trimmed = rawArg.Trim();
+                if (trimmed.Length == 0 && argList.Count == 1)
+                    continue; // Empty parens: macro$()
+
+                if (TryParseMacroKeywordArg(trimmed, paramNames, out var kwName, out var kwValue))
+                    keywords[kwName] = kwValue;
+                else
+                    positional.Add(rawArg);
+            }
+
+            int totalProvided = positional.Count + keywords.Count;
+            if (totalProvided > paramNames.Count)
                 return null;
 
-            return new List<string>(effectiveArgs);
+            // Compute required count
+            int requiredCount = paramNames.Count;
+            if (defaults != null)
+            {
+                requiredCount = 0;
+                foreach (var d in defaults)
+                    if (d == null) requiredCount++;
+            }
+
+            if (totalProvided < requiredCount)
+                return null;
+
+            // Build resolved args
+            var resolved = new List<string>(paramNames.Count);
+            int posIdx = 0;
+            for (int j = 0; j < paramNames.Count; j++)
+            {
+                if (keywords.TryGetValue(paramNames[j], out var kwVal))
+                    resolved.Add(kwVal);
+                else if (posIdx < positional.Count)
+                    resolved.Add(positional[posIdx++]);
+                else if (defaults != null && j < defaults.Count && defaults[j] != null)
+                    resolved.Add(defaults[j]);
+                else
+                    return null; // Required param not satisfied
+            }
+            return resolved;
+        }
+
+        /// <summary>
+        /// Tries to parse a macro keyword argument in the form "name$=value".
+        /// </summary>
+        private static bool TryParseMacroKeywordArg(ReadOnlySpan<char> arg, List<string> paramNames, out string kwName, out string kwValue)
+        {
+            int idx = 0;
+            while (idx < arg.Length && (char.IsLetterOrDigit(arg[idx]) || arg[idx] == '_')) idx++;
+            if (idx > 0 && idx + 1 < arg.Length && arg[idx] == '$' && arg[idx + 1] == '=')
+            {
+                var name = arg[..(idx + 1)].ToString();
+                if (paramNames.Contains(name))
+                {
+                    kwName = name;
+                    kwValue = arg[(idx + 2)..].Trim().ToString();
+                    return true;
+                }
+            }
+            kwName = null;
+            kwValue = null;
+            return false;
         }
 
         /// <summary>

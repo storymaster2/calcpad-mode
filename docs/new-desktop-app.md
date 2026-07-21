@@ -1,172 +1,82 @@
 # Calcpad Desktop App
 
-> Calcpad.Web only. The standalone WPF desktop application for Windows is separate and unaffected.
+> Calcpad.Web only. The WPF desktop application is unaffected.
 
-The **Calcpad Desktop App** is a native application for Windows, macOS, and Linux that wraps the same editor you get in the browser and bundles the calculation engine inside it. You get the full editor — multi-tab editing, syntax highlighting, autocomplete, live preview, and the CalcPad sidebar — plus native file dialogs, a native menu bar, and drag-and-drop, with no browser to open and no server to set up.
+The Calcpad desktop app (`Calcpad.Web/frontend/calcpad-desktop`) is a Neutralino-packaged build of the same web editor that runs in the browser, bundled with the .NET server as a sidecar extension. It exists to give users a native filesystem + native menu / save-dialog experience without giving up the Monaco editor stack.
 
-For the Calcpad language itself, start with **[Writing Math](writing-math.md)** and the **[Quick Reference](quick-reference.md)**.
+## Multi-tab editing
 
-## Installing
-
-The app ships as a per-platform download:
-
-| Platform | Format |
-|----------|--------|
-| Windows | Portable `.zip` build (no install for beta) |
-| Linux | AppImage (run directly, no install for beta) |
-
-The calculation engine and its fonts and templates are bundled inside the app — you do **not** need .NET installed separately. On Linux, the `.AppImage` includes what it needs to run; the `.deb` package expects WebKitGTK to already be present on the system.
-
-For PDF export you need a **Chromium-based browser** (Chrome, Edge, or Chromium) installed on the system. On Linux the app will tell you which package to install if none is found — see [PDF Export](new-pdf-export.md).
-
-## Your first document
-
-1. Launch the app. It opens with an empty **Untitled-1** tab.
-2. Type a calculation, for example:
-
-   ```calcpad
-   "Cantilever tip deflection
-   P = 5kN
-   L = 3m
-   E = 200GPa
-   I = 8.5e-5m^4
-   δ = P·L^3/(3·E·I)
-   ```
-
-3. The **preview pane** renders your report live as you type. Toggle it from **View → Toggle Preview**.
-4. Save with **Ctrl+S** (or **File → Save**). A native save dialog lets you choose the location.
-
-## Working with tabs
-
-The app uses tabs so you can keep several `.cpd` documents open at once.
+VS Code-style tabs let you keep several `.cpd` documents open at once.
 
 | Action | Shortcut |
 |--------|----------|
 | New tab | **Ctrl+T** or **Ctrl+N**, or the **`+`** button on the tab strip |
-| Open a file | **File → Open…**, or drag a file onto the window |
 | Close tab | **Ctrl+W**, the **✕** on the tab, or middle-click the tab |
-| Next / previous tab | **Ctrl+Tab** / **Ctrl+Shift+Tab** |
-| Jump to tab 1–8 | **Ctrl+1** … **Ctrl+8** |
+| Cycle tabs | **Ctrl+Tab** (next), **Ctrl+Shift+Tab** (previous) |
+| Jump to Nth tab | **Ctrl+1** … **Ctrl+8** |
 | Jump to last tab | **Ctrl+9** |
 
-How tabs behave:
+Behaviour matches VS Code:
 
-- **Cursor and scroll position are remembered** per tab and restored when you switch back.
-- **Unsaved changes** are marked with a dot on the tab; undoing back to the last saved state clears it.
-- **Opening an already-open file** activates its existing tab instead of duplicating it.
-- **Opening a file from an empty Untitled tab** replaces it in place rather than stacking a new tab.
-- **Closing a tab with unsaved changes** prompts Save / Don't Save / Cancel. Quitting the app walks through every unsaved tab; cancel any prompt to abort the quit.
-- Hover, definitions, references, the linter, the preview, and the TOC are all scoped to the active tab, so symbols and errors never bleed between unrelated documents.
+- **One editor, many models** — the single Monaco editor swaps its underlying model on tab activation; cursor and scroll position are saved in view state and restored on switch-back.
+- **Per-tab dirty tracking** — based on `model.getAlternativeVersionId()`, so undoing back to the saved version clears the dirty dot.
+- **Open-existing focus** — opening a file that's already in a tab activates that tab instead of duplicating it.
+- **Untitled scratch reuse** — opening a file from an empty `Untitled-N` tab replaces it in place rather than stacking another tab.
+- **Per-tab close prompt** — closing a dirty tab opens a Save / Don't Save / Cancel dialog. Window close walks every dirty tab in turn; cancel any prompt to abort the exit.
+- **Per-tab providers** — hover, definitions, find-references, and the linter cache are scoped per tab, so symbols don't bleed between unrelated documents.
 
-## Opening files
+The Problems panel re-emits the active tab's markers on every switch, so it never shows stale data from another tab. The preview pane and TOC sidebar also repaint against the new active model.
 
-There are several ways to open documents:
+## Editor key behaviour
 
-- **File → Open…** — native file picker.
-- **Drag and drop** — drop one or more files onto the editor; each opens in its own tab. Dropping plain text (e.g. from a browser) opens it as a new untitled tab.
-- **Files tab** in the sidebar — open a folder and browse its tree.
-- **Recent files** — tracked automatically and available from the File menu.
+Two Monaco options are flipped to match the most common keyboard expectations and to stop the suggest widget from intercepting newlines:
 
-## The editor
+- **Enter is always a newline.** `acceptSuggestionOnEnter: 'off'` and `acceptSuggestionOnCommitCharacter: false` together guarantee that pressing Enter never accepts a suggestion — it always inserts a line break.
+- **Tab accepts suggestions.** `tabCompletion: 'on'` makes Tab the accept key when the suggest widget is open, and triggers completion when typing a partial word.
 
-- **Syntax highlighting** for numbers, units, operators, variables, functions, macros, keywords, commands, and embedded HTML/Markdown in comments.
-- **Autocomplete** that prioritizes your own symbols over built-ins, with snippet placeholders for function arguments.
-- **Quick-type symbols** — `~a` + space → `α`, `~p` + space → `π`, etc.
-- **Operator replacement** — `<=` → `≤`, `>=` → `≥`, `!=` → `≠`.
-- **Auto-indentation** for `#if` / `#for` / `#def` blocks.
-- **Go to Definition**, **Find All References**, **Rename**, and **hover** for symbols, including across `#include` files.
+## Export tab
 
-Two key behaviors worth knowing:
+The sidebar's **Export** tab now has three actions in addition to the existing per-file download buttons:
 
-- **Enter always inserts a newline** — it never accepts a suggestion. Press **Tab** to accept a completion.
-- **Tab accepts suggestions** and triggers completion on a partial word.
+| Button | Behaviour (desktop) | Behaviour (web) |
+|--------|---------------------|------------------|
+| **Save HTML…** | Native save dialog → writes `.html` via `filesystem.writeFile` | Browser blob download (`calcpad-output.html`) |
+| **Save Word…** | Native save dialog → writes `.docx` via `filesystem.writeBinaryFile` | Browser blob download (`calcpad-output.docx`) |
+| **Download all (.zip)** | Existing zipped `#write`/`#append` exports | Same |
 
-These are the same editor features as the [VS Code extension](new-vscode-extension.md), so anything you learn in one carries over to the other.
+Both new actions go through the same backend pipeline:
 
-## The CalcPad sidebar
+1. `POST /api/calcpad/convert` (HTML) or `POST /api/calcpad/docx` (Word)
+2. The DOCX endpoint runs the calcpad → HTML pipeline with `forPrint: true`, then feeds the HTML through `Calcpad.OpenXml.OpenXmlWriter` and returns the `.docx` bytes
+3. Frontend writes the result via the platform's save mechanism
 
-Toggle the sidebar with **View → Toggle Sidebar**. It has a **Files** view and a **Calcpad** view; the Calcpad view is split into tabs (Insert, TOC, Settings, Variables, PDF, Formatting, Export, Errors).
+The same buttons fire on the VS Code sidebar's Export tab, where they execute the `vscode-calcpad.saveSourceHtml` and `vscode-calcpad.saveDocx` commands (also available from the Command Palette).
 
-The sidebar is the same across every Calcpad front end — see **[The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md)** for a full walkthrough of each tab, including Prettify options and the Export buttons.
+## Embedded server lifecycle
 
-## Live preview
+The `.NET` server runs as a Neutralino extension launched at app start.
 
-The preview pane renders your report live and re-renders as you type. From **View** you can:
+- **Linux launcher** — `extensions/server/start-server.sh` probes for a Chromium-family browser, sets `BROWSER_PATH`, exports `CALCPAD_PORT=9420`, then `exec`s `Calcpad.Server` with stderr tee'd into `extensions/server/logs/server-stderr.log`.
+- **Windows / macOS** — the apphost binary is launched directly (`CalcpadServer.exe` / `CalcpadServer`).
+- **Server URL** — the frontend defaults to `http://localhost:9420`; the launcher binds to whatever the `CALCPAD_PORT` environment variable says.
 
-- **Toggle Preview** — show/hide the pane.
-- **Preview Mode: Wrapped** — the normal report view.
-- **Preview Mode: Unwrapped** — the fully expanded source, with macros and includes resolved. Useful for debugging what the engine computes.
+See [PDF export](new-pdf-export.md) for the desktop-specific browser pre-flight check and the recommended Chromium packages per distribution.
 
-### Running on demand (Auto-Run off)
+## Native menu
 
-By default the preview re-renders continuously as you type. If you turn **Settings → Auto-Run Preview** off — useful for long-running documents — the preview only re-renders when you:
+Built via Neutralino's `setMainMenu` API. Roughly mirrors the VS Code menu surface:
 
-- Click **▶ Run** on the editor toolbar.
-- Press **Ctrl+Alt+X**.
-- Right-click in the editor → **Run Preview**.
-- Use **Server → Refresh** in the native menu (same shortcut).
+- **File** — New Tab · Open… · Open Recent · Save · Save As… · Close Tab · Export PDF… · Quit
+- **View** — Toggle Sidebar · Toggle Preview · Preview Mode (Wrapped / Unwrapped / Interactive)
+- **Server** — Refresh · Show Server Log · Restart App
 
-A manual run also re-lints the document, refreshes definitions and the table of contents, and rebuilds the Export tab's plot list.
+The Recent submenu is rebuilt every time a file opens, capped at the most recent 10 entries.
 
-## Splitting the editor
+## Drag-and-drop
 
-The **Split ⬓** button in the editor toolbar (also **View → Split Editor**) opens a second editor group stacked below the first. Each group has its own tabs, tab strip, preview, and Problems markers. Click **Unsplit** (same button) to close the bottom group; any unsaved tabs in it are walked through the save prompt first. The active group — the one you most recently clicked into — drives the sidebar (Problems, TOC, Variables).
+Dropping one or more files on the editor opens each in its own tab. Native filesystem drops use the OS path; non-OS drops (e.g. text from a browser) open as untitled tabs with the dropped contents.
 
-## Errors
+## Packaging
 
-**Linter** — Calcpad checks your document as you write and flags problems before they're converted to HTML. Issues are marked in red, yellow, or blue at the spot with the problem, based on severity, and appear in the **Problems** panel with a link to the offending line. See **[Linter and Diagnostics](new-linter.md)** for the full list of codes.
-
-**Preview errors** — errors from the calculation engine (including inside hidden code) are listed in the **Errors** tab of the sidebar, each with a link to its source line.
-
-## Exporting
-
-Every export uses the app's built-in engine, so the output matches the preview exactly.
-
-| Output | How | Notes |
-|--------|-----|-------|
-| **PDF** | **File → Export PDF…** | Full-fidelity export via a native save dialog. Requires a Chromium browser — see [PDF Export](new-pdf-export.md). |
-| **HTML** | **Save HTML…** on the sidebar's **Export** tab | Native save dialog writes a standalone `.html` report. |
-| **Word (.docx)** | **Save Word…** on the sidebar's **Export** tab | Native save dialog writes a `.docx` document. |
-
-Set the document title, timestamp format, page size, and header/footer in the sidebar's **PDF** tab before exporting. The **Export** tab also has a **Plots** section that lists every plot the document produces, so you can save each one individually or all at once as a ZIP — see [The CalcPad Panel & Settings → Export](new-calcpad-panel-and-settings.md#export).
-
-## The native menu
-
-The menu bar drives the whole app:
-
-- **File** — New Tab · Open… · Save · Save As… · Close Tab · Export PDF… · Quit
-- **Edit** — Undo · Redo · Cut · Copy · Paste · Select All · Find · Replace
-- **View** — Toggle Sidebar · Toggle Preview · Split Editor · Preview Mode: Wrapped / Unwrapped
-- **Server** — Refresh (**Ctrl+Alt+X**) · Show Server Log · Stop Server · Restart Server
-- **Help** — Documentation (opens the docs site in your default browser)
-
-## Settings and configurations
-
-All calculation, plot, unit, theme, editor, and linter settings live in the **Settings** tab of the sidebar. The desktop app also supports **named configurations** — save different sets of settings (e.g. one for metric with 3 decimals, one for imperial with degrees) and switch the active configuration from the Settings tab; configurations persist between sessions.
-
-See **[The CalcPad Panel & Settings → Settings](new-calcpad-panel-and-settings.md#settings)** for the full list, and **[→ Formatting](new-calcpad-panel-and-settings.md#formatting-prettify)** for the Prettify options.
-
-## The built-in engine
-
-The app runs the calculation engine inside it. It starts automatically when the app launches and shuts down when you close it — you never launch or configure it yourself.
-
-If calculations stop responding, use the **Server** menu:
-
-- **Refresh** (**Ctrl+Alt+X**) — re-run the active document.
-- **Show Server Log** — open the engine's log file to diagnose a problem.
-- **Stop Server** / **Restart Server** — cycle the engine.
-
-## Troubleshooting
-
-| Symptom | Fix |
-|---------|-----|
-| Preview blank or not updating | **Server → Refresh**, then **Server → Restart Server** if needed. Check **Server → Show Server Log** to see messages from the calculation engine. Click **Open Log Folder** in the **Settings** tab to submit logs showing an error as a Github Issue. |
-| PDF export fails | Install a Chromium browser. On Linux the app names the package to install — see [PDF Export](new-pdf-export.md). |
-| Unsaved work after a crash | The app writes backup copies of unsaved files; reopen them from the Files tab. |
-
-## See also
-
-- [The CalcPad Panel & Settings](new-calcpad-panel-and-settings.md) — the shared sidebar and all settings
-- [Using the VS Code Extension](new-vscode-extension.md)
-- [PDF Export](new-pdf-export.md) · [Includes and File Reads](new-includes.md) · [Linter and Diagnostics](new-linter.md) · [Table of Contents](new-table-of-contents.md)
-- [Writing Math](writing-math.md) · [Quick Reference](quick-reference.md)
+- **Arch** — `packaging/arch/PKGBUILD` builds with `npm`, `dotnet-sdk>=10.0`, and `imagemagick`. Runtime depends on `webkit2gtk-4.1` + `gtk3`. Optional dependencies cover the supported Chromium variants for PDF export, with `ungoogled-chromium-bin` listed as the preferred prebuilt option.
+- The packaged tree lays out `/opt/calcpad-ce/calcpad-desktop`, `/opt/calcpad-ce/resources.neu`, the bundled `extensions/server/` tree, a `/usr/bin/calcpad-ce` shim, and a desktop entry under `/usr/share/applications/`.

@@ -1,25 +1,24 @@
 import * as monaco from 'monaco-editor';
 import { createApp, nextTick } from 'vue';
 import App from './App.vue';
-import pkg from '../package.json';
 import CalcpadAppVue from 'calcpad-frontend/vue/components/CalcpadApp.vue';
 import { initMessaging } from 'calcpad-frontend/vue/services/messaging';
 import { MessageBridge } from './services/message-bridge';
 import { buildApiSettings } from 'calcpad-frontend/types/settings';
-import { findMetadataCommentBlock, serializeMetadataComment, buildDefinitionResolver } from 'calcpad-frontend';
-import { registerCalcpadLanguage, registerCalcpadTheme, remeasureEditorFontsWhenReady, resolveEditorFontFamily } from './editor/setup';
-import { setAppTheme, coerceAppTheme } from './editor/app-theme';
+import {
+    getDatagridCdnTags,
+    getUiEventScript,
+    htmlHasDatagrids,
+} from 'calcpad-frontend/services/ui-preview';
+import { registerCalcpadLanguage, registerCalcpadTheme, createCalcpadEditor } from './editor/setup';
 import { registerSemanticTokensProvider } from './editor/semantic-tokens';
 import { setupDiagnostics } from './editor/diagnostics';
 import { registerCompletionProvider } from './editor/completions';
-import { registerIncludeCompletionProvider } from './editor/include-completions';
 import { registerHoverProvider } from './editor/hover';
 import {
     registerDefinitionProvider,
     registerReferenceProvider,
     registerRenameProvider,
-    type IncludeFileOpener,
-    type IncludeUriResolver,
 } from './editor/references';
 import { attachQuickTyper } from './editor/quick-type';
 import { attachOperatorReplacer } from './editor/operator-replacer';
@@ -27,17 +26,15 @@ import { attachAutoIndenter } from './editor/auto-indent';
 import { registerFormattingCommands } from './editor/formatting-commands';
 import { registerFormatDocumentProvider } from './editor/format-document';
 import { setActiveDocumentKeyResolver, type EditorBridge } from './editor/bridge';
-import { EditorGroup } from './editor/editor-group';
-import type { TabManager } from './tabs/tab-manager';
+import { TabManager } from './tabs/tab-manager';
 import './editor/vscode-variables.css';
-import 'calcpad-frontend/vue/styles/base.css';
 import './styles/app.css';
 
 // Monaco worker setup — must run before editor creation
 import './editor/workers';
 
-/** Runtime check: are we running inside a Tauri webview? */
-const isTauri = typeof (window as any).__TAURI_INTERNALS__ !== 'undefined';
+/** Runtime check: are we running inside a Neutralino window? */
+const isNeutralino = typeof (window as any).NL_TOKEN !== 'undefined';
 
 // Determine server URL:
 // 1. ?server= query param
@@ -55,17 +52,14 @@ function getServerUrl(): string {
 
 /** Idle-state preview HTML — same content the VS Code extension shows when
  *  the editor buffer is empty. Quick reference for formatting hotkeys. */
-function getEmptyPreviewHtml(theme: 'light' | 'dark'): string {
-    const c = theme === 'light'
-        ? { fg: '#6e6e6e', bg: '#ffffff', link: '#0066cc' }
-        : { fg: '#858585', bg: '#1e1e1e', link: '#4FC1FF' };
+function getEmptyPreviewHtml(): string {
     return `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>CalcpadCE Preview</title>
+    <title>CalcPad Preview</title>
     <style>
-        body { color: ${c.fg}; background: ${c.bg}; padding: 20px; font-family: var(--vscode-font-family, system-ui, sans-serif); }
+        body { color: #858585; background: var(--vscode-editor-background, #1e1e1e); padding: 20px; font-family: var(--vscode-font-family, system-ui, sans-serif); }
         h3 { text-align: center; }
         p { text-align: center; }
         table { margin: 1em auto; border-collapse: collapse; text-align: left; font-size: 0.9em; }
@@ -73,12 +67,12 @@ function getEmptyPreviewHtml(theme: 'light' | 'dark'): string {
         th { text-align: right; font-weight: normal; opacity: 0.7; }
         td { font-family: var(--vscode-editor-font-family, monospace); }
         h4 { text-align: center; margin-top: 1.5em; margin-bottom: 0.3em; }
-        a { color: ${c.link}; }
+        a { color: #4FC1FF; }
     </style>
 </head>
 <body>
     <h3>Empty Document</h3>
-    <p>Start typing CalcpadCE code to see the preview.</p>
+    <p>Start typing CalcPad code to see the preview.</p>
     <h4>Formatting Hotkeys</h4>
     <table>
         <tr><th>Bold</th><td>Ctrl+B</td></tr>
@@ -102,7 +96,7 @@ function getEmptyPreviewHtml(theme: 'light' | 'dark'): string {
 }
 
 function getSampleContent(): string {
-    return `'CalcpadCE Web Editor
+    return `'CalcPad Web Editor
 'Enter your calculations below
 
 a = 3
@@ -112,89 +106,137 @@ c = √(a² + b²)
 }
 
 /**
- * Encode raw RGBA pixels (as returned by Tauri's native clipboard readImage)
- * to PNG bytes via an offscreen canvas, so a pasted image can be embedded or
- * saved like a file-picked one.
+ * Discover the Neutralino server-extension's URL.
+ *
+ * The .NET server binds to a random free port (`--urls http://localhost:0`)
+ * and writes the bound URL to `extensions/server/.calcpad-server.port`
+ * when Kestrel finishes binding. We poll that file with a backoff until
+ * it appears, then return its contents.
+ *
+ * Falls back to `http://localhost:9420` if the file never appears within
+ * `timeoutMs` — that shouldn't happen in practice but keeps the UI from
+ * locking up if the server died on launch (the user will get the usual
+ * "Disconnected" status indicator and the server-stderr.log will explain).
  */
-async function rgbaToPng(rgba: Uint8Array, width: number, height: number): Promise<Uint8Array | null> {
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    ctx.putImageData(new ImageData(new Uint8ClampedArray(rgba), width, height), 0, 0);
-    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-    if (!blob) return null;
-    return new Uint8Array(await blob.arrayBuffer());
+async function waitForServerExtension(timeoutMs: number = 15000): Promise<string> {
+    const { init, filesystem } = await import('@neutralinojs/lib');
+    init();
+
+    const NL_PATH = (window as Window & { NL_PATH?: string }).NL_PATH ?? '';
+    const portFile = `${NL_PATH}/extensions/server/.calcpad-server.port`;
+    const fallback = 'http://localhost:9420';
+
+    const deadline = Date.now() + timeoutMs;
+    let delay = 50;
+    while (Date.now() < deadline) {
+        try {
+            const url = (await filesystem.readFile(portFile)).trim();
+            if (url) return url;
+        } catch {
+            // File not written yet — keep polling with capped backoff.
+        }
+        await new Promise((r) => setTimeout(r, delay));
+        delay = Math.min(delay * 1.5, 500);
+    }
+    console.warn(`[bootstrap] Port file ${portFile} did not appear within ${timeoutMs}ms; falling back to ${fallback}`);
+    return fallback;
 }
 
 /**
- * Native message box shown when the calculation server never becomes ready.
- * The editor itself keeps working; only server-backed features (preview,
- * linting, export) need it.
+ * Set up the Neutralino native menu bar. The recents submenu is rebuilt
+ * each time this function is called.
  */
-async function showServerBlockedDialog(details: string): Promise<void> {
-    const { message: dialogMessage } = await import('@tauri-apps/plugin-dialog');
-    const body =
-        "CalcpadCE's calculation server started but never became ready.\n\n"
-        + 'The editor still works, but preview, linting, and PDF/Word export '
-        + 'need the server. Choose Server → Restart Server to try again.\n\n'
-        + `Details: ${details}`;
-    try {
-        await dialogMessage(body, {
-            title: 'CalcpadCE server unavailable',
-            kind: 'warning',
-            okLabel: 'OK',
-        });
-    } catch {
-        // dialog can throw if the runtime is tearing down — the buffered log
-        // line in the Output panel is the fallback.
+async function setupNeutralinoMenu(recents: string[], previewMode: PreviewMode): Promise<void> {
+    const { window: nWindow } = await import('@neutralinojs/lib');
+
+    const sep = { id: '-', text: '-' };
+    const recentItems: any[] = recents.length === 0
+        ? [{ id: 'recent-empty', text: '(no recent files)' }]
+        : recents.map((p, i) => ({ id: `recent:${i}`, text: shortenPath(p) }));
+    if (recents.length > 0) {
+        recentItems.push(sep);
+        recentItems.push({ id: 'recent-clear', text: 'Clear Recently Opened' });
     }
+
+    const previewModeItems: any[] = [
+        { id: 'preview-mode:wrapped',    text: previewMode === 'wrapped'    ? '✓ Wrapped'    : '  Wrapped' },
+        { id: 'preview-mode:unwrapped',  text: previewMode === 'unwrapped'  ? '✓ Unwrapped'  : '  Unwrapped' },
+        { id: 'preview-mode:ui',         text: previewMode === 'ui'         ? '✓ Interactive' : '  Interactive' },
+    ];
+
+    await nWindow.setMainMenu([
+        {
+            id: 'file',
+            text: 'File',
+            menuItems: [
+                { id: 'new', text: 'New Tab', shortcut: 'Ctrl+N' },
+                { id: 'open', text: 'Open...', shortcut: 'Ctrl+O' },
+                { id: 'open-recent', text: 'Open Recent', menuItems: recentItems },
+                sep,
+                { id: 'save', text: 'Save', shortcut: 'Ctrl+S' },
+                { id: 'save-as', text: 'Save As...', shortcut: 'Ctrl+Shift+S' },
+                sep,
+                { id: 'close-tab', text: 'Close Tab', shortcut: 'Ctrl+W' },
+                sep,
+                { id: 'export-pdf', text: 'Export PDF...' },
+                sep,
+                { id: 'quit', text: 'Quit', shortcut: 'Ctrl+Q' },
+            ],
+        },
+        {
+            id: 'view',
+            text: 'View',
+            menuItems: [
+                { id: 'toggle-sidebar', text: 'Toggle Sidebar', shortcut: 'Ctrl+Shift+B' },
+                { id: 'toggle-preview', text: 'Toggle Preview', shortcut: 'Ctrl+P' },
+                { id: 'preview-mode', text: 'Preview Mode', menuItems: previewModeItems },
+            ],
+        },
+        {
+            id: 'server',
+            text: 'Server',
+            menuItems: [
+                { id: 'refresh', text: 'Refresh', shortcut: 'Ctrl+R' },
+                { id: 'show-server-log', text: 'Show Server Log' },
+                { id: 'restart-app', text: 'Restart App' },
+            ],
+        },
+    ]);
 }
 
-type PreviewMode = 'wrapped' | 'unwrapped';
+type PreviewMode = 'wrapped' | 'unwrapped' | 'ui';
+
+/** Inject datagrid CDN + UI event script into UI-mode preview HTML. */
+function injectUiAssets(html: string): string {
+    const cdn = htmlHasDatagrids(html) ? getDatagridCdnTags() : '';
+    const script = getUiEventScript('window.parent.postMessage', true);
+    const head = '<head>';
+    const idx = html.indexOf(head);
+    if (idx >= 0) {
+        return html.slice(0, idx + head.length) + cdn + html.slice(idx + head.length) + script;
+    }
+    // No <head> — concatenate.
+    return cdn + html + script;
+}
+
+function shortenPath(path: string, max = 60): string {
+    if (path.length <= max) return path;
+    const parts = path.split(/[\\/]/);
+    const name = parts.pop() ?? path;
+    return '…' + (path.length - name.length > 0 ? path.slice(-(max - name.length - 1)) : name);
+}
 
 async function bootstrap(): Promise<void> {
     let serverUrl: string;
     let bridge: MessageBridge | null = null;
-    let tauriBridge: import('./services/tauri-bridge').TauriMessageBridge | null = null;
-    let serverManager: import('./services/server-manager').TauriServerManager | null = null;
-    // Server-manager log lines that arrive before the Output panel mounts
-    // get buffered here, then flushed when appInstance is ready.
-    const pendingServerLogs: string[] = [];
-    // Raw stdout/stderr lines from the Calcpad.Server sidecar (Rust's
-    // `server-log` event), buffered the same way for the same reason.
-    const pendingServerRawLogs: { line: string; stream: 'stdout' | 'stderr' }[] = [];
+    let neuBridge: any = null;
 
-    if (isTauri) {
-        // Tauri desktop: the Rust layer owns the Calcpad.Server sidecar
-        // (spawn, kill on exit, port discovery). This manager just tracks
-        // its URL and surfaces crashes to the Output panel.
-        const { TauriServerManager } = await import('./services/server-manager');
-        serverManager = new TauriServerManager({
-            appendLine: (msg: string) => pendingServerLogs.push(msg),
-        });
-        serverManager.onServerLog = (line: string, stream: 'stdout' | 'stderr') => {
-            pendingServerRawLogs.push({ line, stream });
-        };
-
-        serverManager.onStartupBlocked = (details: string) => {
-            pendingServerLogs.push(`Server did not start — ${details}`);
-            void showServerBlockedDialog(details);
-        };
-
-        try {
-            await serverManager.start();
-        } catch (err) {
-            const msg = err instanceof Error ? (err.stack ?? err.message) : String(err);
-            pendingServerLogs.push(`[bootstrap] Server failed to start: ${msg}`);
-            console.error('[bootstrap] Server failed to start:', err);
-        }
-        serverUrl = serverManager.getBaseUrl() || '';
-
-        const { TauriMessageBridge } = await import('./services/tauri-bridge');
-        tauriBridge = new TauriMessageBridge(serverUrl);
-        (window as any).calcpadBridge = tauriBridge;
+    if (isNeutralino) {
+        // Neutralino desktop: wait for server extension and use native bridge
+        serverUrl = await waitForServerExtension();
+        const { NeutralinoMessageBridge } = await import('./services/neutralino-bridge');
+        neuBridge = new NeutralinoMessageBridge(serverUrl);
+        (window as any).calcpadBridge = neuBridge;
     } else {
         // Pure web: use in-process web bridge
         serverUrl = getServerUrl();
@@ -202,586 +244,70 @@ async function bootstrap(): Promise<void> {
         (window as any).calcpadBridge = bridge;
     }
 
-    const activeBridge = tauriBridge ?? bridge!;
+    const activeBridge = neuBridge ?? bridge!;
 
     // Initialize the platform messaging (reads VITE_PLATFORM='web')
     initMessaging();
 
-    // The base message bridge's handleGoToLine looks up the editor via
-    // window.monaco (matches the vscode-webview convention). Expose it here so
-    // sidebar tabs (TOC, Errors) can post `goToLine` and reach Monaco.
-    (window as any).monaco = monaco;
-
     // Mount the main app layout
-    const app = createApp(App);
+    const app = createApp(App, { isNeutralino });
     const appInstance = app.mount('#app') as any;
 
-    // Let the bridge prompt via the in-app quick-pick modal (image storage mode).
-    activeBridge.setQuickPick(async ({ title, placeholder, options }) => {
-        const index = await appInstance.showQuickPick({
-            title,
-            placeholder,
-            options: options.map((o: { label: string; detail?: string }) => ({ label: o.label, detail: o.detail })),
-        });
-        return index == null ? null : options[index].value;
-    });
-
-    // Wait for DOM to render, then set up the editor group(s)
+    // Wait for DOM to render, then set up Monaco editor
     await nextTick();
+
+    const editorEl = document.querySelector('.editor-container') as HTMLElement;
+    if (!editorEl) {
+        throw new Error('Editor container not found');
+    }
 
     registerCalcpadLanguage();
     registerCalcpadTheme();
-
-    // Apply the persisted app theme before Monaco initializes so the editor
-    // renders with the right theme first paint. The desktop bridge loads its
-    // settings asynchronously, so wait for it; the web bridge is synchronous.
-    if (tauriBridge) await tauriBridge.ready;
-    setAppTheme(coerceAppTheme(activeBridge.getStoredColorTheme()));
-
-    const WORD_WRAP_KEY = 'calcpad.wordWrap';
-    const initialWordWrap: 'on' | 'off' =
-        localStorage.getItem(WORD_WRAP_KEY) === 'off' ? 'off' : 'on';
-    const initialEditorFontFamily = (activeBridge as unknown as EditorBridge).getExtraSetting('editorFontFamily') ?? 'JuliaMono';
-
-    // ---- Editor groups ----
-    // The desktop supports a single top/bottom split into two editor groups.
-    // Each group owns a Monaco editor + a TabManager; `activeGroup`/`editor`/
-    // `tabs` track the focused group and are reassigned on focus change so the
-    // shared command/save/clipboard closures below always act on it.
-    const groups = new Map<string, EditorGroup>();
-    // Per-group wiring applied to every new group after the common wiring
-    // (populated by the Tauri block: save commands, draft autosave, drop).
-    const groupWireHooks: ((g: EditorGroup) => void)[] = [];
-    let activeGroup!: EditorGroup;
-    let editor!: monaco.editor.IStandaloneCodeEditor;
-    let tabs!: TabManager;
-
-    const editorBridge = activeBridge as unknown as EditorBridge;
-    const getFileContext = 'buildFileContext' in activeBridge
-        ? (content: string) => (activeBridge as any).buildFileContext(content)
-        : undefined;
-
-    function docKeyFor(group: EditorGroup): string {
-        return `tab:${group.tabs.activeId ?? 'none'}`;
-    }
-    function activeDocumentKey(): string {
-        return docKeyFor(activeGroup);
-    }
-
-    remeasureEditorFontsWhenReady(initialEditorFontFamily);
-
-    // Hot-swap the editor's font family when the user picks a different one in
-    // the Settings tab. Also nudge Monaco to re-measure so the glyph grid stays
-    // aligned when switching to/from an async web font.
-    window.addEventListener('message', (event) => {
-        const msg = (event as MessageEvent).data;
-        if (msg?.type !== 'editorFontFamilyChanged') return;
-        const family = typeof msg.family === 'string' ? msg.family : '';
-        const resolved = resolveEditorFontFamily(family);
-        for (const g of groups.values()) g.editor.updateOptions({ fontFamily: resolved });
-        remeasureEditorFontsWhenReady(family);
+    const editor = createCalcpadEditor(editorEl, {
+        value: '',
     });
 
-    // ---- Group-scoped refresh helpers ----
-    function markerToSeverityInfo(severity: monaco.MarkerSeverity) {
-        switch (severity) {
-            case monaco.MarkerSeverity.Error:
-                return { severityClass: 'lintError', icon: '✕' };
-            case monaco.MarkerSeverity.Warning:
-                return { severityClass: 'warning', icon: '⚠' };
-            default:
-                return { severityClass: 'info', icon: 'ℹ' };
+    // ---- Tab manager ----
+    // Owns the per-tab Monaco models. The single `editor` instance gets
+    // its model swapped on tab activation; view state is saved/restored
+    // automatically. This is the same pattern VS Code uses.
+    const tabs = new TabManager(editor);
+    (window as any).calcpadTabs = tabs;
+
+    // Editor providers + hover/definitions cache use this to scope per-tab.
+    setActiveDocumentKeyResolver(() => `tab:${tabs.activeId ?? 'none'}`);
+
+    function activeDocumentKey(): string {
+        return `tab:${tabs.activeId ?? 'none'}`;
+    }
+
+    // Push the tab list into App.vue's tab strip whenever it changes.
+    // Registered BEFORE the seed tab so the strip is populated on first render.
+    tabs.onTabsChanged((snapshots) => {
+        appInstance.setTabs(snapshots);
+        // Keep the legacy single-file-name display in sync with the active tab.
+        const active = snapshots.find(t => t.isActive);
+        if (active) {
+            appInstance.setFileName(active.title);
+            appInstance.setDirty(active.dirty);
+        } else {
+            appInstance.setFileName('');
+            appInstance.setDirty(false);
         }
-    }
-
-    function refreshProblemsFor(group: EditorGroup): void {
-        const model = group.editor.getModel();
-        if (!model) {
-            appInstance.setProblems(group.id, []);
-            return;
-        }
-        const markers = monaco.editor.getModelMarkers({ resource: model.uri });
-        const items = markers.map(m => ({
-            severity: m.severity,
-            ...markerToSeverityInfo(m.severity),
-            message: m.message,
-            code: typeof m.code === 'string' ? m.code : m.code?.value ?? '',
-            startLineNumber: m.startLineNumber,
-            startColumn: m.startColumn,
-            endLineNumber: m.endLineNumber,
-            endColumn: m.endColumn,
-        }));
-        items.sort((a, b) => b.severity - a.severity);
-        appInstance.setProblems(group.id, items);
-    }
-
-    async function refreshDefinitionsFor(group: EditorGroup): Promise<void> {
-        const content = group.editor.getValue();
-        const ctx = getFileContext ? await getFileContext(content) : {};
-        editorBridge.definitions.refreshDefinitions(content, docKeyFor(group), ctx.sourceFilePath);
-    }
-
-    function resolvePreviewTheme(): 'light' | 'dark' {
-        const stored = editorBridge.getExtraSetting('previewTheme') ?? 'system';
-        if (stored === 'light' || stored === 'dark') return stored;
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-
-    // Output line the next unwrapped refresh should scroll to, per group. Set
-    // by the wrapped->unwrapped two-step in the 'navigateToLine' handler.
-    const pendingPreviewScrollLine = new Map<string, number>();
-
-    const PREVIEW_LOADING_DELAY_MS = 400;
-
-    async function refreshPreviewFor(group: EditorGroup): Promise<void> {
-        if (!appInstance.isPreviewVisible()) return;
-
-        const content = group.editor.getValue();
-        const settings = activeBridge.getSettings();
-        const apiSettings = buildApiSettings(settings);
-        const mode = appInstance.getPreviewMode() as PreviewMode;
-        const theme = resolvePreviewTheme();
-
-        if (!content.trim()) {
-            appInstance.setPreviewHtml(group.id, getEmptyPreviewHtml(theme));
-            return;
-        }
-
-        const fileContext = getFileContext ? await getFileContext(content) : {};
-
-        // Show the "Calculating…" overlay only if the round-trip runs long, so
-        // fast renders never flash it (mirrors Calcpad.Wpf's delayed spinner).
-        const loadingTimer = window.setTimeout(
-            () => appInstance.setPreviewLoading(group.id, true),
-            PREVIEW_LOADING_DELAY_MS,
-        );
-        let result;
-        try {
-            result = mode === 'unwrapped'
-                ? await activeBridge.api.convertUnwrapped(content, apiSettings, fileContext.sourceFilePath, theme)
-                : await activeBridge.api.convert(content, apiSettings, 'html', false, fileContext.sourceFilePath, theme);
-        } finally {
-            window.clearTimeout(loadingTimer);
-            appInstance.setPreviewLoading(group.id, false);
-        }
-
-        // Consume any pending two-step scroll target for this group: only the
-        // unwrapped view it was set for should honor it, and only once.
-        const scrollToLine = (mode === 'unwrapped' && pendingPreviewScrollLine.get(group.id) != null)
-            ? pendingPreviewScrollLine.get(group.id)
-            : undefined;
-        pendingPreviewScrollLine.delete(group.id);
-
-        if (result && !(result instanceof ArrayBuffer)) {
-            // Desktop: inline on-disk images so relative <img src> paths (from
-            // the images-folder / custom-path insert options) render in the
-            // sandboxed preview iframe, matching PDF export.
-            const finalHtml = tauriBridge
-                ? await tauriBridge.inlineDocumentImages(result.html)
-                : result.html;
-            appInstance.setPreviewHtml(group.id, finalHtml, scrollToLine);
-            window.dispatchEvent(new MessageEvent('message', {
-                data: { type: 'updateConvertErrors', errors: result.errors },
-            }));
-        }
-    }
-
-    function refreshAllPreviews(): void {
-        for (const g of groups.values()) void refreshPreviewFor(g);
-    }
-
-    // Editor -> preview sync: scroll a group's preview to its cursor's source
-    // line. `force` opens the preview if it's closed (right-click action);
-    // the automatic path (cursor move) only runs when the preview is open.
-    const syncPreviewToCursorFor = (group: EditorGroup, force: boolean): void => {
-        const pos = group.editor.getPosition();
-        if (!pos) return;
-        if (!appInstance.isPreviewVisible()) {
-            if (!force) return;
-            appInstance.togglePreview();
-            // Wait for the first preview render + iframe listener before posting.
-            setTimeout(() => appInstance.scrollPreviewToSourceLine(group.id, pos.lineNumber), 600);
-            return;
-        }
-        appInstance.scrollPreviewToSourceLine(group.id, pos.lineNumber);
-    };
-
-    function toggleWordWrap(): void {
-        const current = editor.getOption(monaco.editor.EditorOption.wordWrap);
-        const next: 'on' | 'off' = current === 'on' ? 'off' : 'on';
-        for (const g of groups.values()) g.editor.updateOptions({ wordWrap: next });
-        localStorage.setItem(WORD_WRAP_KEY, next);
-    }
-
-    // ---- Active group tracking ----
-    function setActiveGroup(group: EditorGroup): void {
-        activeGroup = group;
-        editor = group.editor;
-        tabs = group.tabs;
-        (window as any).calcpadTabs = tabs;
-        (window as any).calcpadActiveEditor = editor;
-        appInstance.setActiveGroup(group.id);
-        // Refresh active-group-scoped UI (Problems panel, sidebar TOC, preview).
-        refreshProblemsFor(group);
-        activeBridge.refreshHeadings();
-        if (appInstance.isPreviewVisible()) void refreshPreviewFor(group);
-    }
-
-    // ---- Per-group wiring (common to web + desktop) ----
-    function wireGroupCommon(group: EditorGroup): void {
-        const ed = group.editor;
-
-        // Focus tracking — the focused group becomes active.
-        group.disposables.push(
-            ed.onDidFocusEditorText(() => {
-                if (activeGroup !== group) setActiveGroup(group);
-            }),
-        );
-
-        // Word wrap (Alt+Z) + duplicate line (Ctrl+D) per editor. Ctrl+D
-        // overrides Monaco's default "add selection to next find match".
-        ed.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyZ, toggleWordWrap);
-        ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
-            ed.trigger('keyboard', 'editor.action.copyLinesDownAction', null);
-        });
-
-        attachQuickTyper(ed, editorBridge);
-        attachOperatorReplacer(ed);
-        attachAutoIndenter(ed);
-        registerFormattingCommands(ed, editorBridge);
-
-        // Per-group diagnostics.
-        group.diagnostics = setupDiagnostics(ed, activeBridge.api, () => {
-            const sev = editorBridge.getExtraSetting('linterMinSeverity');
-            return (sev === 'error' || sev === 'warning') ? sev : 'information';
-        }, getFileContext);
-
-        // Focus-the-preview-to-line context action (targets this group).
-        ed.addAction({
-            id: 'calcpad.focusPreviewToLine',
-            label: 'Focus Preview to Line',
-            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backquote],
-            contextMenuGroupId: 'navigation',
-            contextMenuOrder: 1.5,
-            run: () => syncPreviewToCursorFor(group, true),
-        });
-
-        // Manual "run" — re-renders all previews. Useful when Auto-Run Preview
-        // is off. The Ctrl+Alt+X shortcut is bound both here (works when the
-        // editor has focus) and at the window level (Tauri) so it fires from
-        // anywhere in the app.
-        ed.addAction({
-            id: 'calcpad.runPreview',
-            label: 'Run Preview',
-            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyX],
-            contextMenuGroupId: 'navigation',
-            contextMenuOrder: 1.4,
-            run: () => { void runRefresh(); },
-        });
-
-        // Edit-metadata context action: open the Metadata tab for the comment at
-        // the cursor, moving onto (or seeding) one when needed. Mirrors the VS
-        // Code `editMetadataProperties` command.
-        ed.addAction({
-            id: 'calcpad.editMetadata',
-            label: 'Edit Metadata Properties',
-            contextMenuGroupId: 'navigation',
-            contextMenuOrder: 1.6,
-            run: (edEditor) => {
-                const model = edEditor.getModel();
-                const pos = edEditor.getPosition();
-                if (!model || !pos) return;
-                const curLine = pos.lineNumber;
-                const curText = model.getLineContent(curLine);
-
-                const focusMetadata = () => {
-                    sidebarInstance.switchView?.('calcpad');
-                    // switchTab('metadata') posts getMetadataContext, which the
-                    // bridge resolves against the (now-updated) cursor line.
-                    sidebarInstance.switchTab?.('metadata');
-                };
-
-                // Already on a metadata comment — just open the editor for it.
-                if (findMetadataCommentBlock([curText], 0)) {
-                    focusMetadata();
-                    return;
-                }
-
-                // A metadata comment already sits directly above — move onto it.
-                if (curLine > 1 && findMetadataCommentBlock([model.getLineContent(curLine - 1)], 0)) {
-                    const above = curLine - 1;
-                    edEditor.setPosition({ lineNumber: above, column: model.getLineMaxColumn(above) });
-                    focusMetadata();
-                    return;
-                }
-
-                // On a definition, the panel shows a virtual block from real
-                // highlighter results (correct params) and Apply creates the
-                // comment — no seeding, so definition line numbers stay valid.
-                const resolve = buildDefinitionResolver(
-                    editorBridge.definitions.getCachedDefinitions(docKeyFor(group))
-                    ?? { functions: [], macros: [], variables: [], customUnits: [] });
-                if (resolve(curLine - 1)) {
-                    focusMetadata();
-                    return;
-                }
-
-                // Otherwise seed an empty comment so settings/lint markers can be
-                // added on a non-definition line.
-                const indent = curText.match(/^[ \t]*/)?.[0] ?? '';
-                const newLineText = serializeMetadataComment({}, indent, '');
-                edEditor.executeEdits('calcpad-metadata-seed', [{
-                    range: new monaco.Range(curLine, 1, curLine, 1),
-                    text: newLineText + '\n',
-                }]);
-                // The inserted comment now occupies the original line index.
-                edEditor.setPosition({ lineNumber: curLine, column: model.getLineMaxColumn(curLine) });
-                focusMetadata();
-            },
-        });
-
-        // Content changes: refresh this group's definitions cache + preview,
-        // and (only when this is the active group) the sidebar TOC.
-        let definitionsTimer: ReturnType<typeof setTimeout> | null = null;
-        let previewTimer: ReturnType<typeof setTimeout> | null = null;
-        let tocTimer: ReturnType<typeof setTimeout> | null = null;
-        group.disposables.push(
-            ed.onDidChangeModelContent(() => {
-                if (definitionsTimer) clearTimeout(definitionsTimer);
-                definitionsTimer = setTimeout(() => void refreshDefinitionsFor(group), 800);
-                if (appInstance.isPreviewVisible() && editorBridge.getExtraSetting('autoRun') !== 'false') {
-                    if (previewTimer) clearTimeout(previewTimer);
-                    previewTimer = setTimeout(() => void refreshPreviewFor(group), 800);
-                }
-                if (group === activeGroup) {
-                    if (tocTimer) clearTimeout(tocTimer);
-                    tocTimer = setTimeout(() => activeBridge.refreshHeadings(), 800);
-                }
-            }),
-        );
-
-        // Cursor moves: preview sync (only when this group is active/visible),
-        // plus a debounced metadata-context refresh so the Metadata tab tracks
-        // the comment under the cursor (mirrors the VS Code selection handler).
-        let cursorSyncTimer: ReturnType<typeof setTimeout> | null = null;
-        let metadataContextTimer: ReturnType<typeof setTimeout> | null = null;
-        group.disposables.push(
-            ed.onDidChangeCursorPosition(() => {
-                if (group === activeGroup) {
-                    if (metadataContextTimer) clearTimeout(metadataContextTimer);
-                    metadataContextTimer = setTimeout(() => {
-                        activeBridge.handleMessage({ type: 'getMetadataContext' });
-                    }, 150);
-                }
-                if (editorBridge.getExtraSetting('previewCursorSync') !== 'true') return;
-                if (!appInstance.isPreviewVisible()) return;
-                if (cursorSyncTimer) clearTimeout(cursorSyncTimer);
-                cursorSyncTimer = setTimeout(() => syncPreviewToCursorFor(group, false), 150);
-            }),
-        );
-
-        // Tab list -> App.vue tab strip for this group.
-        group.tabs.onTabsChanged((snapshots) => {
-            appInstance.setTabs(group.id, snapshots);
-        });
-
-        // On tab switch within this group, re-emit markers + re-lint + repaint.
-        group.tabs.onActiveModelChanged(() => {
-            refreshProblemsFor(group);
-            // Re-lint: content-change events don't fire on tab switch, so the
-            // debounced lint in setupDiagnostics never re-runs for the new model.
-            void group.diagnostics?.refresh();
-            if (appInstance.isPreviewVisible()) void refreshPreviewFor(group);
-            if (group === activeGroup) activeBridge.refreshHeadings();
-            void refreshDefinitionsFor(group);
-        });
-
-        // Initial definitions population for the seeded tab.
-        setTimeout(() => void refreshDefinitionsFor(group), 500);
-    }
-
-    /** Create a group's editor in its App.vue container, wire it, seed a tab. */
-    async function createAndWireGroup(id: string, seedContent = ''): Promise<EditorGroup> {
-        appInstance.addGroup(id);
-        await nextTick();
-        const container = appInstance.getEditorContainer(id) as HTMLElement | null;
-        if (!container) throw new Error(`Editor container for group ${id} not found`);
-        const group = new EditorGroup(id, container, { wordWrap: initialWordWrap, fontFamily: initialEditorFontFamily });
-        groups.set(id, group);
-        wireGroupCommon(group);
-        for (const hook of groupWireHooks) hook(group);
-        group.tabs.newUntitled(seedContent);
-        return group;
-    }
-
-    // ---- Seed the primary group (g0 already rendered by App.vue) ----
-    const g0Container = appInstance.getEditorContainer('g0') as HTMLElement | null;
-    if (!g0Container) throw new Error('Primary editor container not found');
-    const primaryGroup = new EditorGroup('g0', g0Container, { wordWrap: initialWordWrap, fontFamily: initialEditorFontFamily });
-    groups.set('g0', primaryGroup);
-    setActiveGroup(primaryGroup);
-    wireGroupCommon(primaryGroup);
-
-    // Editor providers + hover/definitions cache scope per-tab via the active
-    // group's active tab.
-    setActiveDocumentKeyResolver(() => activeDocumentKey());
+    });
 
     // Seed the first tab. On web we put the sample in it; on desktop it's
     // an empty Untitled-1 ready to receive an Open or paste.
-    primaryGroup.tabs.newUntitled(isTauri ? '' : getSampleContent());
+    tabs.newUntitled(isNeutralino ? '' : getSampleContent());
 
-    // ---- Split / merge / focus wiring ----
-    let confirmCloseGroup: (g: EditorGroup) => Promise<boolean> = async () => true;
-    // Monotonic group-id allocator. Never reuse ids: after an unsplit the
-    // surviving group may be the second one (g1), so a fixed 'g1' would collide
-    // on the next split and silently no-op. 'g0' is the primary (seeded above).
-    let groupSeq = 0;
+    // Universal tab-strip callbacks. The Neutralino branch overrides the
+    // close handler with a save-prompt-aware version; on web there's
+    // nothing to save, so a plain close is correct.
+    appInstance.onTabActivate = (id: string) => tabs.activate(id);
+    appInstance.onTabCloseRequest = (id: string) => tabs.close(id);
+    appInstance.onNewTabRequest = () => { tabs.newUntitled(); };
 
-    async function splitEditor(): Promise<void> {
-        if (groups.size >= 2) {
-            activeGroup.editor.focus();
-            return;
-        }
-        const group = await createAndWireGroup(`g${++groupSeq}`, '');
-        setActiveGroup(group);
-        group.editor.focus();
-    }
-
-    async function closeGroup(groupId: string): Promise<void> {
-        if (groups.size < 2) return;
-        const group = groups.get(groupId);
-        if (!group) return;
-        const ok = await confirmCloseGroup(group);
-        if (!ok) return;
-        const other = [...groups.values()].find(g => g !== group);
-        if (activeGroup === group && other) setActiveGroup(other);
-        groups.delete(groupId);
-        group.dispose();
-        appInstance.removeGroup(groupId);
-        other?.editor.focus();
-    }
-
-    appInstance.onSplitRequest = () => { void splitEditor(); };
-    appInstance.onCloseGroupRequest = (groupId: string) => { void closeGroup(groupId); };
-    appInstance.onGroupFocusRequest = (groupId: string) => {
-        const g = groups.get(groupId);
-        if (g) setActiveGroup(g);
-    };
-
-    // ---- Include navigation (Go-to-Definition / Find All References) ----
-    // Find All References needs the include files' models registered so the
-    // panel can render their snippets. Only wire this up on Tauri desktop, where
-    // we have filesystem access; in the pure-web build the provider silently
-    // skips include locations. All handlers act on the active group.
-    const openIncludeFile: IncludeFileOpener | undefined = tauriBridge
-        ? async (rawFileName: string) => {
-            try {
-                const absPath = tauriBridge.resolveIncludePath(rawFileName);
-                let model = tabs.findModelByPath(absPath);
-                if (!model) {
-                    const content = await tauriBridge.readFile(absPath);
-                    const tabId = tabs.openFile(absPath, content);
-                    model = tabs.findModelByPath(absPath);
-                    if (!model) {
-                        console.warn(`[references] opened ${absPath} as ${tabId} but no model was registered`);
-                        return null;
-                    }
-                }
-                return model.uri;
-            } catch (err) {
-                console.warn(`[references] failed to open include ${rawFileName}: ${err instanceof Error ? err.message : String(err)}`);
-                return null;
-            }
-        }
-        : undefined;
-
-    // Go-to-Definition must stay side-effect free — Monaco calls provideDefinition
-    // on Ctrl+hover just to draw the underline, so opening a file or moving the
-    // cursor there would navigate on hover with no click. The provider gets a
-    // pure URI for the include (below); the real open + cursor move happens in
-    // the editor opener, which Monaco invokes only on an actual click / F12.
-    // We stash the resolved absolute path keyed by the exact URI string we mint
-    // so the opener recovers it verbatim (fsPath would re-case the Windows drive
-    // letter and break the tab lookup's strict path compare).
-    const includeUriToPath = new Map<string, string>();
-    const resolveIncludeUri: IncludeUriResolver | undefined = tauriBridge
-        ? async (rawFileName: string): Promise<monaco.Uri | null> => {
-            try {
-                const absPath = tauriBridge.resolveIncludePath(rawFileName);
-                const uri = monaco.Uri.parse(`calcpad-include:${encodeURIComponent(absPath)}`);
-                includeUriToPath.set(uri.toString(), absPath);
-                return uri;
-            } catch {
-                return null;
-            }
-        }
-        : undefined;
-
-    if (tauriBridge) {
-        const bridge = tauriBridge;
-        monaco.editor.registerEditorOpener({
-            openCodeEditor(_source, resource, selectionOrPosition) {
-                const absPath = includeUriToPath.get(resource.toString());
-                if (absPath === undefined) return false; // not an include jump — let Monaco handle it
-                return (async () => {
-                    try {
-                        const existing = tabs.findByPath(absPath);
-                        if (existing) {
-                            tabs.activate(existing.id);
-                        } else {
-                            tabs.openFile(absPath, await bridge.readFile(absPath));
-                        }
-                        if (selectionOrPosition) {
-                            const pos = 'startLineNumber' in selectionOrPosition
-                                ? { lineNumber: selectionOrPosition.startLineNumber, column: selectionOrPosition.startColumn }
-                                : { lineNumber: selectionOrPosition.lineNumber, column: selectionOrPosition.column };
-                            editor.setPosition(pos);
-                            editor.revealPositionInCenter(pos);
-                        }
-                    } catch (err) {
-                        console.warn(`[references] failed to open include ${absPath}: ${err instanceof Error ? err.message : String(err)}`);
-                    }
-                    return true;
-                })();
-            },
-        });
-    }
-
-    // ---- Global (per-language) Monaco providers ----
-    registerSemanticTokensProvider(activeBridge.api, getFileContext);
-    registerCompletionProvider(editorBridge);
-    if (tauriBridge) {
-        registerIncludeCompletionProvider({
-            listDirectory: (p) => tauriBridge.listDirectory(p),
-            getCurrentFilePath: () => tabs.activeTab?.filePath ?? null,
-            getOpenedFolder: () => tauriBridge.getOpenedFolder(),
-            getLibraryPath: () => tauriBridge.getLibraryPath(),
-        });
-    }
-    registerHoverProvider(editorBridge);
-    registerDefinitionProvider(editorBridge, getFileContext, resolveIncludeUri);
-    registerReferenceProvider(editorBridge, getFileContext, openIncludeFile);
-    registerRenameProvider(editorBridge, getFileContext);
-    registerFormatDocumentProvider(editorBridge);
-
-    window.addEventListener('message', (e: MessageEvent) => {
-        if (e.data?.type === 'linterMinSeverityChanged') {
-            for (const g of groups.values()) void g.diagnostics?.refresh();
-        }
-        if (e.data?.type === 'maxOutputLinesChanged') {
-            const n = Number(e.data.value);
-            if (Number.isFinite(n)) appInstance.setMaxOutputLines(n);
-        }
-    });
-
-    // Apply persisted cap at startup — the sidebar's settingsResponse will
-    // sync it too, but the log wiring below can fire before that arrives.
-    {
-        const stored = Number(editorBridge.getExtraSetting('maxOutputLines'));
-        if (Number.isFinite(stored) && stored >= 10) appInstance.setMaxOutputLines(stored);
-    }
-
-    // Wire the bridge's insertText handler to the active editor.
+    // Wire the bridge's insertText handler to Monaco
     activeBridge.onInsertText = (text: string) => {
         const selection = editor.getSelection();
         if (selection) {
@@ -834,99 +360,103 @@ async function bootstrap(): Promise<void> {
         appInstance.appendOutput('error', `Unhandled rejection: ${e.reason}`);
     });
 
-    // Messages posted from the preview iframes (App.vue:injectPreviewConsole /
-    // injectLineLinks). Each message carries `groupId` so it routes to the
-    // group whose preview emitted it.
+    // Forward console messages from the preview iframe to the Output panel's
+    // "Preview Console" channel. Patched in App.vue:injectPreviewConsole.
     window.addEventListener('message', (e: MessageEvent) => {
         const data = e.data;
-        if (!data) return;
-
-        // Forward console.* + uncaught errors to the "Preview Console" channel,
-        // tagged with the originating group.
-        if (data.type === 'previewConsole') {
-            const level: 'info' | 'warn' | 'error' | 'debug' =
-                data.level === 'warn' ? 'warn'
-                : data.level === 'error' ? 'error'
-                : data.level === 'debug' ? 'debug'
-                : 'info';
-            appInstance.appendOutput(level, String(data.message ?? ''), 'preview', data.groupId);
-            return;
-        }
-
-        if (data.type === 'previewThemeChanged' || data.type === 'settingsChanged') {
-            refreshAllPreviews();
-            return;
-        }
-
-        // Preview -> editor navigation. An 'output' line comes from the true
-        // wrapped view; when the document has macros/includes that line only
-        // makes sense in the unwrapped view, so flip the pane to unwrapped
-        // scrolled there (the two-step). A 'source' line navigates Monaco
-        // directly. The message's groupId selects which group to act on.
-        if (data.type === 'navigateToLine') {
-            const line = Number(data.line);
-            if (!Number.isFinite(line) || line < 1) return;
-            const group = (data.groupId && groups.get(data.groupId)) || activeGroup;
-            if (group !== activeGroup) setActiveGroup(group);
-            const isOutputLine = data.lineType === 'output';
-            const hasMacros = /^\s*#(def|include)\b/im.test(group.editor.getValue());
-            if (isOutputLine && appInstance.getPreviewMode() === 'wrapped' && hasMacros) {
-                // Bake the target into the unwrapped refresh (avoids an
-                // iframe-reload postMessage race); setPreviewMode triggers
-                // onPreviewModeChanged -> refresh all previews.
-                pendingPreviewScrollLine.set(group.id, line);
-                appInstance.setPreviewMode('unwrapped');
-            } else {
-                group.editor.revealLineInCenter(line);
-                group.editor.setPosition({ lineNumber: line, column: 1 });
-                group.editor.focus();
-            }
-            return;
-        }
+        if (!data || data.type !== 'previewConsole') return;
+        const level: 'info' | 'warn' | 'error' | 'debug' =
+            data.level === 'warn' ? 'warn'
+            : data.level === 'error' ? 'error'
+            : data.level === 'debug' ? 'debug'
+            : 'info';
+        appInstance.appendOutput(level, String(data.message ?? ''), 'preview');
     });
 
-    appInstance.appendOutput('info', `CalcpadCE Web started — server: ${serverUrl}`);
+    appInstance.appendOutput('info', `CalcPad Web started — server: ${serverUrl}`);
 
-    // Flush any server-manager log lines buffered before the Output panel mounted,
-    // then redirect future ones straight into the panel.
-    for (const msg of pendingServerLogs) appInstance.appendOutput('info', msg);
-    pendingServerLogs.length = 0;
-    for (const { line, stream } of pendingServerRawLogs) {
-        appInstance.appendOutput(stream === 'stderr' ? 'error' : 'info', line, 'server');
-    }
-    pendingServerRawLogs.length = 0;
-    if (serverManager) {
-        serverManager.setLogger({
-            appendLine: (msg: string) => appInstance.appendOutput('info', msg),
-        });
-        serverManager.onServerLog = (line: string, stream: 'stdout' | 'stderr') => {
-            appInstance.appendOutput(stream === 'stderr' ? 'error' : 'info', line, 'server');
-        };
-        serverManager.onUrlChanged = (newUrl: string) => {
-            activeBridge.api.setBaseUrl(newUrl);
-            appInstance.appendOutput('info', `Server URL updated: ${newUrl}`);
-        };
-        serverManager.onCrashExhausted = (crashOutput: string) => {
-            appInstance.appendOutput('error',
-                'CalcpadCE server crashed repeatedly — auto-restart disabled. ' +
-                'Use Server → Restart Server to try again.');
-            if (crashOutput) appInstance.appendOutput('error', crashOutput);
-        };
-    }
+    // Register Monaco providers
+    const editorBridge = activeBridge as unknown as EditorBridge;
+    registerSemanticTokensProvider(activeBridge.api);
+    const diagnostics = setupDiagnostics(editor, activeBridge.api, () => {
+        const sev = editorBridge.getExtraSetting('linterMinSeverity');
+        return (sev === 'error' || sev === 'warning') ? sev : 'information';
+    });
+    registerCompletionProvider(activeBridge.snippets);
+    registerHoverProvider(editorBridge);
+    registerDefinitionProvider(editorBridge);
+    registerReferenceProvider(editorBridge);
+    registerRenameProvider(editorBridge);
+    registerFormatDocumentProvider(editorBridge);
+    attachQuickTyper(editor, editorBridge);
+    attachOperatorReplacer(editor);
+    attachAutoIndenter(editor);
+    registerFormattingCommands(editor, editorBridge);
 
-    // Problems panel: markers can change for any group's model (background
-    // lint). Dispatch to whichever group owns the affected resource.
-    monaco.editor.onDidChangeMarkers((resources) => {
-        for (const g of groups.values()) {
-            const model = g.editor.getModel();
-            if (!model) continue;
-            if (resources.some(r => r.toString() === model.uri.toString())) {
-                refreshProblemsFor(g);
-            }
+    // Keep the definitions cache fresh so hover provider has data to show.
+    // Debounced — same cadence as TOC refresh.
+    let definitionsTimer: ReturnType<typeof setTimeout> | null = null;
+    const refreshDefinitions = () => {
+        const content = editor.getValue();
+        editorBridge.definitions.refreshDefinitions(content, activeDocumentKey());
+    };
+    editor.onDidChangeModelContent(() => {
+        if (definitionsTimer) clearTimeout(definitionsTimer);
+        definitionsTimer = setTimeout(refreshDefinitions, 800);
+    });
+    setTimeout(refreshDefinitions, 500);
+
+    // Problems panel: listen for marker changes and feed into App
+    function markerToSeverityInfo(severity: monaco.MarkerSeverity) {
+        switch (severity) {
+            case monaco.MarkerSeverity.Error:
+                return { severityClass: 'error', icon: '✕' };
+            case monaco.MarkerSeverity.Warning:
+                return { severityClass: 'warning', icon: '⚠' };
+            default:
+                return { severityClass: 'info', icon: 'ℹ' };
         }
+    }
+
+    function refreshProblemsForActiveModel(): void {
+        const model = editor.getModel();
+        if (!model) {
+            appInstance.setProblems([]);
+            return;
+        }
+        const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+        const items = markers.map(m => ({
+            severity: m.severity,
+            ...markerToSeverityInfo(m.severity),
+            message: m.message,
+            code: typeof m.code === 'string' ? m.code : m.code?.value ?? '',
+            startLineNumber: m.startLineNumber,
+            startColumn: m.startColumn,
+            endLineNumber: m.endLineNumber,
+            endColumn: m.endColumn,
+        }));
+        items.sort((a, b) => b.severity - a.severity);
+        appInstance.setProblems(items);
+    }
+
+    monaco.editor.onDidChangeMarkers(([resource]) => {
+        const model = editor.getModel();
+        if (!model || resource.toString() !== model.uri.toString()) return;
+        refreshProblemsForActiveModel();
     });
 
-    // Handle click-to-navigate from problems panel (targets the active group).
+    // On tab switch, re-emit the new active model's markers so Problems
+    // doesn't show stale data from the previous tab.
+    tabs.onActiveModelChanged(() => {
+        refreshProblemsForActiveModel();
+        // Also kick the preview/TOC to repaint against the new content.
+        if (appInstance.isPreviewVisible()) {
+            void refreshPreview();
+        }
+        activeBridge.refreshHeadings();
+    });
+
+    // Handle click-to-navigate from problems panel
     appInstance.onGotoProblem = (problem: any) => {
         editor.revealLineInCenter(problem.startLineNumber);
         editor.setPosition({
@@ -936,315 +466,188 @@ async function bootstrap(): Promise<void> {
         editor.focus();
     };
 
-    // ---- Tab-strip user actions (dispatched by group id) ----
-    // The Tauri branch overrides the close handlers with save-prompt-aware
-    // versions; on web there's nothing to save, so a plain close is correct.
-    appInstance.onTabActivate = (groupId: string, id: string) => {
-        const g = groups.get(groupId);
-        if (!g) return;
-        if (activeGroup !== g) setActiveGroup(g);
-        g.tabs.activate(id);
-    };
-    appInstance.onTabCloseRequest = (groupId: string, id: string) => {
-        groups.get(groupId)?.tabs.close(id);
-    };
-    appInstance.onNewTabRequest = (groupId: string) => {
-        groups.get(groupId)?.tabs.newUntitled();
-    };
-    appInstance.onTabCloseOthersRequest = (groupId: string, id: string) => {
-        const g = groups.get(groupId);
-        if (!g) return;
-        for (const t of g.tabs.all) {
-            if (t.id !== id) g.tabs.close(t.id);
-        }
-    };
-    appInstance.onTabCloseAllRequest = (groupId: string) => {
-        const g = groups.get(groupId);
-        if (!g) return;
-        for (const t of g.tabs.all) g.tabs.close(t.id);
-    };
+    // Mount the CalcPad Vue sidebar
+    const sidebarApp = createApp(CalcpadAppVue);
+    sidebarApp.mount('#vue-sidebar');
 
-    // Mount the CalcPad Vue sidebar. Desktop (Tauri) shows the Files view
-    // + activity icons; web mode keeps the original single-panel look.
-    const versionConfig = {
-        isVSCode: false,
-        isWeb: !isTauri,
-        isDesktop: isTauri,
-        isWebOrDesktop: true,
-    };
-    const sidebarApp = createApp(CalcpadAppVue, { versionConfig, appVersion: pkg.version });
-    const sidebarInstance = sidebarApp.mount('#vue-sidebar') as {
-        switchTab?: (id: string) => void;
-        switchView?: (id: string) => void;
-    };
+    // HTML preview via convert endpoint (debounced)
+    let previewTimer: ReturnType<typeof setTimeout> | null = null;
+    // TOC headings refresh (debounced)
+    let tocTimer: ReturnType<typeof setTimeout> | null = null;
 
-    // Initialize preview mode from saved extra setting (Tauri) or default (web).
-    const savedMode = (editorBridge.getExtraSetting('previewMode') as PreviewMode | undefined);
-    if (savedMode === 'wrapped' || savedMode === 'unwrapped') {
+    // Initialize preview mode from saved extra setting (Neutralino) or localStorage (web).
+    const savedMode = (editorBridge.getExtraSetting('previewMode') as 'wrapped' | 'unwrapped' | 'ui' | undefined);
+    if (savedMode === 'wrapped' || savedMode === 'unwrapped' || savedMode === 'ui') {
         appInstance.setPreviewMode(savedMode);
     }
 
-    // Manual refresh: re-lint with current settings, refresh definitions/
-    // headings, redraw previews, and re-extract Export-tab plots. Called from
-    // the Server > Refresh menu item and the editor's Run action.
-    async function runRefresh(): Promise<void> {
-        appInstance.appendOutput('info', 'Refreshing…');
-        for (const g of groups.values()) {
-            await g.diagnostics?.refresh();
-            await refreshDefinitionsFor(g);
-            if (appInstance.isPreviewVisible()) await refreshPreviewFor(g);
+    async function refreshPreview(): Promise<void> {
+        if (!appInstance.isPreviewVisible()) return;
+
+        const content = editor.getValue();
+        const settings = activeBridge.getSettings();
+        const apiSettings = buildApiSettings(settings);
+        const mode = appInstance.getPreviewMode() as 'wrapped' | 'unwrapped' | 'ui';
+
+        // Empty buffer → show the placeholder with hotkey reference, matching
+        // the VS Code extension's idle preview. Skips the convert API call.
+        if (!content.trim()) {
+            appInstance.setPreviewHtml(getEmptyPreviewHtml());
+            return;
         }
-        activeBridge.refreshHeadings();
-        // Refresh the Export tab's plot list — it caches independently of the
-        // preview and would otherwise show stale plots until the user clicks
-        // "Refresh Plots" manually.
-        window.dispatchEvent(new MessageEvent('message', { data: { type: 'getPlots' } }));
+
+        let html: string | ArrayBuffer | null;
+        if (mode === 'unwrapped') {
+            html = await activeBridge.api.convertUnwrapped(content, apiSettings);
+        } else if (mode === 'ui') {
+            html = await activeBridge.api.convertUi(content, apiSettings);
+        } else {
+            html = await activeBridge.api.convert(content, apiSettings, 'html');
+        }
+
+        if (typeof html === 'string') {
+            const finalHtml = mode === 'ui' ? injectUiAssets(html) : html;
+            appInstance.setPreviewHtml(finalHtml);
+        }
+
+        // Push #write/#append outputs (if any) to the Export tab.
+        if (typeof (activeBridge as any).refreshExports === 'function') {
+            void (activeBridge as any).refreshExports();
+        }
     }
 
-    appInstance.onPreviewModeChanged = (mode: PreviewMode) => {
+    // Manual refresh: clear server cache, re-lint with current settings,
+    // refresh definitions/headings, redraw preview. Called from the
+    // Server > Refresh menu item.
+    async function runRefresh(): Promise<void> {
+        appInstance.appendOutput('info', 'Refreshing…');
+        try {
+            const cleared = await activeBridge.api.refreshCache();
+            appInstance.appendOutput(
+                cleared ? 'info' : 'warn',
+                cleared ? 'Server cache cleared' : 'Server cache clear failed',
+            );
+        } catch (err) {
+            appInstance.appendOutput('warn', `Cache clear error: ${err instanceof Error ? err.message : String(err)}`);
+        }
+
+        await diagnostics.refresh();
+        editorBridge.definitions.refreshDefinitions(editor.getValue(), activeDocumentKey());
+        activeBridge.refreshHeadings();
+        if (appInstance.isPreviewVisible()) {
+            await refreshPreview();
+        }
+    }
+
+    // Stub overwritten in the Neutralino branch below; harmless on web.
+    let rebuildMenu: (mode: PreviewMode) => Promise<void> = async () => { /* no-op */ };
+
+    appInstance.onPreviewModeChanged = (mode: 'wrapped' | 'unwrapped' | 'ui') => {
         editorBridge.setExtraSetting('previewMode', mode);
-        refreshAllPreviews();
+        refreshPreview();
+        if (isNeutralino) {
+            void rebuildMenu(mode);
+        }
     };
 
-    // Refresh all previews when the preview pane is first opened.
+    editor.onDidChangeModelContent(() => {
+        if (appInstance.isPreviewVisible()) {
+            if (previewTimer) clearTimeout(previewTimer);
+            previewTimer = setTimeout(refreshPreview, 800);
+        }
+        // Debounced TOC refresh
+        if (tocTimer) clearTimeout(tocTimer);
+        tocTimer = setTimeout(() => activeBridge.refreshHeadings(), 800);
+    });
+
+    // Refresh when preview is first opened
     appInstance.onPreviewToggled = (visible: boolean) => {
         if (visible) {
-            setTimeout(refreshAllPreviews, 50);
+            setTimeout(refreshPreview, 50);
         }
     };
 
-    // Toolbar "Run" button.
-    appInstance.onRunRequest = () => { void runRefresh(); };
+    // Neutralino-specific: native menu + file operations
+    if (isNeutralino && neuBridge) {
+        const { events: neuEvents, app: neuApp } = await import('@neutralinojs/lib');
 
-    // Tauri-specific: native menu clicks + file operations
-    if (isTauri && tauriBridge) {
-        const [
-            { listen: tauriListen },
-            { getCurrentWindow },
-            { exit: processExit },
-            tauriClipboard,
-            { invoke: tauriInvoke },
-        ] = await Promise.all([
-            import('@tauri-apps/api/event'),
-            import('@tauri-apps/api/window'),
-            import('@tauri-apps/plugin-process'),
-            import('@tauri-apps/plugin-clipboard-manager'),
-            import('@tauri-apps/api/core'),
-        ]);
+        let recents: string[] = await neuBridge.getRecentFiles();
+        let menuPreviewMode: PreviewMode =
+            (appInstance.getPreviewMode() as PreviewMode) ?? 'wrapped';
 
-        // ---- Autosave drafts (10s debounce per tab) ----
-        // Rust owns the on-disk drafts dir (<app_data>/drafts). Each tab is
-        // assigned a stable UUID on first autosave. Tab ids are namespaced per
-        // group (see TabManager), so drafts never collide across groups.
-        const AUTOSAVE_DEBOUNCE_MS = 10_000;
-        const draftTimers = new Map<string, ReturnType<typeof setTimeout>>();
-        const draftIds = new Map<string, string>();
+        rebuildMenu = async (mode: PreviewMode) => {
+            menuPreviewMode = mode;
+            recents = await neuBridge.getRecentFiles();
+            await setupNeutralinoMenu(recents, menuPreviewMode);
+        };
 
-        // Look up which group owns a given (namespaced) tab id.
-        function groupForTab(tabId: string): EditorGroup | null {
-            for (const g of groups.values()) {
-                if (g.tabs.all.some(t => t.id === tabId)) return g;
-            }
-            return null;
-        }
-
-        function draftIdFor(tabId: string): string {
-            let id = draftIds.get(tabId);
-            if (!id) {
-                id = crypto.randomUUID();
-                draftIds.set(tabId, id);
-            }
-            return id;
-        }
-
-        async function writeDraft(tabId: string): Promise<void> {
-            const g = groupForTab(tabId);
-            if (!g || !g.tabs.isDirty(tabId)) return;
-            const content = g.tabs.getContent(tabId);
-            if (content == null) return;
-            const filePath = g.tabs.getFilePath(tabId);
-            const title = g.tabs.getTitle(tabId) ?? 'Untitled';
-            const filename = filePath ? title : `${title}.cpd`;
-            try {
-                await tauriInvoke('draft_write', {
-                    id: draftIdFor(tabId),
-                    filename,
-                    filePath,
-                    content,
-                });
-            } catch (err) {
-                appInstance.appendOutput('warn',
-                    `Autosave failed for ${title}: ${err instanceof Error ? err.message : String(err)}`);
-            }
-        }
-
-        async function deleteDraft(tabId: string): Promise<void> {
-            const id = draftIds.get(tabId);
-            if (!id) return;
-            draftIds.delete(tabId);
-            const timer = draftTimers.get(tabId);
-            if (timer) {
-                clearTimeout(timer);
-                draftTimers.delete(tabId);
-            }
-            try {
-                await tauriInvoke('draft_delete', { id });
-            } catch { /* swallow — draft may not exist yet */ }
-        }
-
-        // ---- Draft recovery ----
-        // Rust emits `drafts-recovered` shortly after startup if orphan drafts
-        // exist from a prior session. Prompt once, then either restore each
-        // draft as a dirty tab or discard them all.
-        interface DraftInfo {
-            id: string;
-            filename: string;
-            filePath: string | null;
-            savedAt: number;
-            size: number;
-        }
-        interface DraftContent extends DraftInfo { content: string; }
-
-        async function restoreDraft(info: DraftInfo): Promise<void> {
-            try {
-                const drafted = await tauriInvoke<DraftContent | null>('draft_read', { id: info.id });
-                if (!drafted) return;
-                const displayTitle = drafted.filePath
-                    ? drafted.filename
-                    : drafted.filename.replace(/\.cpd$/i, '');
-                // Recovered drafts land in the active group (the primary group
-                // at startup; a live lookup so it's never a disposed group).
-                const newTabId = activeGroup.tabs.openDraft({
-                    filePath: drafted.filePath,
-                    title: displayTitle,
-                    content: drafted.content,
-                });
-                // Reuse the draft id so subsequent autosaves overwrite it in place.
-                draftIds.set(newTabId, drafted.id);
-            } catch (err) {
-                appInstance.appendOutput('warn',
-                    `Draft recovery failed for ${info.filename}: ${err instanceof Error ? err.message : String(err)}`);
-            }
-        }
-
-        await tauriListen<DraftInfo[]>('drafts-recovered', async (evt) => {
-            const drafts = evt.payload;
-            if (!drafts || drafts.length === 0) return;
-            const summary = drafts
-                .map(d => `• ${d.filename}${d.filePath ? ` (${d.filePath})` : ''}`)
-                .join('\n');
-            const choice = await appInstance.showConfirm({
-                title: 'Recover unsaved changes?',
-                message:
-                    `CalcpadCE found ${drafts.length} unsaved draft${drafts.length === 1 ? '' : 's'} `
-                    + `from a previous session:\n\n${summary}\n\n`
-                    + `Restore them into new tabs? Choose "Don't Restore" to discard.`,
-                yesLabel: 'Restore',
-                noLabel: "Don't Restore",
-            });
-            if (choice === 'yes') {
-                for (const d of drafts) await restoreDraft(d);
-                appInstance.appendOutput('info', `Recovered ${drafts.length} draft(s).`);
-            } else if (choice === 'no') {
-                for (const d of drafts) {
-                    try { await tauriInvoke('draft_delete', { id: d.id }); }
-                    catch { /* ignored */ }
-                }
-                appInstance.appendOutput('info', `Discarded ${drafts.length} draft(s).`);
-            }
-            // 'cancel' leaves the drafts on disk — surfaced again on next launch.
-        });
-
-        // Menu is built in Rust (src-tauri/src/lib.rs:build_menu). The frontend
-        // just tracks recents in the plugin-store; there is no dynamic menu
-        // rebuild. Recent files remain accessible via the sidebar's Files tab.
-        void tauriBridge.getRecentFiles();
+        await setupNeutralinoMenu(recents, menuPreviewMode);
 
         /**
-         * Open `path` in a tab. If any group already holds that file, focuses
-         * it (matching VS Code's "go to existing tab"). Otherwise reads from
-         * disk into the active group.
+         * Open `path` in a tab. If a tab already holds that file, focuses it
+         * (matching VS Code's "go to existing tab" behavior). Otherwise reads
+         * from disk and asks TabManager to open it (which may reuse an empty
+         * untitled scratch tab).
          */
         async function loadFile(path: string): Promise<void> {
-            for (const g of groups.values()) {
-                const existing = g.tabs.findByPath(path);
-                if (existing) {
-                    if (activeGroup !== g) setActiveGroup(g);
-                    g.tabs.activate(existing.id);
-                    return;
-                }
+            const existing = tabs.findByPath(path);
+            if (existing) {
+                tabs.activate(existing.id);
+                return;
             }
             try {
-                const content = await tauriBridge!.readFile(path);
+                const content = await neuBridge!.readFile(path);
                 tabs.openFile(path, content);
-                await tauriBridge!.addRecentFile(path);
+                await neuBridge!.addRecentFile(path);
+                await rebuildMenu(menuPreviewMode);
             } catch (err) {
                 appInstance.appendOutput('error', 'Failed to open file: ' + (err instanceof Error ? err.message : String(err)));
             }
         }
 
-        // Files-tab clicks arrive via a custom event dispatched by the bridge.
-        window.addEventListener('calcpad-open-file', (e: Event) => {
-            const detail = (e as CustomEvent<{ path: string }>).detail;
-            if (detail?.path) void loadFile(detail.path);
-        });
-
-        // Drain any files handed to us at cold start by the OS's .cpd file
-        // association. Runs after the listener above is wired so the bridge's
-        // synchronous dispatch inside handleOpenFileByPath actually lands.
-        if (isTauri) {
-            try {
-                const pending = await tauriInvoke<string[]>('take_pending_launch_files');
-                for (const path of pending) await loadFile(path);
-            } catch {
-                /* older desktop builds may not expose the command; ignore */
-            }
-        }
-
         /**
          * Save the active tab. If it has no file path, prompts for one.
-         * Returns true if saved, false if the user cancelled / no active tab.
+         * Returns true if saved, false if the user cancelled the path prompt
+         * or if there is no active tab.
          */
         async function saveActive(): Promise<boolean> {
             const active = tabs.activeTab;
             if (!active) return false;
             const content = tabs.activeModel?.getValue() ?? '';
             if (active.filePath) {
-                await tauriBridge!.saveFile(active.filePath, content);
+                await neuBridge!.saveFile(active.filePath, content);
                 tabs.markActiveSaved();
-                await deleteDraft(active.id);
                 return true;
             }
-            const newPath = await tauriBridge!.saveFileAs(content);
+            const newPath = await neuBridge!.saveFileAs(content);
             if (!newPath) return false;
             tabs.markActiveSaved({ filePath: newPath });
-            await tauriBridge!.addRecentFile(newPath);
-            await deleteDraft(active.id);
+            await neuBridge!.addRecentFile(newPath);
+            await rebuildMenu(menuPreviewMode);
             return true;
         }
 
         async function saveAsActive(): Promise<boolean> {
-            const active = tabs.activeTab;
             const content = tabs.activeModel?.getValue() ?? '';
-            const newPath = await tauriBridge!.saveFileAs(content);
+            const newPath = await neuBridge!.saveFileAs(content);
             if (!newPath) return false;
             tabs.markActiveSaved({ filePath: newPath });
-            await tauriBridge!.addRecentFile(newPath);
-            if (active) await deleteDraft(active.id);
+            await neuBridge!.addRecentFile(newPath);
+            await rebuildMenu(menuPreviewMode);
             return true;
         }
 
         /**
-         * Close a tab in a specific group, prompting if dirty. Returns true on
-         * close, false if the user cancelled the prompt.
+         * Close a tab, prompting if dirty. Returns true on close, false if
+         * the user cancelled the prompt.
          */
-        async function tryCloseTab(group: EditorGroup, id: string): Promise<boolean> {
-            const target = group.tabs.all.find(t => t.id === id);
+        async function tryCloseTab(id: string): Promise<boolean> {
+            const target = tabs.all.find(t => t.id === id);
             if (!target) return true;
-            // Activate the group + tab so the editor shows what's being asked about.
-            if (activeGroup !== group) setActiveGroup(group);
             if (target.dirty) {
-                if (id !== group.tabs.activeId) group.tabs.activate(id);
+                // Activate the tab the user is being asked about so the
+                // editor shows its content while they decide.
+                if (id !== tabs.activeId) tabs.activate(id);
                 const choice = await appInstance.showConfirm({
                     title: 'Unsaved changes',
                     message: `Save changes to ${target.title} before closing?`,
@@ -1257,293 +660,40 @@ async function bootstrap(): Promise<void> {
                     if (!saved) return false;
                 }
             }
-            group.tabs.close(id);
-            return true;
-        }
-
-        // Prompt to save dirty tabs before a group is merged away (unsplit).
-        confirmCloseGroup = async (group: EditorGroup): Promise<boolean> => {
-            const dirty = group.tabs.all.filter(t => t.dirty);
-            for (const t of dirty) {
-                const ok = await tryCloseTab(group, t.id);
-                if (!ok) return false;
+            tabs.close(id);
+            // Closing the last tab quits the app, matching the X-button flow.
+            // tryExit() re-runs the dirty prompt for any tab still open (none
+            // here, since we just closed the only one), so this is safe.
+            if (tabs.count === 0) {
+                void tryExit();
             }
             return true;
-        };
-
-        // ---- Per-group Tauri wiring (commands + drafts + drop) ----
-        function wireGroupTauri(group: EditorGroup): void {
-            const ed = group.editor;
-
-            // Monaco swallows several Ctrl+ keys as internal commands, so the
-            // Tauri menu accelerators never fire while the editor has focus.
-            // Bind the file-management ones directly on each group's editor.
-            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => { void saveActive(); });
-            ed.addCommand(
-                monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyS,
-                () => { void saveAsActive(); },
-            );
-            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyO, async () => {
-                const result = await tauriBridge!.openFile();
-                if (result) await loadFile(result.path);
-            });
-            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyN, () => {
-                group.tabs.newUntitled();
-            });
-            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyP, () => {
-                appInstance.togglePreview();
-            });
-            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backslash, () => {
-                void splitEditor();
-            });
-            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Comma, () => {
-                sidebarInstance.switchTab?.('settings');
-            });
-            ed.addCommand(monaco.KeyCode.F5, () => { void runRefresh(); });
-            // Clipboard via Tauri's native clipboard API (WebKitGTK workaround).
-            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyC, () => { void runClipboardAction('copy'); });
-            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyX, () => { void runClipboardAction('cut'); });
-            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => { void runClipboardAction('paste'); });
-
-            // Autosave drafts for this group's tabs.
-            group.tabs.onTabContentChanged((tabId) => {
-                const existing = draftTimers.get(tabId);
-                if (existing) clearTimeout(existing);
-                draftTimers.set(tabId, setTimeout(() => {
-                    draftTimers.delete(tabId);
-                    void writeDraft(tabId);
-                }, AUTOSAVE_DEBOUNCE_MS));
-            });
-            group.tabs.onTabRemoved((tabId) => { void deleteDraft(tabId); });
-
-            // Drag-drop file open — each dropped file opens/focuses a tab in
-            // this group.
-            const dropTarget = appInstance.getEditorContainer(group.id) as HTMLElement | null;
-            if (dropTarget) {
-                dropTarget.addEventListener('dragover', e => {
-                    e.preventDefault();
-                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
-                });
-                dropTarget.addEventListener('drop', async e => {
-                    e.preventDefault();
-                    if (activeGroup !== group) setActiveGroup(group);
-                    const files = e.dataTransfer?.files;
-                    if (!files || files.length === 0) return;
-                    for (const file of Array.from(files)) {
-                        const dropped = file as File & { path?: string };
-                        if (dropped.path) {
-                            await loadFile(dropped.path);
-                        } else {
-                            const text = await dropped.text();
-                            group.tabs.newUntitled(text);
-                        }
-                    }
-                });
-            }
         }
 
-        // Apply to the primary group + register so future splits get it too.
-        wireGroupTauri(primaryGroup);
-        groupWireHooks.push(wireGroupTauri);
+        // ---- Wire tab-strip user actions to TabManager ----
+        appInstance.onTabActivate = (id: string) => tabs.activate(id);
+        appInstance.onTabCloseRequest = (id: string) => { void tryCloseTab(id); };
+        appInstance.onNewTabRequest = () => { tabs.newUntitled(); };
 
-        // Override tab-strip close actions with save-prompt-aware versions.
-        appInstance.onTabCloseRequest = (groupId: string, id: string) => {
-            const g = groups.get(groupId);
-            if (g) void tryCloseTab(g, id);
-        };
+        // Single mainMenuItemClicked listener — handles static + dynamic IDs.
+        neuEvents.on('mainMenuItemClicked', async (evt: any) => {
+            const id: string = evt.detail.id;
 
-        async function tryCloseTabsSequentially(group: EditorGroup, ids: string[]): Promise<void> {
-            for (const id of ids) {
-                const ok = await tryCloseTab(group, id);
-                if (!ok) return;
-            }
-        }
-
-        appInstance.onTabCloseOthersRequest = (groupId: string, id: string) => {
-            const g = groups.get(groupId);
-            if (!g) return;
-            const ids = g.tabs.all.filter(t => t.id !== id).map(t => t.id);
-            void tryCloseTabsSequentially(g, ids);
-        };
-        appInstance.onTabCloseAllRequest = (groupId: string) => {
-            const g = groups.get(groupId);
-            if (!g) return;
-            const ids = g.tabs.all.map(t => t.id);
-            void tryCloseTabsSequentially(g, ids);
-        };
-        appInstance.onTabOpenContainingFolderRequest = (groupId: string, id: string) => {
-            const g = groups.get(groupId);
-            const t = g?.tabs.all.find(t => t.id === id);
-            if (t?.filePath) {
-                tauriBridge.handleMessage({ type: 'openContainingFolder', path: t.filePath });
-            }
-        };
-
-        // Clipboard-copy helpers for the tab context menu. Route through
-        // Tauri's native clipboard so the value ends up on the system clipboard.
-        const writeClipboardText = async (text: string) => {
-            try {
-                await tauriClipboard.writeText(text);
-            } catch (err) {
-                appInstance.appendOutput('error', `Copy failed: ${err instanceof Error ? err.message : String(err)}`);
-            }
-        };
-
-        appInstance.onCopyTextRequest = (text: string) => { void writeClipboardText(text); };
-
-        appInstance.onTabCopyFullPathRequest = (groupId: string, id: string) => {
-            const g = groups.get(groupId);
-            const t = g?.tabs.all.find(t => t.id === id);
-            if (t?.filePath) void writeClipboardText(t.filePath);
-        };
-        appInstance.onTabCopyRelativePathRequest = async (groupId: string, id: string) => {
-            const g = groups.get(groupId);
-            const t = g?.tabs.all.find(t => t.id === id);
-            if (!t?.filePath) return;
-            const folder = await tauriBridge.getOpenedFolder();
-            if (!folder) {
-                void writeClipboardText(t.filePath);
+            // Recent file shortcut
+            if (id.startsWith('recent:')) {
+                const idx = parseInt(id.split(':')[1], 10);
+                const path = recents[idx];
+                if (path) await loadFile(path);
                 return;
             }
-            const rootNorm = folder.replace(/[\\/]+$/, '');
-            const sep = rootNorm.includes('\\') ? '\\' : '/';
-            const rootWithSep = rootNorm + sep;
-            const rel = t.filePath.startsWith(rootWithSep)
-                ? t.filePath.substring(rootWithSep.length)
-                : t.filePath;
-            void writeClipboardText(rel);
-        };
-
-        /**
-         * Read an image off the system clipboard (Tauri native, no WebView2
-         * prompt) and run it through the image-insert flow. Returns true if an
-         * image was inserted.
-         */
-        async function tryPasteClipboardImage(): Promise<boolean> {
-            let pngBytes: Uint8Array | null = null;
-            try {
-                const image = await tauriClipboard.readImage();
-                const rgba = await image.rgba();
-                const { width, height } = await image.size();
-                if (!width || !height || rgba.length === 0) return false;
-                pngBytes = await rgbaToPng(rgba, width, height);
-            } catch {
-                // readImage throws when the clipboard has no image — nothing to paste.
-                return false;
-            }
-            if (!pngBytes) return false;
-            await tauriBridge!.insertImageData({
-                data: pngBytes,
-                mimeType: 'image/png',
-                filename: 'pasted-image.png',
-            });
-            return true;
-        }
-
-        /**
-         * Route a clipboard / edit action from the native menu to the active
-         * group's editor (or a focused sidebar input).
-         */
-        async function runClipboardAction(
-            action: 'cut' | 'copy' | 'paste' | 'select-all' | 'undo' | 'redo' | 'find' | 'replace',
-        ): Promise<void> {
-            const editorHasFocus = editor.hasTextFocus();
-            if (editorHasFocus) {
-                if (action === 'copy' || action === 'cut') {
-                    const sel = editor.getSelection();
-                    const model = editor.getModel();
-                    if (!sel || !model) return;
-                    if (sel.isEmpty()) {
-                        // Empty selection: copy/cut the whole current line, matching
-                        // Monaco's default. Cut removes the line including its newline.
-                        const line = sel.startLineNumber;
-                        const text = model.getLineContent(line) + '\n';
-                        try { await tauriClipboard.writeText(text); } catch { /* ignored */ }
-                        if (action === 'cut') {
-                            const lineCount = model.getLineCount();
-                            const range = line < lineCount
-                                ? new monaco.Range(line, 1, line + 1, 1)
-                                : new monaco.Range(line, 1, line, model.getLineMaxColumn(line));
-                            editor.executeEdits('menu-cut', [{ range, text: '', forceMoveMarkers: true }]);
-                        }
-                    } else {
-                        const text = model.getValueInRange(sel);
-                        try { await tauriClipboard.writeText(text); } catch { /* ignored */ }
-                        if (action === 'cut') {
-                            editor.executeEdits('menu-cut', [{ range: sel, text: '', forceMoveMarkers: true }]);
-                        }
-                    }
-                    return;
-                }
-                if (action === 'paste') {
-                    let text = '';
-                    try { text = await tauriClipboard.readText(); } catch { /* ignored */ }
-                    if (text) {
-                        const sel = editor.getSelection();
-                        if (!sel) return;
-                        editor.executeEdits('menu-paste', [{ range: sel, text, forceMoveMarkers: true }]);
-                        editor.pushUndoStop();
-                        return;
-                    }
-                    // No text on the clipboard — try a native image paste.
-                    await tryPasteClipboardImage();
-                    return;
-                }
-                const cmd = {
-                    'select-all': 'editor.action.selectAll',
-                    undo: 'undo',
-                    redo: 'redo',
-                    find: 'actions.find',
-                    replace: 'editor.action.startFindReplaceAction',
-                }[action];
-                editor.focus();
-                editor.trigger('menu', cmd, null);
+            if (id === 'recent-clear') {
+                await neuBridge.clearRecentFiles();
+                await rebuildMenu(menuPreviewMode);
                 return;
             }
-            // Fallback for sidebar / preview / etc.
-            const el = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
-            if (action === 'paste') {
-                let text = '';
-                try { text = await tauriClipboard.readText(); } catch { /* ignored */ }
-                if (!text) return;
-                if (el && 'setRangeText' in el) {
-                    const start = el.selectionStart ?? el.value.length;
-                    const end = el.selectionEnd ?? start;
-                    el.setRangeText(text, start, end, 'end');
-                    el.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-                return;
-            }
-            if (action === 'copy' || action === 'cut') {
-                if (el && 'selectionStart' in el) {
-                    const start = el.selectionStart ?? 0;
-                    const end = el.selectionEnd ?? start;
-                    if (end > start) {
-                        const text = el.value.substring(start, end);
-                        try { await tauriClipboard.writeText(text); } catch { /* ignored */ }
-                        if (action === 'cut') {
-                            el.setRangeText('', start, end, 'end');
-                            el.dispatchEvent(new Event('input', { bubbles: true }));
-                        }
-                    }
-                }
-                return;
-            }
-            if (action === 'select-all') {
-                if (el && 'select' in el && typeof el.select === 'function') el.select();
-                return;
-            }
-            // undo / redo work via execCommand in inputs.
-            if (action === 'undo' || action === 'redo') {
-                document.execCommand(action);
-            }
-        }
+            if (id === 'recent-empty') return;
 
-        // Native menu clicks arrive as Tauri events emitted by the Rust menu handler.
-        await tauriListen<{ id: string }>('menu-click', async (evt) => {
-            const id: string = evt.payload.id;
-
-            // Preview mode picker (View → Preview Mode: Wrapped/Unwrapped)
+            // Preview mode picker
             if (id.startsWith('preview-mode:')) {
                 const mode = id.split(':')[1] as PreviewMode;
                 appInstance.setPreviewMode(mode);
@@ -1557,12 +707,12 @@ async function bootstrap(): Promise<void> {
 
                 case 'close-tab': {
                     const activeId = tabs.activeId;
-                    if (activeId) await tryCloseTab(activeGroup, activeId);
+                    if (activeId) await tryCloseTab(activeId);
                     break;
                 }
 
                 case 'open': {
-                    const result = await tauriBridge.openFile();
+                    const result = await neuBridge.openFile();
                     if (result) await loadFile(result.path);
                     break;
                 }
@@ -1576,15 +726,7 @@ async function bootstrap(): Promise<void> {
                     break;
 
                 case 'export-pdf':
-                    tauriBridge.handleMessage({ type: 'generatePdf' });
-                    break;
-
-                case 'export-html':
-                    tauriBridge.handleMessage({ type: 'saveSourceHtml' });
-                    break;
-
-                case 'export-docx':
-                    tauriBridge.handleMessage({ type: 'saveDocx' });
+                    neuBridge.handleMessage({ type: 'generatePdf' });
                     break;
 
                 case 'toggle-sidebar':
@@ -1595,22 +737,6 @@ async function bootstrap(): Promise<void> {
                     appInstance.togglePreview();
                     break;
 
-                case 'toggle-word-wrap':
-                    toggleWordWrap();
-                    break;
-
-                case 'split-editor':
-                    await splitEditor();
-                    break;
-
-                case 'unsplit-editor': {
-                    // Always close the bottom group; keep the top (primary).
-                    const all = [...groups.values()];
-                    const bottom = all[all.length - 1];
-                    if (all.length > 1 && bottom) await closeGroup(bottom.id);
-                    break;
-                }
-
                 case 'quit':
                     await tryExit();
                     break;
@@ -1620,71 +746,19 @@ async function bootstrap(): Promise<void> {
                     break;
 
                 case 'show-server-log':
-                    // Server stdout/stderr is streamed live into the Output
-                    // panel's 'server' channel via the `server-log` Tauri
-                    // event, so we just reveal that channel.
-                    appInstance.showOutput('server');
+                    appInstance.appendOutput('info', 'Fetching server log…');
+                    neuBridge.handleMessage({ type: 'getServerLog' });
                     break;
 
-                case 'stop-server':
-                    if (serverManager) {
-                        appInstance.appendOutput('info', 'Stopping server…');
-                        try {
-                            await serverManager.forceStop();
-                            appInstance.appendOutput('info', 'Server stopped. Use Restart Server to start it again.');
-                        } catch (err) {
-                            appInstance.appendOutput('error', `Stop failed: ${err instanceof Error ? err.message : String(err)}`);
-                        }
-                    }
+                case 'restart-app':
+                    await neuApp.restartProcess();
                     break;
-
-                case 'restart-server':
-                    if (serverManager) {
-                        appInstance.appendOutput('info', 'Restarting server…');
-                        try {
-                            await serverManager.restart();
-                            appInstance.appendOutput('info', `Server restarted at ${serverManager.getBaseUrl()}`);
-                        } catch (err) {
-                            appInstance.appendOutput('error', `Restart failed: ${err instanceof Error ? err.message : String(err)}`);
-                        }
-                    }
-                    break;
-
-                case 'undo':
-                    runClipboardAction('undo');
-                    break;
-                case 'redo':
-                    runClipboardAction('redo');
-                    break;
-                case 'cut':
-                    await runClipboardAction('cut');
-                    break;
-                case 'copy':
-                    await runClipboardAction('copy');
-                    break;
-                case 'paste':
-                    await runClipboardAction('paste');
-                    break;
-                case 'select-all':
-                    runClipboardAction('select-all');
-                    break;
-                case 'find':
-                    runClipboardAction('find');
-                    break;
-                case 'replace':
-                    runClipboardAction('replace');
-                    break;
-
-                case 'help-documentation': {
-                    const { openUrl } = await import('@tauri-apps/plugin-opener');
-                    await openUrl('https://imartincei.github.io/CalcpadCE/');
-                    break;
-                }
             }
         });
 
         // Server stderr (captured by start-server.sh) and PDF errors flow
-        // through bridge → window message → Output panel.
+        // through bridge → window message → Output panel. This is the
+        // desktop analog of VS Code's stderr Output channel.
         window.addEventListener('message', (e) => {
             const data = (e as MessageEvent).data;
             if (!data || typeof data !== 'object') return;
@@ -1700,35 +774,70 @@ async function bootstrap(): Promise<void> {
                         `Server log is empty: ${data.path}`);
                     return;
                 }
-                appInstance.appendOutput('info', `--- Server log (${data.path}) ---`);
+                appInstance.appendOutput('info', `--- Server stderr (${data.path}) ---`);
                 for (const line of text.split('\n')) {
                     if (!line.trim()) continue;
-                    const level = /\[(INFO|WARN|WARNING|ERROR|CRASH)\]/i.exec(line)?.[1]?.toUpperCase();
-                    const sev = level === 'ERROR' || level === 'CRASH' ? 'error'
-                        : level === 'WARN' || level === 'WARNING' ? 'warn'
-                        : level === 'INFO' ? 'info'
-                        : 'error';
+                    const sev = /WARNING|warn/i.test(line) ? 'warn' : 'error';
                     appInstance.appendOutput(sev, line);
                 }
-                appInstance.appendOutput('info', '--- end server log ---');
+                appInstance.appendOutput('info', '--- end server stderr ---');
             } else if (data.type === 'pdfError') {
                 appInstance.appendOutput('error', String(data.message || 'PDF export failed'));
             }
         });
 
-        // ---- Keyboard shortcuts (window-level) ----
-        // These catch shortcuts when focus is outside the editor (sidebar,
-        // preview iframe parent, etc.). Editor-focused variants are bound per
-        // group in wireGroupTauri.
-        window.addEventListener('keydown', (e) => {
-            // Ctrl+Alt+X — run/refresh (bound here so it fires from any focus).
-            if ((e.key === 'x' || e.key === 'X') && e.ctrlKey && e.altKey && !e.shiftKey && !e.metaKey) {
+        // (Per-tab dirty tracking is handled by TabManager; the legacy
+        // single-document setDirty(true)-on-edit hook is removed.)
+
+        // ---- Drag-drop file open ----
+        // Each dropped file opens (or focuses) its own tab.
+        const dropTarget = document.querySelector('.editor-container') as HTMLElement | null;
+        if (dropTarget) {
+            dropTarget.addEventListener('dragover', e => {
                 e.preventDefault();
-                void runRefresh();
-                return;
-            }
+                if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+            });
+            dropTarget.addEventListener('drop', async e => {
+                e.preventDefault();
+                const files = e.dataTransfer?.files;
+                if (!files || files.length === 0) return;
+                for (const file of Array.from(files)) {
+                    // Neutralino exposes the OS path on `File.path` (Chromium extension).
+                    const dropped = file as File & { path?: string };
+                    if (dropped.path) {
+                        await loadFile(dropped.path);
+                    } else {
+                        // No OS path (web-style drop) — open as untitled.
+                        const text = await dropped.text();
+                        tabs.newUntitled(text);
+                    }
+                }
+            });
+        }
+
+        // ---- Keyboard shortcuts (window-level) ----
+        // VS Code-style tab navigation. Ctrl+T / Ctrl+W are also bound via
+        // the menu accelerators above; this catches them when the focus is
+        // outside the menu's scope (e.g. preview iframe).
+        // Monaco swallows several Ctrl+ keys as internal commands, so the
+        // Neutralino menu accelerators never fire while the editor has focus.
+        // Bind the file-management ones directly on the editor.
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+            void saveActive();
+        });
+        editor.addCommand(
+            monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyS,
+            () => { void saveAsActive(); },
+        );
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyO, async () => {
+            const result = await neuBridge.openFile();
+            if (result) await loadFile(result.path);
+        });
+
+        window.addEventListener('keydown', (e) => {
             if (!e.ctrlKey || e.metaKey) return;
-            // Ctrl+S / Ctrl+Shift+S — fallback when focus is outside the editor.
+            // Ctrl+S / Ctrl+Shift+S — fallback when focus is outside the editor
+            // (sidebar, preview iframe parent, etc.).
             if ((e.key === 's' || e.key === 'S') && !e.altKey) {
                 e.preventDefault();
                 if (e.shiftKey) void saveAsActive(); else void saveActive();
@@ -1738,33 +847,9 @@ async function bootstrap(): Promise<void> {
             if ((e.key === 'o' || e.key === 'O') && !e.shiftKey && !e.altKey) {
                 e.preventDefault();
                 void (async () => {
-                    const result = await tauriBridge.openFile();
+                    const result = await neuBridge.openFile();
                     if (result) await loadFile(result.path);
                 })();
-                return;
-            }
-            // Ctrl+N — new tab.
-            if ((e.key === 'n' || e.key === 'N') && !e.shiftKey && !e.altKey) {
-                e.preventDefault();
-                tabs.newUntitled();
-                return;
-            }
-            // Ctrl+P — toggle preview.
-            if ((e.key === 'p' || e.key === 'P') && !e.shiftKey && !e.altKey) {
-                e.preventDefault();
-                appInstance.togglePreview();
-                return;
-            }
-            // Ctrl+\ — split / focus editor down.
-            if (e.key === '\\' && !e.shiftKey && !e.altKey) {
-                e.preventDefault();
-                void splitEditor();
-                return;
-            }
-            // Ctrl+, — open Settings tab in sidebar (VS Code convention).
-            if (e.key === ',' && !e.shiftKey && !e.altKey) {
-                e.preventDefault();
-                sidebarInstance.switchTab?.('settings');
                 return;
             }
             // Ctrl+Shift+B → toggle sidebar (Ctrl+B is reserved for Bold formatting).
@@ -1775,27 +860,27 @@ async function bootstrap(): Promise<void> {
             }
             if (e.key === 'Tab') {
                 e.preventDefault();
-                if (e.shiftKey) activeGroup.tabs.activatePrev(); else activeGroup.tabs.activateNext();
+                if (e.shiftKey) tabs.activatePrev(); else tabs.activateNext();
                 return;
             }
             if (e.key === 't' && !e.shiftKey && !e.altKey) {
                 e.preventDefault();
-                activeGroup.tabs.newUntitled();
+                tabs.newUntitled();
                 return;
             }
             if (e.key === 'w' && !e.shiftKey && !e.altKey) {
                 e.preventDefault();
-                const id = activeGroup.tabs.activeId;
-                if (id) void tryCloseTab(activeGroup, id);
+                const id = tabs.activeId;
+                if (id) void tryCloseTab(id);
                 return;
             }
-            // Ctrl+1..9 → activate Nth tab in the active group (Ctrl+9 = last).
+            // Ctrl+1..9 → activate Nth tab (Ctrl+9 = last, matching VS Code).
             if (e.key >= '1' && e.key <= '9' && !e.shiftKey && !e.altKey) {
                 const n = parseInt(e.key, 10);
                 if (n === 9) {
-                    activeGroup.tabs.activateByIndex(activeGroup.tabs.count - 1);
+                    tabs.activateByIndex(tabs.count - 1);
                 } else {
-                    activeGroup.tabs.activateByIndex(n - 1);
+                    tabs.activateByIndex(n - 1);
                 }
                 e.preventDefault();
             }
@@ -1809,17 +894,12 @@ async function bootstrap(): Promise<void> {
             isExiting = true;
 
             try {
-                // Walk every dirty tab across all groups one at a time, like VS
-                // Code does on window-close. Reuses tryCloseTab so the prompt
-                // copy + save-as fallback are identical to manual tab close.
-                const dirty: { group: EditorGroup; id: string }[] = [];
-                for (const g of groups.values()) {
-                    for (const t of g.tabs.all) {
-                        if (t.dirty) dirty.push({ group: g, id: t.id });
-                    }
-                }
-                for (const { group, id } of dirty) {
-                    const closed = await tryCloseTab(group, id);
+                // Walk every dirty tab one at a time, like VS Code does on
+                // window-close. Reuses tryCloseTab so the prompt copy +
+                // save-as fallback are identical to manual tab close.
+                const dirtyIds = tabs.all.filter(t => t.dirty).map(t => t.id);
+                for (const id of dirtyIds) {
+                    const closed = await tryCloseTab(id);
                     if (!closed) {
                         // User cancelled — abort exit.
                         isExiting = false;
@@ -1828,25 +908,21 @@ async function bootstrap(): Promise<void> {
                 }
             } finally {
                 if (isExiting) {
-                    // Rust owns sidecar shutdown (kill-on-exit hook). This
-                    // dispose only tears down TS event listeners.
-                    if (serverManager) {
-                        try { await serverManager.dispose(); }
-                        catch (e) { appInstance.appendOutput('debug', `serverManager.dispose() rejected: ${e}`); }
-                    }
-                    appInstance.appendOutput('debug', 'Exit path: calling process.exit()');
-                    void processExit(0);
+                    appInstance.appendOutput('debug', 'Exit path: calling neuApp.exit()');
+                    neuApp.exit()
+                        .then(() => appInstance.appendOutput('debug', 'neuApp.exit() resolved'))
+                        .catch((e) => appInstance.appendOutput('debug', `neuApp.exit() rejected: ${e?.code || e?.message || e}`));
+                    setTimeout(() => {
+                        appInstance.appendOutput('debug', 'Exit path: calling neuApp.killProcess() fallback');
+                        neuApp.killProcess()
+                            .then(() => appInstance.appendOutput('debug', 'killProcess resolved'))
+                            .catch((e) => appInstance.appendOutput('debug', `killProcess rejected: ${e?.code || e?.message || e}`));
+                    }, 500);
                 }
             }
         }
 
-        // Intercept the window close button so unsaved tabs get their save prompt
-        // before Tauri tears down the webview. tryExit() calls processExit() on
-        // confirmation; if the user cancels, the window stays open.
-        await getCurrentWindow().onCloseRequested(async (event) => {
-            event.preventDefault();
-            void tryExit();
-        });
+        neuEvents.on('windowClose', () => { void tryExit(); });
     }
 }
 

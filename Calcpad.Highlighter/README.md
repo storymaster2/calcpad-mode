@@ -104,9 +104,10 @@ Two passes over the Stage 1 output:
 Processes the Stage 2 output in two phases:
 
 **Phase 1 — Macro expansion:**
-- Builds a lookup from macro name to its definition (params, content)
+- Builds a lookup from macro name to its definition (params, defaults, content)
 - Skips over `#def`...`#end def` blocks (they've already been collected)
 - Expands macro calls by substituting arguments into the macro body
+- Supports keyword arguments and default values
 - Tracks expansion metadata so errors inside expanded content map back to the call site
 
 **Phase 2 — Definition extraction:**
@@ -134,13 +135,15 @@ Processes the Stage 2 output in two phases:
 
 The `ContentResolver` itself does not perform any I/O. The caller (Calcpad.Web backend) is responsible for pre-fetching all file contents and passing them in:
 
-1. **`includeFiles`** — a `Dictionary<string, string>` mapping filenames to plain-text content. The caller populates this from the filesystem before calling `GetStagedContent`.
+1. **`includeFiles`** — a `Dictionary<string, string>` mapping filenames to plain-text content. The caller populates this from the filesystem, remote URLs, or API routes before calling `GetStagedContent`.
 
 2. **`clientFileCache`** — a `Dictionary<string, byte[]>` mapping filenames to raw bytes. Used when the client (e.g., a VS Code extension) has files in memory that the server can't access directly. Decoded as UTF-8.
 
 3. **Filesystem fallback** — Stage 2 also tries `Path.GetFullPath()` with environment variable expansion for local file resolution.
 
 Resolution priority: filesystem > `includeFiles` > `clientFileCache`. If a file can't be found, an error comment is injected into the content and processing continues.
+
+For remote content (URLs and API routes), Calcpad.Web's backend pre-fetches into a global cache via `CalcpadService.PreFetchRemoteContentAsync()` before calling the resolver.
 
 ### Source Mapping
 
@@ -198,9 +201,9 @@ The `CalcpadTokenizer` converts source code into a stream of typed tokens. It op
 | 25 | Svg | Comments | SVG in `<svg>` tags |
 | 26 | Input | Special | Input markers (? or #{...}) |
 | 27 | Format | Special | Format specifiers (:f2, :e3) |
-| 28 | FutureReserved28 | Reserved | _Reserved ordinal_ |
-| 29 | FutureReserved29 | Reserved | _Reserved ordinal_ |
-| 30 | FutureReserved30 | Reserved | _Reserved ordinal_ |
+| 28 | StringVariable | Strings | String variable references (defined via #string) |
+| 29 | StringFunction | Strings | Built-in string function calls (len$, trim$, concat$) |
+| 30 | StringTable | Strings | String table variable references (defined via #string with a bracket or table-function RHS) |
 
 The tokenizer is split across 8 partial class files for maintainability: core logic, comment parsing, macro handling, bracket/operator parsing, type resolution, helpers, definition extraction, and macro collection.
 
@@ -236,7 +239,7 @@ var result = linter.Lint(staged, ignoreRegions);
 - `BalanceValidator` — bracket/parenthesis matching
 - `NamingValidator` — variable naming, conflicts with built-ins, undefined variables
 - `UsageValidator` — unused variables, unreachable code, scoping
-- `SemanticValidator` — operator sequences, command syntax, assignments
+- `SemanticValidator` — operator sequences, command syntax, assignments, `#UI` JSON validation
 - `FunctionTypeValidator` — parameter counts, return types, overload resolution
 - `CommandBlockValidator` — `$Inline`/`$Block`/`$While` statement syntax
 - `FormatValidator` — format specifier syntax
@@ -303,7 +306,7 @@ Each `SnippetItem` includes:
 | Functions/* | `FunctionSnippets.cs` | ~200 built-in math functions |
 | Functions/Vector | `VectorFunctionSnippets.cs` | sum, max, rms, len, join, etc. |
 | Functions/Matrix | `MatrixFunctionSnippets.cs` | transpose, det, solve, identity, etc. |
-| Keywords | `KeywordSnippets.cs` | #if, #for, #while, #def, #include, #read, #write, etc. |
+| Keywords | `KeywordSnippets.cs` | #if, #for, #while, #def, #string, #UI, etc. |
 | Commands | `CommandSnippets.cs` | $Plot, $Sum, $Find, $Root, $Table, etc. |
 | Settings | `SettingSnippets.cs` | PlotHeight, PlotWidth, Precision, Tol, etc. |
 | Units | `UnitSnippets.cs` | m, kg, s, A, K, mol, rad, and all derived units |
@@ -368,6 +371,7 @@ The `TypeTracker` infers and records types for all definitions discovered in Sta
 | Value | 1 | Scalar numeric value |
 | Vector | 2 | 1D array |
 | Matrix | 3 | 2D array |
+| StringVariable | 4 | String value |
 | Various | 5 | Multiple types assigned in different places |
 
 Type inference works by analyzing expressions:

@@ -190,6 +190,12 @@ namespace Calcpad.Highlighter.Snippets.Models
         /// <summary>Integer value (for indices, counters)</summary>
         Integer,
 
+        /// <summary>String value</summary>
+        String,
+
+        /// <summary>String table (2D string array)</summary>
+        StringTable,
+
         /// <summary>Boolean/condition expression</summary>
         Boolean,
 

@@ -13,7 +13,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
     {
         public void Validate(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
-            ValidateCommands(stage3, result, tokenProvider);
+            ValidateCommandSyntax(stage3, result, tokenProvider);
+            ValidateCommandVariables(stage3, result, tokenProvider);
             ValidateUndefinedIdentifiers(stage3, result, tokenProvider);
             ValidateUndefinedUnits(stage3, result, tokenProvider);
             ValidateFunctionCalls(stage3, result, tokenProvider);
@@ -22,64 +23,76 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
         }
 
         /// <summary>
-        /// Validates the @ separator pattern in commands like $Repeat{expr @ variable = start : end}.
-        /// Two passes folded into one (formerly ValidateCommandSyntax + ValidateCommandVariables):
-        ///   - CPD-3410: command syntax — exactly one variable token between @ and =, no numbers
-        ///   - CPD-3412: expression uses the declared loop variable
-        /// $Plot is exempt from both checks when the expression contains | or & (multi-function /
-        /// parametric forms). $Map is exempt from the loop-variable check (allows multiple counters).
+        /// Validates command syntax, specifically the @ separator pattern in commands like:
+        /// $Repeat{expression @ variable = start : end}
+        /// Checks that:
+        /// 1. There's exactly one variable (LocalVariable or Variable token) between @ and =
+        /// 2. No numbers or problematic tokens appear between @ and the variable
+        /// Example valid: $Sum{k*2 @ k = a : b}
+        /// Example invalid: $Repeat{i*j @ 90 i = 1 : 10} (has "90" between @ and variable)
+        /// Special case: $Map allows multiple counters with & separator
         /// </summary>
-        private void ValidateCommands(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
+        private void ValidateCommandSyntax(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
                 if (!tokenProvider.IsCpdMode(i)) continue;
 
                 var line = stage3.Lines[i];
-                if (LineParser.ShouldSkipLine(line)) continue;
+
+                if (LineParser.ShouldSkipLine(line))
+                    continue;
 
                 var trimmed = line.Trim();
-                if (LineParser.IsDirectiveLine(trimmed)) continue;
 
+                if (LineParser.IsDirectiveLine(trimmed))
+                    continue;
+
+                // Check if line contains a command with @ separator
                 var atIndex = line.IndexOf('@');
-                if (atIndex < 0) continue;
+                if (atIndex < 0)
+                    continue;
 
-                // Locate which $Command{ precedes the @
+                // Check if this is within a command block and determine which command
                 var hasCommand = false;
                 var commandName = string.Empty;
-                var cmdStartIndex = -1;
-                foreach (var (cmd, cmdWithBrace) in CalcpadBuiltIns.CommandsWithBrace)
+                foreach (var cmd in CalcpadBuiltIns.CommandsExcludingCommandBlocks)
                 {
-                    var cmdIndex = line.IndexOf(cmdWithBrace, StringComparison.OrdinalIgnoreCase);
+                    var cmdIndex = line.IndexOf(cmd + "{", StringComparison.OrdinalIgnoreCase);
                     if (cmdIndex >= 0 && cmdIndex < atIndex)
                     {
                         hasCommand = true;
                         commandName = cmd;
-                        cmdStartIndex = cmdIndex + cmd.Length + 1; // position just after "{"
                         break;
                     }
                 }
-                if (!hasCommand) continue;
 
-                // Tokens consumed by both phases — fetch once.
-                var tokens = tokenProvider.GetTokensForLine(i);
+                if (!hasCommand)
+                    continue;
 
-                // $Plot with | or & is fully exempt (parametric / multi-function form).
-                bool skipSyntaxPhase = false;
+                // Special case: $Plot allows | and & operators before @
+                // Skip validation for $Plot commands as they have complex expression syntax
                 if (commandName.Equals("$Plot", StringComparison.OrdinalIgnoreCase))
                 {
-                    var beforeAt = line.AsSpan(0, atIndex);
+                    var beforeAt = line.Substring(0, atIndex);
+                    // Check if the expression contains | (parametric) or & (multiple functions)
                     if (beforeAt.Contains('|') || beforeAt.Contains('&'))
-                        skipSyntaxPhase = true;
+                    {
+                        // These are valid $Plot syntaxes, skip validation
+                        continue;
+                    }
                 }
 
-                // Find the non-comparison = sign after @. Used by both phases when present.
-                var afterAt = line.AsSpan(atIndex + 1);
+                // Extract the part after @ (e.g., "x = 0 : 5}" or "90 i=1:10")
+                var afterAt = line.Substring(atIndex + 1);
+
+                // Find the = sign (not ==, <=, >=, !=)
                 var equalsIndex = -1;
                 for (int j = 0; j < afterAt.Length; j++)
                 {
                     if (afterAt[j] == '=')
                     {
+                        // Check it's not ==, <=, >=, or !=
                         var isComparison = (j > 0 && (afterAt[j - 1] == '<' || afterAt[j - 1] == '>' || afterAt[j - 1] == '!' || afterAt[j - 1] == '=')) ||
                                          (j + 1 < afterAt.Length && afterAt[j + 1] == '=');
                         if (!isComparison)
@@ -90,60 +103,124 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     }
                 }
 
-                var atAbsolutePos = atIndex;
-                var equalsAbsolutePos = equalsIndex >= 0 ? atIndex + 1 + equalsIndex : -1;
-
-                // --- Phase 1: command syntax (CPD-3410) ---
-                if (!skipSyntaxPhase)
+                if (equalsIndex < 0)
                 {
-                    if (equalsIndex < 0)
-                    {
-                        result.AddError(i, atIndex, atIndex + 1, "CPD-3410",
-                            "Invalid command syntax: expected 'variable = start : end' after '@'");
-                        continue;
-                    }
+                    // No = sign found after @
+                    result.AddError(i, atIndex, atIndex + 1, "CPD-3410",
+                        "Invalid command syntax: expected 'variable = start : end' after '@'");
+                    continue;
+                }
 
-                    var variableTokens = new List<Token>();
-                    var numberTokens = new List<Token>();
-                    foreach (var token in tokens)
+                // Get tokens for this line to check what's between @ and =
+                var tokens = tokenProvider.GetTokensForLine(i);
+                var variableTokens = new List<Token>();
+                var numberTokens = new List<Token>();
+
+                // Find all tokens between @ and =
+                var atAbsolutePos = atIndex;
+                var equalsAbsolutePos = atIndex + 1 + equalsIndex;
+
+                foreach (var token in tokens)
+                {
+                    // Check if token is between @ and =
+                    if (token.Column > atAbsolutePos && token.Column < equalsAbsolutePos)
                     {
-                        if (token.Column > atAbsolutePos && token.Column < equalsAbsolutePos)
+                        if (token.Type == TokenType.LocalVariable || token.Type == TokenType.Variable)
                         {
-                            if (token.Type == TokenType.LocalVariable || token.Type == TokenType.Variable)
-                                variableTokens.Add(token);
-                            else if (token.Type == TokenType.Const)
-                                numberTokens.Add(token);
+                            variableTokens.Add(token);
                         }
-                    }
-
-                    if (variableTokens.Count == 0)
-                    {
-                        result.AddError(i, atAbsolutePos + 1, equalsAbsolutePos, "CPD-3410",
-                            "Invalid command syntax: expected variable name after '@'");
-                    }
-                    else if (variableTokens.Count > 1)
-                    {
-                        result.AddError(i, atAbsolutePos + 1, equalsAbsolutePos, "CPD-3410",
-                            "Invalid command syntax: expected single variable name after '@'");
-                    }
-                    else if (numberTokens.Count > 0)
-                    {
-                        var firstNumber = numberTokens[0];
-                        result.AddError(i, firstNumber.Column, firstNumber.Column + firstNumber.Length, "CPD-3410",
-                            "Invalid command syntax: unexpected number '" + firstNumber.Text + "' between '@' and variable name");
+                        else if (token.Type == TokenType.Const)
+                        {
+                            // Found a number token - this is problematic
+                            numberTokens.Add(token);
+                        }
+                        // Ignore whitespace, operators, and other tokens
                     }
                 }
 
-                // --- Phase 2: command variable matching (CPD-3412) ---
-                // $Plot and $Map are exempt (different counter semantics). $Repeat is exempt
-                // too: its counter only controls the iteration count, so the body (which may be
-                // pure side-effect assignments) is not required to reference the loop variable.
-                if (commandName.Equals("$Plot", StringComparison.OrdinalIgnoreCase) ||
-                    commandName.Equals("$Map", StringComparison.OrdinalIgnoreCase) ||
-                    commandName.Equals("$Repeat", StringComparison.OrdinalIgnoreCase))
+                // Validation: should have exactly 1 variable token between @ and =
+                if (variableTokens.Count == 0)
+                {
+                    result.AddError(i, atAbsolutePos + 1, equalsAbsolutePos, "CPD-3410",
+                        "Invalid command syntax: expected variable name after '@'");
+                }
+                else if (variableTokens.Count > 1)
+                {
+                    result.AddError(i, atAbsolutePos + 1, equalsAbsolutePos, "CPD-3410",
+                        "Invalid command syntax: expected single variable name after '@'");
+                }
+                else if (numberTokens.Count > 0)
+                {
+                    // There are number tokens before the variable (like "@ 90 i")
+                    var firstNumber = numberTokens[0];
+                    result.AddError(i, firstNumber.Column, firstNumber.Column + firstNumber.Length, "CPD-3410",
+                        "Invalid command syntax: unexpected number '" + firstNumber.Text + "' between '@' and variable name");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates that variables used in command expressions match the declared loop variable.
+        /// Example valid: $Root{f(x) @ x = 0 : 5} - expression uses 'x', loop variable is 'x'
+        /// Example invalid: $Root{f(y) @ x = 0 : 5} - expression uses 'y', but loop variable is 'x'
+        /// </summary>
+        private void ValidateCommandVariables(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
+        {
+            for (int i = 0; i < stage3.Lines.Count; i++)
+            {
+                if (!tokenProvider.IsCpdMode(i)) continue;
+
+                var line = stage3.Lines[i];
+
+                if (LineParser.ShouldSkipLine(line))
                     continue;
 
-                if (equalsIndex < 0) continue; // already reported above
+                var trimmed = line.Trim();
+
+                if (LineParser.IsDirectiveLine(trimmed))
+                    continue;
+
+                // Check if line contains a command with @ separator
+                var atIndex = line.IndexOf('@');
+                if (atIndex < 0)
+                    continue;
+
+                // Check if this is within a command block
+                var hasCommand = false;
+                var commandName = string.Empty;
+                var cmdStartIndex = -1;
+                foreach (var cmd in CalcpadBuiltIns.CommandsExcludingCommandBlocks)
+                {
+                    var cmdIndex = line.IndexOf(cmd + "{", StringComparison.OrdinalIgnoreCase);
+                    if (cmdIndex >= 0 && cmdIndex < atIndex)
+                    {
+                        hasCommand = true;
+                        commandName = cmd;
+                        cmdStartIndex = cmdIndex + cmd.Length + 1; // Position after "{"
+                        break;
+                    }
+                }
+
+                if (!hasCommand)
+                    continue;
+
+                // Skip $Plot and $Map commands - they have special syntax
+                if (commandName.Equals("$Plot", StringComparison.OrdinalIgnoreCase) ||
+                    commandName.Equals("$Map", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Extract the declared loop variable (after @, before =)
+                var afterAt = line.Substring(atIndex + 1);
+                var equalsIndex = afterAt.IndexOf('=');
+                if (equalsIndex < 0)
+                    continue; // Already handled by ValidateCommandSyntax
+
+                var declaredVarSection = afterAt.Substring(0, equalsIndex).Trim();
+
+                // Get tokens to find the declared variable
+                var tokens = tokenProvider.GetTokensForLine(i);
+                var atAbsolutePos = atIndex;
+                var equalsAbsolutePos = atIndex + 1 + equalsIndex;
 
                 string declaredVar = null;
                 foreach (var token in tokens)
@@ -155,11 +232,15 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                         break;
                     }
                 }
-                if (string.IsNullOrEmpty(declaredVar)) continue;
 
+                if (string.IsNullOrEmpty(declaredVar))
+                    continue; // No declared variable found
+
+                // Now check variables used in the expression (before @)
                 var usedVariables = new HashSet<string>(StringComparer.Ordinal);
                 foreach (var token in tokens)
                 {
+                    // Only look at tokens in the expression (between { and @)
                     if (token.Column >= cmdStartIndex && token.Column < atAbsolutePos &&
                         (token.Type == TokenType.Variable || token.Type == TokenType.LocalVariable))
                     {
@@ -167,7 +248,9 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     }
                 }
 
-                // Loop variable may appear directly or as element-access suffix (e.g., v1_ind.i)
+                // Check if the declared variable is used in the expression.
+                // The loop variable defined after @ (e.g., $Repeat{expr @ i = 1 : n})
+                // may appear directly or as an element access suffix (e.g., v1_ind.i)
                 // when the tokenizer doesn't split because v1_ind isn't known as a vector.
                 var usesLoopVar = usedVariables.Contains(declaredVar);
                 if (!usesLoopVar)
@@ -185,6 +268,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
                 if (usedVariables.Count > 0 && !usesLoopVar)
                 {
+                    // Expression uses variables but not the declared one
                     var usedVarsList = string.Join(", ", usedVariables.Select(v => "'" + v + "'"));
                     result.AddError(i, cmdStartIndex, atAbsolutePos, "CPD-3412",
                         "Expression uses " + usedVarsList + " but loop variable is '" + declaredVar + "'");
@@ -194,11 +278,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
         private void ValidateUndefinedIdentifiers(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
-            // #noc renders equations without evaluating them, so referencing an undefined
-            // identifier is legitimate. Track the output mode as we go and skip the check
-            // while it stays in the #noc region (until the next #val/#equ).
-            var directives = new DirectiveState();
-
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
                 if (!tokenProvider.IsCpdMode(i)) continue;
@@ -211,12 +290,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 var trimmed = line.Trim();
 
                 if (LineParser.IsDirectiveLine(trimmed))
-                {
-                    directives.Apply(trimmed);
-                    continue;
-                }
-
-                if (directives.Output == OutputMode.NoCalculation)
                     continue;
 
                 // Skip undefined variable checks for function definitions with command blocks
@@ -244,8 +317,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     if (token.Type == TokenType.FilePath)
                         continue;
 
-                    // Only check Variable tokens (Function tokens are checked in ValidateFunctionCalls)
-                    if (token.Type != TokenType.Variable)
+                    // Only check Variable, StringVariable, and StringTable tokens (Function tokens are checked in ValidateFunctionCalls)
+                    if (token.Type != TokenType.Variable && token.Type != TokenType.StringVariable && token.Type != TokenType.StringTable)
                         continue;
 
                     var identifier = token.Text;
@@ -390,22 +463,26 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 }
             }
 
-            // Use tokens to find each @ variable: the first Variable/LocalVariable after every
-            // '@' is a loop variable. Nested commands have more than one (e.g. the inner 'j' and
-            // outer 'i' in $Sum{$Sum{i*j @ j = 1 : 3} @ i = 1 : 3}), so collect them all.
-            bool afterAt = false;
+            // Use tokens to find the @ variable: scan for Variable/LocalVariable between @ and =
+            int atCol = -1;
             foreach (var token in tokens)
             {
                 if (token.Type == TokenType.Operator && token.Text == "@")
                 {
-                    afterAt = true;
+                    atCol = token.Column;
                     continue;
                 }
 
-                if (afterAt && (token.Type == TokenType.LocalVariable || token.Type == TokenType.Variable))
+                if (atCol >= 0)
                 {
-                    result.Add(token.Text);
-                    afterAt = false;
+                    if (token.Type == TokenType.Operator && token.Text == "=")
+                        break; // past the variable
+
+                    if (token.Type == TokenType.LocalVariable || token.Type == TokenType.Variable)
+                    {
+                        result.Add(token.Text);
+                        break;
+                    }
                 }
             }
 
@@ -471,10 +548,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
         private void ValidateFunctionCalls(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
         {
-            // When a function is redefined, the latest definition wins (matching Calcpad.Core),
-            // so calls are checked against the last definition's parameter count.
-            var lastDefParamCount = BuildLastDefinitionParamCounts(stage3, tokenProvider);
-
             for (int i = 0; i < stage3.Lines.Count; i++)
             {
                 if (!tokenProvider.IsCpdMode(i)) continue;
@@ -489,12 +562,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 if (LineParser.IsDirectiveLine(trimmed))
                     continue;
 
-                // The name on the left of a function definition is a (re)definition, not a call.
-                // Redefining an existing function is allowed, so don't check it against a param count.
-                var defMatch = CalcpadPatterns.FunctionDefinition.Match(line);
-                var defName = defMatch.Success ? defMatch.Groups[1].Value : null;
-                var defNameCol = defMatch.Success ? defMatch.Groups[1].Index : -1;
-
                 var tokens = tokenProvider.GetTokensForLine(i);
 
                 foreach (var token in tokens)
@@ -504,9 +571,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                         continue;
 
                     var funcName = token.Text;
-
-                    if (funcName == defName && token.Column == defNameCol)
-                        continue;
 
                     // Skip built-in functions (they have variable param counts)
                     if (CalcpadBuiltIns.Functions.Contains(funcName))
@@ -523,15 +587,34 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                             if (argList.Count == 1 && argList[0].Length == 0)
                                 argList.Clear();
 
-                            var expected = lastDefParamCount.TryGetValue(funcName, out var pc)
-                                ? pc : funcInfo.ParamCount;
+                            var keywordArgNames = new List<string>();
+                            foreach (var rawArg in argList)
+                            {
+                                if (IsFunctionKeywordArg(rawArg, funcInfo, out var kwName))
+                                    keywordArgNames.Add(kwName);
+                            }
+
                             int totalActual = argList.Count;
-                            if (totalActual != expected)
+                            if (totalActual < funcInfo.RequiredParamCount || totalActual > funcInfo.ParamCount)
                             {
                                 var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
                                 if (endCol <= token.Column + token.Length) endCol = token.Column + token.Length;
+                                var expectRange = funcInfo.RequiredParamCount == funcInfo.ParamCount
+                                    ? funcInfo.ParamCount.ToString()
+                                    : funcInfo.RequiredParamCount + "-" + funcInfo.ParamCount;
                                 result.AddError(i, token.Column, endCol, "CPD-3302",
-                                    "'" + funcName + "' expects " + expected + " parameter(s) but got " + totalActual);
+                                    "'" + funcName + "' expects " + expectRange + " parameter(s) but got " + totalActual);
+                            }
+
+                            foreach (var kwName in keywordArgNames)
+                            {
+                                if (!funcInfo.ParamNames.Contains(kwName, StringComparer.OrdinalIgnoreCase))
+                                {
+                                    var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
+                                    if (endCol <= token.Column + token.Length) endCol = token.Column + token.Length;
+                                    result.AddError(i, token.Column, endCol, "CPD-3315",
+                                        "'" + funcName + "' has no parameter named '" + kwName + "'");
+                                }
                             }
                         }
                     }
@@ -543,35 +626,6 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Maps each user-defined function name to the parameter count of its last textual
-        /// definition. The tokenizer only registers the first definition's arity, but Calcpad
-        /// resolves redefinitions to the latest one, so call checks must use the last count.
-        /// </summary>
-        private static Dictionary<string, int> BuildLastDefinitionParamCounts(Stage3Context stage3, TokenizedLineProvider tokenProvider)
-        {
-            var counts = new Dictionary<string, int>(StringComparer.Ordinal);
-            for (int i = 0; i < stage3.Lines.Count; i++)
-            {
-                if (!tokenProvider.IsCpdMode(i)) continue;
-
-                var line = stage3.Lines[i];
-                if (LineParser.ShouldSkipLine(line))
-                    continue;
-
-                var defMatch = CalcpadPatterns.FunctionDefinition.Match(line);
-                if (!defMatch.Success)
-                    continue;
-
-                var paramList = ParameterParser.ParseParameters(defMatch.Groups[2].Value);
-                if (paramList.Count == 1 && paramList[0].Trim().Length == 0)
-                    paramList.Clear();
-
-                counts[defMatch.Groups[1].Value] = paramList.Count;
-            }
-            return counts;
         }
 
         private void ValidateMacroCalls(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)
@@ -610,20 +664,45 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                         continue;
                     }
 
-                    // Check parameter count
+                    // Check parameter count and keyword arguments
                     if (stage3.DefinedMacros.TryGetValue(macroName, out MacroInfo macroInfo))
                     {
                         var rawArgs = ParseMacroCallArgStrings(line, token.Column + token.Length);
                         if (rawArgs == null) rawArgs = new List<string>();
 
-                        int totalActual = rawArgs.Count;
-                        if (totalActual != macroInfo.ParamCount)
+                        int positionalCount = 0;
+                        var keywordArgNames = new List<string>();
+
+                        foreach (var rawArg in rawArgs)
                         {
-                            var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
-                            if (endCol <= token.Column + token.Length)
-                                endCol = token.Column + token.Length;
+                            if (IsKeywordArg(rawArg.Trim(), out var kwName))
+                                keywordArgNames.Add(kwName);
+                            else
+                                positionalCount++;
+                        }
+
+                        int totalActual = rawArgs.Count;
+                        var endCol = ParsingHelpers.FindClosingParen(line, token.Column + token.Length);
+                        if (endCol <= token.Column + token.Length)
+                            endCol = token.Column + token.Length;
+
+                        if (totalActual < macroInfo.RequiredParamCount || totalActual > macroInfo.ParamCount)
+                        {
+                            var expectedStr = macroInfo.RequiredParamCount == macroInfo.ParamCount
+                                ? macroInfo.ParamCount.ToString()
+                                : macroInfo.RequiredParamCount + "-" + macroInfo.ParamCount;
                             result.AddError(i, token.Column, endCol, "CPD-3304",
-                                "'" + macroName + "' expects " + macroInfo.ParamCount + " parameter(s) but got " + totalActual);
+                                "'" + macroName + "' expects " + expectedStr + " parameter(s) but got " + totalActual);
+                        }
+
+                        // Validate keyword argument names
+                        foreach (var kwName in keywordArgNames)
+                        {
+                            if (!macroInfo.ParamNames.Contains(kwName, StringComparer.Ordinal))
+                            {
+                                result.AddError(i, token.Column, endCol, "CPD-3314",
+                                    "'" + macroName + "' has no parameter named '" + kwName + "'");
+                            }
                         }
                     }
                 }
@@ -663,6 +742,33 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             return ParameterParser.CountParameters(paramsStr);
         }
 
+        private static bool IsFunctionKeywordArg(string arg, FunctionInfo funcInfo, out string kwName)
+        {
+            // Detect: "identifier = expr" where identifier is a parameter name
+            // Handles optional whitespace: "x=5", "x = 5"
+            var trimmed = arg.AsSpan().Trim();
+            int i = 0;
+            while (i < trimmed.Length && (char.IsLetterOrDigit(trimmed[i]) || trimmed[i] == '_')) i++;
+            if (i > 0)
+            {
+                var potentialName = trimmed[..i];
+                var rest = trimmed[i..].TrimStart();
+                if (!rest.IsEmpty && rest[0] == '=')
+                {
+                    var nameStr = potentialName.ToString();
+                    if (funcInfo.ParamNames.Contains(nameStr, StringComparer.OrdinalIgnoreCase))
+                    {
+                        kwName = nameStr;
+                        return true;
+                    }
+                }
+            }
+            kwName = null;
+            return false;
+        }
+
+
+
         /// <summary>
         /// Returns the raw argument strings for a macro call, or null if no opening paren found.
         /// </summary>
@@ -671,6 +777,23 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
             var (found, paramsStr) = ParsingHelpers.ExtractParamsString(line, afterMacroName);
             if (!found) return null;
             return ParameterParser.ParseMacroParameters(paramsStr);
+        }
+
+        /// <summary>
+        /// Returns true if arg is a keyword argument (name$=value pattern).
+        /// Sets kwName to the parameter name including the $ suffix.
+        /// </summary>
+        private static bool IsKeywordArg(string arg, out string kwName)
+        {
+            int idx = 0;
+            while (idx < arg.Length && (char.IsLetterOrDigit(arg[idx]) || arg[idx] == '_')) idx++;
+            if (idx > 0 && idx + 1 < arg.Length && arg[idx] == '$' && arg[idx + 1] == '=')
+            {
+                kwName = arg[..(idx + 1)]; // name including $
+                return true;
+            }
+            kwName = null;
+            return false;
         }
 
         /// <summary>
@@ -728,8 +851,7 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 var varName = kvp.Key;
                 var (line, column, length) = kvp.Value;
 
-                if (!usedAfterLastAssignment.Contains(varName) &&
-                    !CalcpadBuiltIns.SettingsVariables.Contains(varName))
+                if (!usedAfterLastAssignment.Contains(varName))
                 {
                     result.AddInformation(line, column, column + length, "CPD-3312",
                         "Variable '" + varName + "' is defined but never used");
