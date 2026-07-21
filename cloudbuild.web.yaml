@@ -1,4 +1,4 @@
-# Frontend pipeline: calcpad-web static app → Artifact Registry → Cloud Run.
+# Frontend pipeline: Vite build → GCS static hosting (same bucket as Detail Library).
 # Trigger: calcpad-web-update → this file (cloudbuild.web.yaml)
 #
 # Suggested path filters (Included):
@@ -12,63 +12,55 @@
 #   Calcpad.Cli/**
 #   cloudbuild.engine.yaml
 #
-# Served at https://detail-library.modearchitecture.com/calcpad/
-# (_BASE_PATH baked into Vite; LB must route /calcpad → this service).
-# _ENGINE_URL is baked as VITE_SERVER_URL (browser calls the engine directly).
+# Publishes to:
+#   gs://${_BUCKET}/${_PREFIX}/   →  https://detail-library.modearchitecture.com/calcpad/
+#
+# Prerequisites (one-time, GCP console / IAM):
+#   1. Build SA (calcpad-serverbuild@…) needs roles/storage.objectAdmin on ${_BUCKET}
+#      (or storage.objectCreator + objectViewer on prefix calcpad/).
+#   2. HTTPS LB mode-detail-library already serves this bucket — no new Cloud Run
+#      backend or path rule required; objects under calcpad/ are served at /calcpad/.
+#   3. Detail Library: CALCPAD_EDITOR_BASE_URL=https://detail-library.modearchitecture.com/calcpad
+#
+# _ENGINE_URL is baked as VITE_SERVER_URL (browser calls the calc engine directly).
 substitutions:
-  _REGION: us-west1
-  _AR_REPO: calcpad-engine
-  _IMAGE: calcpad-web
-  _SERVICE: calcpad-web
+  _BUCKET: mode-detail-library
+  _PREFIX: calcpad
   _ENGINE_URL: https://calcpad-server-914029425445.us-west1.run.app
   _BASE_PATH: /calcpad/
 
 steps:
-  - name: gcr.io/cloud-builders/docker
-    args:
-      - build
-      - -t
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
-      - -t
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:latest
-      - -f
-      - Calcpad.Web/frontend/Dockerfile
-      - --build-arg
+  - name: node:22
+    entrypoint: bash
+    env:
       - VITE_SERVER_URL=${_ENGINE_URL}
-      - --build-arg
       - VITE_BASE_PATH=${_BASE_PATH}
-      - Calcpad.Web/frontend
-
-  - name: gcr.io/cloud-builders/docker
     args:
-      - push
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
+      - -ce
+      - |
+        cd Calcpad.Web/frontend/calcpad-web
+        npm install
+        npm run build
 
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/cloud-builders/gsutil
     args:
-      - push
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:latest
+      - -m
+      - rsync
+      - -r
+      - -d
+      - Calcpad.Web/frontend/calcpad-web/dist
+      - gs://${_BUCKET}/${_PREFIX}
 
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
-    entrypoint: gcloud
+  # Short cache on the shell; long cache on hashed assets.
+  - name: gcr.io/cloud-builders/gsutil
+    entrypoint: bash
     args:
-      - run
-      - deploy
-      - ${_SERVICE}
-      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
-      - --region=${_REGION}
-      - --platform=managed
-      - --port=8080
-      - --allow-unauthenticated
-      - --memory=512Mi
-      - --cpu=1
-      - --min-instances=0
-      - --max-instances=3
-      - --quiet
-
-images:
-  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
-  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:latest
+      - -ce
+      - |
+        gsutil -m setmeta -h "Cache-Control:no-cache, max-age=0" \
+          "gs://${_BUCKET}/${_PREFIX}/index.html" || true
+        gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" \
+          "gs://${_BUCKET}/${_PREFIX}/assets/**" || true
 
 options:
   logging: CLOUD_LOGGING_ONLY

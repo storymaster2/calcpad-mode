@@ -157,6 +157,32 @@ The web editor provides the same features as the VS Code extension in a standalo
 
 Set the server URL via the `VITE_SERVER_URL` environment variable or through the Settings tab in the sidebar.
 
+### Production deploy (static GCS)
+
+Production hosting matches Detail Library: **Vite build → Cloud Storage**, served by the existing HTTPS load balancer (`mode-detail-library`) at `/calcpad/`.
+
+| Piece | Value |
+|-------|--------|
+| Build config | [`cloudbuild.web.yaml`](../../cloudbuild.web.yaml) (repo root) |
+| Bucket | `mode-detail-library` |
+| Object prefix | `calcpad/` → URL `/calcpad/` |
+| Vite base | `/calcpad/` (`VITE_BASE_PATH`) |
+| Calc engine | baked as `VITE_SERVER_URL` |
+
+**Cloud Build trigger (console):**
+
+1. Create or edit trigger `calcpad-web-update` → config file **`cloudbuild.web.yaml`**
+2. Service account: `calcpad-serverbuild@…` (needs **Storage Object Admin** on `mode-detail-library`)
+3. Included paths: `Calcpad.Web/frontend/**`, `cloudbuild.web.yaml`
+4. Ignored: engine paths + `cloudbuild.engine.yaml`
+5. Run the trigger — no Cloud Run service, no new LB backend
+
+**One-time GCP:** grant the build SA write access to the bucket. The LB already serves this bucket; no path rule for Cloud Run is required.
+
+**Detail Library env:** `CALCPAD_EDITOR_BASE_URL=https://detail-library.modearchitecture.com/calcpad`
+
+Local Docker (`frontend/Dockerfile`) is optional smoke only; CI does not use it.
+
 ---
 
 ## Desktop App Details
