@@ -245,6 +245,12 @@ namespace Calcpad.Highlighter.Tokenizer
             Append(_state.CurrentTypeOrPrevious);
             _builder.Append(c);
 
+            // @ or & in a command block introduces a scoped variable so the next identifier is
+            // a local variable, e.g. $Sum{x^2 @ x = 1 : 10}. This must be flagged even inside a
+            // nested command (CommandCount > 0), which the branch below would otherwise short-circuit.
+            if ((c == '@' || c == '&') && _state.IsInCommandBlock)
+                _state.IsAfterAtOrAmp = true;
+
             if (_state.CommandCount > 0 || c == ';')
             {
                 Append(TokenType.Operator);
@@ -266,13 +272,6 @@ namespace Calcpad.Highlighter.Tokenizer
                     _state.CurrentType = TokenType.Format;
                     return;
                 }
-                Append(TokenType.Operator);
-            }
-            else if ((c == '@' || c == '&') && _state.IsInCommandBlock)
-            {
-                // @ or & in command block introduces a scoped variable
-                // e.g., $Sum{x^2 @ x = 1 : 10} or $Root{f(x) & x = 0 : 5}
-                _state.IsAfterAtOrAmp = true;
                 Append(TokenType.Operator);
             }
             else

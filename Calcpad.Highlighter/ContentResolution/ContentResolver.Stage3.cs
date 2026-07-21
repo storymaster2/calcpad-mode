@@ -128,6 +128,12 @@ namespace Calcpad.Highlighter.ContentResolution
 
             // All definitions come from tokenizer Lint mode
             var variablesWithDefs = tokenizerResult.VariableDefinitions;
+            // Some built-ins implicitly define a variable as a side effect (the arg extremum
+            // of $Inf/$Sup, the row-permutation vector 'ind' of lu(...)). Emit them as real
+            // definitions so they surface in autocomplete and the variables tab too, not just
+            // the undefined-variable check.
+            CollectImplicitSolverVariables(tokenizerResult, variablesWithDefs);
+            CollectLuIndexVariable(tokenizerResult, variablesWithDefs);
             var variables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var v in variablesWithDefs) variables.Add(v.Name);
             // Also include variables from basic tracking (e.g., inside command blocks)
@@ -393,6 +399,90 @@ namespace Calcpad.Highlighter.ContentResolution
         }
 
         /// <summary>
+        /// Registers the variables that $Inf and $Sup implicitly define: for a solver whose
+        /// counter is <c>k</c>, the argument extremum is exposed as <c>k_inf</c> / <c>k_sup</c>
+        /// (see MathParser.SolveBlock). These are global, so they must resolve as defined and
+        /// appear in autocomplete / the variables tab. A brace stack tracks the enclosing command
+        /// per '@', so nested solvers (e.g. $inf{$inf{f(x;y) @ x = ..} @ y = ..} yielding both
+        /// x_inf and y_inf) attribute each counter to the correct command.
+        /// </summary>
+        private static void CollectImplicitSolverVariables(
+            TokenizerResult tokenizerResult, List<VariableDefinition> variablesWithDefs)
+        {
+            var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var v in variablesWithDefs) existing.Add(v.Name);
+
+            var scopeSuffixes = new Stack<string>();
+            string pendingSuffix = null;
+            var afterAt = false;
+            foreach (var token in tokenizerResult.Tokens)
+            {
+                if (token.Type == TokenType.Command)
+                {
+                    pendingSuffix = token.Text.Equals("$Inf", StringComparison.OrdinalIgnoreCase) ? "_inf"
+                                  : token.Text.Equals("$Sup", StringComparison.OrdinalIgnoreCase) ? "_sup"
+                                  : null;
+                }
+                else if (token.Type == TokenType.Bracket && token.Text == "{")
+                {
+                    scopeSuffixes.Push(pendingSuffix);
+                    pendingSuffix = null;
+                    afterAt = false;
+                }
+                else if (token.Type == TokenType.Bracket && token.Text == "}")
+                {
+                    if (scopeSuffixes.Count > 0) scopeSuffixes.Pop();
+                    afterAt = false;
+                }
+                else if (token.Type == TokenType.Operator && token.Text == "@")
+                {
+                    afterAt = scopeSuffixes.Count > 0 && scopeSuffixes.Peek() != null;
+                }
+                else if (afterAt && (token.Type == TokenType.Variable || token.Type == TokenType.LocalVariable))
+                {
+                    var name = token.Text + scopeSuffixes.Peek();
+                    afterAt = false;
+                    if (existing.Add(name))
+                        variablesWithDefs.Add(new VariableDefinition
+                        {
+                            Name = name,
+                            Definition = scopeSuffixes.Peek() == "_sup" ? "$Sup argument (maximizer)" : "$Inf argument (minimizer)",
+                            LineNumber = token.Line,
+                            Source = "local"
+                        });
+                }
+            }
+        }
+
+        /// <summary>
+        /// lu(...) writes the row-permutation vector into a global variable named <c>ind</c>
+        /// (see MathParser.Compiler/Evaluator). Register it as defined at the first lu call so
+        /// later references resolve and it appears in autocomplete / the variables tab.
+        /// </summary>
+        private static void CollectLuIndexVariable(
+            TokenizerResult tokenizerResult, List<VariableDefinition> variablesWithDefs)
+        {
+            foreach (var v in variablesWithDefs)
+                if (v.Name.Equals("ind", StringComparison.OrdinalIgnoreCase))
+                    return;
+
+            foreach (var token in tokenizerResult.Tokens)
+            {
+                if (token.Type == TokenType.Function && token.Text.Equals("lu", StringComparison.OrdinalIgnoreCase))
+                {
+                    variablesWithDefs.Add(new VariableDefinition
+                    {
+                        Name = "ind",
+                        Definition = "lu(...) row-permutation index vector",
+                        LineNumber = token.Line,
+                        Source = "local"
+                    });
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
         /// Builds a variable index mapping each variable name to all its occurrences (assignments and usages),
         /// with positions mapped back to original source lines and annotated with include file info.
         /// </summary>
@@ -522,15 +612,19 @@ namespace Calcpad.Highlighter.ContentResolution
                 return ("local", null, -1);
             }
 
-            // Track definition positions so we can mark them as IsAssignment=true
-            var definitionPositions = new HashSet<(int Line, int Column)>();
+            // Track definition lines per function so we can mark the defining token as
+            // IsAssignment=true. The definition token isn't necessarily at column 0 — a
+            // leading comment (e.g. 'text'a(x) = x) shifts it right — so match on the
+            // name and line and take the first occurrence (recursive self-calls stay usages).
+            var definitionLines = new HashSet<(string Name, int Line)>();
             foreach (var funcDef in tokenizerResult.FunctionDefinitions)
             {
                 if (userDefinedFunctions.ContainsKey(funcDef.Name))
                 {
-                    definitionPositions.Add((funcDef.LineNumber, 0));
+                    definitionLines.Add((funcDef.Name, funcDef.LineNumber));
                 }
             }
+            var markedDefinitions = new HashSet<(string Name, int Line)>();
 
             // Scan all Function tokens, only index user-defined functions
             foreach (var token in tokenizerResult.Tokens)
@@ -552,7 +646,8 @@ namespace Calcpad.Highlighter.ContentResolution
                 {
                     (originalLine, adjustedColumn) = MapPositionToOriginal(token.Line, token.Column);
                 }
-                var isDefinition = definitionPositions.Contains((token.Line, token.Column));
+                var isDefinition = definitionLines.Contains((token.Text, token.Line))
+                    && markedDefinitions.Add((token.Text, token.Line));
 
                 if (!index.TryGetValue(token.Text, out var locations))
                 {

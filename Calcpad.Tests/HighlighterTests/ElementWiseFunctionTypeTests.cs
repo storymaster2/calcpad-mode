@@ -47,10 +47,49 @@ namespace Calcpad.Tests.HighlighterTests
         [Fact]
         public void NonElementWiseFunction_StillWarnsOnShapeMismatch()
         {
-            // n_rows expects a matrix and is NOT element-wise, so passing a vector is a
+            // n_rows expects a matrix and is NOT element-wise, so passing a scalar is a
             // real mismatch that must still warn.
-            var result = Lint("r = n_rows([1; 2; 3])\n");
+            var result = Lint("r = n_rows(5)\n");
             Assert.True(TypeWarnings(result) > 0);
+        }
+
+        [Theory]
+        [InlineData("augment(v; v)")]
+        [InlineData("stack(v; v)")]
+        [InlineData("hprod(v; v)")]
+        [InlineData("transp(v)")]
+        [InlineData("row(v; 1)")]
+        [InlineData("col(v; 1)")]
+        [InlineData("n_rows(v)")]
+        public void MatrixFunction_AcceptsVector_NoTypeWarning(string call)
+        {
+            // Core coerces a vector into an n×1 column matrix (IValue.AsMatrix), so matrix
+            // functions accept vectors without a type mismatch.
+            var result = Lint($"v = [1; 2; 3]\nr = {call}\n");
+            Assert.Equal(0, TypeWarnings(result));
+        }
+
+        [Theory]
+        [InlineData("take")]
+        [InlineData("line")]
+        [InlineData("spline")]
+        public void Interpolation_AcceptsIndexAndMatrix_NoTypeWarning(string func)
+        {
+            // With one index and a matrix, Core linearizes the matrix into a vector, so the
+            // (index; matrix) overload must not raise a type mismatch.
+            var result = Lint($"M = [1; 2; 3 | 4; 5; 6]\nr = {func}(2; M)\n");
+            Assert.Equal(0, TypeWarnings(result));
+        }
+
+        [Theory]
+        [InlineData("gcd")]
+        [InlineData("lcm")]
+        public void MultiFunction_AcceptsVectorAndMatrix_NoTypeWarning(string func)
+        {
+            // gcd/lcm flatten vector/matrix arguments element-wise (like sum/min/max), so
+            // passing vectors or matrices must not raise a type mismatch.
+            var result = Lint($"v = [12; 18]\nM = [24; 30 | 36; 42]\nr = {func}(v; M; 6)\n");
+            Assert.Equal(0, TypeWarnings(result));
         }
     }
 }

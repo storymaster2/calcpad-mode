@@ -112,6 +112,37 @@ namespace Calcpad.Tests.HighlighterTests
         }
 
         [Fact]
+        public void Resolves_FunctionDefinition_WithLeadingComment()
+        {
+            // Regression: a leading text comment ('text') shifts the function name off
+            // column 0. The definition location must still be marked IsAssignment=true so
+            // "Go to Definition" from a call site can find it.
+            var src = "'text'a(x) = x\ny = a(2)\n";
+
+            // Resolve from the call site on line 1.
+            var hit = Resolve(src, line: 1, column: 4);
+            Assert.NotNull(hit);
+            Assert.Equal("a", hit.Name);
+            Assert.Equal(SymbolKind.Function, hit.Kind);
+
+            var def = hit.Locations.Find(l => l.IsAssignment);
+            Assert.NotNull(def);
+            Assert.Equal(0, def.Line);
+            Assert.Equal(6, def.Column); // after 'text'
+        }
+
+        [Fact]
+        public void RecursiveFunctionDefinition_MarksOnlyDefiningTokenAsAssignment()
+        {
+            // The defining `f` is an assignment; the recursive `f` on the RHS is a usage.
+            var src = "f(n) = f(n - 1)\n";
+            var hit = Resolve(src, line: 0, column: 0);
+            Assert.NotNull(hit);
+            Assert.Equal("f", hit.Name);
+            Assert.Single(hit.Locations, l => l.IsAssignment);
+        }
+
+        [Fact]
         public void Returns_Null_WhenCursorOutsideAnyToken()
         {
             var src = "x = 5\n";

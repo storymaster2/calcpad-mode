@@ -497,7 +497,9 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// </summary>
         private CalcpadType InferTypeFromOperandTypes(string expression)
         {
-            var highestType = CalcpadType.Unknown;
+            var atoms = new List<CalcpadType>();
+            var ops = new List<char>();
+            char pendingOp = '\0';
             int i = 0;
             int len = expression.Length;
 
@@ -505,48 +507,47 @@ namespace Calcpad.Highlighter.Linter.Helpers
             {
                 char c = expression[i];
 
-                // Skip non-identifier-start characters (operators, digits, whitespace, brackets)
-                if (!CalcpadCharacterHelpers.IsIdentifierStartCharWithUnderscore(c))
+                if (CalcpadCharacterHelpers.IsIdentifierStartCharWithUnderscore(c))
                 {
-                    i++;
-                    continue;
+                    int start = i++;
+                    while (i < len && CalcpadCharacterHelpers.IsIdentifierChar(expression[i]))
+                        i++;
+
+                    var name = expression.Substring(start, i - start);
+
+                    CalcpadType atom;
+                    if (i < len && expression[i] == '(')
+                    {
+                        atom = GetFunctionCallReturnType(name);
+                        // Skip balanced parentheses so arguments aren't examined as top-level operands
+                        i = SkipBalancedParentheses(expression, i);
+                    }
+                    else
+                    {
+                        atom = _variables.TryGetValue(name, out var info) ? info.Type : CalcpadType.Unknown;
+                    }
+                    atoms.Add(atom);
+                    ops.Add(pendingOp);
+                    pendingOp = '\0';
                 }
-
-                // Found start of identifier - collect it
-                int start = i;
-                i++;
-                while (i < len && CalcpadCharacterHelpers.IsIdentifierChar(expression[i]))
-                    i++;
-
-                var name = expression.Substring(start, i - start);
-
-                // Check if followed by '(' - function call
-                if (i < len && expression[i] == '(')
+                else if (char.IsDigit(c))
                 {
-                    // Determine return type from the function, then skip its arguments
-                    var returnType = GetFunctionCallReturnType(name);
-                    if (returnType == CalcpadType.Matrix)
-                        return CalcpadType.Matrix;
-                    if (returnType == CalcpadType.Vector && highestType != CalcpadType.Matrix)
-                        highestType = CalcpadType.Vector;
-
-                    // Skip balanced parentheses so arguments aren't examined as top-level operands
-                    i = SkipBalancedParentheses(expression, i);
+                    i++;
+                    while (i < len && (char.IsDigit(expression[i]) || expression[i] == '.'))
+                        i++;
+                    atoms.Add(CalcpadType.Value);
+                    ops.Add(pendingOp);
+                    pendingOp = '\0';
                 }
                 else
                 {
-                    // Variable reference
-                    if (_variables.TryGetValue(name, out var info))
-                    {
-                        if (info.Type == CalcpadType.Matrix)
-                            return CalcpadType.Matrix;
-                        if (info.Type == CalcpadType.Vector)
-                            highestType = CalcpadType.Vector;
-                    }
+                    if ((c == '+' || c == '-' || c == '*' || c == '/' || c == '^') && pendingOp == '\0')
+                        pendingOp = c;
+                    i++;
                 }
             }
 
-            return highestType;
+            return FoldOperandTypes(atoms, ops);
         }
 
         /// <summary>
@@ -574,7 +575,9 @@ namespace Calcpad.Highlighter.Linter.Helpers
         /// </summary>
         private CalcpadType InferTypeFromOperandTokens(List<Token> tokens)
         {
-            var highestType = CalcpadType.Unknown;
+            var atoms = new List<CalcpadType>();
+            var ops = new List<char>();
+            char pendingOp = '\0';
             int depth = 0;
 
             for (int i = 0; i < tokens.Count; i++)
@@ -591,20 +594,23 @@ namespace Calcpad.Highlighter.Linter.Helpers
                 if (depth > 0)
                     continue;
 
-                if (token.Type == TokenType.Function)
+                // Record the binary operator between operands ('.' is element access, handled below).
+                if (token.Type == TokenType.Operator)
                 {
-                    var returnType = GetFunctionCallReturnType(token.Text);
-                    if (returnType == CalcpadType.Matrix) return CalcpadType.Matrix;
-                    if (returnType == CalcpadType.Vector && highestType != CalcpadType.Matrix)
-                        highestType = CalcpadType.Vector;
+                    if (token.Text != "." && pendingOp == '\0')
+                        pendingOp = token.Text[0];
                     continue;
                 }
 
-                if (token.Type == TokenType.Variable || token.Type == TokenType.LocalVariable)
+                CalcpadType atom;
+                if (token.Type == TokenType.Function)
                 {
-                    // Element access (v.1, v.i) yields a scalar — skip the base variable's
-                    // type and consume the index token. Bracket-form indices like v.(expr)
-                    // and M.(1;2) are handled by the depth tracking above.
+                    atom = GetFunctionCallReturnType(token.Text);
+                }
+                else if (token.Type == TokenType.Variable || token.Type == TokenType.LocalVariable)
+                {
+                    // Element access (v.1, v.i) yields a scalar — consume the index token.
+                    // Bracket-form indices like v.(expr) and M.(1;2) are handled by depth tracking.
                     if (i + 1 < tokens.Count &&
                         tokens[i + 1].Type == TokenType.Operator &&
                         tokens[i + 1].Text == ".")
@@ -620,19 +626,71 @@ namespace Calcpad.Highlighter.Linter.Helpers
                                 i++;
                             }
                         }
-                        continue;
+                        atom = CalcpadType.Value;
                     }
-
-                    if (_variables.TryGetValue(token.Text, out var info))
+                    else
                     {
-                        if (info.Type == CalcpadType.Matrix) return CalcpadType.Matrix;
-                        if (info.Type == CalcpadType.Vector && highestType != CalcpadType.Matrix)
-                            highestType = CalcpadType.Vector;
+                        atom = _variables.TryGetValue(token.Text, out var info) ? info.Type : CalcpadType.Unknown;
                     }
                 }
+                else if (token.Type == TokenType.Const)
+                {
+                    atom = CalcpadType.Value;
+                }
+                else
+                {
+                    continue;
+                }
+
+                atoms.Add(atom);
+                ops.Add(pendingOp);
+                pendingOp = '\0';
             }
 
-            return highestType;
+            return FoldOperandTypes(atoms, ops);
+        }
+
+        /// <summary>
+        /// Folds a sequence of operand types into the resulting type. Multiplicative chains are
+        /// collapsed first so that Core's matrix·vector = vector rule is respected; remaining
+        /// (additive) terms follow "matrix dominates, then vector".
+        /// </summary>
+        private static CalcpadType FoldOperandTypes(List<CalcpadType> atoms, List<char> ops)
+        {
+            if (atoms.Count == 0)
+                return CalcpadType.Unknown;
+
+            var terms = new List<CalcpadType> { atoms[0] };
+            for (int i = 1; i < atoms.Count; i++)
+            {
+                if (ops[i] == '*')
+                    terms[^1] = CombineMultiply(terms[^1], atoms[i]);
+                else
+                    terms.Add(atoms[i]);
+            }
+
+            var result = CalcpadType.Unknown;
+            foreach (var t in terms)
+            {
+                if (t == CalcpadType.Matrix) return CalcpadType.Matrix;
+                if (t == CalcpadType.Vector) result = CalcpadType.Vector;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Type of a multiplicative product. Core unwraps a matrix·vector product to a vector
+        /// (IValue.EvaluateOperator); every other combination keeps the dominant type.
+        /// </summary>
+        private static CalcpadType CombineMultiply(CalcpadType left, CalcpadType right)
+        {
+            if (left == CalcpadType.Matrix && right == CalcpadType.Vector)
+                return CalcpadType.Vector;
+            if (left == CalcpadType.Matrix || right == CalcpadType.Matrix)
+                return CalcpadType.Matrix;
+            if (left == CalcpadType.Vector || right == CalcpadType.Vector)
+                return CalcpadType.Vector;
+            return left != CalcpadType.Unknown ? left : right;
         }
 
         /// <summary>

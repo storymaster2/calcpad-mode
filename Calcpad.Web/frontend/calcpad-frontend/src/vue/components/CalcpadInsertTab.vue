@@ -228,28 +228,53 @@ const formatInsertText = (item: InsertItem): string => {
   return replaceParameterPlaceholders(item.tag, item)
 }
 
-// Helper: Build tooltip with description and parameter breakdown
+// Helper: Build a plain-text tooltip carrying the same information the
+// source-code hover shows (description, documentation, parameters with
+// type/optional/variadic, return type, element-wise note, example).
 const buildTooltip = (item: InsertItem): string => {
   const lines: string[] = []
 
-  // Main description
   if (item.description) {
     lines.push(item.description)
   }
 
-  // Parameter breakdown
+  if (item.documentation) {
+    lines.push('')
+    lines.push(item.documentation)
+  }
+
   if (item.parameters && item.parameters.length > 0) {
     lines.push('')
     lines.push('Parameters:')
     for (const param of item.parameters) {
-      const paramLine = param.description
-        ? '  ' + param.name + ': ' + param.description
-        : '  ' + param.name
+      let paramLine = '  ' + param.name
+      const type = param.typeDescription ?? (param.type && param.type !== 'Any' ? param.type : undefined)
+      if (type) paramLine += ' (' + type + ')'
+      if (param.description) paramLine += ' - ' + param.description
+      if (param.isVariadic) paramLine += ' [variadic]'
+      else if (param.isOptional) paramLine += ' [optional]'
       lines.push(paramLine)
     }
   }
 
-  // Quick type shortcut
+  const returnLabel = item.returnTypeDescription
+    ?? (item.returnType && item.returnType !== 'Any' ? item.returnType : undefined)
+  if (returnLabel) {
+    lines.push('')
+    lines.push('Returns: ' + returnLabel)
+  }
+
+  if (item.isElementWise) {
+    lines.push('')
+    lines.push('Accepts a scalar, vector, or matrix — applied element-wise, returning the same shape.')
+  }
+
+  if (item.example) {
+    lines.push('')
+    lines.push('Example:')
+    lines.push('  ' + item.example.replace(/\n/g, '\n  '))
+  }
+
   if (item.quickType) {
     lines.push('')
     lines.push('Quick type: ~' + item.quickType)

@@ -52,6 +52,8 @@ namespace Calcpad.Highlighter.Linter
                     continue;
 
                 var data = block.Data.Value;
+                if (data.ValueKind != JsonValueKind.Object)
+                    continue;
 
                 if (data.TryGetProperty("LintIgnore", out var openEl)
                     && openEl.ValueKind == JsonValueKind.Array)

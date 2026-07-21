@@ -49,6 +49,16 @@ namespace Calcpad.Highlighter.Snippets.Data
                 Category = "Constants"
             },
 
+            // System Variables (defined by the engine, always available)
+            new SnippetItem
+            {
+                Insert = "Units",
+                Description = "Drawing scale factor: output length-units per metre, taken from the worksheet's Units setting. m → 1, cm → 100, mm → 1000 (0 when no drawing units are set). Used to convert physical coordinates for $Plot/SVG output.",
+                Label = "Units",
+                Category = "System Variables",
+                KeywordType = "Constant"
+            },
+
             // Physical Constants - Mechanics
             new SnippetItem
             {
