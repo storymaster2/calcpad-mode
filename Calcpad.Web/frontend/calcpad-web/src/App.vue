@@ -1,9 +1,17 @@
 <template>
   <div class="app-layout">
+    <div v-if="bootError" class="library-boot-overlay library-boot-error" role="alert">
+      <h1>Unable to open calculation</h1>
+      <p>{{ bootError }}</p>
+      <p class="library-boot-hint">Close this tab and open the file again from Detail Library.</p>
+    </div>
+    <div v-else-if="bootLoading" class="library-boot-overlay library-boot-loading" role="status">
+      <p>Loading calculation from Detail Library…</p>
+    </div>
     <!-- Use v-show (not v-if) so #vue-sidebar stays in the DOM and the
          Vue app mounted to it in main.ts isn't orphaned across collapses. -->
     <div
-      v-show="sidebarVisible"
+      v-show="sidebarVisible && !bootError"
       class="sidebar-pane"
       :style="{ width: sidebarWidth + 'px' }"
     >
@@ -22,6 +30,14 @@
       :aria-expanded="sidebarVisible"
     ></div>
     <div class="editor-pane">
+      <div
+        v-if="libraryBanner"
+        class="library-session-banner"
+        role="status"
+      >
+        Opened from Detail Library: {{ libraryBanner.title }}
+        <span v-if="libraryBanner.readOnly">(read-only)</span>
+      </div>
       <div class="editor-toolbar">
         <template v-if="isNeutralino">
           <span class="file-name">{{ fileName || 'Untitled' }}</span>
@@ -29,6 +45,16 @@
         </template>
         <span v-else>CalcPad Web</span>
         <span class="spacer"></span>
+        <button
+          v-if="libraryBanner"
+          class="toolbar-btn"
+          disabled
+          :title="libraryBanner.readOnly
+            ? 'Save to library is disabled for this read-only session'
+            : 'Save to library (coming soon)'"
+        >
+          Save to library
+        </button>
         <button class="toolbar-btn" @click="togglePreview" title="Preview HTML">
           {{ previewVisible ? 'Hide Preview' : 'Preview' }}
         </button>
@@ -63,7 +89,12 @@
             <span v-else>✕</span>
           </button>
         </div>
-        <button class="tab-new" title="New tab (Ctrl+T)" @click="onNewTab">+</button>
+        <button
+          v-if="!libraryBanner?.readOnly"
+          class="tab-new"
+          title="New tab (Ctrl+T)"
+          @click="onNewTab"
+        >+</button>
       </div>
       <div ref="editorContainer" class="editor-container"></div>
       <!-- Bottom panel (Problems / Output) -->
@@ -226,6 +257,23 @@ const tabs = ref<TabUiState[]>([])
 const onTabActivate = ref<((id: string) => void) | null>(null)
 const onTabCloseRequest = ref<((id: string) => void) | null>(null)
 const onNewTabRequest = ref<(() => void) | null>(null)
+
+const bootLoading = ref(false)
+const bootError = ref<string | null>(null)
+const libraryBanner = ref<{ title: string; readOnly: boolean } | null>(null)
+
+function setBootLoading(loading: boolean): void {
+  bootLoading.value = loading
+}
+
+function setBootError(message: string | null): void {
+  bootError.value = message
+  if (message) bootLoading.value = false
+}
+
+function setLibrarySessionBanner(banner: { title: string; readOnly: boolean } | null): void {
+  libraryBanner.value = banner
+}
 
 function setTabs(next: TabUiState[]): void {
   tabs.value = next
@@ -542,5 +590,8 @@ defineExpose({
   onTabActivate,
   onTabCloseRequest,
   onNewTabRequest,
+  setBootLoading,
+  setBootError,
+  setLibrarySessionBanner,
 })
 </script>

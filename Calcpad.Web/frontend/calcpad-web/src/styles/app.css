@@ -40,9 +40,61 @@ select option {
 .app-layout {
     display: flex;
     height: 100vh;
+    position: relative;
     background: var(--vscode-editor-background);
     color: var(--vscode-foreground);
     font-family: var(--vscode-font-family);
+}
+
+.library-boot-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    background: var(--vscode-editor-background, #1e1e1e);
+    color: var(--vscode-foreground, #cccccc);
+    font-family: var(--vscode-font-family, system-ui, sans-serif);
+    gap: 12px;
+}
+
+.library-boot-error h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--vscode-errorForeground, #f48771);
+}
+
+.library-boot-error p,
+.library-boot-loading p {
+    max-width: 36rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.library-boot-hint {
+    opacity: 0.75;
+    font-size: 0.85rem;
+}
+
+.library-session-banner {
+    padding: 6px 12px;
+    font-size: 12px;
+    background: var(--vscode-inputValidation-infoBackground, #063b49);
+    border-bottom: 1px solid var(--vscode-inputValidation-infoBorder, #007acc);
+    color: var(--vscode-foreground, #cccccc);
+}
+
+.library-session-banner span {
+    opacity: 0.85;
+}
+
+.editor-toolbar .toolbar-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 .editor-pane {

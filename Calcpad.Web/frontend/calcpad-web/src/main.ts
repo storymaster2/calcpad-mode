@@ -27,6 +27,13 @@ import { registerFormattingCommands } from './editor/formatting-commands';
 import { registerFormatDocumentProvider } from './editor/format-document';
 import { setActiveDocumentKeyResolver, type EditorBridge } from './editor/bridge';
 import { TabManager } from './tabs/tab-manager';
+import {
+    parseLibraryQuery,
+    fetchLibrarySession,
+    isSessionReadOnly,
+    LibrarySessionError,
+    type LibrarySessionDocument,
+} from './library/session';
 import './editor/vscode-variables.css';
 import './styles/app.css';
 
@@ -296,19 +303,56 @@ async function bootstrap(): Promise<void> {
         }
     });
 
-    // Seed the first tab. On web we put the sample in it; on desktop it's
-    // an empty Untitled-1 ready to receive an Open or paste.
-    tabs.newUntitled(isNeutralino ? '' : getSampleContent());
+    // Seed the first tab, or load a Detail Library session when deep-linked.
+    // Spec: docs/calcpad-editor-session-contract.md
+    const libraryQuery = !isNeutralino ? parseLibraryQuery() : null;
+    let librarySession: LibrarySessionDocument | null = null;
+
+    if (libraryQuery) {
+        appInstance.setBootLoading(true);
+        try {
+            librarySession = await fetchLibrarySession(
+                libraryQuery.libraryApi,
+                libraryQuery.librarySession,
+            );
+            (window as any).calcpadLibrarySession = librarySession;
+            tabs.openFile(librarySession.filename, librarySession.content);
+            const readOnly = isSessionReadOnly(librarySession);
+            if (readOnly) {
+                editor.updateOptions({ readOnly: true });
+            }
+            appInstance.setLibrarySessionBanner({
+                title: librarySession.title || librarySession.filename,
+                readOnly,
+            });
+            appInstance.setBootLoading(false);
+        } catch (err) {
+            const message = err instanceof LibrarySessionError
+                ? err.message
+                : (err instanceof Error ? err.message : 'Failed to load library session.');
+            appInstance.setBootError(message);
+            tabs.newUntitled('');
+            return;
+        }
+    } else {
+        // On web we put the sample in it; on desktop it's an empty Untitled-1
+        // ready to receive an Open or paste.
+        tabs.newUntitled(isNeutralino ? '' : getSampleContent());
+    }
 
     // Universal tab-strip callbacks. The Neutralino branch overrides the
     // close handler with a save-prompt-aware version; on web there's
     // nothing to save, so a plain close is correct.
     appInstance.onTabActivate = (id: string) => tabs.activate(id);
     appInstance.onTabCloseRequest = (id: string) => tabs.close(id);
-    appInstance.onNewTabRequest = () => { tabs.newUntitled(); };
+    appInstance.onNewTabRequest = () => {
+        if (librarySession && isSessionReadOnly(librarySession)) return;
+        tabs.newUntitled();
+    };
 
     // Wire the bridge's insertText handler to Monaco
     activeBridge.onInsertText = (text: string) => {
+        if (librarySession && isSessionReadOnly(librarySession)) return;
         const selection = editor.getSelection();
         if (selection) {
             editor.executeEdits('calcpad-insert', [{
