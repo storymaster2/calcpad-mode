@@ -253,23 +253,23 @@ namespace Calcpad.Highlighter.Snippets.Data
             {
                 Insert = "augment(§; §)",
                 Description = "Creates a matrix by appending matrices side by side",
-                Documentation = "Concatenates matrices horizontally. All matrices must have the same number of rows.",
+                Documentation = "Concatenates matrices horizontally. All matrices must have the same number of rows. A vector argument is treated as a single column.",
                 Category = "Functions/Matrix/Creational",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Matrix",
                 AcceptsAnyCount = true,
-                Parameters = [new SnippetParameter { Name = "matrices", Type = ParameterType.Matrix, Description = "Matrices to append", IsVariadic = true }]
+                Parameters = [new SnippetParameter { Name = "matrices", Type = ParameterType.Matrix, Description = "Matrices or vectors to append", IsVariadic = true }]
             },
             new SnippetItem
             {
                 Insert = "stack(§; §)",
                 Description = "Creates a matrix by stacking matrices vertically",
-                Documentation = "Concatenates matrices vertically. All matrices must have the same number of columns.",
+                Documentation = "Concatenates matrices vertically. All matrices must have the same number of columns. A vector argument is treated as an n×1 column matrix, so it contributes rows of length 1 that are zero-padded to the width of the result.",
                 Category = "Functions/Matrix/Creational",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Matrix",
                 AcceptsAnyCount = true,
-                Parameters = [new SnippetParameter { Name = "matrices", Type = ParameterType.Matrix, Description = "Matrices to stack", IsVariadic = true }]
+                Parameters = [new SnippetParameter { Name = "matrices", Type = ParameterType.Matrix, Description = "Matrices or vectors to stack", IsVariadic = true }]
             },
 
             // ============================================
@@ -390,7 +390,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             {
                 Insert = "row(§; §)",
                 Description = "Extracts the i-th row of matrix M as a vector",
-                Documentation = "Returns the `i`-th row of `M` as a vector of length `n_cols(M)`.",
+                Documentation = "Returns the `i`-th row of `M` as a vector of length `n_cols(M)`. A vector is treated as an n×1 column matrix, so `row` yields a single element.",
                 Category = "Functions/Matrix/Structural",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Vector",
@@ -404,7 +404,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             {
                 Insert = "col(§; §)",
                 Description = "Extracts the j-th column of matrix M as a vector",
-                Documentation = "Returns the `j`-th column of `M` as a vector of length `n_rows(M)`.",
+                Documentation = "Returns the `j`-th column of `M` as a vector of length `n_rows(M)`. A vector is treated as an n×1 column matrix, so `col(v; 1)` returns the vector itself.",
                 Category = "Functions/Matrix/Structural",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Vector",
@@ -952,7 +952,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             {
                 Insert = "hprod(§; §)",
                 Description = "Hadamard (element-wise) product of matrices A and B",
-                Documentation = "Returns the element-wise product `Cᵢⱼ = Aᵢⱼ · Bᵢⱼ`. `A` and `B` must have the same shape.",
+                Documentation = "Returns the element-wise product `Cᵢⱼ = Aᵢⱼ · Bᵢⱼ`. `A` and `B` must have the same shape. A vector argument is treated as an n×1 column matrix.",
                 Category = "Functions/Matrix/Math",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Matrix (same shape as A)",
@@ -1130,7 +1130,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             {
                 Insert = "transp(§)",
                 Description = "Transpose of matrix M",
-                Documentation = "Returns `M^T` — rows become columns and vice versa. An `m × n` matrix becomes `n × m`.",
+                Documentation = "Returns `M^T` — rows become columns and vice versa. An `m × n` matrix becomes `n × m`. A vector is treated as an n×1 column matrix, so its transpose is a 1×n row matrix.",
                 Category = "Functions/Matrix/Math",
                 KeywordType = "Function",
                 ReturnTypeDescription = "Matrix n × m",

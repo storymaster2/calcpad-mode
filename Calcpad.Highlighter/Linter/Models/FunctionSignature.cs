@@ -84,7 +84,10 @@ namespace Calcpad.Highlighter.Linter.Models
                 ParameterType.Any => true,
                 ParameterType.Scalar => actual == CalcpadType.Value,
                 ParameterType.Vector => actual == CalcpadType.Vector,
-                ParameterType.Matrix => actual == CalcpadType.Matrix,
+                // Core coerces a vector into an n×1 column matrix (IValue.AsMatrix) wherever a
+                // matrix is expected, so matrix functions (augment, stack, hprod, transp, row, col, ...)
+                // accept vectors too.
+                ParameterType.Matrix => actual == CalcpadType.Matrix || actual == CalcpadType.Vector,
                 ParameterType.Integer => actual == CalcpadType.Value, // Can't distinguish int from float
                 ParameterType.Expression => true, // Can't validate expressions
                 _ => true

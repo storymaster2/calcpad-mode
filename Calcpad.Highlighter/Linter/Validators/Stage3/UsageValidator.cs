@@ -135,9 +135,12 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 }
 
                 // --- Phase 2: command variable matching (CPD-3412) ---
-                // $Plot and $Map are exempt (different counter semantics).
+                // $Plot and $Map are exempt (different counter semantics). $Repeat is exempt
+                // too: its counter only controls the iteration count, so the body (which may be
+                // pure side-effect assignments) is not required to reference the loop variable.
                 if (commandName.Equals("$Plot", StringComparison.OrdinalIgnoreCase) ||
-                    commandName.Equals("$Map", StringComparison.OrdinalIgnoreCase))
+                    commandName.Equals("$Map", StringComparison.OrdinalIgnoreCase) ||
+                    commandName.Equals("$Repeat", StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 if (equalsIndex < 0) continue; // already reported above
@@ -387,26 +390,22 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 }
             }
 
-            // Use tokens to find the @ variable: scan for Variable/LocalVariable between @ and =
-            int atCol = -1;
+            // Use tokens to find each @ variable: the first Variable/LocalVariable after every
+            // '@' is a loop variable. Nested commands have more than one (e.g. the inner 'j' and
+            // outer 'i' in $Sum{$Sum{i*j @ j = 1 : 3} @ i = 1 : 3}), so collect them all.
+            bool afterAt = false;
             foreach (var token in tokens)
             {
                 if (token.Type == TokenType.Operator && token.Text == "@")
                 {
-                    atCol = token.Column;
+                    afterAt = true;
                     continue;
                 }
 
-                if (atCol >= 0)
+                if (afterAt && (token.Type == TokenType.LocalVariable || token.Type == TokenType.Variable))
                 {
-                    if (token.Type == TokenType.Operator && token.Text == "=")
-                        break; // past the variable
-
-                    if (token.Type == TokenType.LocalVariable || token.Type == TokenType.Variable)
-                    {
-                        result.Add(token.Text);
-                        break;
-                    }
+                    result.Add(token.Text);
+                    afterAt = false;
                 }
             }
 
@@ -729,7 +728,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
                 var varName = kvp.Key;
                 var (line, column, length) = kvp.Value;
 
-                if (!usedAfterLastAssignment.Contains(varName))
+                if (!usedAfterLastAssignment.Contains(varName) &&
+                    !CalcpadBuiltIns.SettingsVariables.Contains(varName))
                 {
                     result.AddInformation(line, column, column + length, "CPD-3312",
                         "Variable '" + varName + "' is defined but never used");

@@ -12,8 +12,7 @@ badBlock(x) = $Inline{#if x > 0; r = 1; #end if; r}
 incomplete = 5 +
 
 ' CPD-3412: Command variable mismatch
-f(x) = x^2
-$Root{f(y) @ x = 0 : 5}
+sumMismatch = $Sum{j^2 @ k = 1 : 5}
 
 ' CPD-3413: Reassign constant
 #const

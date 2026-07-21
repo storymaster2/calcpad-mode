@@ -1452,12 +1452,18 @@ export async function activate(context: vscode.ExtensionContext) {
                 variables: definitions.variables.map(v => ({
                     name: v.name,
                     definition: v.expression,
+                    expression: v.expression,
+                    type: v.type,
                     source: v.source as 'local' | 'include',
-                    sourceFile: v.sourceFile
+                    sourceFile: v.sourceFile,
+                    description: v.description
                 })),
                 functions: definitions.functions.map(f => ({
                     name: f.name,
                     params: f.parameters.join('; '),
+                    definition: f.expression,
+                    expression: f.expression,
+                    returnType: f.returnType,
                     source: f.source as 'local' | 'include',
                     sourceFile: f.sourceFile,
                     description: f.description,
@@ -1468,8 +1474,10 @@ export async function activate(context: vscode.ExtensionContext) {
                 customUnits: definitions.customUnits.map(u => ({
                     name: u.name,
                     definition: u.expression,
+                    expression: u.expression,
                     source: u.source as 'local' | 'include',
-                    sourceFile: u.sourceFile
+                    sourceFile: u.sourceFile,
+                    description: u.description
                 }))
             });
         } else {

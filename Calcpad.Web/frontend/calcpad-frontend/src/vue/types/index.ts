@@ -21,15 +21,30 @@ export const DEFAULT_VERSION_CONFIG: VersionConfig = {
 export interface SnippetParameter {
   name: string
   description?: string
+  /** Type from the backend ParameterType enum (e.g. "Scalar", "Vector", "Matrix", "Any"). */
+  type?: string
+  /** Human-readable type description; falls back to `type` when absent. */
+  typeDescription?: string
+  isOptional?: boolean
+  isVariadic?: boolean
 }
 
 export interface InsertItem {
   label?: string
   tag: string
   description?: string
+  /** Long-form description for docstrings. */
+  documentation?: string
+  /** Usage example. */
+  example?: string
   categoryPath?: string
   category?: string
   quickType?: string
+  keywordType?: string
+  returnType?: string
+  returnTypeDescription?: string
+  isElementWise?: boolean
+  acceptsAnyCount?: boolean
   parameters?: SnippetParameter[]
 }
 
@@ -82,6 +97,12 @@ export interface VariableItem {
   paramTypes?: string[]
   paramDescriptions?: string[]
   defaults?: (string | null)[]
+  /** Value/expression type for variables and custom units (e.g. "Scalar", "Vector"). */
+  type?: string
+  /** Return type for functions. */
+  returnType?: string
+  /** Right-hand-side expression for functions/variables/custom units. */
+  expression?: string
 }
 
 export interface VariablesData {

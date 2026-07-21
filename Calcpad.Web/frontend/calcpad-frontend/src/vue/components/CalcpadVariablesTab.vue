@@ -66,7 +66,7 @@
               v-for="variable in filteredVariables"
               :key="`var-${variable.name}`"
               class="variable-item"
-              :title="`Click to insert: ${variable.name}`"
+              :title="getVariableTooltip(variable)"
               @click="insertVariable(variable.name)"
             >
               <div class="variable-name">{{ variable.name }}</div>
@@ -125,7 +125,7 @@
               v-for="unit in filteredCustomUnits"
               :key="`unit-${unit.name}`"
               class="variable-item"
-              :title="`Custom unit: .${unit.name} = ${unit.definition}. Click to insert.`"
+              :title="getCustomUnitTooltip(unit)"
               @click="insertCustomUnit(unit)"
             >
               <div class="variable-name">.{{ unit.name }}</div>
@@ -322,6 +322,11 @@ const getFunctionTooltip = (func: VariableItem): string => {
     lines.push(func.description)
   }
 
+  if (func.returnType) {
+    lines.push('')
+    lines.push(`Returns: ${func.returnType}`)
+  }
+
   if (func.params && (func.paramTypes?.length || func.paramDescriptions?.length || func.defaults?.length)) {
     lines.push('')
     lines.push('Parameters:')
@@ -343,9 +348,63 @@ const getFunctionTooltip = (func: VariableItem): string => {
     }
   }
 
+  if (func.expression) {
+    lines.push('')
+    lines.push(`Expression: ${func.expression}`)
+  }
+
   if (func.sourceFile) {
     lines.push('')
     lines.push(`Source: ${func.sourceFile}`)
+  }
+
+  lines.push('')
+  lines.push('Click to insert')
+
+  return lines.join('\n')
+}
+
+const getVariableTooltip = (variable: VariableItem): string => {
+  const lines: string[] = []
+
+  const expr = variable.expression ?? variable.definition
+  lines.push(expr ? `${variable.name} = ${expr}` : variable.name)
+
+  if (variable.type) {
+    lines.push('')
+    lines.push(`Type: ${variable.type}`)
+  }
+
+  if (variable.description) {
+    lines.push('')
+    lines.push(variable.description)
+  }
+
+  if (variable.sourceFile) {
+    lines.push('')
+    lines.push(`Source: ${variable.sourceFile}`)
+  }
+
+  lines.push('')
+  lines.push('Click to insert')
+
+  return lines.join('\n')
+}
+
+const getCustomUnitTooltip = (unit: VariableItem): string => {
+  const lines: string[] = []
+
+  const expr = unit.expression ?? unit.definition
+  lines.push(expr ? `.${unit.name} = ${expr}` : `.${unit.name}`)
+
+  if (unit.description) {
+    lines.push('')
+    lines.push(unit.description)
+  }
+
+  if (unit.sourceFile) {
+    lines.push('')
+    lines.push(`Source: ${unit.sourceFile}`)
   }
 
   lines.push('')

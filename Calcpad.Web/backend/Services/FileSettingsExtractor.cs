@@ -64,6 +64,9 @@ namespace Calcpad.Server.Services
                 if (block.Status != HtmlCommentParseStatus.Success || !block.Data.HasValue)
                     continue;
 
+                if (block.Data.Value.ValueKind != JsonValueKind.Object)
+                    continue;
+
                 if (!block.Data.Value.TryGetProperty("settings", out var settingsElement))
                     continue;
 

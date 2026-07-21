@@ -106,5 +106,15 @@ namespace Calcpad.Tests.HighlighterTests
                 return;
             }
         }
+
+        [Fact]
+        public void NonObjectJson_InHtmlComment_DoesNotThrow()
+        {
+            // '<!--[]--> parses as a valid JSON array, not an object. The region parser
+            // must not call TryGetProperty on it (which throws for non-objects).
+            var content = "'<!--[]-->'\nx = 1\n";
+            var regions = new Calcpad.Highlighter.Linter.LintIgnoreRegionParser().ExtractRegions(content);
+            Assert.Empty(regions);
+        }
     }
 }

@@ -484,7 +484,7 @@ namespace Calcpad.Highlighter.Snippets.Data
             {
                 Insert = "gcd(§; §)",
                 Description = "Greatest common divisor",
-                Documentation = "Returns the largest positive integer that divides every argument exactly. Accepts two or more arguments.",
+                Documentation = "Returns the largest positive integer that divides every argument exactly. Accepts two or more arguments. Vector/matrix arguments are flattened element-wise first.",
                 Example = "gcd(12; 18; 30)  ' returns 6",
                 Category = "Functions/Integer",
                 KeywordType = "Function",
@@ -492,14 +492,14 @@ namespace Calcpad.Highlighter.Snippets.Data
                 ReturnTypeDescription = "Positive integer",
                 Parameters =
                 [
-                    new SnippetParameter { Name = "values", Type = ParameterType.Integer, Description = "Two or more integers", IsVariadic = true }
+                    new SnippetParameter { Name = "values", Type = ParameterType.Various, Description = "Two or more integers, vectors, or matrices", IsVariadic = true }
                 ]
             },
             new SnippetItem
             {
                 Insert = "lcm(§; §)",
                 Description = "Least common multiple",
-                Documentation = "Returns the smallest positive integer that is a multiple of every argument. Accepts two or more arguments.",
+                Documentation = "Returns the smallest positive integer that is a multiple of every argument. Accepts two or more arguments. Vector/matrix arguments are flattened element-wise first.",
                 Example = "lcm(4; 6)  ' returns 12",
                 Category = "Functions/Integer",
                 KeywordType = "Function",
@@ -507,7 +507,7 @@ namespace Calcpad.Highlighter.Snippets.Data
                 ReturnTypeDescription = "Positive integer",
                 Parameters =
                 [
-                    new SnippetParameter { Name = "values", Type = ParameterType.Integer, Description = "Two or more integers", IsVariadic = true }
+                    new SnippetParameter { Name = "values", Type = ParameterType.Various, Description = "Two or more integers, vectors, or matrices", IsVariadic = true }
                 ]
             },
 
@@ -879,6 +879,21 @@ namespace Calcpad.Highlighter.Snippets.Data
                     new SnippetParameter { Name = "v", Type = ParameterType.Vector, Description = "Vector" }
                 ]
             },
+            // take - from matrix (n; matrix)
+            new SnippetItem
+            {
+                Insert = "take(§; §)",
+                Description = "Returns the n-th element from a matrix",
+                Documentation = "The matrix is linearized into a vector (row by row) and `M[n]` (1-based) is returned. Errors if `n` is out of range.",
+                Category = "Functions/Aggregate and Interpolation",
+                KeywordType = "Function",
+                ReturnTypeDescription = "Scalar",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "n", Type = ParameterType.Integer, Description = "Index (1-based)" },
+                    new SnippetParameter { Name = "m", Type = ParameterType.Matrix, Description = "Matrix" }
+                ]
+            },
             // line - scalar pairs (x; x1; y1; x2; y2; ...)
             new SnippetItem
             {
@@ -911,6 +926,21 @@ namespace Calcpad.Highlighter.Snippets.Data
                     new SnippetParameter { Name = "yData", Type = ParameterType.Vector, Description = "Y data points vector" }
                 ]
             },
+            // line - with matrix (x; matrix)
+            new SnippetItem
+            {
+                Insert = "line(§; §)",
+                Description = "Linear interpolation over a linearized matrix",
+                Documentation = "The matrix is linearized into a vector (row by row) and used as the data pairs `(x1, y1), (x2, y2), …` for piecewise linear interpolation at `x`.",
+                Category = "Functions/Aggregate and Interpolation",
+                KeywordType = "Function",
+                ReturnTypeDescription = "Scalar",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Interpolation point" },
+                    new SnippetParameter { Name = "m", Type = ParameterType.Matrix, Description = "Matrix" }
+                ]
+            },
             // spline - scalar pairs (x; x1; y1; x2; y2; ...)
             new SnippetItem
             {
@@ -940,6 +970,21 @@ namespace Calcpad.Highlighter.Snippets.Data
                     new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Interpolation point" },
                     new SnippetParameter { Name = "xData", Type = ParameterType.Vector, Description = "X data points vector" },
                     new SnippetParameter { Name = "yData", Type = ParameterType.Vector, Description = "Y data points vector" }
+                ]
+            },
+            // spline - with matrix (x; matrix)
+            new SnippetItem
+            {
+                Insert = "spline(§; §)",
+                Description = "Hermite spline interpolation over a linearized matrix",
+                Documentation = "The matrix is linearized into a vector (row by row) and used as the data pairs for smooth Hermite cubic spline interpolation at `x`.",
+                Category = "Functions/Aggregate and Interpolation",
+                KeywordType = "Function",
+                ReturnTypeDescription = "Scalar",
+                Parameters =
+                [
+                    new SnippetParameter { Name = "x", Type = ParameterType.Scalar, Description = "Interpolation point" },
+                    new SnippetParameter { Name = "m", Type = ParameterType.Matrix, Description = "Matrix" }
                 ]
             },
 

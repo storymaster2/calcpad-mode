@@ -226,6 +226,18 @@ namespace Calcpad.Highlighter.Linter.Constants
         }.ToFrozenSet(System.StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
+        /// Special variable names that configure the engine when assigned (plot dimensions,
+        /// solver precision, etc.). Core reads them via GetSettingsVariable with a case-sensitive
+        /// lookup, so assigning one has an effect even when it is never referenced afterwards.
+        /// </summary>
+        public static readonly FrozenSet<string> SettingsVariables = new HashSet<string>(System.StringComparer.Ordinal)
+        {
+            "PlotWidth", "PlotHeight", "PlotStep", "PlotSVG", "PlotAdaptive",
+            "PlotSmooth", "PlotShadows", "PlotLightDir", "PlotPalette",
+            "Precision", "Tol", "ReturnAngleUnits", "Units"
+        }.ToFrozenSet(System.StringComparer.Ordinal);
+
+        /// <summary>
         /// First words of multi-word keywords (else, end).
         /// </summary>
         public static readonly FrozenSet<string> MultiWordFirstWords = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
