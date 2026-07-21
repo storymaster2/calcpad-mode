@@ -153,19 +153,17 @@ try
     // that need a fixed port (`dotnet run` for dev, the VS Code extension
     // explicitly passing --urls) keep their existing behavior.
     bool hasExplicitUrls = forwardedArgs.Any(a => a == "--urls");
-    bool hasExplicitPort = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CALCPAD_PORT"));
+    // PORT is Cloud Run's injected convention; treat it the same as
+    // CALCPAD_PORT so a container started there takes the fixed-port path
+    // below instead of the desktop/random-port one.
+    bool hasExplicitPort = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CALCPAD_PORT"))
+        || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PORT"));
     if (!hasExplicitUrls && !hasExplicitPort)
     {
         // Kestrel rejects "localhost:0" with "Dynamic port binding is not
         // supported when binding to localhost" — must be the loopback IP.
         forwardedArgs = forwardedArgs.Concat(new[] { "--urls", "http://127.0.0.1:0" }).ToArray();
         FileLogger.LogInfo("No explicit URL or port set", "defaulting to http://127.0.0.1:0 (random free port)");
-    }
-    else if (!hasExplicitUrls)
-    {
-        // CALCPAD_PORT was set explicitly — preserve the legacy 9420 default
-        // for that path through GetServerUrl.
-        Environment.SetEnvironmentVariable("CALCPAD_PORT", Environment.GetEnvironmentVariable("CALCPAD_PORT") ?? "9420");
     }
 
     // Create and configure web application using shared service

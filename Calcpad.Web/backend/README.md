@@ -1,5 +1,29 @@
 # Calcpad Server - Secure Docker Architecture
 
+## Local smoke (Cloud Run–shaped)
+
+Calc-only single container: no Garage/S3, no auth. Same shape as a future Cloud Run service.
+
+```powershell
+cd Calcpad.Web/backend
+.\scripts\smoke-local.ps1            # build, probe, convert, then stop
+.\scripts\smoke-local.ps1 -KeepRunning   # leave it up on http://localhost:8081
+```
+
+Or manually:
+
+```powershell
+docker compose -f docker-compose.smoke.yml up --build
+curl http://localhost:8081/health
+curl -X POST http://localhost:8081/api/calcpad/convert -H "Content-Type: application/json" -d "{\"content\":\"2 + 2\"}"
+```
+
+Probe: `GET /health`. Calc: `POST /api/calcpad/convert`. Port inside the image is `8080` (`CALCPAD_PORT`; also honors Cloud Run’s `PORT`).
+
+For the full hosted stack (auth + Garage), use `docker-compose.yml` instead.
+
+---
+
 This document describes the secure multi-container Docker architecture for Calcpad Server, designed to isolate JavaScript execution and PDF generation while maintaining full functionality.
 
 ## Architecture Overview
@@ -155,10 +179,8 @@ docker-compose up -d --build
 
 ### Health Checks
 
-Each service provides health check endpoints:
-
-- **Calcpad Server**: `http://localhost:8080/health`
-- **PDF Service**: `http://pdf-service:3001/health` (internal)
+- **Calcpad Server**: `GET /health` (also `GET /api/calcpad/sample`)
+- Smoke compose maps host **8081** → container **8080**; full compose maps host **9420** → **8080**
 
 ## Security Considerations
 

@@ -173,6 +173,9 @@ namespace Calcpad.Server.Services
                 app.UseAuthorization();
             }
 
+            // Liveness/readiness probe for Cloud Run and other orchestrators.
+            app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+
             app.MapControllers();
 
             if (_authEnabled)
@@ -204,11 +207,15 @@ namespace Calcpad.Server.Services
         }
 
         /// <summary>
-        /// Get the server URL from environment variables
+        /// Get the server URL from environment variables. Falls back to Cloud
+        /// Run's injected `PORT` when `CALCPAD_PORT` isn't set, so the same
+        /// image works unmodified as a Cloud Run service.
         /// </summary>
         public static string GetServerUrl()
         {
-            var port = Environment.GetEnvironmentVariable("CALCPAD_PORT") ?? "9420";
+            var port = Environment.GetEnvironmentVariable("CALCPAD_PORT")
+                ?? Environment.GetEnvironmentVariable("PORT")
+                ?? "9420";
             var host = Environment.GetEnvironmentVariable("CALCPAD_HOST") ?? "localhost";
             var protocol = Environment.GetEnvironmentVariable("CALCPAD_ENABLE_HTTPS")?.ToLower() == "true" ? "https" : "http";
 

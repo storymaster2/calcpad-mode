@@ -52,6 +52,10 @@ ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV CALCPAD_PORT=8080
 ENV CALCPAD_HOST=*
+# Containers get /dev/null as stdin (immediate EOF), which would otherwise
+# trip the "parent process died" watchdog Program.cs uses for desktop/VS
+# Code launches and shut the server down right after boot.
+ENV CALCPAD_DETACHED=1
 ENV DOTNET_RUNNING_IN_CONTAINER=true
 ENV XDG_CONFIG_HOME=/tmp/.chromium
 ENV XDG_CACHE_HOME=/tmp/.chromium

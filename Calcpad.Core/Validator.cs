@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -17,6 +18,7 @@ namespace Calcpad.Core
         private const string SuperscriptChars = "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾";
         private const string SubscriptChars = "₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎";
         internal const string UnitChars = UnitSymbolChars + CurrencyChars;
+        internal static readonly SearchValues<char> UnitCharsSet = SearchValues.Create(UnitChars);
         private const string VarStartingChars = UnitChars + VarNonLetterChars;
         private const string VarChars =
             VarStartingChars +

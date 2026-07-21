@@ -1,0 +1,17 @@
+# Local smoke test: single calc-only container, no Garage/S3, no auth.
+# Mirrors the shape of a future Cloud Run deployment (one process, port 8080,
+# stateless). Use docker-compose.yml instead for the full hosted stack.
+#
+# Usage: docker compose -f docker-compose.smoke.yml up --build
+services:
+  calcpad-server:
+    build:
+      context: ../..
+      dockerfile: Calcpad.Web/backend/Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Auth__Enabled=false
+      - Storage__Enabled=false
+    restart: "no"

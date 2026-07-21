@@ -134,7 +134,7 @@ namespace Calcpad.Core
                     {
                         if (pt == TokenTypes.Unit || pt == TokenTypes.Variable)
                         {
-                            tt = tokenLiteral.StartsWithAny(Validator.UnitChars) ?
+                            tt = tokenLiteral.StartsWithAny(Validator.UnitCharsSet) ?
                                 TokenTypes.Unit :
                                 TokenTypes.Variable;
 
