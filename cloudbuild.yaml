@@ -2,7 +2,7 @@
 # Used by trigger calcpad-server-update (user-managed SA requires explicit logging).
 substitutions:
   _REGION: us-west1
-  _AR_REPO: calcpad
+  _AR_REPO: calcpad-engine
   _IMAGE: calcpad-server
 
 steps:
