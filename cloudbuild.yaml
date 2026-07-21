@@ -1,0 +1,25 @@
+# Cloud Build config for Calcpad.Server → Artifact Registry.
+# Used by trigger calcpad-server-update (user-managed SA requires explicit logging).
+substitutions:
+  _REGION: us-west1
+  _AR_REPO: calcpad
+  _IMAGE: calcpad-server
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:latest
+      - -f
+      - Calcpad.Web/backend/Dockerfile
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
