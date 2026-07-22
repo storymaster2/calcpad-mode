@@ -132,6 +132,11 @@ export class MessageBridge {
         this.postToVue({ type: 'librarySessionState', active });
     }
 
+    /** Re-fetch history + draft state for the Versions tab. */
+    refreshHistory(): void {
+        void this.handleGetHistory();
+    }
+
     /**
      * Handle a message from the Vue sidebar.
      * This is called by the messaging adapter when Vue calls postMessage().

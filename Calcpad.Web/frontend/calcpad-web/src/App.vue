@@ -51,12 +51,13 @@
         <button
           v-if="libraryBanner"
           class="toolbar-btn"
-          disabled
+          :disabled="libraryBanner.readOnly || librarySaving"
           :title="libraryBanner.readOnly
             ? 'Save to library is disabled for this read-only session'
-            : 'Save to library (coming soon)'"
+            : 'Save to library (Ctrl+S)'"
+          @click="requestSaveToLibrary"
         >
-          Save to library
+          {{ librarySaving ? 'Saving…' : 'Save to library' }}
         </button>
         <button class="toolbar-btn" @click="togglePreview" title="Preview HTML">
           {{ previewVisible ? 'Hide Preview' : 'Preview' }}
@@ -218,6 +219,44 @@
         </div>
       </div>
     </div>
+
+    <div v-if="librarySaveState" class="modal-backdrop" @click.self="resolveLibrarySave(null)">
+      <div class="modal-card library-save-card" role="dialog" aria-modal="true" aria-labelledby="library-save-title">
+        <div id="library-save-title" class="modal-title">Save to library</div>
+        <label class="library-save-label" for="library-commit-message">Commit message</label>
+        <textarea
+          id="library-commit-message"
+          ref="libraryCommitInput"
+          v-model="librarySaveState.commitMessage"
+          class="library-save-message"
+          rows="3"
+          placeholder="Describe this change…"
+          @keydown.ctrl.enter.prevent="submitLibrarySave"
+          @keydown.meta.enter.prevent="submitLibrarySave"
+        />
+        <div class="library-save-kind" role="radiogroup" aria-label="Save kind">
+          <label class="library-save-kind-option">
+            <input v-model="librarySaveState.kind" type="radio" value="canonical" />
+            Canonical update
+          </label>
+          <label class="library-save-kind-option">
+            <input v-model="librarySaveState.kind" type="radio" value="branch" />
+            Branch
+          </label>
+        </div>
+        <p class="library-save-hint">
+          Canonical vs branch is recorded in the editor only for now; the library commit path is unchanged.
+        </p>
+        <div class="modal-actions">
+          <button
+            class="modal-btn primary"
+            :disabled="!librarySaveState.commitMessage.trim()"
+            @click="submitLibrarySave"
+          >Save</button>
+          <button class="modal-btn" @click="resolveLibrarySave(null)">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -264,6 +303,8 @@ const onNewTabRequest = ref<(() => void) | null>(null)
 const bootLoading = ref(false)
 const bootError = ref<string | null>(null)
 const libraryBanner = ref<{ title: string; readOnly: boolean; detail?: string } | null>(null)
+const librarySaving = ref(false)
+const onSaveToLibrary = ref<(() => void) | null>(null)
 
 function setBootLoading(loading: boolean): void {
   bootLoading.value = loading
@@ -276,6 +317,15 @@ function setBootError(message: string | null): void {
 
 function setLibrarySessionBanner(banner: { title: string; readOnly: boolean; detail?: string } | null): void {
   libraryBanner.value = banner
+}
+
+function setLibrarySaving(saving: boolean): void {
+  librarySaving.value = saving
+}
+
+function requestSaveToLibrary(): void {
+  if (libraryBanner.value?.readOnly || librarySaving.value) return
+  onSaveToLibrary.value?.()
 }
 
 function setTabs(next: TabUiState[]): void {
@@ -577,6 +627,50 @@ function resolveConfirm(choice: ConfirmChoice): void {
   state.resolve(choice)
 }
 
+// ---- Library save dialog ----
+export type LibrarySaveKind = 'canonical' | 'branch'
+
+export interface LibrarySaveDialogResult {
+  commitMessage: string
+  kind: LibrarySaveKind
+}
+
+interface LibrarySaveState {
+  commitMessage: string
+  kind: LibrarySaveKind
+  resolve: (result: LibrarySaveDialogResult | null) => void
+}
+
+const librarySaveState = ref<LibrarySaveState | null>(null)
+const libraryCommitInput = ref<HTMLTextAreaElement | null>(null)
+
+function showLibrarySaveDialog(): Promise<LibrarySaveDialogResult | null> {
+  librarySaveState.value?.resolve(null)
+  return new Promise(resolve => {
+    librarySaveState.value = {
+      commitMessage: '',
+      kind: 'canonical',
+      resolve,
+    }
+    nextTick(() => libraryCommitInput.value?.focus())
+  })
+}
+
+function resolveLibrarySave(result: LibrarySaveDialogResult | null): void {
+  const state = librarySaveState.value
+  if (!state) return
+  librarySaveState.value = null
+  state.resolve(result)
+}
+
+function submitLibrarySave(): void {
+  const state = librarySaveState.value
+  if (!state) return
+  const commitMessage = state.commitMessage.trim()
+  if (!commitMessage) return
+  resolveLibrarySave({ commitMessage, kind: state.kind })
+}
+
 defineExpose({
   editorContainer,
   setFileName,
@@ -596,6 +690,9 @@ defineExpose({
   appendOutput,
   clearOutput,
   showConfirm,
+  showLibrarySaveDialog,
+  setLibrarySaving,
+  onSaveToLibrary,
   setTabs,
   onTabActivate,
   onTabCloseRequest,

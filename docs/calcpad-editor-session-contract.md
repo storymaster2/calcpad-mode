@@ -18,10 +18,13 @@ Calcpad-mode UI is built in the editor repo; this document is the API contract.
 
 | Phase | Editor ships | Library must support |
 | --- | --- | --- |
-| **A (current)** | Boot tip; Versions panel (`history` + `content?ref=`); non-tip views are read-only | `GET` session, history, content-by-ref |
-| **B (later)** | Renew on focus / before save; Save-to-library + `baseTipCommitSha` / **409** UI; sessionStorage capability keys | renew + PUT save as below |
+| **A** | Boot tip; Versions panel (`history` + `content?ref=`); multi-draft unsaved rows | `GET` session, history, content-by-ref |
+| **B (current)** | Save-to-library dialog (required commit message + Canonical/Branch toggle); renew immediately before save; PUT with `baseTipCommitSha`; **409** reload/overwrite UI; Versions refresh after save | renew + PUT save as below |
+| **Later** | Focus/interval renew; sessionStorage capability keys; send Canonical/Branch on save once library defines the field | as needed |
 
 Phase A acceptance (calcpad): history lists commits (ISO-8601 `date`, display locally); selecting an older `ref` changes the buffer; selecting tip/`isTip` restores tip content and editability when `save.allowed`.
+
+Phase B acceptance (calcpad): when `save.allowed`, **Save to library** / Ctrl+S opens a dialog; empty commit message cannot submit; successful PUT updates tip SHA, clears the active draft, and refreshes Versions; **409** offers reload tip vs overwrite (`force`); **404** on renew/save prompts re-open from Detail Library. Canonical vs Branch is collected in the UI only (not sent on PUT yet).
 
 Prefer concrete `versions.historyPath` / `versions.contentPath` from the session document when present; otherwise fall back to `/calc-sessions/{sessionId}/history` and `/calc-sessions/{sessionId}/content`.
 
@@ -190,18 +193,19 @@ Optional: `?force=true` or `"force": true` — skip tip conflict check and commi
 ## Editor responsibilities
 
 1. Boot from `librarySession` + `libraryApi` as above.
-2. Persist in `sessionStorage` (or memory): `{ sessionId, libraryApi, itemKey, baseTipCommitSha }` so renew/save work after soft reloads.
-3. Versions panel: `GET …/history`, jump via `GET …/content?ref=`.
-4. On `visibilitychange` → visible / interval (e.g. daily) / **immediately before save**: `POST …/renew`.
-5. Save: require commit message; `PUT` with `baseTipCommitSha`; on **409** show conflict UI; on **404** → “Re-open this calc from Detail Library”.
-6. After save: update `baseTipCommitSha` from response; refresh history.
-7. If `!save.allowed`: Monaco read-only; hide Save-to-library.
+2. Persist in memory (sessionStorage later): `{ sessionId, libraryApi, itemKey, baseTipCommitSha }` so renew/save work after soft reloads.
+3. Versions panel: `GET …/history`, jump via `GET …/content?ref=`; multi-draft unsaved rows above each parent.
+4. **Immediately before save**: `POST …/renew` (focus/interval renew still later).
+5. Save: dialog requires non-empty commit message; optional Canonical/Branch choice (UI-only until library supports it); `PUT` with `baseTipCommitSha`; on **409** show conflict UI; on **404** → “Re-open this calc from Detail Library”.
+6. After save: update `baseTipCommitSha` from response; clear active draft; refresh history.
+7. If `!save.allowed`: Monaco read-only; hide/disable Save-to-library.
 
 ### Future extension points (not built)
 
 Reserved in contract only — do not invent APIs yet:
 
 - `canonicalPath` / choose canonical commit
+- Save dialog **Canonical update** vs **Branch** toggle (editor already collects this; wire into PUT / tip metadata when library defines the field)
 - Cross-detail search / list other details from the editor (`workspace` links later)
 
 ## CORS / origins

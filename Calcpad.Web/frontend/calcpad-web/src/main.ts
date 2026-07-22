@@ -32,6 +32,9 @@ import {
     fetchLibrarySession,
     setActiveLibrarySession,
     isSessionReadOnly,
+    renewSession,
+    saveSession,
+    fetchContentByRef,
     LibrarySessionError,
     type LibrarySessionDocument,
 } from './library/session';
@@ -788,6 +791,157 @@ async function bootstrap(): Promise<void> {
         };
 
         emitLibraryDraftState();
+    }
+
+    async function saveToLibrary(): Promise<void> {
+        if (!librarySession || !bridge || isSessionReadOnly(librarySession)) return;
+
+        const dialog = await appInstance.showLibrarySaveDialog();
+        if (!dialog) return;
+
+        const content = editor.getValue();
+        const commitMessage = dialog.commitMessage.trim();
+        if (!commitMessage) return;
+        // dialog.kind (canonical | branch) is UI-only until the library accepts it.
+
+        appInstance.setLibrarySaving(true);
+        try {
+            try {
+                const renewed = await renewSession(librarySession);
+                librarySession = { ...librarySession, expiresAt: renewed.expiresAt };
+                setActiveLibrarySession(librarySession);
+            } catch (err) {
+                if (err instanceof LibrarySessionError && err.kind === 'not_found') {
+                    appInstance.appendOutput('error', err.message);
+                    applyLibraryBanner({
+                        isTip: !viewingHistorical,
+                        draftParentSha: activeDraftParentSha ?? undefined,
+                    });
+                    return;
+                }
+                throw err;
+            }
+
+            const baseTipCommitSha =
+                librarySession.baseTipCommitSha
+                || librarySession.tipCommitSha
+                || '';
+
+            const putOnce = (force: boolean) =>
+                saveSession(librarySession!, {
+                    content,
+                    commitMessage,
+                    baseTipCommitSha,
+                    force,
+                });
+
+            let result;
+            try {
+                result = await putOnce(false);
+            } catch (err) {
+                if (!(err instanceof LibrarySessionError) || err.kind !== 'conflict') {
+                    throw err;
+                }
+
+                const choice = await appInstance.showConfirm({
+                    title: 'Tip conflict',
+                    message: err.message
+                        + '\n\nReload tip discards your buffer and loads the library tip.'
+                        + '\nOverwrite commits your buffer anyway.',
+                    yesLabel: 'Reload tip',
+                    noLabel: 'Overwrite',
+                });
+
+                if (choice === 'cancel') return;
+
+                if (choice === 'yes') {
+                    let tipContent = err.tipContent;
+                    let tipSha = err.tipCommitSha || '';
+                    if (tipContent === undefined) {
+                        const body = await fetchContentByRef(librarySession);
+                        tipContent = body.content;
+                        tipSha = body.sha || tipSha;
+                    }
+                    if (tipSha) {
+                        librarySession = {
+                            ...librarySession,
+                            tipCommitSha: tipSha,
+                            baseTipCommitSha: tipSha,
+                        };
+                        setActiveLibrarySession(librarySession);
+                    }
+                    const parentToClear = activeDraftParentSha;
+                    withLibraryLoad(() => {
+                        tabs.reloadActive(tipContent!);
+                        loadedSha = tipSha || loadedSha;
+                        if (loadedSha) libraryBaselines.set(loadedSha, tipContent!);
+                        activeDraftParentSha = null;
+                        viewingHistorical = false;
+                        editor.updateOptions({ readOnly: isSessionReadOnly(librarySession!) });
+                    });
+                    if (parentToClear) libraryDrafts.delete(parentToClear);
+                    applyLibraryBanner({ isTip: true });
+                    emitLibraryDraftState();
+                    bridge.refreshHistory();
+                    activeBridge.refreshHeadings();
+                    if (appInstance.isPreviewVisible()) void refreshPreview();
+                    appInstance.appendOutput('info', 'Reloaded library tip after conflict.');
+                    return;
+                }
+
+                result = await putOnce(true);
+            }
+
+            const newTip = result.tipCommitSha;
+            const draftParent = activeDraftParentSha;
+            librarySession = {
+                ...librarySession,
+                tipCommitSha: newTip,
+                baseTipCommitSha: newTip,
+                repoPath: result.repoPath || librarySession.repoPath,
+                expiresAt: result.expiresAt || librarySession.expiresAt,
+            };
+            setActiveLibrarySession(librarySession);
+
+            if (draftParent) libraryDrafts.delete(draftParent);
+            libraryDrafts.delete(newTip);
+            activeDraftParentSha = null;
+            loadedSha = newTip;
+            libraryBaselines.set(newTip, content);
+            viewingHistorical = false;
+
+            withLibraryLoad(() => {
+                tabs.markActiveSaved();
+                editor.updateOptions({ readOnly: false });
+            });
+            applyLibraryBanner({ isTip: true });
+            emitLibraryDraftState();
+            bridge.refreshHistory();
+            activeBridge.refreshHeadings();
+            if (appInstance.isPreviewVisible()) void refreshPreview();
+            appInstance.appendOutput('info', `Saved to library (${newTip.slice(0, 7)}).`);
+        } catch (err) {
+            const message = err instanceof LibrarySessionError
+                ? err.message
+                : (err instanceof Error ? err.message : 'Save to library failed.');
+            appInstance.appendOutput('error', message);
+        } finally {
+            appInstance.setLibrarySaving(false);
+        }
+    }
+
+    if (librarySession && bridge) {
+        appInstance.onSaveToLibrary = () => { void saveToLibrary(); };
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+            void saveToLibrary();
+        });
+        window.addEventListener('keydown', (e) => {
+            if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+            if (e.key !== 's' && e.key !== 'S') return;
+            if (e.shiftKey) return;
+            e.preventDefault();
+            void saveToLibrary();
+        });
     }
 
     // Neutralino-specific: native menu + file operations

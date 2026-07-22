@@ -466,6 +466,51 @@ select option {
 .modal-btn.primary:hover {
     background: var(--vscode-button-hoverBackground, #1177bb);
 }
+.modal-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+.library-save-card {
+    min-width: 400px;
+}
+.library-save-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    opacity: 0.9;
+}
+.library-save-message {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    padding: 6px 8px;
+    border: 1px solid var(--vscode-input-border, #3c3c3c);
+    border-radius: 2px;
+    background: var(--vscode-input-background, #3c3c3c);
+    color: var(--vscode-input-foreground, #cccccc);
+    font: inherit;
+    resize: vertical;
+}
+.library-save-message:focus {
+    outline: 1px solid var(--vscode-focusBorder, #007acc);
+}
+.library-save-kind {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+.library-save-kind-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+.library-save-hint {
+    margin: 0 0 14px;
+    font-size: 11px;
+    opacity: 0.7;
+    line-height: 1.35;
+}
 
 .problems-badge {
     font-size: 10px;

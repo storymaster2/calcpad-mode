@@ -69,11 +69,31 @@ export interface ContentByRefResponse {
     content: string;
 }
 
+export interface RenewSessionResponse {
+    sessionId: string;
+    expiresAt: string;
+}
+
+export interface SaveSessionRequest {
+    content: string;
+    commitMessage: string;
+    baseTipCommitSha: string;
+    force?: boolean;
+}
+
+export interface SaveSessionResponse {
+    tipCommitSha: string;
+    repoPath?: string;
+    expiresAt?: string;
+}
+
 export class LibrarySessionError extends Error {
     constructor(
         message: string,
-        public readonly kind: 'not_found' | 'network' | 'invalid',
+        public readonly kind: 'not_found' | 'network' | 'invalid' | 'conflict' | 'forbidden',
         public readonly status?: number,
+        public readonly tipCommitSha?: string,
+        public readonly tipContent?: string,
     ) {
         super(message);
         this.name = 'LibrarySessionError';
@@ -128,12 +148,16 @@ export function contentUrl(session: LibrarySessionDocument, ref?: string): strin
     return url.toString();
 }
 
-async function libraryFetch(url: string): Promise<Response> {
+async function libraryFetch(url: string, init?: RequestInit): Promise<Response> {
     try {
+        const { headers, ...rest } = init ?? {};
         return await fetch(url, {
-            method: 'GET',
             cache: 'no-store',
-            headers: { Accept: 'application/json' },
+            ...rest,
+            headers: {
+                Accept: 'application/json',
+                ...(headers as Record<string, string> | undefined),
+            },
         });
     } catch (err) {
         const detail = err instanceof Error ? err.message : String(err);
@@ -152,6 +176,13 @@ function throwForStatus(response: Response, context: string): void {
             404,
         );
     }
+    if (response.status === 403) {
+        throw new LibrarySessionError(
+            `${context}: save is not allowed for this session.`,
+            'forbidden',
+            403,
+        );
+    }
     if (!response.ok) {
         throw new LibrarySessionError(
             `${context}: Detail Library returned HTTP ${response.status}.`,
@@ -159,6 +190,98 @@ function throwForStatus(response: Response, context: string): void {
             response.status,
         );
     }
+}
+
+function renewUrl(session: LibrarySessionDocument): string {
+    const raw = session.workspace?.renewPath
+        ? resolvePathTemplate(session.workspace.renewPath, session.sessionId)
+        : `/calc-sessions/${encodeURIComponent(session.sessionId)}/renew`;
+    return absoluteUrl(session.libraryApi, raw);
+}
+
+function saveUrl(session: LibrarySessionDocument): string {
+    const raw = session.save.uploadPath
+        ? resolvePathTemplate(session.save.uploadPath, session.sessionId)
+        : `/calc-sessions/${encodeURIComponent(session.sessionId)}`;
+    return absoluteUrl(session.libraryApi, raw);
+}
+
+export async function renewSession(session: LibrarySessionDocument): Promise<RenewSessionResponse> {
+    const method = (session.workspace?.renewMethod || 'POST').toUpperCase();
+    const response = await libraryFetch(renewUrl(session), { method });
+    throwForStatus(response, 'Renew');
+
+    let data: unknown;
+    try {
+        data = await response.json();
+    } catch {
+        throw new LibrarySessionError('Renew response was not valid JSON.', 'invalid');
+    }
+
+    const o = data as RenewSessionResponse;
+    if (!o || typeof o.expiresAt !== 'string') {
+        throw new LibrarySessionError('Renew response was missing expiresAt.', 'invalid');
+    }
+    return o;
+}
+
+export async function saveSession(
+    session: LibrarySessionDocument,
+    request: SaveSessionRequest,
+): Promise<SaveSessionResponse> {
+    const method = (session.save.uploadMethod || 'PUT').toUpperCase();
+    const response = await libraryFetch(saveUrl(session), {
+        method,
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+            content: request.content,
+            commitMessage: request.commitMessage,
+            baseTipCommitSha: request.baseTipCommitSha,
+            force: request.force === true,
+        }),
+    });
+
+    if (response.status === 409) {
+        let tipCommitSha: string | undefined;
+        let tipContent: string | undefined;
+        let message = 'The library tip changed while you were editing. Reload tip or overwrite?';
+        try {
+            const body = await response.json() as {
+                message?: string;
+                tipCommitSha?: string;
+                tipContent?: string;
+            };
+            if (typeof body.message === 'string' && body.message.trim()) message = body.message;
+            if (typeof body.tipCommitSha === 'string') tipCommitSha = body.tipCommitSha;
+            if (typeof body.tipContent === 'string') tipContent = body.tipContent;
+        } catch {
+            // keep defaults
+        }
+        throw new LibrarySessionError(message, 'conflict', 409, tipCommitSha, tipContent);
+    }
+
+    if (response.status === 400) {
+        throw new LibrarySessionError(
+            'Save rejected: commit message or required fields were invalid.',
+            'invalid',
+            400,
+        );
+    }
+
+    throwForStatus(response, 'Save');
+
+    let data: unknown;
+    try {
+        data = await response.json();
+    } catch {
+        throw new LibrarySessionError('Save response was not valid JSON.', 'invalid');
+    }
+
+    const o = data as SaveSessionResponse;
+    if (!o || typeof o.tipCommitSha !== 'string' || !o.tipCommitSha) {
+        throw new LibrarySessionError('Save response was missing tipCommitSha.', 'invalid');
+    }
+    return o;
 }
 
 export async function fetchLibrarySession(
