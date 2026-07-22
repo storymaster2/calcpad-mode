@@ -30,6 +30,13 @@ export type VersionLoadHandler = (payload: {
     message: string;
 }) => void;
 
+export type DraftLoadHandler = (parentSha: string) => void;
+
+export type DraftStatePayload = {
+    drafts: { parentSha: string }[];
+    activeParentSha: string | null;
+};
+
 function triggerBlobDownload(blob: Blob, filename: string): void {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -51,7 +58,9 @@ export class MessageBridge {
     private settings: CalcpadSettings;
     private _onInsertText: ((text: string) => void) | null = null;
     private _onLoadVersion: VersionLoadHandler | null = null;
+    private _onLoadDraft: DraftLoadHandler | null = null;
     private _historyCommits: HistoryCommit[] = [];
+    private _draftState: DraftStatePayload = { drafts: [], activeParentSha: null };
 
     constructor(serverUrl: string) {
         const logger = { appendLine: (msg: string) => console.debug('[CalcPad]', msg) };
@@ -106,6 +115,16 @@ export class MessageBridge {
 
     set onLoadVersion(handler: VersionLoadHandler | null) {
         this._onLoadVersion = handler;
+    }
+
+    set onLoadDraft(handler: DraftLoadHandler | null) {
+        this._onLoadDraft = handler;
+    }
+
+    /** Push current library draft list to the Versions tab. */
+    emitDraftState(state: DraftStatePayload): void {
+        this._draftState = state;
+        this.postToVue({ type: 'draftState', ...state });
     }
 
     /** Tell the Vue sidebar a Detail Library session is active (shows Versions tab). */
@@ -222,6 +241,12 @@ export class MessageBridge {
                 void this.handleLoadVersion(typeof message.sha === 'string' ? message.sha : '');
                 break;
 
+            case 'loadDraft':
+                if (typeof message.parentSha === 'string' && message.parentSha) {
+                    this._onLoadDraft?.(message.parentSha);
+                }
+                break;
+
             case 'debug':
                 console.debug('[Vue]', message.message);
                 break;
@@ -238,11 +263,13 @@ export class MessageBridge {
             const history = await fetchHistory(session);
             this._historyCommits = history.commits ?? [];
             this.postToVue({ type: 'historyResponse', commits: this._historyCommits });
+            this.postToVue({ type: 'draftState', ...this._draftState });
         } catch (err) {
             const error = err instanceof LibrarySessionError
                 ? err.message
                 : (err instanceof Error ? err.message : 'Failed to load history.');
             this.postToVue({ type: 'historyResponse', commits: [], error });
+            this.postToVue({ type: 'draftState', ...this._draftState });
         }
     }
 
@@ -271,8 +298,9 @@ export class MessageBridge {
                 type: 'versionLoaded',
                 sha: resolvedSha,
                 isTip: resolvedIsTip,
-                readOnly: !resolvedIsTip || isSessionReadOnly(session),
+                readOnly: isSessionReadOnly(session),
             });
+            this.postToVue({ type: 'draftState', ...this._draftState });
         } catch (err) {
             const error = err instanceof LibrarySessionError
                 ? err.message

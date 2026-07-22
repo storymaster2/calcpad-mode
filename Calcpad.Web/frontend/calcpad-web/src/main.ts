@@ -318,8 +318,78 @@ async function bootstrap(): Promise<void> {
     const libraryQuery = !isNeutralino ? parseLibraryQuery() : null;
     let librarySession: LibrarySessionDocument | null = null;
 
-    /** True while a non-tip library commit is loaded in the editor. */
+    /** True while a non-tip library commit is shown (banner only; buffer stays editable). */
     let viewingHistorical = false;
+    /** Library commit currently loaded (null while an unsaved draft is active). */
+    let loadedSha: string | null = null;
+    const libraryDrafts = new Map<string, string>();
+    let activeDraftParentSha: string | null = null;
+    const libraryBaselines = new Map<string, string>();
+    /** Skip draft capture while applying a programmatic buffer load. */
+    let suppressLibraryDraftCapture = false;
+
+    const emitLibraryDraftState = (): void => {
+        if (!bridge) return;
+        bridge.emitDraftState({
+            drafts: [...libraryDrafts.keys()].map(parentSha => ({ parentSha })),
+            activeParentSha: activeDraftParentSha,
+        });
+    };
+
+    const withLibraryLoad = (fn: () => void): void => {
+        suppressLibraryDraftCapture = true;
+        try {
+            fn();
+        } finally {
+            suppressLibraryDraftCapture = false;
+        }
+    };
+
+    const stashActiveDraft = (): void => {
+        if (!activeDraftParentSha) return;
+        libraryDrafts.set(activeDraftParentSha, editor.getValue());
+    };
+
+    const applyLibraryBanner = (opts: {
+        isTip: boolean;
+        date?: string;
+        message?: string;
+        draftParentSha?: string | null;
+    }): void => {
+        if (!librarySession) return;
+        const sessionReadOnly = isSessionReadOnly(librarySession);
+        const title = librarySession.title || librarySession.filename;
+        if (opts.draftParentSha) {
+            const short = opts.draftParentSha.slice(0, 7);
+            appInstance.setLibrarySessionBanner({
+                title,
+                readOnly: sessionReadOnly,
+                detail: `Unsaved changes (branched from ${short}) — not saved to library`,
+            });
+            return;
+        }
+        if (opts.isTip) {
+            appInstance.setLibrarySessionBanner({ title, readOnly: sessionReadOnly });
+            return;
+        }
+        const when = opts.date
+            ? new Date(opts.date).toLocaleString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            })
+            : '';
+        const detail = when
+            ? `Viewing historical version: ${when} — ${opts.message || '(no message)'}`
+            : `Viewing historical version: ${opts.message || '(no message)'}`;
+        appInstance.setLibrarySessionBanner({
+            title,
+            readOnly: sessionReadOnly,
+            detail,
+        });
+    };
 
     if (libraryQuery) {
         appInstance.setBootLoading(true);
@@ -330,12 +400,12 @@ async function bootstrap(): Promise<void> {
             );
             setActiveLibrarySession(librarySession);
             tabs.openFile(librarySession.filename, librarySession.content);
+            const tipSha = librarySession.tipCommitSha || librarySession.baseTipCommitSha || '';
+            loadedSha = tipSha || null;
+            if (loadedSha) libraryBaselines.set(loadedSha, librarySession.content);
             const readOnly = isSessionReadOnly(librarySession);
             editor.updateOptions({ readOnly });
-            appInstance.setLibrarySessionBanner({
-                title: librarySession.title || librarySession.filename,
-                readOnly,
-            });
+            applyLibraryBanner({ isTip: true });
             appInstance.setBootLoading(false);
         } catch (err) {
             const message = err instanceof LibrarySessionError
@@ -352,7 +422,7 @@ async function bootstrap(): Promise<void> {
     }
 
     const libraryBufferLocked = (): boolean =>
-        !!librarySession && (isSessionReadOnly(librarySession) || viewingHistorical);
+        !!librarySession && isSessionReadOnly(librarySession);
 
     // Universal tab-strip callbacks. The Neutralino branch overrides the
     // close handler with a save-prompt-aware version; on web there's
@@ -622,6 +692,41 @@ async function bootstrap(): Promise<void> {
         // Debounced TOC refresh
         if (tocTimer) clearTimeout(tocTimer);
         tocTimer = setTimeout(() => activeBridge.refreshHeadings(), 800);
+
+        // Library multi-draft: capture edits against tip or historical parents.
+        if (
+            librarySession
+            && bridge
+            && !suppressLibraryDraftCapture
+            && !isSessionReadOnly(librarySession)
+        ) {
+            const content = editor.getValue();
+            if (activeDraftParentSha) {
+                const baseline = libraryBaselines.get(activeDraftParentSha);
+                if (baseline !== undefined && content === baseline) {
+                    const parent = activeDraftParentSha;
+                    libraryDrafts.delete(parent);
+                    activeDraftParentSha = null;
+                    loadedSha = parent;
+                    const tipSha = librarySession.tipCommitSha || librarySession.baseTipCommitSha || '';
+                    viewingHistorical = parent !== tipSha;
+                    withLibraryLoad(() => tabs.markActiveSaved());
+                    applyLibraryBanner({ isTip: !viewingHistorical });
+                    emitLibraryDraftState();
+                } else {
+                    libraryDrafts.set(activeDraftParentSha, content);
+                    emitLibraryDraftState();
+                }
+            } else if (loadedSha && tabs.isDirty()) {
+                libraryDrafts.set(loadedSha, content);
+                activeDraftParentSha = loadedSha;
+                emitLibraryDraftState();
+                applyLibraryBanner({
+                    isTip: !viewingHistorical,
+                    draftParentSha: activeDraftParentSha,
+                });
+            }
+        }
     });
 
     // Refresh when preview is first opened
@@ -636,43 +741,53 @@ async function bootstrap(): Promise<void> {
         setTimeout(() => { void refreshPreview(); }, 50);
     }
 
-    // Library Versions tab: apply selected commit into the editor buffer.
+    // Library Versions tab: apply selected commit / restore drafts.
     if (bridge && librarySession) {
-        bridge.onLoadVersion = ({ content, isTip, date, message }) => {
-            tabs.reloadActive(content);
-            viewingHistorical = !isTip;
-            const sessionReadOnly = isSessionReadOnly(librarySession!);
-            const readOnly = !isTip || sessionReadOnly;
-            editor.updateOptions({ readOnly });
-            if (isTip) {
-                appInstance.setLibrarySessionBanner({
-                    title: librarySession!.title || librarySession!.filename,
-                    readOnly: sessionReadOnly,
-                });
-            } else {
-                const when = date
-                    ? new Date(date).toLocaleString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    })
-                    : '';
-                const detail = when
-                    ? `Viewing historical version: ${when} — ${message || '(no message)'}`
-                    : `Viewing historical version: ${message || '(no message)'}`;
-                appInstance.setLibrarySessionBanner({
-                    title: librarySession!.title || librarySession!.filename,
-                    readOnly: true,
-                    detail,
-                });
-            }
+        bridge.onLoadVersion = ({ sha, content, isTip, date, message }) => {
+            stashActiveDraft();
+            activeDraftParentSha = null;
+            withLibraryLoad(() => {
+                tabs.reloadActive(content);
+                loadedSha = sha;
+                libraryBaselines.set(sha, content);
+                viewingHistorical = !isTip;
+                const sessionReadOnly = isSessionReadOnly(librarySession!);
+                editor.updateOptions({ readOnly: sessionReadOnly });
+            });
+            applyLibraryBanner({ isTip, date, message });
+            emitLibraryDraftState();
             activeBridge.refreshHeadings();
             if (appInstance.isPreviewVisible()) {
                 void refreshPreview();
             }
         };
+
+        bridge.onLoadDraft = (parentSha: string) => {
+            const draft = libraryDrafts.get(parentSha);
+            if (draft === undefined) return;
+            stashActiveDraft();
+            withLibraryLoad(() => {
+                tabs.loadActiveAsDirty(draft);
+                activeDraftParentSha = parentSha;
+                loadedSha = parentSha;
+                const tipSha = librarySession!.tipCommitSha || librarySession!.baseTipCommitSha || '';
+                const parentIsTip = parentSha === tipSha;
+                viewingHistorical = !parentIsTip;
+                const sessionReadOnly = isSessionReadOnly(librarySession!);
+                editor.updateOptions({ readOnly: sessionReadOnly });
+            });
+            applyLibraryBanner({
+                isTip: !viewingHistorical,
+                draftParentSha: parentSha,
+            });
+            emitLibraryDraftState();
+            activeBridge.refreshHeadings();
+            if (appInstance.isPreviewVisible()) {
+                void refreshPreview();
+            }
+        };
+
+        emitLibraryDraftState();
     }
 
     // Neutralino-specific: native menu + file operations

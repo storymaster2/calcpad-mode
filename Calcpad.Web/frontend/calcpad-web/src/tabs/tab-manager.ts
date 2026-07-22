@@ -234,6 +234,16 @@ export class TabManager {
         }
     }
 
+    /** Replace active content and leave the tab dirty (library draft restore). */
+    loadActiveAsDirty(content: string): void {
+        const t = this.findActive();
+        if (!t) return;
+        t.model.setValue(content);
+        t.savedVersionId = t.model.getAlternativeVersionId() - 1;
+        t.dirty = true;
+        this.emit();
+    }
+
     activateNext(): void {
         if (this.tabs.length < 2 || !this._activeId) return;
         const i = this.tabs.findIndex(t => t.id === this._activeId);
