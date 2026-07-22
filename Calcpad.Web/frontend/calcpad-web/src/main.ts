@@ -35,6 +35,8 @@ import {
     renewSession,
     saveSession,
     fetchContentByRef,
+    thumbnailAbsoluteUrl,
+    fetchSessionThumbnail,
     LibrarySessionError,
     type LibrarySessionDocument,
     type LibraryUpdateKind,
@@ -225,7 +227,7 @@ async function setupNeutralinoMenu(recents: string[], previewMode: PreviewMode):
     ]);
 }
 
-type PreviewMode = 'wrapped' | 'unwrapped' | 'ui';
+type PreviewMode = 'wrapped' | 'unwrapped' | 'ui' | 'detail';
 
 /** Inject datagrid CDN + UI event script into UI-mode preview HTML. */
 function injectUiAssets(html: string): string {
@@ -413,6 +415,7 @@ async function bootstrap(): Promise<void> {
             const readOnly = isSessionReadOnly(librarySession);
             editor.updateOptions({ readOnly });
             applyLibraryBanner({ isTip: true });
+            appInstance.setLibraryThumbnailAvailable(!!thumbnailAbsoluteUrl(librarySession));
             appInstance.setBootLoading(false);
         } catch (err) {
             const message = err instanceof LibrarySessionError
@@ -617,13 +620,59 @@ async function bootstrap(): Promise<void> {
     let tocTimer: ReturnType<typeof setTimeout> | null = null;
 
     // Initialize preview mode from saved extra setting (Neutralino) or localStorage (web).
+    // Never restore 'detail' — it is session-only.
     const savedMode = (editorBridge.getExtraSetting('previewMode') as 'wrapped' | 'unwrapped' | 'ui' | undefined);
     if (savedMode === 'wrapped' || savedMode === 'unwrapped' || savedMode === 'ui') {
         appInstance.setPreviewMode(savedMode);
     }
 
+    let libraryThumbnailObjectUrl: string | null = null;
+
+    const revokeLibraryThumbnailUrl = (): void => {
+        if (libraryThumbnailObjectUrl) {
+            URL.revokeObjectURL(libraryThumbnailObjectUrl);
+            libraryThumbnailObjectUrl = null;
+        }
+        appInstance.setLibraryThumbnailObjectUrl(null);
+    };
+
+    async function ensureLibraryThumbnailLoaded(): Promise<void> {
+        if (!librarySession) {
+            appInstance.setLibraryThumbnailError('No detail image');
+            return;
+        }
+        if (!thumbnailAbsoluteUrl(librarySession)) {
+            appInstance.setLibraryThumbnailAvailable(false);
+            appInstance.setLibraryThumbnailError('No detail image');
+            return;
+        }
+        if (libraryThumbnailObjectUrl) {
+            appInstance.setLibraryThumbnailObjectUrl(libraryThumbnailObjectUrl);
+            appInstance.setLibraryThumbnailError(null);
+            return;
+        }
+
+        appInstance.setLibraryThumbnailLoading(true);
+        appInstance.setLibraryThumbnailError(null);
+        try {
+            const blob = await fetchSessionThumbnail(librarySession);
+            revokeLibraryThumbnailUrl();
+            libraryThumbnailObjectUrl = URL.createObjectURL(blob);
+            appInstance.setLibraryThumbnailObjectUrl(libraryThumbnailObjectUrl);
+        } catch (err) {
+            revokeLibraryThumbnailUrl();
+            const message = err instanceof LibrarySessionError
+                ? err.message
+                : (err instanceof Error ? err.message : 'Failed to load thumbnail.');
+            appInstance.setLibraryThumbnailError(message);
+        } finally {
+            appInstance.setLibraryThumbnailLoading(false);
+        }
+    }
+
     async function refreshPreview(): Promise<void> {
         if (!appInstance.isPreviewVisible()) return;
+        if (appInstance.getPreviewMode() === 'detail') return;
 
         const content = editor.getValue();
         const settings = activeBridge.getSettings();
@@ -683,8 +732,14 @@ async function bootstrap(): Promise<void> {
     // Stub overwritten in the Neutralino branch below; harmless on web.
     let rebuildMenu: (mode: PreviewMode) => Promise<void> = async () => { /* no-op */ };
 
-    appInstance.onPreviewModeChanged = (mode: 'wrapped' | 'unwrapped' | 'ui') => {
-        editorBridge.setExtraSetting('previewMode', mode);
+    appInstance.onPreviewModeChanged = (mode: PreviewMode) => {
+        if (mode !== 'detail') {
+            editorBridge.setExtraSetting('previewMode', mode);
+        }
+        if (mode === 'detail') {
+            void ensureLibraryThumbnailLoaded();
+            return;
+        }
         refreshPreview();
         if (isNeutralino) {
             void rebuildMenu(mode);
@@ -740,7 +795,11 @@ async function bootstrap(): Promise<void> {
     // Refresh when preview is first opened
     appInstance.onPreviewToggled = (visible: boolean) => {
         if (visible) {
-            setTimeout(refreshPreview, 50);
+            if (appInstance.getPreviewMode() === 'detail') {
+                void ensureLibraryThumbnailLoaded();
+            } else {
+                setTimeout(refreshPreview, 50);
+            }
         }
     };
 

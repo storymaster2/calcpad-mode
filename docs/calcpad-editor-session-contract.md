@@ -117,7 +117,7 @@ GET /calc-sessions/:token
 
 - `mode` is `"readwrite"` when `save.allowed`; otherwise `"readonly"`.
 - `canonicalCommitSha` is the commit the library considers **canonical** for this calc. **Today it equals tip**; later it may diverge. Use it (and history `isCanonical`) to badge the canonical version in the UI.
-- `thumbnailUrl` is a capability path (or `null` if the detail has no thumbnail). Fetch as `{libraryApi}{thumbnailUrl}` for optional chrome/header display. Ignore null or failed loads.
+- `thumbnailUrl` is a capability path (or `null` if the detail has no thumbnail). Fetch as `{libraryApi}{thumbnailUrl}` for the **Detail** preview tab (and optional chrome). Ignore null or failed loads.
 - Path fields may already include the concrete `sessionId` (prefer response values over templates).
 
 ### Thumbnail
@@ -126,10 +126,12 @@ GET /calc-sessions/:token
 GET /calc-sessions/:token/thumbnail
 ```
 
-- Image bytes (`Content-Type` image/* or svg).
+- Image bytes; typically an **SVG** (`Content-Type: image/svg+xml`; other `image/*` may appear).
 - `Cache-Control: private, max-age=300`.
 - Slides TTL.
 - **404** if session expired or thumbnail missing.
+
+The calcpad-web **Detail** preview tab loads this capability URL (prefer `thumbnailUrl` from the session document when present) and scales the SVG proportionally to fill the preview pane.
 
 ### Renew
 
@@ -213,7 +215,7 @@ Content-Type: application/json
 
 1. Boot from `librarySession` + `libraryApi` as above.
 2. Persist in `sessionStorage` (or memory): `{ sessionId, libraryApi, itemKey, baseTipCommitSha, basedOnCommitSha? }` so renew/save work after soft reloads.
-3. Optional UI: load `{libraryApi}{thumbnailUrl}` when non-null.
+3. Optional UI: load `{libraryApi}{thumbnailUrl}` in the preview **Detail** tab when non-null.
 4. Versions panel: `GET …/history`; mark `isCanonical` (and `isTip` if useful); jump via `GET …/content?ref=`.
 5. When loading an older version into the buffer, remember that SHA as `basedOnCommitSha` for the next save.
 6. On `visibilitychange` → visible / interval (e.g. daily) / **immediately before save**: `POST …/renew`.

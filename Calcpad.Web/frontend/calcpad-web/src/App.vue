@@ -194,16 +194,41 @@
             @click="setPreviewMode('ui')"
             title="Interactive UI inputs"
           >Interactive</button>
+          <button
+            v-if="libraryThumbnailAvailable"
+            class="toolbar-btn"
+            :class="{ active: previewMode === 'detail' }"
+            @click="setPreviewMode('detail')"
+            title="Detail library thumbnail"
+          >Detail</button>
         </div>
         <span class="spacer"></span>
         <button class="toolbar-btn" @click="togglePreview">✕</button>
+      </div>
+      <div v-if="previewMode === 'detail'" class="detail-preview-pane">
+        <div v-if="libraryThumbnailLoading" class="detail-preview-status">Loading detail image…</div>
+        <div v-else-if="libraryThumbnailError" class="detail-preview-status detail-preview-error">
+          {{ libraryThumbnailError }}
+        </div>
+        <img
+          v-else-if="libraryThumbnailObjectUrl"
+          class="detail-preview-image"
+          :src="libraryThumbnailObjectUrl"
+          alt="Detail thumbnail"
+        />
+        <div v-else class="detail-preview-status">No detail image</div>
       </div>
       <!-- allow-scripts is required so the injected console-interception
            script (and any user #HTML script) actually runs in the iframe.
            Without it the preview is silent — matches the VS Code webview
            behaviour where "hello!" / `console.log(...)` reach the Output
            panel via the previewConsole bridge in injectPreviewConsole. -->
-      <iframe ref="previewFrame" class="preview-frame" sandbox="allow-same-origin allow-scripts"></iframe>
+      <iframe
+        v-show="previewMode !== 'detail'"
+        ref="previewFrame"
+        class="preview-frame"
+        sandbox="allow-same-origin allow-scripts"
+      ></iframe>
     </div>
 
     <!-- Confirm dialog (used in place of Neutralino's GTK dialog, which has
@@ -280,12 +305,36 @@ defineProps<{
   isNeutralino?: boolean
 }>()
 
-export type PreviewMode = 'wrapped' | 'unwrapped' | 'ui'
+export type PreviewMode = 'wrapped' | 'unwrapped' | 'ui' | 'detail'
 
 const onGotoProblem = ref<((problem: ProblemItem) => void) | null>(null)
 const onPreviewToggled = ref<((visible: boolean) => void) | null>(null)
 const onPreviewModeChanged = ref<((mode: PreviewMode) => void) | null>(null)
 const previewMode = ref<PreviewMode>('wrapped')
+
+const libraryThumbnailAvailable = ref(false)
+const libraryThumbnailObjectUrl = ref<string | null>(null)
+const libraryThumbnailLoading = ref(false)
+const libraryThumbnailError = ref<string | null>(null)
+
+function setLibraryThumbnailAvailable(available: boolean): void {
+  libraryThumbnailAvailable.value = available
+  if (!available && previewMode.value === 'detail') {
+    setPreviewMode('wrapped')
+  }
+}
+
+function setLibraryThumbnailObjectUrl(url: string | null): void {
+  libraryThumbnailObjectUrl.value = url
+}
+
+function setLibraryThumbnailLoading(loading: boolean): void {
+  libraryThumbnailLoading.value = loading
+}
+
+function setLibraryThumbnailError(message: string | null): void {
+  libraryThumbnailError.value = message
+}
 
 // ---- Tab strip ----
 export interface TabUiState {
@@ -688,6 +737,10 @@ defineExpose({
   onPreviewModeChanged,
   setPreviewMode,
   getPreviewMode,
+  setLibraryThumbnailAvailable,
+  setLibraryThumbnailObjectUrl,
+  setLibraryThumbnailLoading,
+  setLibraryThumbnailError,
   appendOutput,
   clearOutput,
   showConfirm,

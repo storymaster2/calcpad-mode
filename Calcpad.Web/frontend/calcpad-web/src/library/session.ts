@@ -159,6 +159,35 @@ export function contentUrl(session: LibrarySessionDocument, ref?: string): strin
     return url.toString();
 }
 
+/** Absolute URL for the session thumbnail capability, or null if unavailable. */
+export function thumbnailAbsoluteUrl(session: LibrarySessionDocument): string | null {
+    const raw = session.thumbnailUrl;
+    if (raw == null || typeof raw !== 'string') return null;
+    const trimmed = raw.trim();
+    if (!trimmed || trimmed.toLowerCase() === 'null') return null;
+    return absoluteUrl(session.libraryApi, trimmed);
+}
+
+export async function fetchSessionThumbnail(session: LibrarySessionDocument): Promise<Blob> {
+    const url = thumbnailAbsoluteUrl(session);
+    if (!url) {
+        throw new LibrarySessionError('No thumbnail URL for this session.', 'not_found', 404);
+    }
+
+    const response = await libraryFetch(url);
+    throwForStatus(response, 'Thumbnail');
+
+    try {
+        return await response.blob();
+    } catch (err) {
+        const detail = err instanceof Error ? err.message : String(err);
+        throw new LibrarySessionError(
+            `Thumbnail response could not be read (${detail}).`,
+            'invalid',
+        );
+    }
+}
+
 async function libraryFetch(url: string, init?: RequestInit): Promise<Response> {
     try {
         const { headers, ...rest } = init ?? {};
