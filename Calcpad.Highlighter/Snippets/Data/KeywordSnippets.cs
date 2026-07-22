@@ -410,8 +410,8 @@ namespace Calcpad.Highlighter.Snippets.Data
             },
             new SnippetItem
             {
-                Insert = "#format S3",
-                Description = "Significant figures (fixed point + thousands separators)",
+                Insert = "#format N3",
+                Description = "Significant figures with thousands separators (use N for older-engine fallback)",
                 Category = "Output Control",
                 KeywordType = "Keyword"
             },

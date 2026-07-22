@@ -291,7 +291,7 @@ namespace Calcpad.Core
             {
                 string s;
                 var kind = char.ToUpperInvariant(format[0]);
-                if (kind == 'S')
+                if (kind is 'N' or 'S')
                     s = FormatSignificantFigures(d, ParseSignificantFigureCount(format), culture);
                 else if (kind == 'D')
                 {
@@ -360,26 +360,72 @@ namespace Calcpad.Core
 
             var sign = Math.Sign(d);
             var abs = Math.Abs(d);
-            var order = (int)Math.Floor(Math.Log10(abs));
-            var scale = Math.Pow(10d, order - n + 1);
-            if (double.IsInfinity(scale) || scale == 0d)
+            if (!TryRoundSignificantFigures(abs, n, out var rounded))
                 return FormatSignificantFiguresFallback(d, culture);
 
-            var rounded = Math.Round(abs / scale, MidpointRounding.AwayFromZero) * scale;
             if (rounded == 0d)
                 return "0";
-            if (double.IsInfinity(rounded) || double.IsNaN(rounded))
-                return FormatSignificantFiguresFallback(d, culture);
+
+            // One extra sig digit: if it is effectively zero (FP fuzz), drop trailing
+            // decimal zeros; if it carries real information (e.g. 2.003 → 2.00), keep them.
+            // Compare at the (n+1) ULP so a single non-zero extra digit is not swallowed.
+            var keepForcedDecimals = TryRoundSignificantFigures(abs, n + 1, out var roundedExtra)
+                && !SignificantFiguresNearlyEqual(rounded, roundedExtra, n + 1);
 
             var roundedOrder = (int)Math.Floor(Math.Log10(rounded));
             var decimals = Math.Clamp(n - roundedOrder - 1, 0, 15);
-            var pattern = decimals == 0
-                ? "#,##0"
-                : "#,##0." + new string('0', decimals);
+            string pattern;
+            if (decimals == 0)
+                pattern = "#,##0";
+            else if (keepForcedDecimals)
+                pattern = "#,##0." + new string('0', decimals);
+            else
+                pattern = "#,##0." + new string('#', decimals);
 
             var value = sign < 0 ? -rounded : rounded;
             var s = value.ToString(pattern, culture);
             return s == "-0" ? "0" : s;
+        }
+
+        private static bool TryRoundSignificantFigures(double abs, int n, out double rounded)
+        {
+            rounded = 0d;
+            if (abs == 0d)
+                return true;
+
+            n = Math.Clamp(n, 1, 16);
+            var order = (int)Math.Floor(Math.Log10(abs));
+            var scale = Math.Pow(10d, order - n + 1);
+            if (double.IsInfinity(scale) || scale == 0d)
+                return false;
+
+            rounded = Math.Round(abs / scale, MidpointRounding.AwayFromZero) * scale;
+            if (double.IsInfinity(rounded) || double.IsNaN(rounded))
+                return false;
+
+            // Rounding can bump the order (e.g. 9.99 → 10.0); renormalize once.
+            if (rounded != 0d)
+            {
+                var newOrder = (int)Math.Floor(Math.Log10(rounded));
+                if (newOrder != order)
+                {
+                    scale = Math.Pow(10d, newOrder - n + 1);
+                    if (!(double.IsInfinity(scale) || scale == 0d))
+                        rounded = Math.Round(abs / scale, MidpointRounding.AwayFromZero) * scale;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool SignificantFiguresNearlyEqual(double a, double b, int n)
+        {
+            var mag = Math.Max(Math.Abs(a), Math.Abs(b));
+            if (mag == 0d)
+                return true;
+            var order = (int)Math.Floor(Math.Log10(mag));
+            var ulp = Math.Pow(10d, order - n + 1);
+            return Math.Abs(a - b) < 0.5 * ulp;
         }
 
         private static string FormatSignificantFiguresFallback(double d, CultureInfo culture)

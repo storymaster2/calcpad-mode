@@ -9,7 +9,8 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
     public class FormatValidator
     {
         // Matches the Core regex from Calcpad.Core/Validator.cs
-        // Standard: F, C, E, G, N, D, S + 0-2 digits (S = significant figures, fixed + grouping)
+        // Standard: F, C, E, G, N, D, S + 0-2 digits
+        // (N and S = significant figures, fixed + grouping; prefer N for older-engine fallback)
         // Custom: 0, #, comma, dot, e/E, +, -
         private static readonly Regex FormatRegex = new(
             @"^[FCEGNDS]\d{0,2}$|^[0#]+(,[0#]+)?(\.[0#]+)?([eE][+-]?0+)?$",

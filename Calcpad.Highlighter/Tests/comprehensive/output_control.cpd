@@ -37,7 +37,7 @@ rounded4 = 3.14159265
 ' Format control
 #format F2
 formatted = 123.456789
-#format S3
+#format N3
 sigFigGrouped = 9055
 #format default
 ' Trig unit switches

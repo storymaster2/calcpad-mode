@@ -185,45 +185,38 @@ Displays either fixed point or scientific: `Gn` or `gn`
 | `0.0012345678:g3` | $0.00123$ |
 | `123456m:G3` | $1.23×10^5 \mathrm{m}$<br>(with unit "Meters") |
 
-### Significant figures
+### Significant figures (`N` / `S`)
 
-Fixed point rounded to *n* significant figures, with digit grouping: `Sn` or `sn`
+Fixed point rounded to *n* significant figures, with digit grouping: `Nn` / `nn` (preferred) or `Sn` / `sn` (alias).
 
-`n` range: 1–15 (clamped; bare `S` defaults to **3**)
+`n` range: 1–15 (clamped; bare `N` or `S` defaults to **3**)
 
-Never uses scientific notation (unlike `G`). Thousands and decimal separators follow the current culture (same idea as `N`).
+Never uses scientific notation (unlike `G`). Thousands and decimal separators follow the current culture.
 
-| Code | Output (en-US) |
+Trailing zeros after the decimal are omitted when the next significant digit is effectively zero (at most one extra digit is inspected, so floating-point fuzz like `2.0000000000001` still formats as `2`). If that extra digit is meaningful (`2.003` → `2.00`), the zeros that mark the rounded precision are kept.
+
+**Compatibility:** Prefer `#format N3` (or `:N3`) in shared worksheets. Older Calcpad builds that do not implement this remapping still accept `N` as the classic .NET “number” format (fixed decimals + grouping), so the file opens without an invalid-format error. `S` is rejected on those older builds—use `N` when you need a fallback.
+
+| Code | Output on this engine (en-US) |
 | ---- | ------ |
-| `9055:S3` | $9,060$ |
-| `0.001234:S3` | $0.00123$ |
-| `π:S3` | $3.14$ |
-| `123456:S` | $123,000$ |
+| `9055:N3` | $9,060$ |
+| `0.001234:N3` | $0.00123$ |
+| `π:N3` | $3.14$ |
+| `2.003:N3` | $2.00$ |
+| `2.0000000000001:N3` | $2$ |
+| `123456:N` | $123,000$ |
 
 Worksheet-wide:
 
 ```calcpad
-#format S3
+#format N3
 ```
 
-### Number
-
-Fixed point with digit grouping: `Nn` or `nn`
-
-`n` range: 0-17  
-`n` default value: 2
-
-The symbols defined in Windows' Regional Settings are used for thousands and decimal separators.
-
-| Code | Output |
-| ---- | ------ |
-| `123.456789:n` | $123.46$ |
-| `0.0012345678:N3` | $0.001$ |
-| `123456:N3` | $123\mathrm{,}456.000$ |
+For fixed decimal places **with** grouping (previous `N` behavior on this fork), use a custom pattern such as `#,##0.00` instead.
 
 ### Currency
 
-Fixed point with currency symbol and digit grouping: `Cn` or `en`
+Fixed point with currency symbol and digit grouping: `Cn` or `cn`
 
 `n` range: 0-17  
 `n` default value: 2
