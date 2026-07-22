@@ -10,9 +10,25 @@ import {
     buildImageCommentLine,
 } from './image-insert';
 import { getActiveEditorContent } from './active-editor';
+import {
+    fetchHistory,
+    fetchContentByRef,
+    getActiveLibrarySession,
+    isSessionReadOnly,
+    LibrarySessionError,
+    type HistoryCommit,
+} from '../library/session';
 
 const SETTINGS_KEY = 'calcpad-settings';
 const PDF_SETTINGS_KEY = 'calcpad-pdf-settings';
+
+export type VersionLoadHandler = (payload: {
+    sha: string;
+    content: string;
+    isTip: boolean;
+    date: string;
+    message: string;
+}) => void;
 
 function triggerBlobDownload(blob: Blob, filename: string): void {
     const url = URL.createObjectURL(blob);
@@ -34,6 +50,8 @@ export class MessageBridge {
     private definitionsService: CalcpadDefinitionsService;
     private settings: CalcpadSettings;
     private _onInsertText: ((text: string) => void) | null = null;
+    private _onLoadVersion: VersionLoadHandler | null = null;
+    private _historyCommits: HistoryCommit[] = [];
 
     constructor(serverUrl: string) {
         const logger = { appendLine: (msg: string) => console.debug('[CalcPad]', msg) };
@@ -84,6 +102,15 @@ export class MessageBridge {
 
     set onInsertText(handler: (text: string) => void) {
         this._onInsertText = handler;
+    }
+
+    set onLoadVersion(handler: VersionLoadHandler | null) {
+        this._onLoadVersion = handler;
+    }
+
+    /** Tell the Vue sidebar a Detail Library session is active (shows Versions tab). */
+    notifyLibrarySessionActive(active: boolean): void {
+        this.postToVue({ type: 'librarySessionState', active });
     }
 
     /**
@@ -187,9 +214,70 @@ export class MessageBridge {
                 this.handleDownloadExportZip();
                 break;
 
+            case 'getHistory':
+                void this.handleGetHistory();
+                break;
+
+            case 'loadVersion':
+                void this.handleLoadVersion(typeof message.sha === 'string' ? message.sha : '');
+                break;
+
             case 'debug':
                 console.debug('[Vue]', message.message);
                 break;
+        }
+    }
+
+    private async handleGetHistory(): Promise<void> {
+        const session = getActiveLibrarySession();
+        if (!session) {
+            this.postToVue({ type: 'historyResponse', commits: [], error: 'No library session.' });
+            return;
+        }
+        try {
+            const history = await fetchHistory(session);
+            this._historyCommits = history.commits ?? [];
+            this.postToVue({ type: 'historyResponse', commits: this._historyCommits });
+        } catch (err) {
+            const error = err instanceof LibrarySessionError
+                ? err.message
+                : (err instanceof Error ? err.message : 'Failed to load history.');
+            this.postToVue({ type: 'historyResponse', commits: [], error });
+        }
+    }
+
+    private async handleLoadVersion(sha: string): Promise<void> {
+        const session = getActiveLibrarySession();
+        if (!session || !sha) {
+            this.postToVue({ type: 'versionLoadError', error: 'No library session or commit.' });
+            return;
+        }
+        try {
+            const tipSha = session.tipCommitSha || session.baseTipCommitSha || '';
+            const isTip = sha === tipSha
+                || this._historyCommits.some(c => c.sha === sha && c.isTip);
+            const body = await fetchContentByRef(session, isTip && sha === tipSha ? undefined : sha);
+            const meta = this._historyCommits.find(c => c.sha === sha || c.sha === body.sha);
+            const resolvedSha = body.sha || sha;
+            const resolvedIsTip = isTip || resolvedSha === tipSha || !!meta?.isTip;
+            this._onLoadVersion?.({
+                sha: resolvedSha,
+                content: body.content,
+                isTip: resolvedIsTip,
+                date: meta?.date ?? '',
+                message: meta?.message ?? '',
+            });
+            this.postToVue({
+                type: 'versionLoaded',
+                sha: resolvedSha,
+                isTip: resolvedIsTip,
+                readOnly: !resolvedIsTip || isSessionReadOnly(session),
+            });
+        } catch (err) {
+            const error = err instanceof LibrarySessionError
+                ? err.message
+                : (err instanceof Error ? err.message : 'Failed to load version.');
+            this.postToVue({ type: 'versionLoadError', error });
         }
     }
 

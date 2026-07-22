@@ -14,6 +14,17 @@ export interface LibrarySessionSave {
     requiresCommitMessage: boolean;
     uploadMethod: string;
     uploadPath: string;
+    requiresBaseTipCommitSha?: boolean;
+}
+
+export interface LibrarySessionVersions {
+    historyPath: string;
+    contentPath: string;
+}
+
+export interface LibrarySessionWorkspace {
+    renewPath: string;
+    renewMethod: string;
 }
 
 export interface LibrarySessionDocument {
@@ -25,14 +36,37 @@ export interface LibrarySessionDocument {
     filename: string;
     repoPath: string;
     tipCommitSha: string;
+    baseTipCommitSha?: string;
     content: string;
     libraryApi: string;
+    libraryDetailHint?: { itemKey: string };
+    versions?: LibrarySessionVersions;
+    workspace?: LibrarySessionWorkspace;
     save: LibrarySessionSave;
 }
 
 export interface LibraryQueryParams {
     librarySession: string;
     libraryApi: string;
+}
+
+export interface HistoryCommit {
+    sha: string;
+    message: string;
+    date: string;
+    isTip: boolean;
+}
+
+export interface HistoryResponse {
+    expiresAt: string;
+    commits: HistoryCommit[];
+}
+
+export interface ContentByRefResponse {
+    expiresAt: string;
+    sha: string;
+    filename: string;
+    content: string;
 }
 
 export class LibrarySessionError extends Error {
@@ -56,16 +90,47 @@ export function parseLibraryQuery(search: string = window.location.search): Libr
     return { librarySession, libraryApi };
 }
 
-export async function fetchLibrarySession(
-    libraryApi: string,
-    token: string,
-): Promise<LibrarySessionDocument> {
-    const base = libraryApi.replace(/\/+$/, '');
-    const url = `${base}/calc-sessions/${encodeURIComponent(token)}`;
+export function getActiveLibrarySession(): LibrarySessionDocument | null {
+    return (window as unknown as { calcpadLibrarySession?: LibrarySessionDocument }).calcpadLibrarySession
+        ?? null;
+}
 
-    let response: Response;
+export function setActiveLibrarySession(session: LibrarySessionDocument | null): void {
+    (window as unknown as { calcpadLibrarySession?: LibrarySessionDocument | null }).calcpadLibrarySession = session;
+}
+
+function resolvePathTemplate(path: string, sessionId: string): string {
+    return path.replace(/\{sessionId\}/g, encodeURIComponent(sessionId));
+}
+
+function absoluteUrl(libraryApi: string, pathOrUrl: string): string {
+    if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+    const base = libraryApi.replace(/\/+$/, '');
+    const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+    return `${base}${path}`;
+}
+
+export function historyUrl(session: LibrarySessionDocument, limit = 50): string {
+    const raw = session.versions?.historyPath
+        ? resolvePathTemplate(session.versions.historyPath, session.sessionId)
+        : `/calc-sessions/${encodeURIComponent(session.sessionId)}/history`;
+    const url = new URL(absoluteUrl(session.libraryApi, raw));
+    url.searchParams.set('limit', String(limit));
+    return url.toString();
+}
+
+export function contentUrl(session: LibrarySessionDocument, ref?: string): string {
+    const raw = session.versions?.contentPath
+        ? resolvePathTemplate(session.versions.contentPath, session.sessionId)
+        : `/calc-sessions/${encodeURIComponent(session.sessionId)}/content`;
+    const url = new URL(absoluteUrl(session.libraryApi, raw));
+    if (ref) url.searchParams.set('ref', ref);
+    return url.toString();
+}
+
+async function libraryFetch(url: string): Promise<Response> {
     try {
-        response = await fetch(url, {
+        return await fetch(url, {
             method: 'GET',
             cache: 'no-store',
             headers: { Accept: 'application/json' },
@@ -77,7 +142,9 @@ export async function fetchLibrarySession(
             'network',
         );
     }
+}
 
+function throwForStatus(response: Response, context: string): void {
     if (response.status === 404) {
         throw new LibrarySessionError(
             'This library session is missing or has expired. Return to Detail Library and open the calculation again.',
@@ -85,14 +152,23 @@ export async function fetchLibrarySession(
             404,
         );
     }
-
     if (!response.ok) {
         throw new LibrarySessionError(
-            `Detail Library returned HTTP ${response.status}.`,
+            `${context}: Detail Library returned HTTP ${response.status}.`,
             'invalid',
             response.status,
         );
     }
+}
+
+export async function fetchLibrarySession(
+    libraryApi: string,
+    token: string,
+): Promise<LibrarySessionDocument> {
+    const base = libraryApi.replace(/\/+$/, '');
+    const url = `${base}/calc-sessions/${encodeURIComponent(token)}`;
+    const response = await libraryFetch(url);
+    throwForStatus(response, 'Session');
 
     let data: unknown;
     try {
@@ -105,7 +181,57 @@ export async function fetchLibrarySession(
         throw new LibrarySessionError('Session response was missing required fields.', 'invalid');
     }
 
-    return data;
+    // Normalize libraryApi onto the document for later absolute URLs.
+    if (!data.libraryApi) {
+        data = { ...data, libraryApi: base };
+    } else {
+        data = { ...data, libraryApi: data.libraryApi.replace(/\/+$/, '') };
+    }
+
+    return data as LibrarySessionDocument;
+}
+
+export async function fetchHistory(
+    session: LibrarySessionDocument,
+    limit = 50,
+): Promise<HistoryResponse> {
+    const response = await libraryFetch(historyUrl(session, limit));
+    throwForStatus(response, 'History');
+
+    let data: unknown;
+    try {
+        data = await response.json();
+    } catch {
+        throw new LibrarySessionError('History response was not valid JSON.', 'invalid');
+    }
+
+    if (!data || typeof data !== 'object' || !Array.isArray((data as HistoryResponse).commits)) {
+        throw new LibrarySessionError('History response was missing commits.', 'invalid');
+    }
+
+    return data as HistoryResponse;
+}
+
+export async function fetchContentByRef(
+    session: LibrarySessionDocument,
+    sha?: string,
+): Promise<ContentByRefResponse> {
+    const response = await libraryFetch(contentUrl(session, sha));
+    throwForStatus(response, 'Content');
+
+    let data: unknown;
+    try {
+        data = await response.json();
+    } catch {
+        throw new LibrarySessionError('Content response was not valid JSON.', 'invalid');
+    }
+
+    const o = data as ContentByRefResponse;
+    if (!o || typeof o.content !== 'string' || typeof o.sha !== 'string') {
+        throw new LibrarySessionError('Content response was missing required fields.', 'invalid');
+    }
+
+    return o;
 }
 
 function isSessionDocument(value: unknown): value is LibrarySessionDocument {

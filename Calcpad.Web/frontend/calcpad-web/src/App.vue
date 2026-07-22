@@ -35,8 +35,11 @@
         class="library-session-banner"
         role="status"
       >
-        Opened from Detail Library: {{ libraryBanner.title }}
-        <span v-if="libraryBanner.readOnly">(read-only)</span>
+        <template v-if="libraryBanner.detail">{{ libraryBanner.detail }}</template>
+        <template v-else>
+          Opened from Detail Library: {{ libraryBanner.title }}
+          <span v-if="libraryBanner.readOnly">(read-only)</span>
+        </template>
       </div>
       <div class="editor-toolbar">
         <template v-if="isNeutralino">
@@ -260,7 +263,7 @@ const onNewTabRequest = ref<(() => void) | null>(null)
 
 const bootLoading = ref(false)
 const bootError = ref<string | null>(null)
-const libraryBanner = ref<{ title: string; readOnly: boolean } | null>(null)
+const libraryBanner = ref<{ title: string; readOnly: boolean; detail?: string } | null>(null)
 
 function setBootLoading(loading: boolean): void {
   bootLoading.value = loading
@@ -271,7 +274,7 @@ function setBootError(message: string | null): void {
   if (message) bootLoading.value = false
 }
 
-function setLibrarySessionBanner(banner: { title: string; readOnly: boolean } | null): void {
+function setLibrarySessionBanner(banner: { title: string; readOnly: boolean; detail?: string } | null): void {
   libraryBanner.value = banner
 }
 

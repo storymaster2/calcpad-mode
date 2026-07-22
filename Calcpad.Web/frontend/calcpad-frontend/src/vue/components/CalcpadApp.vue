@@ -3,9 +3,8 @@
     <div class="tab-container">
       <!-- TODO: Remove v-show condition after Files feature is fully developed -->
       <button
-        v-for="tab in tabs"
+        v-for="tab in visibleTabs"
         :key="tab.id"
-        v-show="tab.id !== 'files'"
         :class="['tab', { active: activeTab === tab.id }]"
         @click="switchTab(tab.id)"
       >
@@ -19,6 +18,9 @@
         :insert-items="insertItems"
         @insert-text="handleInsertText"
         @insert-image="handleInsertImage"
+      />
+      <CalcpadVersionsTab
+        v-else-if="activeTab === 'versions'"
       />
       <CalcpadTocTab
         v-else-if="activeTab === 'toc'"
@@ -90,8 +92,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import CalcpadInsertTab from './CalcpadInsertTab.vue'
+import CalcpadVersionsTab from './CalcpadVersionsTab.vue'
 import CalcpadTocTab from './CalcpadTocTab.vue'
 import CalcpadSettingsTab from './CalcpadSettingsTab.vue'
 import CalcpadVariablesTab from './CalcpadVariablesTab.vue'
@@ -106,6 +109,7 @@ import { DEFAULT_PDF_SETTINGS } from '../types'
 
 // State
 const activeTab = ref('insert')
+const librarySessionActive = ref(false)
 const insertItems = ref<InsertItem[]>([])
 const settings = ref<Settings>()
 const previewTheme = ref('system')
@@ -133,6 +137,7 @@ const prettifyTrimTrailing = ref(true)
 
 const tabs: Tab[] = [
   { id: 'insert', label: 'Insert' },
+  { id: 'versions', label: 'Versions' },
   { id: 'toc', label: 'TOC' },
   { id: 'settings', label: 'Settings' },
   { id: 'variables', label: 'Variables' },
@@ -141,6 +146,14 @@ const tabs: Tab[] = [
   { id: 'formatting', label: 'Formatting' },
   { id: 'export', label: 'Export' }
 ]
+
+const visibleTabs = computed(() =>
+  tabs.filter(tab => {
+    if (tab.id === 'files') return false
+    if (tab.id === 'versions') return librarySessionActive.value
+    return true
+  }),
+)
 
 const exportEntries = ref<ExportMeta[]>([])
 
@@ -350,6 +363,12 @@ const handleMessage = (event: MessageEvent) => {
       break
     case 'exportsResponse':
       exportEntries.value = message.exports || []
+      break
+    case 'librarySessionState':
+      librarySessionActive.value = !!message.active
+      if (!librarySessionActive.value && activeTab.value === 'versions') {
+        activeTab.value = 'insert'
+      }
       break
   }
 }

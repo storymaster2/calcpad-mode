@@ -30,6 +30,7 @@ import { TabManager } from './tabs/tab-manager';
 import {
     parseLibraryQuery,
     fetchLibrarySession,
+    setActiveLibrarySession,
     isSessionReadOnly,
     LibrarySessionError,
     type LibrarySessionDocument,
@@ -317,6 +318,9 @@ async function bootstrap(): Promise<void> {
     const libraryQuery = !isNeutralino ? parseLibraryQuery() : null;
     let librarySession: LibrarySessionDocument | null = null;
 
+    /** True while a non-tip library commit is loaded in the editor. */
+    let viewingHistorical = false;
+
     if (libraryQuery) {
         appInstance.setBootLoading(true);
         try {
@@ -324,12 +328,10 @@ async function bootstrap(): Promise<void> {
                 libraryQuery.libraryApi,
                 libraryQuery.librarySession,
             );
-            (window as any).calcpadLibrarySession = librarySession;
+            setActiveLibrarySession(librarySession);
             tabs.openFile(librarySession.filename, librarySession.content);
             const readOnly = isSessionReadOnly(librarySession);
-            if (readOnly) {
-                editor.updateOptions({ readOnly: true });
-            }
+            editor.updateOptions({ readOnly });
             appInstance.setLibrarySessionBanner({
                 title: librarySession.title || librarySession.filename,
                 readOnly,
@@ -349,19 +351,22 @@ async function bootstrap(): Promise<void> {
         tabs.newUntitled(isNeutralino ? '' : getSampleContent());
     }
 
+    const libraryBufferLocked = (): boolean =>
+        !!librarySession && (isSessionReadOnly(librarySession) || viewingHistorical);
+
     // Universal tab-strip callbacks. The Neutralino branch overrides the
     // close handler with a save-prompt-aware version; on web there's
     // nothing to save, so a plain close is correct.
     appInstance.onTabActivate = (id: string) => tabs.activate(id);
     appInstance.onTabCloseRequest = (id: string) => tabs.close(id);
     appInstance.onNewTabRequest = () => {
-        if (librarySession && isSessionReadOnly(librarySession)) return;
+        if (libraryBufferLocked()) return;
         tabs.newUntitled();
     };
 
     // Wire the bridge's insertText handler to Monaco
     activeBridge.onInsertText = (text: string) => {
-        if (librarySession && isSessionReadOnly(librarySession)) return;
+        if (libraryBufferLocked()) return;
         const selection = editor.getSelection();
         if (selection) {
             editor.executeEdits('calcpad-insert', [{
@@ -523,6 +528,12 @@ async function bootstrap(): Promise<void> {
     const sidebarApp = createApp(CalcpadAppVue);
     sidebarApp.mount('#vue-sidebar');
 
+    // Show Versions tab only for Detail Library deep-links (web MessageBridge).
+    // nextTick: ensure CalcpadApp's message listener is attached first.
+    if (librarySession && bridge) {
+        void nextTick(() => bridge!.notifyLibrarySessionActive(true));
+    }
+
     // HTML preview via convert endpoint (debounced)
     let previewTimer: ReturnType<typeof setTimeout> | null = null;
     // TOC headings refresh (debounced)
@@ -623,6 +634,45 @@ async function bootstrap(): Promise<void> {
     // Preview starts expanded; kick convert once content/session is ready.
     if (appInstance.isPreviewVisible()) {
         setTimeout(() => { void refreshPreview(); }, 50);
+    }
+
+    // Library Versions tab: apply selected commit into the editor buffer.
+    if (bridge && librarySession) {
+        bridge.onLoadVersion = ({ content, isTip, date, message }) => {
+            tabs.reloadActive(content);
+            viewingHistorical = !isTip;
+            const sessionReadOnly = isSessionReadOnly(librarySession!);
+            const readOnly = !isTip || sessionReadOnly;
+            editor.updateOptions({ readOnly });
+            if (isTip) {
+                appInstance.setLibrarySessionBanner({
+                    title: librarySession!.title || librarySession!.filename,
+                    readOnly: sessionReadOnly,
+                });
+            } else {
+                const when = date
+                    ? new Date(date).toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    })
+                    : '';
+                const detail = when
+                    ? `Viewing historical version: ${when} — ${message || '(no message)'}`
+                    : `Viewing historical version: ${message || '(no message)'}`;
+                appInstance.setLibrarySessionBanner({
+                    title: librarySession!.title || librarySession!.filename,
+                    readOnly: true,
+                    detail,
+                });
+            }
+            activeBridge.refreshHeadings();
+            if (appInstance.isPreviewVisible()) {
+                void refreshPreview();
+            }
+        };
     }
 
     // Neutralino-specific: native menu + file operations
