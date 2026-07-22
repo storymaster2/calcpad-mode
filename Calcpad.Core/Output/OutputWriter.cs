@@ -290,7 +290,10 @@ namespace Calcpad.Core
             if (!string.IsNullOrEmpty(format))
             {
                 string s;
-                if (format.StartsWith('D'))
+                var kind = char.ToUpperInvariant(format[0]);
+                if (kind == 'S')
+                    s = FormatSignificantFigures(d, ParseSignificantFigureCount(format), culture);
+                else if (kind == 'D')
                 {
                     if (double.IsInteger(d) && d < long.MaxValue)
                         s = ((long)d).ToString(format, culture);
@@ -339,6 +342,50 @@ namespace Calcpad.Core
             }
             format = $"#.{Sharps[..decimals]}E+0";
             return d.ToString(format, culture);
+        }
+
+        private static int ParseSignificantFigureCount(string format)
+        {
+            if (format.Length <= 1)
+                return 3;
+            if (!int.TryParse(format.AsSpan(1), NumberStyles.None, CultureInfo.InvariantCulture, out var n))
+                return 3;
+            return Math.Clamp(n, 1, 15);
+        }
+
+        private static string FormatSignificantFigures(double d, int n, CultureInfo culture)
+        {
+            if (d == 0d)
+                return "0";
+
+            var sign = Math.Sign(d);
+            var abs = Math.Abs(d);
+            var order = (int)Math.Floor(Math.Log10(abs));
+            var scale = Math.Pow(10d, order - n + 1);
+            if (double.IsInfinity(scale) || scale == 0d)
+                return FormatSignificantFiguresFallback(d, culture);
+
+            var rounded = Math.Round(abs / scale, MidpointRounding.AwayFromZero) * scale;
+            if (rounded == 0d)
+                return "0";
+            if (double.IsInfinity(rounded) || double.IsNaN(rounded))
+                return FormatSignificantFiguresFallback(d, culture);
+
+            var roundedOrder = (int)Math.Floor(Math.Log10(rounded));
+            var decimals = Math.Clamp(n - roundedOrder - 1, 0, 15);
+            var pattern = decimals == 0
+                ? "#,##0"
+                : "#,##0." + new string('0', decimals);
+
+            var value = sign < 0 ? -rounded : rounded;
+            var s = value.ToString(pattern, culture);
+            return s == "-0" ? "0" : s;
+        }
+
+        private static string FormatSignificantFiguresFallback(double d, CultureInfo culture)
+        {
+            var s = d.ToString("0.################", culture);
+            return s == "-0" ? "0" : s;
         }
 
         private static int GetDigits(double d)

@@ -9,10 +9,10 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
     public class FormatValidator
     {
         // Matches the Core regex from Calcpad.Core/Validator.cs
-        // Standard specifiers: F, C, E, G, N, D followed by 0-2 digits
-        // Custom patterns: combinations of 0, #, comma, dot, e/E, +, -
+        // Standard: F, C, E, G, N, D, S + 0-2 digits (S = significant figures, fixed + grouping)
+        // Custom: 0, #, comma, dot, e/E, +, -
         private static readonly Regex FormatRegex = new(
-            @"^[FCEGND]\d{0,2}$|^[0#]+(,[0#]+)?(\.[0#]+)?([eE][+-]?0+)?$",
+            @"^[FCEGNDS]\d{0,2}$|^[0#]+(,[0#]+)?(\.[0#]+)?([eE][+-]?0+)?$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public void Validate(Stage3Context stage3, LinterResult result, TokenizedLineProvider tokenProvider)

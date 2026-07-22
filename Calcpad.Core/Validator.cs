@@ -27,7 +27,7 @@ namespace Calcpad.Core
             SubscriptChars +
             VarLetterChars;
 
-        private static readonly Regex MyFormatRegex = new(@"^[FCEGND]\d{0,2}$|^[0#]+(,[0#]+)?(\.[0#]+)?([eE][+-]?0+)?$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex MyFormatRegex = new(@"^[FCEGNDS]\d{0,2}$|^[0#]+(,[0#]+)?(\.[0#]+)?([eE][+-]?0+)?$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public static bool IsVariable(string name)
         {
@@ -100,13 +100,21 @@ namespace Calcpad.Core
 
         public static bool IsValidFormatString(string format)
         {
+            if (string.IsNullOrEmpty(format))
+                return false;
+
             try
             {
-                if(format.StartsWith('D'))
+                var c = char.ToUpperInvariant(format[0]);
+                // S = significant figures (custom; not a .NET standard format)
+                if (c == 'S')
+                    return MyFormatRegex.IsMatch(format);
+
+                if (c == 'D')
                     1.ToString(format, CultureInfo.CurrentCulture);
                 else
                     1d.ToString(format, CultureInfo.CurrentCulture);
-                return MyFormatRegex.Match(format).Success;
+                return MyFormatRegex.IsMatch(format);
             }
             catch (FormatException)
             {

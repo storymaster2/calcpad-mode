@@ -185,6 +185,27 @@ Displays either fixed point or scientific: `Gn` or `gn`
 | `0.0012345678:g3` | $0.00123$ |
 | `123456m:G3` | $1.23×10^5 \mathrm{m}$<br>(with unit "Meters") |
 
+### Significant figures
+
+Fixed point rounded to *n* significant figures, with digit grouping: `Sn` or `sn`
+
+`n` range: 1–15 (clamped; bare `S` defaults to **3**)
+
+Never uses scientific notation (unlike `G`). Thousands and decimal separators follow the current culture (same idea as `N`).
+
+| Code | Output (en-US) |
+| ---- | ------ |
+| `9055:S3` | $9,060$ |
+| `0.001234:S3` | $0.00123$ |
+| `π:S3` | $3.14$ |
+| `123456:S` | $123,000$ |
+
+Worksheet-wide:
+
+```calcpad
+#format S3
+```
+
 ### Number
 
 Fixed point with digit grouping: `Nn` or `nn`

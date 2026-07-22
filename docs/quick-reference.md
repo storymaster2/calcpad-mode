@@ -468,7 +468,7 @@ Results will appear in the "**Output**" box on the right as a professionally for
     - `#varsub` - show equations with variables and substituted values (default)
     - `#round *n*` - rounds the output to *n* digits after the decimal point
     - `#round default` - restores rounding to the default settings
-    - `#format *FFFF*` - specifies custom format string
+    - `#format *FFFF*` - specifies custom format string (`F`/`N`/`G`/`S`/…; `S3` = 3 sig figs, fixed + grouping)
     - `#format default` - restores the default formatting
     - `#md on` - enables markdown in comments
     - `#md off` - disables markdown in comments
