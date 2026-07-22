@@ -301,7 +301,7 @@ const serverConnected = ref(false)
 const fileName = ref('')
 const isDirty = ref(false)
 const sidebarVisible = ref(true)
-const previewVisible = ref(false)
+const previewVisible = ref(true)
 const bottomPanelOpen = ref(false)
 const activeBottomTab = ref<'problems' | 'output'>('problems')
 const problems = ref<ProblemItem[]>([])
@@ -433,6 +433,12 @@ function onSidebarHandleMouseDown(e: MouseEvent): void {
 function togglePreview(): void {
   previewVisible.value = !previewVisible.value
   onPreviewToggled.value?.(previewVisible.value)
+}
+
+function setPreviewVisible(visible: boolean): void {
+  if (previewVisible.value === visible) return
+  previewVisible.value = visible
+  onPreviewToggled.value?.(visible)
 }
 
 function isPreviewVisible(): boolean {
@@ -575,6 +581,7 @@ defineExpose({
   isDirty: getIsDirty,
   toggleSidebar,
   togglePreview,
+  setPreviewVisible,
   isPreviewVisible,
   setPreviewHtml,
   setProblems,

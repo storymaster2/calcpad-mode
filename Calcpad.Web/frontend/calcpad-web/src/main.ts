@@ -620,6 +620,11 @@ async function bootstrap(): Promise<void> {
         }
     };
 
+    // Preview starts expanded; kick convert once content/session is ready.
+    if (appInstance.isPreviewVisible()) {
+        setTimeout(() => { void refreshPreview(); }, 50);
+    }
+
     // Neutralino-specific: native menu + file operations
     if (isNeutralino && neuBridge) {
         const { events: neuEvents, app: neuApp } = await import('@neutralinojs/lib');
