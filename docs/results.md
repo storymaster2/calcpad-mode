@@ -44,35 +44,9 @@ If an equation gets too long and does not fit on a single line, you can choose t
 
 ## Rounding
 
-Rounding is specified by the number of digits *n* after the decimal point.
-It is entered into the "**Rounding**" input box at the bottom of the program window.
-The value of *n* can be between "0" and "15". If you enter "0", all results will be rounded to integers.
-If the value is less than "0" or greater than "15", the respective limit will be taken.
+By default (no `#format` string), results are displayed with **3 significant figures**, fixed-point, and culture thousands separators — the same rules as `#format N3` / `:N3`.
 
-However, rounding can come across some potential problems.
-If the result is less than 10-*n* and you round it to *n* digits after the decimal point, the result will contain only zeros.
-That is why, CalcpadCE incorporates some advanced rules: If the output contains less than *n* significant digits after rounding, it is expanded up to *n* significant digits.
-Even then, if the number is too small, it will be difficult to count the zeros after the decimal point.
-So, in such cases, the output is converted to floating point format with *n* digits.
-When the total number of digits becomes greater than 2*n*, the factional part is being truncated.
-In this way, the output becomes easier to read, still providing at least 2*n* significant digits.
-You can see several examples below, obtained for *n* = 3.
-
-| Code | Output |
-| ---- | ------ |
-| `0.000001 * π` | $3.14{×}10^{-6}$ |
-| `0.001 * π` | $0.00314$ |
-| `0.1 * π` | $0.314$ |
-| `1 * π` | $3.142$ |
-| `1000 * π` | $3141.59$ |
-| `1000000 * π` | $3141593$ |
-
-Rounding affects only the way in which numbers are displayed in the output.
-Internally, all numbers are stored with the maximum possible precision.
-That is why, if you print the output and try to repeat the calculations with the numbers from the report, you probably will get some little differences.
-This is because you use the rounded values instead of the actual ones.
-
-You can override the global rounding inside a worksheet by using the `#Round n` keyword, where *n* is the number of digits after the decimal point (from "0" to "15"). To restore the global rounding, enter `#Round` default.
+Use an explicit format when you need something else (for example `#format F2` for fixed decimal places, or `G` for scientific). Internally, all numbers are stored with full precision; display rules only affect the report.
 
 ## Formatting
 
@@ -126,7 +100,7 @@ At worksheet level you can do that by following command:
 #format format string
 ```
 
-To restore the default formatting, add the following line:
+To restore the default formatting (`N3` — 3 significant figures, fixed + grouping), add the following line:
 
 ```calcpad
 #format default
@@ -190,6 +164,8 @@ Displays either fixed point or scientific: `Gn` or `gn`
 Fixed point rounded to *n* significant figures, with digit grouping: `Nn` / `nn` (preferred) or `Sn` / `sn` (alias).
 
 `n` range: 1–15 (clamped; bare `N` or `S` defaults to **3**)
+
+**Default:** When no format string is set (`#format default` / no `:fmt`), the engine uses the same rules as `N3`.
 
 Never uses scientific notation (unlike `G`). Thousands and decimal separators follow the current culture.
 

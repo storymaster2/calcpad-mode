@@ -272,8 +272,6 @@ namespace Calcpad.Core
             return im < 0 ? $"{sRe} – {sIm}i" : $"{sRe} + {sIm}i";
         }
 
-        private const string Sharps = "################";
-
         internal string FormatNumberHelper(double d, string format, CultureInfo culture = null)
         {
             if (double.IsNaN(d))
@@ -306,42 +304,8 @@ namespace Calcpad.Core
                 return s == "-0" ? "0" : s;
             }
 
-            if (Math.Abs(d) < 1e16)
-            {
-                var a = Math.Abs(d);
-                var i = GetDigits(a);
-                if (i >= -2 * decimals - 1)
-                {
-                    if (i == 0)
-                    {
-                        if (a < 1)
-                            i = decimals + 1;
-                        else
-                            i = decimals;
-                    }
-                    else if (i > 0)
-                    {
-                        i = decimals - i;
-                        if (i < 0)
-                            i = 0;
-                    }
-                    else
-                        i = decimals - i + 1;
-
-                    if (i <= 16)
-                    {
-                        var s = d.ToString("G17", culture);
-                        if (!s.Contains('E'))
-                        {
-                            var dec = Math.Round(decimal.Parse(s, culture), i);
-                            s = dec.ToString("G29", culture);
-                            return s == "-0" ? "0" : s;
-                        }
-                    }
-                }
-            }
-            format = $"#.{Sharps[..decimals]}E+0";
-            return d.ToString(format, culture);
+            // Default display: 3 significant figures, fixed + grouping (same as N3/S3).
+            return FormatSignificantFigures(d, 3, culture);
         }
 
         private static int ParseSignificantFigureCount(string format)
@@ -432,47 +396,6 @@ namespace Calcpad.Core
         {
             var s = d.ToString("0.################", culture);
             return s == "-0" ? "0" : s;
-        }
-
-        private static int GetDigits(double d)
-        {
-            if (d >= 1)
-                return d switch
-                {
-                    <= 1e4 => 0,
-                    <= 1e5 => 1,
-                    <= 1e6 => 2,
-                    <= 1e7 => 3,
-                    <= 1e8 => 4,
-                    <= 1e9 => 5,
-                    <= 1e10 => 6,
-                    <= 1e11 => 7,
-                    <= 1e12 => 8,
-                    <= 1e13 => 9,
-                    <= 1e14 => 10,
-                    <= 1e15 => 11,
-                    _ => 0
-                };
-
-            return d switch
-            {
-                0 => 0,
-                < 1e-14 => -14,
-                < 1e-13 => -13,
-                < 1e-12 => -12,
-                < 1e-11 => -11,
-                < 1e-10 => -10,
-                < 1e-9 => -9,
-                < 1e-8 => -8,
-                < 1e-7 => -7,
-                < 1e-6 => -6,
-                < 1e-5 => -5,
-                < 1e-4 => -4,
-                < 1e-3 => -3,
-                < 1e-2 => -2,
-                < 1e-1 => -1,
-                _ => 0
-            };
         }
 
         protected double GetMaxVisibleMatrixValue(Matrix matrix, out int row, out int col)

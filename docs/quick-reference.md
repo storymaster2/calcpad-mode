@@ -469,7 +469,7 @@ Results will appear in the "**Output**" box on the right as a professionally for
     - `#round *n*` - rounds the output to *n* digits after the decimal point
     - `#round default` - restores rounding to the default settings
     - `#format *FFFF*` - specifies custom format string (`F`/`N`/`G`/`S`/…; `N3` = 3 sig figs, fixed + grouping; prefer `N` over `S` for older-engine fallback)
-    - `#format default` - restores the default formatting
+    - `#format default` - restores the default formatting (`N3` / 3 significant figures)
     - `#md on` - enables markdown in comments
     - `#md off` - disables markdown in comments
     - `#phasor` - sets output format of complex numbers to polar phasor: A∠φ

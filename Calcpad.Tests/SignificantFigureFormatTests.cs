@@ -108,6 +108,17 @@ public class SignificantFigureFormatTests
         Assert.Contains("9,060", withS, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Format_Default_MatchesN3()
+    {
+        var withDefault = Render("x = 9055\n");
+        var withN3 = Render("#format N3\nx = 9055\n");
+        Assert.Contains("9,060", withDefault, StringComparison.Ordinal);
+        Assert.Contains("9,060", withN3, StringComparison.Ordinal);
+        Assert.DoesNotContain('E', withDefault);
+        Assert.DoesNotContain("10<sup>", withDefault, StringComparison.Ordinal);
+    }
+
     private static string Render(string source)
     {
         var macroParser = new MacroParser();
