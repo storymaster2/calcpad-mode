@@ -159,27 +159,27 @@ Set the server URL via the `VITE_SERVER_URL` environment variable or through the
 
 ### Production deploy (static GCS)
 
-Production hosting matches Detail Library: **Vite build → Cloud Storage**, served by the existing HTTPS load balancer (`mode-detail-library`) at `/calcpad/`.
+Production hosting uses a **dedicated bucket** (separate from Detail Library): **Vite build → Cloud Storage**, served by the HTTPS load balancer at `/calcpad/`.
 
 | Piece | Value |
 |-------|--------|
 | Build config | [`cloudbuild.web.yaml`](../../cloudbuild.web.yaml) (repo root) |
-| Bucket | `mode-detail-library` |
-| Object prefix | `calcpad/` → URL `/calcpad/` |
+| Bucket | `mode-detail-library-calcpad` (objects at **bucket root**) |
+| Public URL | `/calcpad/` (LB strips `/calcpad` when mapping to objects) |
 | Vite base | `/calcpad/` (`VITE_BASE_PATH`) |
 | Calc engine | baked as `VITE_SERVER_URL` |
 
 **Cloud Build trigger (console):**
 
 1. Create or edit trigger `calcpad-web-update` → config file **`cloudbuild.web.yaml`**
-2. Service account: `calcpad-serverbuild@…` (needs **Storage Object Admin** on `mode-detail-library`)
+2. Service account: `calcpad-serverbuild@…` (needs **Storage Object Admin** on `mode-detail-library-calcpad`)
 3. Included paths: `Calcpad.Web/frontend/**`, `cloudbuild.web.yaml`
 4. Ignored: engine paths + `cloudbuild.engine.yaml`
-5. Run the trigger — no Cloud Run service, no new LB backend
+5. Run the trigger after the LB backend/path rule exists
 
-**One-time GCP:** grant the build SA write access to the bucket. The LB already serves this bucket; no path rule for Cloud Run is required.
+**One-time GCP:** create the bucket; grant the build SA write access; add an LB **backend bucket** for it with a host/path rule for `/calcpad` and `/calcpad/*` that **strips the `/calcpad` prefix** so `index.html` and `assets/` resolve at bucket root. Optional: bucket website Main/404 = `index.html`.
 
-**Detail Library env:** `CALCPAD_EDITOR_BASE_URL=https://detail-library.modearchitecture.com/calcpad`
+**Detail Library env:** `CALCPAD_EDITOR_BASE_URL=https://detail-library.modearchitecture.com/calcpad/`
 
 Local Docker (`frontend/Dockerfile`) is optional smoke only; CI does not use it.
 

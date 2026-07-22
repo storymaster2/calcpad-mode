@@ -1,4 +1,4 @@
-# Frontend pipeline: Vite build → GCS static hosting (same bucket as Detail Library).
+# Frontend pipeline: Vite build → dedicated GCS bucket for CalcPad.
 # Trigger: calcpad-web-update → this file (cloudbuild.web.yaml)
 #
 # Suggested path filters (Included):
@@ -12,20 +12,24 @@
 #   Calcpad.Cli/**
 #   cloudbuild.engine.yaml
 #
-# Publishes to:
-#   gs://${_BUCKET}/${_PREFIX}/   →  https://detail-library.modearchitecture.com/calcpad/
+# Publishes to bucket root:
+#   gs://${_BUCKET}/index.html, assets/, …
+# Public URL (LB path rule + prefix strip /calcpad → /):
+#   https://detail-library.modearchitecture.com/calcpad/
 #
 # Prerequisites (one-time, GCP console / IAM):
-#   1. Build SA (calcpad-serverbuild@…) needs roles/storage.objectAdmin on ${_BUCKET}
-#      (or storage.objectCreator + objectViewer on prefix calcpad/).
-#   2. HTTPS LB mode-detail-library already serves this bucket — no new Cloud Run
-#      backend or path rule required; objects under calcpad/ are served at /calcpad/.
-#   3. Detail Library: CALCPAD_EDITOR_BASE_URL=https://detail-library.modearchitecture.com/calcpad
+#   1. Bucket mode-detail-library-calcpad exists (separate from Detail Library).
+#   2. Build SA (calcpad-serverbuild@…) needs roles/storage.objectAdmin on ${_BUCKET}.
+#   3. HTTPS LB: backend bucket for ${_BUCKET}; host/path rule for /calcpad and
+#      /calcpad/* with URL rewrite that strips the /calcpad prefix so objects are
+#      looked up at bucket root (index.html, assets/…).
+#   4. Bucket website config: Main page + 404 page = index.html (optional SPA aid).
+#   5. Detail Library: CALCPAD_EDITOR_BASE_URL=https://detail-library.modearchitecture.com/calcpad/
 #
 # _ENGINE_URL is baked as VITE_SERVER_URL (browser calls the calc engine directly).
+# VITE_BASE_PATH stays /calcpad/ so the browser requests /calcpad/assets/….
 substitutions:
-  _BUCKET: mode-detail-library
-  _PREFIX: calcpad
+  _BUCKET: mode-detail-library-calcpad
   _ENGINE_URL: https://calcpad-server-914029425445.us-west1.run.app
   _BASE_PATH: /calcpad/
 
@@ -49,7 +53,7 @@ steps:
       - -r
       - -d
       - Calcpad.Web/frontend/calcpad-web/dist
-      - gs://${_BUCKET}/${_PREFIX}
+      - gs://${_BUCKET}
 
   # Short cache on the shell; long cache on hashed assets.
   - name: gcr.io/cloud-builders/gsutil
@@ -58,9 +62,9 @@ steps:
       - -ce
       - |
         gsutil -m setmeta -h "Cache-Control:no-cache, max-age=0" \
-          "gs://${_BUCKET}/${_PREFIX}/index.html" || true
+          "gs://${_BUCKET}/index.html" || true
         gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" \
-          "gs://${_BUCKET}/${_PREFIX}/assets/**" || true
+          "gs://${_BUCKET}/assets/**" || true
 
 options:
   logging: CLOUD_LOGGING_ONLY
