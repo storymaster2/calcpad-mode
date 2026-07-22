@@ -363,7 +363,7 @@ select option {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--vscode-editor-background, #1e1e1e);
+    background: #fff;
     overflow: hidden;
     padding: 12px;
     box-sizing: border-box;
