@@ -18,6 +18,7 @@
         :class="{
           selected: row.key === selectedKey,
           tip: row.kind === 'commit' && row.isTip,
+          canonical: row.kind === 'commit' && row.isCanonical,
           unsaved: row.kind === 'draft',
         }"
         @click="onRowClick(row)"
@@ -25,7 +26,10 @@
         <div class="version-main">
           <span class="version-date">{{ row.kind === 'draft' ? 'Unsaved changes' : formatDate(row.date) }}</span>
           <span v-if="row.kind === 'draft'" class="unsaved-badge">unsaved</span>
-          <span v-else-if="row.isTip" class="tip-badge">tip</span>
+          <template v-else>
+            <span v-if="row.isCanonical" class="canonical-badge">canonical</span>
+            <span v-if="row.isTip" class="tip-badge">tip</span>
+          </template>
         </div>
         <div
           v-if="row.kind === 'commit'"
@@ -48,11 +52,12 @@ export interface VersionCommit {
   message: string
   date: string
   isTip: boolean
+  isCanonical?: boolean
 }
 
 type DisplayRow =
   | { kind: 'draft'; key: string; parentSha: string }
-  | { kind: 'commit'; key: string; sha: string; message: string; date: string; isTip: boolean }
+  | { kind: 'commit'; key: string; sha: string; message: string; date: string; isTip: boolean; isCanonical: boolean }
 
 const DRAFT_PREFIX = '__draft__:'
 
@@ -84,6 +89,7 @@ const displayRows = computed((): DisplayRow[] => {
       message: commit.message,
       date: commit.date,
       isTip: commit.isTip,
+      isCanonical: !!commit.isCanonical,
     })
   }
 
@@ -153,7 +159,14 @@ const onHostMessage = (event: MessageEvent) => {
 
   if (message.type === 'historyResponse') {
     loading.value = false
-    commits.value = Array.isArray(message.commits) ? message.commits : []
+    const list = Array.isArray(message.commits) ? message.commits : []
+    const canonicalSha = typeof message.canonicalCommitSha === 'string'
+      ? message.canonicalCommitSha
+      : ''
+    commits.value = list.map((c: VersionCommit) => ({
+      ...c,
+      isCanonical: c.isCanonical === true || (!!canonicalSha && c.sha === canonicalSha),
+    }))
     error.value = typeof message.error === 'string' ? message.error : null
     if (!selectedKey.value) {
       const tip = commits.value.find(c => c.isTip)
@@ -258,6 +271,16 @@ defineExpose({ requestHistory })
   background: var(--vscode-list-activeSelectionBackground, rgba(0, 122, 204, 0.2));
 }
 
+.version-row.canonical {
+  border-color: var(--vscode-charts-orange, #ce9178);
+  background: color-mix(in srgb, var(--vscode-charts-orange, #ce9178) 14%, transparent);
+}
+
+.version-row.canonical.selected {
+  border-color: var(--vscode-charts-orange, #ce9178);
+  background: color-mix(in srgb, var(--vscode-charts-orange, #ce9178) 22%, var(--vscode-list-activeSelectionBackground, rgba(0, 122, 204, 0.2)));
+}
+
 .version-row.unsaved {
   border-style: dashed;
 }
@@ -275,13 +298,19 @@ defineExpose({ requestHistory })
 }
 
 .tip-badge,
-.unsaved-badge {
+.unsaved-badge,
+.canonical-badge {
   font-size: 10px;
   text-transform: uppercase;
   padding: 1px 5px;
   border-radius: 2px;
   background: var(--vscode-badge-background, #4d4d4d);
   color: var(--vscode-badge-foreground, #fff);
+}
+
+.canonical-badge {
+  background: var(--vscode-charts-orange, #ce9178);
+  color: var(--vscode-editor-background, #1e1e1e);
 }
 
 .unsaved-badge {

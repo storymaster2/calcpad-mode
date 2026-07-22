@@ -8,25 +8,12 @@ Sessions support the “buried tab for a week with local edits, then save” wor
 
 1. Boot from `librarySession` + `libraryApi` (and existing `server` for convert).
 2. Load tip `.cpd` into the editor; allow edits when `save.allowed`.
-3. Versions panel via history + content-by-ref.
-4. Renew on tab focus / periodically / immediately before save.
-5. Save with commit message + tip conflict detection.
+3. Optionally show the detail thumbnail from `thumbnailUrl`.
+4. Versions panel via history + content-by-ref; mark the **canonical** commit.
+5. Renew on tab focus / periodically / immediately before save.
+6. Save with commit message, tip conflict detection, and optional provenance flags (`basedOnCommitSha`, `updateKind`).
 
 Calcpad-mode UI is built in the editor repo; this document is the API contract.
-
-## Phased delivery
-
-| Phase | Editor ships | Library must support |
-| --- | --- | --- |
-| **A** | Boot tip; Versions panel (`history` + `content?ref=`); multi-draft unsaved rows | `GET` session, history, content-by-ref |
-| **B (current)** | Save-to-library dialog (required commit message + Canonical/Branch toggle); renew immediately before save; PUT with `baseTipCommitSha`; **409** reload/overwrite UI; Versions refresh after save | renew + PUT save as below |
-| **Later** | Focus/interval renew; sessionStorage capability keys; send Canonical/Branch on save once library defines the field | as needed |
-
-Phase A acceptance (calcpad): history lists commits (ISO-8601 `date`, display locally); selecting an older `ref` changes the buffer; selecting tip/`isTip` restores tip content and editability when `save.allowed`.
-
-Phase B acceptance (calcpad): when `save.allowed`, **Save to library** / Ctrl+S opens a dialog; empty commit message cannot submit; successful PUT updates tip SHA, clears the active draft, and refreshes Versions; **409** offers reload tip vs overwrite (`force`); **404** on renew/save prompts re-open from Detail Library. Canonical vs Branch is collected in the UI only (not sent on PUT yet).
-
-Prefer concrete `versions.historyPath` / `versions.contentPath` from the session document when present; otherwise fall back to `/calc-sessions/{sessionId}/history` and `/calc-sessions/{sessionId}/content`.
 
 ## Query parameters (editor page)
 
@@ -47,7 +34,7 @@ https://<calcpad-web-host>/?server=https://calcpad-server-….run.app&librarySes
 | Mechanism | Behavior |
 | --- | --- |
 | Initial TTL | **90 days** from mint (`CALCPAD_SESSION_TTL_DAYS`, default 90) |
-| Sliding renew | Successful workspace calls (GET session, renew, history, content, PUT save) set `expires_at = now() + TTL` |
+| Sliding renew | Successful workspace calls (GET session, renew, history, content, thumbnail, PUT save) set `expires_at = now() + TTL` |
 | Explicit renew | `POST /calc-sessions/:token/renew` → `{ sessionId, expiresAt }` (**404** if purged) |
 | Purge | Lazy delete when `expires_at < now()` |
 | Buried-tab save | Keep buffer in memory/sessionStorage; call renew before PUT; if **404**, show “Re-open from Detail Library” (session row gone). Local buffer can still be downloaded. |
@@ -58,6 +45,8 @@ The browser buffer is the source of truth for unsaved edits. The session row is 
 
 - **Mint** `POST /items/:itemKey/calc/sessions` — Google / internal API key (same as rest of library).
 - **Workspace** `GET|POST|PUT /calc-sessions/:token…` — **no Google auth**; the token is the secret. Include the Calcpad **web** origin in library `CORS_ORIGIN`.
+
+Do **not** use library `/thumbnails/…` from the editor when auth is on; use the session capability thumbnail URL below.
 
 ## Library APIs
 
@@ -103,6 +92,8 @@ GET /calc-sessions/:token
   "repoPath": "calcs/beam-seat--a1b2c3d4.cpd",
   "tipCommitSha": "abc123…",
   "baseTipCommitSha": "abc123…",
+  "canonicalCommitSha": "abc123…",
+  "thumbnailUrl": "/calc-sessions/hex…/thumbnail",
   "content": "' full .cpd source\n…",
   "libraryApi": "https://detail-library-backend-….run.app",
   "libraryDetailHint": { "itemKey": "AbCdEf1234" },
@@ -125,7 +116,20 @@ GET /calc-sessions/:token
 ```
 
 - `mode` is `"readwrite"` when `save.allowed`; otherwise `"readonly"`.
+- `canonicalCommitSha` is the commit the library considers **canonical** for this calc. **Today it equals tip**; later it may diverge. Use it (and history `isCanonical`) to badge the canonical version in the UI.
+- `thumbnailUrl` is a capability path (or `null` if the detail has no thumbnail). Fetch as `{libraryApi}{thumbnailUrl}` for optional chrome/header display. Ignore null or failed loads.
 - Path fields may already include the concrete `sessionId` (prefer response values over templates).
+
+### Thumbnail
+
+```http
+GET /calc-sessions/:token/thumbnail
+```
+
+- Image bytes (`Content-Type` image/* or svg).
+- `Cache-Control: private, max-age=300`.
+- Slides TTL.
+- **404** if session expired or thumbnail missing.
 
 ### Renew
 
@@ -146,13 +150,21 @@ GET /calc-sessions/:token/history?limit=50
 ```json
 {
   "expiresAt": "…",
+  "canonicalCommitSha": "abc123…",
   "commits": [
-    { "sha": "…", "message": "…", "date": "…", "isTip": true }
+    {
+      "sha": "…",
+      "message": "…",
+      "date": "…",
+      "isTip": true,
+      "isCanonical": true
+    }
   ]
 }
 ```
 
-`date` is **ISO-8601**; the editor formats it in the local timezone for the Versions list.
+- Badge `isCanonical` in the versions panel (today same as `isTip`; keep both so the UI stays correct when they diverge).
+- Prefer at most one `isCanonical: true` when a canonical SHA exists.
 
 ### Content by ref
 
@@ -176,16 +188,23 @@ Content-Type: application/json
   "content": "<current editor buffer>",
   "commitMessage": "<non-empty trim>",
   "baseTipCommitSha": "<sha editor believes is tip>",
-  "force": false
+  "force": false,
+  "basedOnCommitSha": "<optional — commit this edit was based on>",
+  "updateKind": "canonical"
 }
 ```
 
-Optional: `?force=true` or `"force": true` — skip tip conflict check and commit anyway.
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `baseTipCommitSha` | yes | Optimistic concurrency vs **current tip**. **409** if tip moved unless `force`. |
+| `basedOnCommitSha` | no | Provenance: which commit the buffer was edited from (**tip by default**; set to an older SHA when the user started from history). Library validates when present; **not persisted yet**. |
+| `updateKind` | no | `"canonical"` or `"branch"`. Intent for future canonical-pointer updates. Library accepts; **no server effect yet**. When UI exists, send explicitly; contract default if omitted is **canonical**. |
+| `force` | no | Also `?force=true` — skip tip conflict check and commit anyway. |
 
 | Status | Meaning |
 | --- | --- |
-| **200** | `{ tipCommitSha, repoPath, expiresAt }` — update local `baseTipCommitSha`; refresh history |
-| **400** | blank message / missing fields |
+| **200** | `{ tipCommitSha, canonicalCommitSha, repoPath, expiresAt }` — update local `baseTipCommitSha`; refresh history. Today `canonicalCommitSha === tipCommitSha`. |
+| **400** | blank message / missing fields / invalid optional flags |
 | **403** | `save.allowed` false |
 | **404** | session gone |
 | **409** | tip moved: `{ message, tipCommitSha, tipContent? }` — offer reload vs overwrite (`force`) |
@@ -193,27 +212,27 @@ Optional: `?force=true` or `"force": true` — skip tip conflict check and commi
 ## Editor responsibilities
 
 1. Boot from `librarySession` + `libraryApi` as above.
-2. Persist in memory (sessionStorage later): `{ sessionId, libraryApi, itemKey, baseTipCommitSha }` so renew/save work after soft reloads.
-3. Versions panel: `GET …/history`, jump via `GET …/content?ref=`; multi-draft unsaved rows above each parent.
-4. **Immediately before save**: `POST …/renew` (focus/interval renew still later).
-5. Save: dialog requires non-empty commit message; optional Canonical/Branch choice (UI-only until library supports it); `PUT` with `baseTipCommitSha`; on **409** show conflict UI; on **404** → “Re-open this calc from Detail Library”.
-6. After save: update `baseTipCommitSha` from response; clear active draft; refresh history.
-7. If `!save.allowed`: Monaco read-only; hide/disable Save-to-library.
+2. Persist in `sessionStorage` (or memory): `{ sessionId, libraryApi, itemKey, baseTipCommitSha, basedOnCommitSha? }` so renew/save work after soft reloads.
+3. Optional UI: load `{libraryApi}{thumbnailUrl}` when non-null.
+4. Versions panel: `GET …/history`; mark `isCanonical` (and `isTip` if useful); jump via `GET …/content?ref=`.
+5. When loading an older version into the buffer, remember that SHA as `basedOnCommitSha` for the next save.
+6. On `visibilitychange` → visible / interval (e.g. daily) / **immediately before save**: `POST …/renew`.
+7. Save: require commit message; `PUT` with `baseTipCommitSha`; include `basedOnCommitSha` (tip or historical) and `updateKind` when the UI can set them; on **409** show conflict UI; on **404** → “Re-open this calc from Detail Library”.
+8. After save: update `baseTipCommitSha` (and treat new tip as based-on/canonical until history says otherwise); refresh history.
+9. If `!save.allowed`: Monaco read-only; hide Save-to-library.
 
-### Future extension points (not built)
+### Future behavior (reserved)
 
-Reserved in contract only — do not invent APIs yet:
-
-- `canonicalPath` / choose canonical commit
-- Save dialog **Canonical update** vs **Branch** toggle (editor already collects this; wire into PUT / tip metadata when library defines the field)
-- Cross-detail search / list other details from the editor (`workspace` links later)
+- `updateKind: "canonical"` will move the library’s canonical pointer to the new tip; `"branch"` will leave canonical unchanged while still advancing tip (or a branch model TBD).
+- `basedOnCommitSha` may be recorded for audit / history UI.
+- Until then, editors may send these fields; library ignores them for persistence.
 
 ## CORS / origins
 
-Document exact Calcpad web origins for library `CORS_ORIGIN` (origin only; path is not part of CORS):
+Document exact Calcpad web origins for library `CORS_ORIGIN`:
 
-- **Dev:** `http://localhost:5173` (Vite default; adjust if the port differs)
-- **Prod:** `https://detail-library.modearchitecture.com` (SPA hosted at `/calcpad/` on that host)
+- **Dev** (e.g. `http://localhost:5174`)
+- **Prod** (e.g. `https://detail-library.modearchitecture.com` when hosted under `/calcpad/`)
 
 ## Out of scope for calcpad-mode agent
 
@@ -221,22 +240,26 @@ Document exact Calcpad web origins for library `CORS_ORIGIN` (origin only; path 
 - Minting sessions
 - Persisting unsaved buffers on the library server
 - Changing convert API authentication
+- Implementing canonical-pointer persistence (library will do that in a later pass)
 
 ## Acceptance tests (calcpad)
 
 1. Open a library-minted `editorUrl` → tip file loads; preview via `server`.
 2. When `save.allowed`, buffer is editable; Save requires commit message.
-3. Versions: history lists commits; opening an older `ref` loads different content when history has 2+ commits.
-4. Renew before save / on focus extends `expiresAt`.
-5. Wrong `baseTipCommitSha` → conflict UI; correct → new tip; update stored base SHA.
-6. Expired/missing token → error (“Re-open from Detail Library”); do not treat as blank success.
-7. Opening the editor **without** `librarySession` still works (blank / file picker).
+3. When `thumbnailUrl` is set, optional image loads from the capability URL.
+4. Versions: history lists commits; exactly one `isCanonical` when tip exists; opening an older `ref` loads different content when history has 2+ commits.
+5. Renew before save / on focus extends `expiresAt`.
+6. Wrong `baseTipCommitSha` → conflict UI; correct → new tip; update stored base SHA. Optional `basedOnCommitSha` / `updateKind` do not break save.
+7. Expired/missing token → error (“Re-open from Detail Library”); do not treat as blank success.
+8. Opening the editor **without** `librarySession` still works (blank / file picker).
 
 ## Acceptance tests (detail-library)
 
-1. Mint → history returns ≥1 commit for a known tip.
+1. Mint → history returns ≥1 commit; `canonicalCommitSha` present; tip row has `isCanonical: true`.
 2. `content?ref=` older sha returns different body than tip when history has 2+ commits.
-3. Renew extends `expiresAt`.
-4. PUT with wrong `baseTipCommitSha` → **409**; with correct → new tip.
-5. Unauthenticated workspace routes work; mint still auth-gated.
-6. **Open** on a card with `hasCalc` opens a tab whose URL contains `librarySession` and `libraryApi`.
+3. `GET …/thumbnail` works without Google auth with a valid token; **404** when missing.
+4. Renew extends `expiresAt`.
+5. PUT with wrong `baseTipCommitSha` → **409**; with correct → new tip + `canonicalCommitSha` in response.
+6. PUT with `basedOnCommitSha` + `updateKind` still succeeds (flags validated, not applied yet).
+7. Unauthenticated workspace routes work; mint still auth-gated.
+8. **Open** on a card with `hasCalc` opens a tab whose URL contains `librarySession` and `libraryApi`.

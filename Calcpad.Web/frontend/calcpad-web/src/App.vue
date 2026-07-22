@@ -245,7 +245,8 @@
           </label>
         </div>
         <p class="library-save-hint">
-          Canonical vs branch is recorded in the editor only for now; the library commit path is unchanged.
+          Canonical marks this as the official version for the detail (library may apply that later).
+          Branch advances tip without changing the official pointer.
         </p>
         <div class="modal-actions">
           <button

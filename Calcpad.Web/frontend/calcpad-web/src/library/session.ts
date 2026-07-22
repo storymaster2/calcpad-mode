@@ -37,6 +37,8 @@ export interface LibrarySessionDocument {
     repoPath: string;
     tipCommitSha: string;
     baseTipCommitSha?: string;
+    canonicalCommitSha?: string;
+    thumbnailUrl?: string | null;
     content: string;
     libraryApi: string;
     libraryDetailHint?: { itemKey: string };
@@ -55,10 +57,12 @@ export interface HistoryCommit {
     message: string;
     date: string;
     isTip: boolean;
+    isCanonical?: boolean;
 }
 
 export interface HistoryResponse {
     expiresAt: string;
+    canonicalCommitSha?: string;
     commits: HistoryCommit[];
 }
 
@@ -74,15 +78,22 @@ export interface RenewSessionResponse {
     expiresAt: string;
 }
 
+export type LibraryUpdateKind = 'canonical' | 'branch';
+
 export interface SaveSessionRequest {
     content: string;
     commitMessage: string;
     baseTipCommitSha: string;
     force?: boolean;
+    /** Commit the buffer was edited from (tip or historical parent). */
+    basedOnCommitSha?: string;
+    /** Intent for future canonical-pointer updates. */
+    updateKind?: LibraryUpdateKind;
 }
 
 export interface SaveSessionResponse {
     tipCommitSha: string;
+    canonicalCommitSha?: string;
     repoPath?: string;
     expiresAt?: string;
 }
@@ -230,15 +241,23 @@ export async function saveSession(
     request: SaveSessionRequest,
 ): Promise<SaveSessionResponse> {
     const method = (session.save.uploadMethod || 'PUT').toUpperCase();
+    const body: Record<string, unknown> = {
+        content: request.content,
+        commitMessage: request.commitMessage,
+        baseTipCommitSha: request.baseTipCommitSha,
+        force: request.force === true,
+    };
+    if (request.basedOnCommitSha) {
+        body.basedOnCommitSha = request.basedOnCommitSha;
+    }
+    if (request.updateKind) {
+        body.updateKind = request.updateKind;
+    }
+
     const response = await libraryFetch(saveUrl(session), {
         method,
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-            content: request.content,
-            commitMessage: request.commitMessage,
-            baseTipCommitSha: request.baseTipCommitSha,
-            force: request.force === true,
-        }),
+        body: JSON.stringify(body),
     });
 
     if (response.status === 409) {
@@ -332,7 +351,21 @@ export async function fetchHistory(
         throw new LibrarySessionError('History response was missing commits.', 'invalid');
     }
 
-    return data as HistoryResponse;
+    const history = data as HistoryResponse;
+    const canonicalSha =
+        (typeof history.canonicalCommitSha === 'string' && history.canonicalCommitSha)
+        || session.canonicalCommitSha
+        || '';
+
+    if (canonicalSha) {
+        history.canonicalCommitSha = canonicalSha;
+        history.commits = history.commits.map(c => ({
+            ...c,
+            isCanonical: c.isCanonical === true || c.sha === canonicalSha,
+        }));
+    }
+
+    return history;
 }
 
 export async function fetchContentByRef(

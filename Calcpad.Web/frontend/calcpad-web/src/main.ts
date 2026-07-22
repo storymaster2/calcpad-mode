@@ -37,6 +37,7 @@ import {
     fetchContentByRef,
     LibrarySessionError,
     type LibrarySessionDocument,
+    type LibraryUpdateKind,
 } from './library/session';
 import './editor/vscode-variables.css';
 import './styles/app.css';
@@ -325,6 +326,8 @@ async function bootstrap(): Promise<void> {
     let viewingHistorical = false;
     /** Library commit currently loaded (null while an unsaved draft is active). */
     let loadedSha: string | null = null;
+    /** Commit the current buffer was based on (tip or historical) — sent as basedOnCommitSha. */
+    let basedOnCommitSha: string | null = null;
     const libraryDrafts = new Map<string, string>();
     let activeDraftParentSha: string | null = null;
     const libraryBaselines = new Map<string, string>();
@@ -405,6 +408,7 @@ async function bootstrap(): Promise<void> {
             tabs.openFile(librarySession.filename, librarySession.content);
             const tipSha = librarySession.tipCommitSha || librarySession.baseTipCommitSha || '';
             loadedSha = tipSha || null;
+            basedOnCommitSha = tipSha || null;
             if (loadedSha) libraryBaselines.set(loadedSha, librarySession.content);
             const readOnly = isSessionReadOnly(librarySession);
             editor.updateOptions({ readOnly });
@@ -723,6 +727,7 @@ async function bootstrap(): Promise<void> {
             } else if (loadedSha && tabs.isDirty()) {
                 libraryDrafts.set(loadedSha, content);
                 activeDraftParentSha = loadedSha;
+                basedOnCommitSha = loadedSha;
                 emitLibraryDraftState();
                 applyLibraryBanner({
                     isTip: !viewingHistorical,
@@ -752,6 +757,7 @@ async function bootstrap(): Promise<void> {
             withLibraryLoad(() => {
                 tabs.reloadActive(content);
                 loadedSha = sha;
+                basedOnCommitSha = sha;
                 libraryBaselines.set(sha, content);
                 viewingHistorical = !isTip;
                 const sessionReadOnly = isSessionReadOnly(librarySession!);
@@ -773,6 +779,7 @@ async function bootstrap(): Promise<void> {
                 tabs.loadActiveAsDirty(draft);
                 activeDraftParentSha = parentSha;
                 loadedSha = parentSha;
+                basedOnCommitSha = parentSha;
                 const tipSha = librarySession!.tipCommitSha || librarySession!.baseTipCommitSha || '';
                 const parentIsTip = parentSha === tipSha;
                 viewingHistorical = !parentIsTip;
@@ -802,7 +809,7 @@ async function bootstrap(): Promise<void> {
         const content = editor.getValue();
         const commitMessage = dialog.commitMessage.trim();
         if (!commitMessage) return;
-        // dialog.kind (canonical | branch) is UI-only until the library accepts it.
+        const updateKind = dialog.kind as LibraryUpdateKind;
 
         appInstance.setLibrarySaving(true);
         try {
@@ -826,12 +833,19 @@ async function bootstrap(): Promise<void> {
                 librarySession.baseTipCommitSha
                 || librarySession.tipCommitSha
                 || '';
+            const basedOn =
+                basedOnCommitSha
+                || activeDraftParentSha
+                || loadedSha
+                || baseTipCommitSha;
 
             const putOnce = (force: boolean) =>
                 saveSession(librarySession!, {
                     content,
                     commitMessage,
                     baseTipCommitSha,
+                    basedOnCommitSha: basedOn || undefined,
+                    updateKind,
                     force,
                 });
 
@@ -867,6 +881,7 @@ async function bootstrap(): Promise<void> {
                             ...librarySession,
                             tipCommitSha: tipSha,
                             baseTipCommitSha: tipSha,
+                            canonicalCommitSha: tipSha,
                         };
                         setActiveLibrarySession(librarySession);
                     }
@@ -874,6 +889,7 @@ async function bootstrap(): Promise<void> {
                     withLibraryLoad(() => {
                         tabs.reloadActive(tipContent!);
                         loadedSha = tipSha || loadedSha;
+                        basedOnCommitSha = tipSha || basedOnCommitSha;
                         if (loadedSha) libraryBaselines.set(loadedSha, tipContent!);
                         activeDraftParentSha = null;
                         viewingHistorical = false;
@@ -893,11 +909,13 @@ async function bootstrap(): Promise<void> {
             }
 
             const newTip = result.tipCommitSha;
+            const newCanonical = result.canonicalCommitSha || newTip;
             const draftParent = activeDraftParentSha;
             librarySession = {
                 ...librarySession,
                 tipCommitSha: newTip,
                 baseTipCommitSha: newTip,
+                canonicalCommitSha: newCanonical,
                 repoPath: result.repoPath || librarySession.repoPath,
                 expiresAt: result.expiresAt || librarySession.expiresAt,
             };
@@ -907,6 +925,7 @@ async function bootstrap(): Promise<void> {
             libraryDrafts.delete(newTip);
             activeDraftParentSha = null;
             loadedSha = newTip;
+            basedOnCommitSha = newTip;
             libraryBaselines.set(newTip, content);
             viewingHistorical = false;
 

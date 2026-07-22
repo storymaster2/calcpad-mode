@@ -14,6 +14,7 @@ import {
     fetchHistory,
     fetchContentByRef,
     getActiveLibrarySession,
+    setActiveLibrarySession,
     isSessionReadOnly,
     LibrarySessionError,
     type HistoryCommit,
@@ -267,7 +268,15 @@ export class MessageBridge {
         try {
             const history = await fetchHistory(session);
             this._historyCommits = history.commits ?? [];
-            this.postToVue({ type: 'historyResponse', commits: this._historyCommits });
+            if (history.canonicalCommitSha) {
+                session.canonicalCommitSha = history.canonicalCommitSha;
+                setActiveLibrarySession(session);
+            }
+            this.postToVue({
+                type: 'historyResponse',
+                commits: this._historyCommits,
+                canonicalCommitSha: history.canonicalCommitSha ?? session.canonicalCommitSha ?? null,
+            });
             this.postToVue({ type: 'draftState', ...this._draftState });
         } catch (err) {
             const error = err instanceof LibrarySessionError
