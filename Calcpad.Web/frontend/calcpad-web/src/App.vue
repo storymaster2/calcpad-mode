@@ -287,7 +287,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 
 export interface ProblemItem {
   severity: number
@@ -558,14 +558,136 @@ function getPreviewMode(): PreviewMode {
   return previewMode.value
 }
 
+// Session-sticky collapsed preview headings (key = level\\0text\\0occurrence).
+const collapsedPreviewHeadings = new Set<string>()
+
+function onPreviewHeadingFoldMessage(event: MessageEvent): void {
+  const data = event.data
+  if (!data || typeof data !== 'object' || data.type !== 'previewHeadingFold') return
+  if (typeof data.key !== 'string') return
+  if (data.collapsed) collapsedPreviewHeadings.add(data.key)
+  else collapsedPreviewHeadings.delete(data.key)
+}
+
 function setPreviewHtml(html: string): void {
   const frame = previewFrame.value
   if (!frame) return
   const doc = frame.contentDocument
   if (!doc) return
   doc.open()
-  doc.write(injectPreviewConsole(html))
+  doc.write(injectPreviewHeadingFolds(injectPreviewConsole(html), [...collapsedPreviewHeadings]))
   doc.close()
+}
+
+/**
+ * Inject CSS + script so every h1–h6 in the preview can collapse its following
+ * section (until the next same-or-higher heading). Screen-only; print expands all.
+ */
+function injectPreviewHeadingFolds(html: string, collapsedKeys: string[]): string {
+  const keysJson = JSON.stringify(collapsedKeys)
+  const styleBody = [
+    '.cpd-fold-caret{',
+    'display:inline-flex;align-items:center;justify-content:center;',
+    'width:1em;margin-right:0.3em;padding:0;border:0;background:transparent;',
+    'color:inherit;opacity:0.55;cursor:pointer;font:inherit;line-height:1;',
+    'vertical-align:baseline;user-select:none;',
+    '}',
+    '.cpd-fold-caret:hover{opacity:0.9;}',
+    'h1.cpd-section-collapsed .cpd-fold-caret,',
+    'h2.cpd-section-collapsed .cpd-fold-caret,',
+    'h3.cpd-section-collapsed .cpd-fold-caret,',
+    'h4.cpd-section-collapsed .cpd-fold-caret,',
+    'h5.cpd-section-collapsed .cpd-fold-caret,',
+    'h6.cpd-section-collapsed .cpd-fold-caret{opacity:0.85;}',
+    '.cpd-section-body.cpd-section-collapsed{display:none;}',
+    '@media print{',
+    '.cpd-section-body,.cpd-section-body.cpd-section-collapsed{display:block!important;}',
+    '.cpd-fold-caret{display:none!important;}',
+    '}',
+  ].join('')
+
+  const scriptBody = [
+    '(function() {',
+    '  if (window.__calcpadHeadingFolds) return;',
+    '  window.__calcpadHeadingFolds = true;',
+    `  var collapsedKeys = ${keysJson};`,
+    '  var collapsed = Object.create(null);',
+    '  for (var i = 0; i < collapsedKeys.length; i++) collapsed[collapsedKeys[i]] = true;',
+    '  function levelOf(el) { return parseInt(el.tagName.charAt(1), 10); }',
+    '  function enhance() {',
+    "    var headings = Array.prototype.slice.call(document.querySelectorAll('h1,h2,h3,h4,h5,h6'));",
+    '    var counts = Object.create(null);',
+    '    for (var hi = 0; hi < headings.length; hi++) {',
+    '      var h = headings[hi];',
+    '      if (h.getAttribute("data-cpd-fold-key")) continue;',
+    '      var level = levelOf(h);',
+    '      if (!(level >= 1 && level <= 6)) continue;',
+    '      var text = (h.textContent || "").trim();',
+    '      var base = level + "\\0" + text;',
+    '      counts[base] = (counts[base] || 0) + 1;',
+    '      var key = base + "\\0" + (counts[base] - 1);',
+    '      h.setAttribute("data-cpd-fold-key", key);',
+    '      var nodes = [];',
+    '      var n = h.nextSibling;',
+    '      while (n) {',
+    '        if (n.nodeType === 1 && /^H[1-6]$/.test(n.tagName)) {',
+    '          if (levelOf(n) <= level) break;',
+    '        }',
+    '        nodes.push(n);',
+    '        n = n.nextSibling;',
+    '      }',
+    '      if (!nodes.length) continue;',
+    '      var body = document.createElement("div");',
+    '      body.className = "cpd-section-body";',
+    '      nodes[0].parentNode.insertBefore(body, nodes[0]);',
+    '      for (var ni = 0; ni < nodes.length; ni++) body.appendChild(nodes[ni]);',
+    '      var caret = document.createElement("button");',
+    '      caret.type = "button";',
+    '      caret.className = "cpd-fold-caret";',
+    '      caret.setAttribute("aria-label", "Toggle section");',
+    '      h.insertBefore(caret, h.firstChild);',
+    '      function applyCollapsed(c) {',
+    '        if (c) {',
+    '          h.classList.add("cpd-section-collapsed");',
+    '          body.classList.add("cpd-section-collapsed");',
+    '          caret.textContent = "\\u25B8";',
+    '        } else {',
+    '          h.classList.remove("cpd-section-collapsed");',
+    '          body.classList.remove("cpd-section-collapsed");',
+    '          caret.textContent = "\\u25BE";',
+    '        }',
+    '      }',
+    '      applyCollapsed(!!collapsed[key]);',
+    '      caret.addEventListener("click", function(e) {',
+    '        e.preventDefault();',
+    '        e.stopPropagation();',
+    '        var next = !h.classList.contains("cpd-section-collapsed");',
+    '        applyCollapsed(next);',
+    '        try {',
+    '          window.parent.postMessage({ type: "previewHeadingFold", key: key, collapsed: next }, "*");',
+    '        } catch (err) {}',
+    '      });',
+    '    }',
+    '  }',
+    '  if (document.readyState === "loading") {',
+    '    document.addEventListener("DOMContentLoaded", enhance);',
+    '  } else {',
+    '    enhance();',
+    '  }',
+    '})();',
+  ].join('\n')
+
+  const openScript = '<' + 'script>'
+  const closeScript = '</' + 'script>'
+  const openStyle = '<' + 'style data-cpd-heading-folds="1">'
+  const closeStyle = '</' + 'style>'
+  const inject = openStyle + styleBody + closeStyle + openScript + scriptBody + closeScript
+
+  const headIdx = html.indexOf('<head>')
+  if (headIdx >= 0) {
+    return html.slice(0, headIdx + 6) + inject + html.slice(headIdx + 6)
+  }
+  return inject + html
 }
 
 // Forward iframe console.* + uncaught errors to the parent window via
@@ -623,6 +745,8 @@ function setProblems(markers: ProblemItem[]): void {
 }
 
 onMounted(async () => {
+  window.addEventListener('message', onPreviewHeadingFoldMessage)
+
   const checkHealth = async () => {
     try {
       const bridge = (window as any).calcpadBridge
@@ -636,6 +760,10 @@ onMounted(async () => {
 
   setTimeout(checkHealth, 1000)
   setInterval(checkHealth, 30000)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('message', onPreviewHeadingFoldMessage)
 })
 
 // ---- In-app confirm dialog ----
