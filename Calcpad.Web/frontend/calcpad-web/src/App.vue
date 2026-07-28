@@ -623,8 +623,8 @@ function injectPreviewHeadingFolds(html: string, collapsedKeys: string[]): strin
 
   const scriptBody = [
     '(function() {',
-    '  if (window.__calcpadHeadingFolds) return;',
-    '  window.__calcpadHeadingFolds = true;',
+    '  if (document.documentElement.getAttribute("data-cpd-heading-folds") === "1") return;',
+    '  document.documentElement.setAttribute("data-cpd-heading-folds", "1");',
     `  var collapsedKeys = ${keysJson};`,
     '  var collapsed = Object.create(null);',
     '  for (var i = 0; i < collapsedKeys.length; i++) collapsed[collapsedKeys[i]] = true;',
@@ -689,8 +689,10 @@ function injectPreviewHeadingFolds(html: string, collapsedKeys: string[]): strin
     '  }',
     '  if (document.readyState === "loading") {',
     '    document.addEventListener("DOMContentLoaded", enhance);',
-    '  } else {',
+    '  } else if (document.body) {',
     '    enhance();',
+    '  } else {',
+    '    setTimeout(enhance, 0);',
     '  }',
     '})();',
   ].join('\n')
@@ -716,8 +718,8 @@ function injectPreviewConsole(html: string): string {
   // the Vue SFC parser interpreting them as the closing tag of <script setup>.
   const body = [
     '(function() {',
-    '  if (window.__calcpadConsolePatched) return;',
-    '  window.__calcpadConsolePatched = true;',
+    '  if (document.documentElement.getAttribute("data-cpd-console") === "1") return;',
+    '  document.documentElement.setAttribute("data-cpd-console", "1");',
     '  var post = function(level, args) {',
     '    var msg = Array.from(args).map(function(a) {',
     '      if (a instanceof Error) return a.stack || a.message;',
