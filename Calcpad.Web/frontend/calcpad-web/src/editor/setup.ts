@@ -47,6 +47,10 @@ export function createCalcpadEditor(
         insertSpaces: true,
         bracketPairColorization: { enabled: true },
         'semanticHighlighting.enabled': true,
+        folding: true,
+        showFoldingControls: 'mouseover',
+        foldingHighlight: true,
+        unfoldOnClickAfterEndOfLine: false,
         // Match VS Code's default-but-flipped suggest behavior: Tab accepts
         // the current suggestion, Enter never does. Without this, Enter
         // accepts the suggestion when the suggest widget is open, which

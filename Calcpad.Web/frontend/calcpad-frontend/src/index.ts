@@ -89,8 +89,8 @@ export {
 export { truncateBase64Content } from './services/base64-truncate';
 
 // --- Headings / TOC ----------------------------------------------------------
-export type { TocHeading } from './services/headings';
-export { parseHeadings } from './services/headings';
+export type { TocHeading, HeadingFoldRange } from './services/headings';
+export { parseHeadings, computeHeadingFoldRanges } from './services/headings';
 
 // --- Text Analysis -----------------------------------------------------------
 export {

@@ -108,3 +108,39 @@ export function parseHeadings(text: string): TocHeading[] {
 
     return headings;
 }
+
+export interface HeadingFoldRange {
+    startLine: number;
+    endLine: number;
+}
+
+/**
+ * Fold ranges for heading sections: each heading collapses content until the
+ * next heading of the same or higher level (lower or equal level number).
+ * The heading line itself stays visible. Empty sections are omitted.
+ */
+export function computeHeadingFoldRanges(text: string): HeadingFoldRange[] {
+    const lines = text.split(/\r?\n/);
+    const lineCount = lines.length;
+    if (lineCount === 0) return [];
+
+    const headings = parseHeadings(text);
+    if (headings.length === 0) return [];
+
+    const ranges: HeadingFoldRange[] = [];
+    for (let i = 0; i < headings.length; i++) {
+        const heading = headings[i];
+        const startLine = heading.line + 1;
+        let endLine = lineCount;
+        for (let j = i + 1; j < headings.length; j++) {
+            if (headings[j].level <= heading.level) {
+                endLine = headings[j].line - 1;
+                break;
+            }
+        }
+        if (endLine >= startLine) {
+            ranges.push({ startLine, endLine });
+        }
+    }
+    return ranges;
+}

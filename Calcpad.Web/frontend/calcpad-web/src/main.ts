@@ -11,6 +11,7 @@ import {
     htmlHasDatagrids,
 } from 'calcpad-frontend/services/ui-preview';
 import { registerCalcpadLanguage, registerCalcpadTheme, createCalcpadEditor } from './editor/setup';
+import { registerHeadingFoldingProvider } from './editor/heading-folding';
 import { registerSemanticTokensProvider } from './editor/semantic-tokens';
 import { setupDiagnostics } from './editor/diagnostics';
 import { registerCompletionProvider } from './editor/completions';
@@ -286,6 +287,7 @@ async function bootstrap(): Promise<void> {
 
     registerCalcpadLanguage();
     registerCalcpadTheme();
+    registerHeadingFoldingProvider();
     const editor = createCalcpadEditor(editorEl, {
         value: '',
     });

@@ -11,6 +11,7 @@ export {
     createCalcpadEditor,
 } from './setup';
 export type { CalcpadEditorOptions } from './setup';
+export { registerHeadingFoldingProvider } from './heading-folding';
 export { registerSemanticTokensProvider } from './semantic-tokens';
 export { setupDiagnostics } from './diagnostics';
 export { registerCompletionProvider } from './completions';
