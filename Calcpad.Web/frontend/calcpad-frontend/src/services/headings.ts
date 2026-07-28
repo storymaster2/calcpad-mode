@@ -141,6 +141,9 @@ export function computeHeadingFoldRanges(text: string): HeadingFoldRange[] {
                 break;
             }
         }
+        if (endLine > startLine && lines[endLine - 1].trim() === '') {
+            endLine -= 1;
+        }
         if (endLine > startLine) {
             ranges.push({ startLine, endLine });
         }
