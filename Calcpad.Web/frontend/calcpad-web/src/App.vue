@@ -51,6 +51,14 @@
         <button
           v-if="libraryBanner"
           class="toolbar-btn"
+          title="Download current calculation as a .cpd file"
+          @click="requestSaveToDesktop"
+        >
+          Save to Desktop
+        </button>
+        <button
+          v-if="libraryBanner"
+          class="toolbar-btn"
           :disabled="libraryBanner.readOnly || librarySaving"
           :title="libraryBanner.readOnly
             ? 'Save to library is disabled for this read-only session'
@@ -355,6 +363,7 @@ const bootError = ref<string | null>(null)
 const libraryBanner = ref<{ title: string; readOnly: boolean; detail?: string } | null>(null)
 const librarySaving = ref(false)
 const onSaveToLibrary = ref<(() => void) | null>(null)
+const onSaveToDesktop = ref<(() => void) | null>(null)
 
 function setBootLoading(loading: boolean): void {
   bootLoading.value = loading
@@ -376,6 +385,10 @@ function setLibrarySaving(saving: boolean): void {
 function requestSaveToLibrary(): void {
   if (libraryBanner.value?.readOnly || librarySaving.value) return
   onSaveToLibrary.value?.()
+}
+
+function requestSaveToDesktop(): void {
+  onSaveToDesktop.value?.()
 }
 
 function setTabs(next: TabUiState[]): void {
@@ -880,6 +893,7 @@ defineExpose({
   showLibrarySaveDialog,
   setLibrarySaving,
   onSaveToLibrary,
+  onSaveToDesktop,
   setTabs,
   onTabActivate,
   onTabCloseRequest,

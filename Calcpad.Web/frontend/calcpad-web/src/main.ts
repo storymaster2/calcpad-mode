@@ -1010,8 +1010,30 @@ async function bootstrap(): Promise<void> {
         }
     }
 
+    function downloadCurrentCpd(): void {
+        const content = editor.getValue();
+        let name =
+            librarySession?.filename
+            || tabs.activeTab?.title
+            || 'calculation.cpd';
+        name = name.trim() || 'calculation.cpd';
+        if (!/\.cpd$/i.test(name)) {
+            name = name.includes('.') ? name.replace(/\.[^.]+$/, '.cpd') : `${name}.cpd`;
+        }
+
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        a.click();
+        URL.revokeObjectURL(url);
+        appInstance.appendOutput('info', `Downloaded ${name}`);
+    }
+
     if (librarySession && bridge) {
         appInstance.onSaveToLibrary = () => { void saveToLibrary(); };
+        appInstance.onSaveToDesktop = () => { downloadCurrentCpd(); };
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
             void saveToLibrary();
         });
