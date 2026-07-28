@@ -110,14 +110,17 @@ export function parseHeadings(text: string): TocHeading[] {
 }
 
 export interface HeadingFoldRange {
+    /** 1-based line that stays visible (the heading; Monaco fold caret lands here). */
     startLine: number;
+    /** 1-based inclusive last line hidden when folded. */
     endLine: number;
 }
 
 /**
  * Fold ranges for heading sections: each heading collapses content until the
  * next heading of the same or higher level (lower or equal level number).
- * The heading line itself stays visible. Empty sections are omitted.
+ * Monaco keeps `startLine` visible with the caret; lines after it through
+ * `endLine` are hidden. Empty sections are omitted.
  */
 export function computeHeadingFoldRanges(text: string): HeadingFoldRange[] {
     const lines = text.split(/\r?\n/);
@@ -130,7 +133,7 @@ export function computeHeadingFoldRanges(text: string): HeadingFoldRange[] {
     const ranges: HeadingFoldRange[] = [];
     for (let i = 0; i < headings.length; i++) {
         const heading = headings[i];
-        const startLine = heading.line + 1;
+        const startLine = heading.line;
         let endLine = lineCount;
         for (let j = i + 1; j < headings.length; j++) {
             if (headings[j].level <= heading.level) {
@@ -138,7 +141,7 @@ export function computeHeadingFoldRanges(text: string): HeadingFoldRange[] {
                 break;
             }
         }
-        if (endLine >= startLine) {
+        if (endLine > startLine) {
             ranges.push({ startLine, endLine });
         }
     }
