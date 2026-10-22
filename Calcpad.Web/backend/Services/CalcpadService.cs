@@ -31,12 +31,15 @@ namespace Calcpad.Server.Services
         public string? SourceFilePath { get; set; }
     }
 
-    public class CalcpadService
+    public partial class CalcpadService
     {
         private readonly string _tempDirectory;
         private readonly string _htmlTemplate;
         private static readonly FileSettingsExtractor _fileSettingsExtractor = new();
         private static readonly NoPrintRegionStripper _noPrintRegionStripper = new();
+        // FileSettingsExtractor's tokenizer keeps parse state on the instance.
+        // ConvertCore runs many calculations at once, so the call is serialized.
+        private static readonly object _fileSettingsLock = new();
 
         /// <summary>
         /// Global cache of pre-fetched remote content.
@@ -367,82 +370,11 @@ namespace Calcpad.Server.Services
                 FileLogger.LogInfo("Starting conversion", $"Content length: {calcpadContent.Length}, Has settings: {settings != null}, Force unwrapped: {forceUnwrappedCode}, For print: {forPrint}");
                 FileLogger.LogInfo("Content preview:", calcpadContent.Substring(0, Math.Min(200, calcpadContent.Length)));
 
-                // When generating for PDF, strip NoPrintStart/NoPrintEnd regions from the source
-                // before any further processing so they never enter the macro/expression pipeline.
-                if (forPrint)
-                    calcpadContent = _noPrintRegionStripper.Strip(calcpadContent);
+                var pipeline = await ConvertCoreAsync(calcpadContent, settings, forceUnwrappedCode, ctx, forPrint, storeExports: true).ConfigureAwait(false);
 
-                // 1. Use Calcpad.Core settings directly (defaults are set in constructors)
-                Settings coreSettings = settings ?? new Settings();
-
-                // Apply any per-file settings overrides embedded in HTML comments
-                coreSettings = _fileSettingsExtractor.ApplyFileSettings(calcpadContent, coreSettings);
-
-                // 2. Pre-fetch all remote references (URLs and API routes) into dictionary
-                ctx ??= new WebFetchContext();
-                await PreFetchRemoteContentAsync(calcpadContent, ctx).ConfigureAwait(false);
-
-                // 3. Convert dictionary to typed ClientFileCache for Core
-                ClientFileCache typedFileCache = ConvertToClientFileCache(ctx.ClientFileCache, ctx.FetchErrors) ?? new ClientFileCache();
-                typedFileCache.DiskCacheFolder ??= DiskCacheCleanupService.CacheFolder;
-                typedFileCache.RefetchDelegate = filename =>
-                {
-                    if (_remoteContentCache.TryGetValue(filename, out var cached))
-                        return cached;
-                    if (Router.IsDirectUrl(filename))
-                    {
-                        var bytes = Router.FetchUrlAsync(filename, ctx.ApiTimeoutMs).GetAwaiter().GetResult();
-                        _remoteContentCache.TryAdd(filename, bytes);
-                        return bytes;
-                    }
-                    return null;
-                };
-                coreSettings.ClientFileCache = typedFileCache;
-
-                // 4. Configure API Router (server-side, not from Core settings)
-                Router apiRouter = CreateApiRouter(ctx.AuthSettings);
-                FileLogger.LogInfo($"API Router created, AuthSettings: {(ctx.AuthSettings != null ? "configured" : "null")}");
-
-                // 5. Parse macros and includes
-                var macroParser = new MacroParser();
-                macroParser.Include = CreateIncludeDelegate(apiRouter, ctx.ApiTimeoutMs, typedFileCache);
-                macroParser.ClientFileCache = typedFileCache;
-                macroParser.SourceFilePath = ctx.SourceFilePath;
-                coreSettings.SourceFilePath = ctx.SourceFilePath;
-
-                string outputText;
-                var hasMacroErrors = macroParser.Parse(calcpadContent, out outputText, null, 0, true);
-
-                string htmlResult;
-
-                if (hasMacroErrors || forceUnwrappedCode)
-                {
-                    htmlResult = ConvertCodeToHtml(outputText);
-                }
-                else
-                {
-                    // Capture #write/#append outputs in memory so the client can download them.
-                    var writeCache = new WriteCache { DiskCacheFolder = DiskCacheCleanupService.CacheFolder };
-                    coreSettings.WriteCache = writeCache;
-
-                    try
-                    {
-                        // 5. Parse expressions and calculate
-                        var parser = new ExpressionParser { Settings = coreSettings };
-                        parser.Parse(outputText, true, false);
-                        htmlResult = RemoveEmptyParagraphs(parser.HtmlResult);
-                    }
-                    catch (Exception parseEx)
-                    {
-                        FileLogger.LogWarning("Expression parsing failed, falling back to unwrapped code", parseEx.Message);
-                        htmlResult = ConvertCodeToHtml(outputText);
-                    }
-
-                    StoreExportSession(ctx.SourceFilePath, writeCache);
-                }
-
-                // 6. Apply HTML wrapper with theme support
-                var finalHtml = WrapHtmlResult(htmlResult, theme);
+                // Apply HTML wrapper with theme support. Check-batch reads the
+                // pre-wrap fragment so the document template is not counted.
+                var finalHtml = WrapHtmlResult(pipeline.HtmlResult, theme);
                 FileLogger.LogInfo("Conversion completed successfully", $"Output length: {finalHtml.Length}");
 
                 return finalHtml;
@@ -457,6 +389,115 @@ namespace Calcpad.Server.Services
                 FileLogger.LogError("Calcpad conversion failed", ex);
                 throw new InvalidOperationException($"Calcpad conversion failed: {ex.Message}", ex);
             }
+        }
+
+        /// <summary>
+        /// Runs the convert pipeline and returns the fragment before the HTML
+        /// template is wrapped around it, plus how the run failed.
+        /// <paramref name="storeExports"/> is false for check-batch so parallel
+        /// items do not replace each other's anonymous #write session.
+        /// </summary>
+        internal async Task<ConvertPipelineResult> ConvertCoreAsync(
+            string calcpadContent,
+            Settings? settings,
+            bool forceUnwrappedCode,
+            WebFetchContext? ctx,
+            bool forPrint,
+            bool storeExports)
+        {
+            if (string.IsNullOrWhiteSpace(calcpadContent))
+                throw new ArgumentException("Content cannot be null or empty", nameof(calcpadContent));
+
+            // When generating for PDF, strip NoPrintStart/NoPrintEnd regions from the source
+            // before any further processing so they never enter the macro/expression pipeline.
+            if (forPrint)
+                calcpadContent = _noPrintRegionStripper.Strip(calcpadContent);
+
+            // 1. Use Calcpad.Core settings directly (defaults are set in constructors)
+            Settings coreSettings = settings ?? new Settings();
+
+            // Apply any per-file settings overrides embedded in HTML comments.
+            // The extractor's tokenizer is not safe to run on two threads.
+            lock (_fileSettingsLock)
+                coreSettings = _fileSettingsExtractor.ApplyFileSettings(calcpadContent, coreSettings);
+
+            // 2. Pre-fetch all remote references (URLs and API routes) into dictionary
+            ctx ??= new WebFetchContext();
+            await PreFetchRemoteContentAsync(calcpadContent, ctx).ConfigureAwait(false);
+
+            // 3. Convert dictionary to typed ClientFileCache for Core
+            ClientFileCache typedFileCache = ConvertToClientFileCache(ctx.ClientFileCache, ctx.FetchErrors) ?? new ClientFileCache();
+            typedFileCache.DiskCacheFolder ??= DiskCacheCleanupService.CacheFolder;
+            typedFileCache.RefetchDelegate = filename =>
+            {
+                if (_remoteContentCache.TryGetValue(filename, out var cached))
+                    return cached;
+                if (Router.IsDirectUrl(filename))
+                {
+                    var bytes = Router.FetchUrlAsync(filename, ctx.ApiTimeoutMs).GetAwaiter().GetResult();
+                    _remoteContentCache.TryAdd(filename, bytes);
+                    return bytes;
+                }
+                return null;
+            };
+            coreSettings.ClientFileCache = typedFileCache;
+
+            // 4. Configure API Router (server-side, not from Core settings)
+            Router apiRouter = CreateApiRouter(ctx.AuthSettings);
+
+            // 5. Parse macros and includes
+            var macroParser = new MacroParser();
+            macroParser.Include = CreateIncludeDelegate(apiRouter, ctx.ApiTimeoutMs, typedFileCache);
+            macroParser.ClientFileCache = typedFileCache;
+            macroParser.SourceFilePath = ctx.SourceFilePath;
+            coreSettings.SourceFilePath = ctx.SourceFilePath;
+
+            string outputText;
+            var hasMacroErrors = macroParser.Parse(calcpadContent, out outputText, null, 0, true);
+
+            string htmlResult;
+            var fellBack = false;
+            string? fallbackMessage = null;
+            var engineErrorCount = 0;
+
+            if (hasMacroErrors || forceUnwrappedCode)
+            {
+                htmlResult = ConvertCodeToHtml(outputText);
+            }
+            else
+            {
+                // Capture #write/#append outputs in memory so they are not
+                // written to disk. check-batch discards the cache afterwards.
+                var writeCache = new WriteCache { DiskCacheFolder = DiskCacheCleanupService.CacheFolder };
+                coreSettings.WriteCache = writeCache;
+
+                try
+                {
+                    var parser = new ExpressionParser { Settings = coreSettings };
+                    parser.Parse(outputText, true, false);
+                    htmlResult = RemoveEmptyParagraphs(parser.HtmlResult);
+                    engineErrorCount = parser.EngineErrorCount;
+                }
+                catch (Exception parseEx)
+                {
+                    FileLogger.LogWarning("Expression parsing failed, falling back to unwrapped code", parseEx.Message);
+                    fellBack = true;
+                    fallbackMessage = parseEx.Message;
+                    htmlResult = ConvertCodeToHtml(outputText);
+                }
+
+                if (storeExports)
+                    StoreExportSession(ctx.SourceFilePath, writeCache);
+            }
+
+            return new ConvertPipelineResult
+            {
+                HtmlResult = htmlResult,
+                HadMacroErrors = hasMacroErrors,
+                FellBack = fellBack,
+                FallbackMessage = fallbackMessage,
+                EngineErrorCount = engineErrorCount,
+            };
         }
 
         private static string NormalizeExportKey(string? sourceFilePath) =>

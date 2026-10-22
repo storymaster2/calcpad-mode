@@ -18,6 +18,7 @@ The default port is `9420` (configurable via the `CALCPAD_PORT` environment vari
 
 - [Calcpad Endpoints](#calcpad-endpoints)
   - [POST /convert](#post-convert)
+  - [POST /check-batch](#post-check-batch)
   - [POST /convert-unwrapped](#post-convert-unwrapped)
   - [POST /convert-ui](#post-convert-ui)
   - [POST /debug-raw-code](#post-debug-raw-code)
@@ -81,6 +82,54 @@ interface CalcpadRequest {
 ```
 
 The base64 content above decodes to: `helperFunc(x) = x * 2`
+
+---
+
+### POST /check-batch
+
+Run many calculations in one request and return a small OK / FAIL / ERROR summary for each. The response does not include HTML. Items run in parallel, up to the process CPU count, and each item has a 20 second timeout.
+
+**Request:**
+```typescript
+interface CheckBatchRequest {
+  settings?: Settings;
+  clientFileCache?: Record<string, string>;  // filename -> base64, shared by every item
+  authSettings?: AuthSettings;
+  apiTimeoutMs?: number;
+  items: CheckBatchItem[];
+}
+
+interface CheckBatchItem {
+  id: string;
+  content: string;
+  sourceFilePath?: string;
+}
+```
+
+**Limits:** at most 200 items and 2,000,000 characters of source in total. More items is `400`. A larger combined source is `413`. A missing `items` array is `400`.
+
+**Response:**
+```typescript
+interface CheckBatchResponse {
+  results: CheckItemResult[];  // same order as items
+  elapsedMs: number;
+}
+
+interface CheckItemResult {
+  id: string;
+  status: "ok" | "fail" | "error" | "none";
+  okCount: number;     // class="ok" in the result
+  failCount: number;   // user class="err" checks
+  errorCount: number;  // engine, macro, or timeout failures
+  failLines: number[]; // 1-based source lines that contain a check span (fail only)
+  firstError?: string;
+  ms: number;
+}
+```
+
+`error` means the calculation did not compute cleanly (runtime error, unclosed block, macro error, parse fallback, timeout, or exception). `fail` means it computed and at least one user `class="err"` check rendered. `ok` means it computed, nothing failed, and at least one `class="ok"` rendered. `none` means empty source or no checks. Empty or whitespace `content` is `none` and is not parsed.
+
+Engine-emitted `class="err"` (including NaN / infinity) is an `error`, not a failed check. A function-redefined warning (`<b class="err">`) is neither.
 
 ---
 

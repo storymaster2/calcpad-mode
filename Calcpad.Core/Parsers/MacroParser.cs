@@ -130,7 +130,11 @@ namespace Calcpad.Core
         }
         private readonly List<int> _lineNumbers = [];
         private readonly HashSet<string> _includeStack = new(StringComparer.OrdinalIgnoreCase);
-        private static readonly Dictionary<string, Macro> Macros = new(StringComparer.Ordinal);
+        // Per parser, not process-wide. Nested #include calls Parse on this
+        // same instance and must see the macros collected so far. A static
+        // dictionary made concurrent converts (and check-batch) overwrite
+        // each other's macros.
+        private readonly Dictionary<string, Macro> Macros = new(StringComparer.Ordinal);
         public Func<string, Queue<string>, string> Include;
         public ClientFileCache ClientFileCache;
         public string SourceFilePath;
@@ -511,7 +515,7 @@ namespace Calcpad.Core
             return fields;
         }
 
-        private static string ApplyMacros(ReadOnlySpan<char> lineContent)
+        private string ApplyMacros(ReadOnlySpan<char> lineContent)
         {
             var index = lineContent.IndexOf("$");
             if (index < 0)

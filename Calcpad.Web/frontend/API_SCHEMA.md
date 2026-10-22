@@ -555,6 +555,10 @@ GET /api/calcpad/snippets?category=Functions/Trigonometric
 
 ---
 
+### POST /check-batch
+
+Run many calculations and return OK / FAIL / ERROR summaries. No HTML in the response. See the backend schema (`Calcpad.Web/backend/API_SCHEMA.md`) for the request, the 200-item / 2,000,000-character caps, and the status rules.
+
 ### POST /convert-unwrapped
 
 Convert Calcpad source code to HTML without calculation (shows raw code with syntax highlighting).

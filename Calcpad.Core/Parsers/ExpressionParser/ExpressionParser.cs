@@ -35,6 +35,14 @@ namespace Calcpad.Core
 
         public Settings Settings { get; set; } = new();
         public string HtmlResult { get; private set; }
+
+        /// <summary>
+        /// How many <c>class="err"</c> elements this parse emitted for the
+        /// engine's own failures (unclosed blocks, runtime errors, unexpected
+        /// exceptions, output-length cutoff). User-authored check spans are
+        /// not included. Reset at the start of each <see cref="Parse(string, bool, bool)"/>.
+        /// </summary>
+        public int EngineErrorCount { get; private set; }
         public static bool IsUs
         {
             get => Unit.IsUs;
@@ -459,6 +467,7 @@ namespace Calcpad.Core
         {
             _htmlLines = 0;
             _errorCount = 0;
+            EngineErrorCount = 0;
             _calculate = calculate;
             _errors = new();
             if (!_calculate)
@@ -766,6 +775,7 @@ namespace Calcpad.Core
                             errText = HttpUtility.HtmlEncode(token.Value);
                         errText = string.Format(Messages.Error_in_0_on_line_1_2, errText, LineHtml(_currentLine), ex.Message);
                         _sb.Append($"<span class=\"err\"{Id(_currentLine)}>{errText}</span>");
+                        EngineErrorCount++;
                         if (Debug)
                             _errors.Enqueue(_currentLine);
 
@@ -794,7 +804,14 @@ namespace Calcpad.Core
         }
 
         private static string LineHtml(int line) => $"[<a href=\"#0\" data-text=\"{line + 1}\">{line + 1}</a>]";
-        private string ErrHtml(string text, int line) => $"<p class=\"err\"{Id(line)}\">{text}</p>";
+        private string ErrHtml(string text, int line)
+        {
+            // Every engine-authored paragraph error goes through here:
+            // unclosed #if / loop, unexpected exception, AppendError
+            // (runtime errors and the output-length cutoff).
+            EngineErrorCount++;
+            return $"<p class=\"err\"{Id(line)}\">{text}</p>";
+        }
         private string Id(int line) => Debug ? $" id=\"line-{line + 1}\"" : string.Empty;
 
         private static string InsertAttribute(ReadOnlySpan<char> s, string attr)

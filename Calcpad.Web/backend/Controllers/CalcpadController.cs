@@ -73,6 +73,40 @@ namespace Calcpad.Server.Controllers
             }
         }
 
+        /// <summary>
+        /// Run many calculations and return OK / FAIL / ERROR summaries.
+        /// Does not return HTML. Caps are in <see cref="CheckBatchLimits"/>.
+        /// </summary>
+        [HttpPost("check-batch")]
+        public async Task<IActionResult> CheckBatch([FromBody] CheckBatchRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (request?.Items is null)
+                    return BadRequest("items is required");
+
+                long total = 0;
+                foreach (var item in request.Items)
+                    total += item?.Content?.Length ?? 0;
+
+                var decision = CheckBatchLimits.Evaluate(request.Items.Count, total);
+                if (decision.StatusCode != 200)
+                    return StatusCode(decision.StatusCode, decision.Error);
+
+                var result = await _calcpadService.CheckBatchAsync(request, cancellationToken);
+                return Ok(result);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogError("Check-batch request failed", ex);
+                return StatusCode(500, $"Error checking Calcpad content: {ex.Message}");
+            }
+        }
+
         [HttpPost("convert-unwrapped")]
         public async Task<IActionResult> ConvertToUnwrappedHtml([FromBody] CalcpadRequest request)
         {
