@@ -398,6 +398,14 @@ namespace Calcpad.Highlighter.Snippets.Data
             new SnippetItem { Insert = "kip", Description = "Kip (1000 lbf)", Category = "Units/Imperial/Force", KeywordType = "Unit" },
             new SnippetItem { Insert = "tonf", Description = "Ton-force", Category = "Units/Imperial/Force", KeywordType = "Unit" },
             new SnippetItem { Insert = "pdl", Description = "Poundal", Category = "Units/Imperial/Force", KeywordType = "Unit" },
+            // Underscore / alias spellings that Calcpad.Core accepts (BaseTypes/Unit.cs, "{"oz_f"...}" block).
+            // Without these the linter reports CPD-3310 on valid units such as 200lb_f.
+            new SnippetItem { Insert = "oz_f", Description = "Ounce-force (alias of ozf)", Category = "Units/Imperial/Force", KeywordType = "Unit" },
+            new SnippetItem { Insert = "lb_f", Description = "Pound-force (alias of lbf)", Category = "Units/Imperial/Force", KeywordType = "Unit" },
+            new SnippetItem { Insert = "kip_f", Description = "Kip-force (alias of kip)", Category = "Units/Imperial/Force", KeywordType = "Unit" },
+            new SnippetItem { Insert = "kipf", Description = "Kip-force (alias of kip)", Category = "Units/Imperial/Force", KeywordType = "Unit" },
+            new SnippetItem { Insert = "tonf_US", Description = "US ton-force", Category = "Units/Imperial/Force", KeywordType = "Unit" },
+            new SnippetItem { Insert = "tonf_UK", Description = "UK ton-force", Category = "Units/Imperial/Force", KeywordType = "Unit" },
 
             // ============================================
             // IMPERIAL/US - PRESSURE

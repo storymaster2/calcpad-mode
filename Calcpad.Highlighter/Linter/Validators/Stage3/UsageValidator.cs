@@ -405,7 +405,11 @@ namespace Calcpad.Highlighter.Linter.Validators.Stage3
 
                 var line = stage3.Lines[i];
 
-                if (LineParser.ShouldSkipLine(line))
+                // Do not use LineParser.ShouldSkipLine here: it skips every line that starts with
+                // ' or ", but Calcpad lets code follow the closing quote on the same line
+                // ('Applied load,'P = 200lb_f). Units tokens are produced only for code, never
+                // for text inside a comment, so the token type is what decides.
+                if (string.IsNullOrWhiteSpace(line))
                     continue;
 
                 var trimmed = line.Trim();
