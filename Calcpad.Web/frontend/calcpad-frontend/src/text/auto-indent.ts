@@ -73,7 +73,7 @@ export function couldCompleteDedentKeyword(lineText: string): boolean {
 export function calculateExpectedIndent(
     lineNumber: number,
     getLine: (lineNumber: number) => string,
-    alsoIncreases: boolean
+    _alsoIncreases: boolean
 ): string {
     let depth = 1;
 
