@@ -7,11 +7,12 @@ The PDF pipeline uses **PuppeteerSharp** (headless Chromium) for HTML rendering,
 ## Rendering pipeline
 
 1. Launch headless browser (singleton, locked with a semaphore)
-2. Create page and set HTML content (`WaitUntil: Networkidle0`)
+2. Create page and set HTML content (`WaitUntil: Load`, 30 s). Network idle is not used: embedded `@font-face` data URIs never go idle.
 3. Inject print-specific CSS to force color-accurate output and fit datagrid tables
 4. Transform DOM via JavaScript (convert inputs to underlined text, etc.)
-5. Generate PDF bytes with Puppeteer
-6. Post-process with PDFsharp (headers, footers, background) if enabled
+5. Wait for `document.fonts` (15 s, then continue with fallback faces) and for images (30 s)
+6. Generate PDF bytes with Puppeteer
+7. Post-process with PDFsharp (headers, footers, background) if enabled
 
 ## Supported paper formats
 

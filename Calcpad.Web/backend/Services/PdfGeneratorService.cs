@@ -84,13 +84,13 @@ namespace Calcpad.Server.Services
                 // override that lets content fill the print area).
                 await page.EmulateMediaTypeAsync(MediaType.Print);
 
-                // Bumped from the 30 s default because large documents (multi-MB
-                // HTML with many script tags) can need more time to reach
-                // networkidle0.
+                // Wait for the load event. Embedded @font-face data URIs keep a
+                // connection open, so a network-idle wait never finishes. The
+                // document is self-contained, and 30 s is enough for load.
                 await page.SetContentAsync(html, new NavigationOptions
                 {
-                    WaitUntil = [WaitUntilNavigation.Networkidle0],
-                    Timeout = 120_000
+                    WaitUntil = [WaitUntilNavigation.Load],
+                    Timeout = 30_000
                 });
 
                 // Inject PDF-specific styles
@@ -155,6 +155,7 @@ namespace Calcpad.Server.Services
                     });
                 }");
 
+                await WaitForFontsAsync(page);
                 await WaitForAsyncContentAsync(page);
 
                 var pdfOptions = new PuppeteerSharp.PdfOptions
@@ -189,11 +190,29 @@ namespace Calcpad.Server.Services
         }
 
         /// <summary>
+        /// Waits until embedded <c>@font-face</c> rules have loaded or failed.
+        /// A stuck font must not hold the PDF, so the wait is bounded and a
+        /// timeout continues with fallback faces.
+        /// </summary>
+        private static async Task WaitForFontsAsync(IPage page)
+        {
+            try
+            {
+                await page.WaitForFunctionAsync(
+                    "() => !document.fonts || document.fonts.status === 'loaded'",
+                    new WaitForFunctionOptions { Timeout = 15_000, PollingInterval = 100 });
+            }
+            catch (WaitTaskTimeoutException)
+            {
+                FileLogger.LogWarning("PDF font-wait timed out; proceeding with fallback fonts", null);
+            }
+        }
+
+        /// <summary>
         /// Waits for all client-side rendered images (DXF plots, charts, anything
         /// async that ends up as an <c>&lt;img&gt;</c>) to finish before capturing
-        /// the PDF. <c>Networkidle0</c> isn't enough on its own because the work
-        /// that fills <c>img.src</c> happens after the last network request returns
-        /// (canvas-to-dataURL, font parsing, WebGL rendering, etc.).
+        /// the PDF. Page load is not enough because the work that fills
+        /// <c>img.src</c> happens afterward (canvas-to-dataURL, WebGL, and so on).
         ///
         /// Strategy: poll every <c>&lt;img&gt;</c> in the document — any that have
         /// a <c>src</c> set must report <c>complete</c> with a non-zero
