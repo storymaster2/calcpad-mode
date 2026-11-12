@@ -7,7 +7,7 @@ The PDF pipeline uses **PuppeteerSharp** (headless Chromium) for HTML rendering,
 ## Rendering pipeline
 
 1. Launch headless browser (singleton, locked with a semaphore)
-2. Create page and set HTML content (`WaitUntil: Load`, 30 s). The image installs Segoe UI regular and bold for fontconfig (`container-fonts/`). Network idle is not used: a data-URI `@font-face` never goes idle.
+2. Create page and set HTML content (`WaitUntil: Load`, 30 s). The image installs Segoe UI regular, bold, and Symbol for fontconfig (`container-fonts/`). Symbol covers glyphs the text face does not contain. Network idle is not used: a data-URI `@font-face` never goes idle.
 3. Inject print-specific CSS to force color-accurate output and fit datagrid tables
 4. Transform DOM via JavaScript (convert inputs to underlined text, etc.)
 5. Wait for `document.fonts` (15 s, then continue with fallback faces) and for images (30 s)

@@ -44,8 +44,9 @@ RUN apt-get update && \
 # Copy published application (already stripped to linux-x64 only)
 COPY --from=publish /app/publish .
 
-# Segoe UI for publish. These are fontconfig faces, not the Fonts/ bundle
-# that Calcpad inlines into every convert response.
+# Segoe UI and Segoe UI Symbol for publish. Symbol supplies glyphs the
+# text face does not contain. These are fontconfig faces, not the Fonts/
+# bundle that Calcpad inlines into every convert response.
 COPY Calcpad.Web/backend/container-fonts/ /usr/local/share/fonts/segoe/
 RUN fc-cache -f
 
