@@ -107,6 +107,43 @@ namespace Calcpad.Server.Controllers
             }
         }
 
+        /// <summary>
+        /// Convert and render many calculations in one request.
+        /// Each result is a PDF or an error. Caps are in <see cref="PublishBatchLimits"/>.
+        /// </summary>
+        [HttpPost("publish-batch")]
+        public async Task<IActionResult> PublishBatch([FromBody] PublishBatchRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (request?.Items is null)
+                    return BadRequest("items is required");
+
+                long total = 0;
+                foreach (var item in request.Items)
+                    total += item?.Content?.Length ?? 0;
+
+                var decision = PublishBatchLimits.Evaluate(request.Items.Count, total);
+                if (decision.StatusCode != 200)
+                    return StatusCode(decision.StatusCode, decision.Error);
+
+                var result = await _calcpadService.PublishBatchAsync(
+                    request,
+                    cancellationToken,
+                    (html, options, _) => _pdfService.GeneratePdfAsync(html, options));
+                return Ok(result);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogError("Publish-batch request failed", ex);
+                return StatusCode(500, $"Error publishing Calcpad content: {ex.Message}");
+            }
+        }
+
         [HttpPost("convert-unwrapped")]
         public async Task<IActionResult> ConvertToUnwrappedHtml([FromBody] CalcpadRequest request)
         {

@@ -133,6 +133,44 @@ Engine-emitted `class="err"` (including NaN / infinity) is an `error`, not a fai
 
 ---
 
+### POST /publish-batch
+
+Convert and render many calculations in one request. Items run at most two at a time. Each item is converted with `storeExports: false`, then the font bootstrap script is removed, a defined-function `<var>` before `(` becomes `<b>`, `publishCss` is injected, and the HTML is rendered to a PDF. A failed item returns `error` and does not cancel the others. The HTTP status stays 200 when the batch itself was accepted.
+
+**Request:**
+```typescript
+interface PublishBatchRequest {
+  settings?: Settings;
+  theme?: string;          // default "light"
+  forPrint?: boolean;      // default true
+  publishCss?: string;     // page-owned print stylesheet
+  options?: PdfOptions;    // Letter, 1in margins for the structural page
+  clientFileCache?: Record<string, string>;  // filename -> base64, shared by every item
+  authSettings?: AuthSettings;
+  apiTimeoutMs?: number;
+  items: { id: string; content: string }[];
+}
+```
+
+**Limits:** at most 20 items and 2,000,000 characters of source in total. More items is `400`. A larger combined source is `413`. A missing `items` array is `400`. Each item has a 90 second timeout. Cloud Run allows 900 seconds for the whole request.
+
+**Response:**
+```typescript
+interface PublishBatchResponse {
+  results: PublishItemResult[];  // same order as items
+}
+
+interface PublishItemResult {
+  id: string;
+  pdfBase64?: string;  // present when the PDF was rendered
+  error?: string;      // present when that item failed; no pdfBase64
+}
+```
+
+Empty or whitespace `content` is an item error (`Content is required`) and is not converted.
+
+---
+
 ### POST /convert-unwrapped
 
 Convert Calcpad source code to HTML without calculation (shows raw code with syntax highlighting). Automatically processes `data-text` links to make them functional.

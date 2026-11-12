@@ -51,6 +51,7 @@ steps:
       - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE}:$SHORT_SHA
       - --region=${_REGION}
       - --platform=managed
+      - --timeout=900
       - --quiet
 
 images:
