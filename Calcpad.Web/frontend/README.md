@@ -164,7 +164,7 @@ Production hosting uses a **dedicated bucket** (separate from Detail Library): *
 | Piece | Value |
 |-------|--------|
 | Build config | [`cloudbuild.web.yaml`](../../cloudbuild.web.yaml) (repo root) |
-| Bucket | `mode-detail-library-calcpad` (objects at **bucket root**) |
+| Bucket | `mode-os-detail-library-calcpad` (objects at **bucket root**) |
 | Public URL | `/calcpad/` (LB strips `/calcpad` when mapping to objects) |
 | Vite base | `/calcpad/` (`VITE_BASE_PATH`) |
 | Calc engine | baked as `VITE_SERVER_URL` |
@@ -172,7 +172,7 @@ Production hosting uses a **dedicated bucket** (separate from Detail Library): *
 **Cloud Build trigger (console):**
 
 1. Create or edit trigger `calcpad-web-update` → config file **`cloudbuild.web.yaml`**
-2. Service account: `calcpad-serverbuild@…` (needs **Storage Object Admin** on `mode-detail-library-calcpad`)
+2. Service account: `detail-library-build@mode-os-508402.iam.gserviceaccount.com` (needs **Storage Object Admin** on `mode-os-detail-library-calcpad`)
 3. Included paths: `Calcpad.Web/frontend/**`, `cloudbuild.web.yaml`
 4. Ignored: engine paths + `cloudbuild.engine.yaml`
 5. Run the trigger after the LB backend/path rule exists

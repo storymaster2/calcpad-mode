@@ -26,7 +26,7 @@ Calcpad-mode UI is built in the editor repo; this document is the API contract.
 Example URL minted by Detail Library:
 
 ```text
-https://<calcpad-web-host>/?server=https://calcpad-server-….run.app&librarySession=TOKEN&libraryApi=https://detail-library-backend-….run.app
+https://detail-library.modearchitecture.com/calcpad/?server=https://calcpad-server-281493068443.us-west1.run.app&librarySession=TOKEN&libraryApi=https://detail-library-backend-281493068443.us-west1.run.app
 ```
 
 ## Session longevity
@@ -95,7 +95,7 @@ GET /calc-sessions/:token
   "canonicalCommitSha": "abc123…",
   "thumbnailUrl": "/calc-sessions/hex…/thumbnail",
   "content": "' full .cpd source\n…",
-  "libraryApi": "https://detail-library-backend-….run.app",
+  "libraryApi": "https://detail-library-backend-281493068443.us-west1.run.app",
   "libraryDetailHint": { "itemKey": "AbCdEf1234" },
   "versions": {
     "historyPath": "/calc-sessions/{sessionId}/history",

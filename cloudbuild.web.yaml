@@ -18,8 +18,8 @@
 #   https://detail-library.modearchitecture.com/calcpad/
 #
 # Prerequisites (one-time, GCP console / IAM):
-#   1. Bucket mode-detail-library-calcpad exists (separate from Detail Library).
-#   2. Build SA (calcpad-serverbuild@…) needs roles/storage.objectAdmin on ${_BUCKET}.
+#   1. Bucket mode-os-detail-library-calcpad exists (separate from Detail Library).
+#   2. Build SA (detail-library-build@mode-os-508402.iam.gserviceaccount.com) needs roles/storage.objectAdmin on ${_BUCKET}.
 #   3. HTTPS LB: backend bucket for ${_BUCKET}; host/path rule for /calcpad and
 #      /calcpad/* with URL rewrite that strips the /calcpad prefix so objects are
 #      looked up at bucket root (index.html, assets/…).
@@ -29,8 +29,8 @@
 # _ENGINE_URL is baked as VITE_SERVER_URL (browser calls the calc engine directly).
 # VITE_BASE_PATH stays /calcpad/ so the browser requests /calcpad/assets/….
 substitutions:
-  _BUCKET: mode-detail-library-calcpad
-  _ENGINE_URL: https://calcpad-server-914029425445.us-west1.run.app
+  _BUCKET: mode-os-detail-library-calcpad
+  _ENGINE_URL: https://calcpad-server-281493068443.us-west1.run.app
   _BASE_PATH: /calcpad/
 
 steps:
